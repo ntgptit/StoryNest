@@ -70,8 +70,12 @@
   /* Minimum interactive size on touch devices (WCAG 2.5.8 target size, platform guidelines ~44px). */
   --size-touch: 2.75rem;
 }
-:root.light { color-scheme: light; }
-:root.dark { color-scheme: dark; }
+:root.light {
+  color-scheme: light;
+}
+:root.dark {
+  color-scheme: dark;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -117,8 +121,12 @@
 }
 
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
-@utility pt-safe { padding-top: env(safe-area-inset-top); }
-@utility pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
 @utility px-safe {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
@@ -136,6 +144,10 @@
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
-  body { @apply bg-background text-foreground font-sans antialiased; }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
 }

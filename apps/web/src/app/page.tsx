@@ -37,8 +37,8 @@ export default function HomePage() {
           <article className="reader-prose mx-auto">
             <h3 className="mb-3 text-xl font-semibold">Chương 12</h3>
             <p>
-              Ánh chiều tràn qua căn phòng yên tĩnh. Cô mở lá thư thêm một lần nữa, và lần này, những dòng chữ không
-              còn xa lạ như trước.
+              Ánh chiều tràn qua căn phòng yên tĩnh. Cô mở lá thư thêm một lần nữa, và lần này, những dòng chữ không còn
+              xa lạ như trước.
             </p>
           </article>
         </section>

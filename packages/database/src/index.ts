@@ -9,7 +9,6 @@ export type { Database, Json, Tables, TablesInsert, TablesUpdate, Enums } from "
 import type { Database } from "./database.types.ts";
 
 /** Arguments / return type of a public RPC, e.g. RpcArgs<"publish_chapter">. */
-export type RpcArgs<Name extends keyof Database["public"]["Functions"]> =
-  Database["public"]["Functions"][Name]["Args"];
+export type RpcArgs<Name extends keyof Database["public"]["Functions"]> = Database["public"]["Functions"][Name]["Args"];
 export type RpcReturns<Name extends keyof Database["public"]["Functions"]> =
   Database["public"]["Functions"][Name]["Returns"];

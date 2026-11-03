@@ -1,17 +1,32 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  ACCOUNT_STATUSES, BLOCK_TYPES, CHAPTER_STATUSES, COLLABORATOR_ROLES, COMMENT_STATUSES, DB_LIMITS,
-  REPORT_STATUSES, STORY_STATUSES, VISIBILITIES, chapterBodySchema, chapterDraftSaveSchema,
-  chapterPublishedPayloadSchema, classifyRpcError, commentCreateSchema, countWords, publishChapterArgsSchema,
-  readingListCreateSchema, reportCreateSchema, scheduleChapterArgsSchema, slugSchema, storyCreateSchema,
+  ACCOUNT_STATUSES,
+  BLOCK_TYPES,
+  CHAPTER_STATUSES,
+  COLLABORATOR_ROLES,
+  COMMENT_STATUSES,
+  DB_LIMITS,
+  REPORT_STATUSES,
+  STORY_STATUSES,
+  VISIBILITIES,
+  chapterBodySchema,
+  chapterDraftSaveSchema,
+  chapterPublishedPayloadSchema,
+  classifyRpcError,
+  commentCreateSchema,
+  countWords,
+  publishChapterArgsSchema,
+  readingListCreateSchema,
+  reportCreateSchema,
+  scheduleChapterArgsSchema,
+  slugSchema,
+  storyCreateSchema,
   usernameSchema,
 } from "./index.ts";
 
 type Contract = { enums: Record<string, string[]>; maxLengths: Record<string, number> };
-const contract: Contract = JSON.parse(
-  readFileSync(new URL("./db-contract.generated.json", import.meta.url), "utf8"),
-);
+const contract: Contract = JSON.parse(readFileSync(new URL("./db-contract.generated.json", import.meta.url), "utf8"));
 const sorted = (xs: readonly string[]) => [...xs].sort();
 
 describe("enums match the CHECK constraints of the real schema", () => {
@@ -55,7 +70,12 @@ const id = (n: number) => `31000000-0000-4000-8000-${String(n).padStart(12, "0")
 describe("chapter body", () => {
   const valid = [
     { block_id: id(1), type: "heading", text: "Chapter One" },
-    { block_id: id(2), type: "paragraph", text: "The afternoon light spilled across the quiet room.", marks: [{ type: "bold", from: 0, to: 3 }] },
+    {
+      block_id: id(2),
+      type: "paragraph",
+      text: "The afternoon light spilled across the quiet room.",
+      marks: [{ type: "bold", from: 0, to: 3 }],
+    },
     { block_id: id(3), type: "image", image_storage_key: "stories/x/cover.png" },
     { block_id: id(4), type: "divider" },
   ];
@@ -74,7 +94,13 @@ describe("chapter body", () => {
     ["not an array", { not: "an array" }],
     ["block_id not a uuid", [{ block_id: "not-a-uuid", type: "paragraph", text: "x" }]],
     ["block_id missing", [{ type: "paragraph", text: "missing id" }]],
-    ["duplicate block_id", [{ block_id: dupe, type: "paragraph", text: "a" }, { block_id: dupe, type: "paragraph", text: "b" }]],
+    [
+      "duplicate block_id",
+      [
+        { block_id: dupe, type: "paragraph", text: "a" },
+        { block_id: dupe, type: "paragraph", text: "b" },
+      ],
+    ],
     ["unknown type", [{ block_id: dupe, type: "video", text: "a" }]],
     ["paragraph without text", [{ block_id: dupe, type: "paragraph" }]],
     ["image without key", [{ block_id: dupe, type: "image" }]],
@@ -124,7 +150,8 @@ describe("rpc args", () => {
 describe("inputs", () => {
   it("username follows the DB check", () => {
     for (const ok of ["abc", "Reader_2", "a".repeat(30)]) expect(usernameSchema.safeParse(ok).success).toBe(true);
-    for (const bad of ["ab", "a".repeat(31), "has space", "dấu", "a-b"]) expect(usernameSchema.safeParse(bad).success).toBe(false);
+    for (const bad of ["ab", "a".repeat(31), "has space", "dấu", "a-b"])
+      expect(usernameSchema.safeParse(bad).success).toBe(false);
   });
   it("slug", () => {
     const s = slugSchema(120);
@@ -133,7 +160,14 @@ describe("inputs", () => {
   });
   it("story create applies the same defaults as the table", () => {
     const s = storyCreateSchema.parse({ title: " Tale ", slug: "tale" });
-    expect(s).toMatchObject({ title: "Tale", synopsis: "", language_code: "vi", status: "draft", visibility: "private", is_mature: false });
+    expect(s).toMatchObject({
+      title: "Tale",
+      synopsis: "",
+      language_code: "vi",
+      status: "draft",
+      visibility: "private",
+      is_mature: false,
+    });
     expect(storyCreateSchema.safeParse({ title: "x", slug: "x", owner_id: id(1) }).success).toBe(false); // identity is not client input
     expect(storyCreateSchema.safeParse({ title: "x", slug: "x", visibility: "secret" }).success).toBe(false);
   });

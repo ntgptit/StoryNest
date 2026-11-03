@@ -17,7 +17,11 @@ export const usernameSchema = z
 
 /** URL slug. Stricter than the DB (which only forbids blank): lowercase words joined by single hyphens. */
 export const slugSchema = (max: number) =>
-  z.string().min(1).max(max).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase letters, digits and hyphens");
+  z
+    .string()
+    .min(1)
+    .max(max)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "lowercase letters, digits and hyphens");
 
 export const languageCodeSchema = z
   .string()
