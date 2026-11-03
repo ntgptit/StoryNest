@@ -103,6 +103,37 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
 
+  packages/features:
+    dependencies:
+      '@storynest/database':
+        specifier: workspace:*
+        version: link:../database
+      '@storynest/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@storynest/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@storynest/validation':
+        specifier: workspace:*
+        version: link:../validation
+      '@supabase/supabase-js':
+        specifier: 2.118.0
+        version: 2.118.0(@opentelemetry/api@1.10.0)
+    devDependencies:
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: 19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: 19.3.1
+        version: 19.3.1(react@19.3.1)
+
   packages/ui:
     dependencies:
       class-variance-authority:
@@ -133,6 +164,8 @@ importers:
       react-dom:
         specifier: 19.3.1
         version: 19.3.1(react@19.3.1)
+
+  packages/utils: {}
 
   packages/validation:
     dependencies:

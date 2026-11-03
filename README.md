@@ -126,6 +126,14 @@ pnpm --filter @storynest/web build
 - Lịch sử migration trên project được áp theo từng phần nhỏ (do popup xác nhận của công cụ Supabase với lệnh `DROP`), nên tên/số lượng migration ở đó khác thư mục `supabase/migrations`; trạng thái cuối cùng là một.
 - Việc còn mở về hạ tầng: bật Google OAuth + Redirect URL, tạo Storage bucket, chuyển các hàm helper `can_*`/`story_role` ra schema không expose.
 
+### Công cụ phát triển
+
+- `pnpm lint` (ESLint, gồm quy tắc **ranh giới package**: `utils`/`database` không phụ thuộc gì, `validation` chỉ zod + type DB, `ui` không dữ liệu/Next, `features` không `next/*`, cấm import xuyên vào `src/` của package khác), `pnpm format` / `pnpm format:check` (Prettier).
+- `pnpm gen:feature <tên-kebab-case>` tạo feature mới theo đúng layout (`api/ hooks/ screens/ components/ model/ keys.ts index.ts` + test).
+- `@storynest/utils`: hàm thuần có test (slugify tiếng Việt, formatCount, thời gian tương đối, cursor phân trang, URL Storage an toàn, debounce, Result).
+- CI (`.github/workflows/ci.yml`): job `checks` (format, lint, typecheck, test, build web) và job `database` (`db:verify`, `db:types:check` trên PostgreSQL).
+- TypeScript ghim **6.0.3**: `typescript-eslint` chưa hỗ trợ 7.x. Nâng lên khi có hỗ trợ.
+
 ### Việc còn lại
 
 1. **Auth UI**: đăng nhập/đăng ký (Supabase Auth), guard route, trang hồ sơ; bảo vệ route bằng kiểm tra quyền ở server (RLS vẫn là lớp chính).
