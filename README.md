@@ -17,6 +17,8 @@
 | Mobile | Capacitor (Android/iOS) |
 | Hosting / tooling | Vercel / pnpm workspaces |
 
+> Kế hoạch triển khai chi tiết (WBS, mốc, quyết định cần chốt): [`docs/WBS.md`](docs/WBS.md).
+
 ## Cấu trúc
 
 ```text
