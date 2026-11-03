@@ -1,0 +1,77 @@
+{
+    "enums": {
+        "stories.status": [
+            "completed",
+            "draft",
+            "hiatus",
+            "ongoing"
+        ],
+        "chapters.status": [
+            "archived",
+            "draft",
+            "published",
+            "scheduled"
+        ],
+        "comments.status": [
+            "deleted",
+            "hidden",
+            "visible"
+        ],
+        "stories.visibility": [
+            "private",
+            "public",
+            "unlisted"
+        ],
+        "content_reports.status": [
+            "dismissed",
+            "pending",
+            "resolved",
+            "reviewing"
+        ],
+        "app_users.account_status": [
+            "active",
+            "deactivated",
+            "suspended"
+        ],
+        "reading_lists.visibility": [
+            "private",
+            "public",
+            "unlisted"
+        ],
+        "chapter_version_blocks.block_type": [
+            "divider",
+            "heading",
+            "image",
+            "paragraph"
+        ],
+        "story_collaborators.collaborator_role": [
+            "co_author",
+            "editor"
+        ]
+    },
+    "maxLengths": {
+        "stories.slug": 120,
+        "chapters.slug": 120,
+        "stories.title": 200,
+        "stories.status": 16,
+        "categories.name": 120,
+        "categories.slug": 80,
+        "chapters.status": 16,
+        "comments.status": 16,
+        "tags.display_name": 100,
+        "stories.visibility": 16,
+        "reading_lists.title": 120,
+        "chapter_drafts.title": 200,
+        "stories.language_code": 12,
+        "app_users.display_name": 100,
+        "chapter_versions.title": 200,
+        "content_reports.reason": 40,
+        "content_reports.status": 20,
+        "app_users.account_status": 16,
+        "notifications.event_type": 40,
+        "outbox_events.event_type": 60,
+        "reading_lists.visibility": 12,
+        "chapter_version_blocks.block_type": 16,
+        "story_collaborators.collaborator_role": 16
+    }
+}

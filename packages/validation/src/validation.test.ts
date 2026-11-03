@@ -1,0 +1,159 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import {
+  ACCOUNT_STATUSES, BLOCK_TYPES, CHAPTER_STATUSES, COLLABORATOR_ROLES, COMMENT_STATUSES, DB_LIMITS,
+  REPORT_STATUSES, STORY_STATUSES, VISIBILITIES, chapterBodySchema, chapterDraftSaveSchema,
+  chapterPublishedPayloadSchema, classifyRpcError, commentCreateSchema, countWords, publishChapterArgsSchema,
+  readingListCreateSchema, reportCreateSchema, scheduleChapterArgsSchema, slugSchema, storyCreateSchema,
+  usernameSchema,
+} from "./index.ts";
+
+type Contract = { enums: Record<string, string[]>; maxLengths: Record<string, number> };
+const contract: Contract = JSON.parse(
+  readFileSync(new URL("./db-contract.generated.json", import.meta.url), "utf8"),
+);
+const sorted = (xs: readonly string[]) => [...xs].sort();
+
+describe("enums match the CHECK constraints of the real schema", () => {
+  const cases: [string, readonly string[]][] = [
+    ["app_users.account_status", ACCOUNT_STATUSES],
+    ["stories.status", STORY_STATUSES],
+    ["stories.visibility", VISIBILITIES],
+    ["reading_lists.visibility", VISIBILITIES],
+    ["chapters.status", CHAPTER_STATUSES],
+    ["chapter_version_blocks.block_type", BLOCK_TYPES],
+    ["story_collaborators.collaborator_role", COLLABORATOR_ROLES],
+    ["comments.status", COMMENT_STATUSES],
+    ["content_reports.status", REPORT_STATUSES],
+  ];
+  it.each(cases)("%s", (column, values) => {
+    expect(contract.enums[column], `${column} missing from contract`).toBeDefined();
+    expect(sorted(values)).toEqual(contract.enums[column]);
+  });
+  it("every CHECK enum in the schema is covered here", () => {
+    expect(Object.keys(contract.enums).sort()).toEqual(cases.map(([c]) => c).sort());
+  });
+});
+
+describe("length limits match the varchar columns", () => {
+  const cases: [string, number][] = [
+    ["app_users.display_name", DB_LIMITS.displayName],
+    ["stories.title", DB_LIMITS.storyTitle],
+    ["stories.slug", DB_LIMITS.storySlug],
+    ["stories.language_code", DB_LIMITS.languageCode],
+    ["chapters.slug", DB_LIMITS.chapterSlug],
+    ["chapter_drafts.title", DB_LIMITS.chapterTitle],
+    ["chapter_versions.title", DB_LIMITS.chapterTitle],
+    ["reading_lists.title", DB_LIMITS.readingListTitle],
+    ["content_reports.reason", DB_LIMITS.reportReason],
+  ];
+  it.each(cases)("%s", (column, max) => expect(contract.maxLengths[column]).toBe(max));
+});
+
+const id = (n: number) => `31000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+
+describe("chapter body", () => {
+  const valid = [
+    { block_id: id(1), type: "heading", text: "Chapter One" },
+    { block_id: id(2), type: "paragraph", text: "The afternoon light spilled across the quiet room.", marks: [{ type: "bold", from: 0, to: 3 }] },
+    { block_id: id(3), type: "image", image_storage_key: "stories/x/cover.png" },
+    { block_id: id(4), type: "divider" },
+  ];
+
+  it("accepts every block type", () => expect(chapterBodySchema.parse(valid)).toHaveLength(4));
+  it("counts words like the RPC (same fixture gives 10)", () => {
+    expect(countWords(chapterBodySchema.parse(valid))).toBe(10);
+    expect(countWords([{ block_id: id(1), type: "paragraph", text: "   " }])).toBe(0);
+  });
+
+  // The same invalid drafts supabase/tests/20_publish.test.sql proves the RPC rejects. The app schema must
+  // reject them too, so the editor never lets a draft reach the server only to be refused.
+  const dupe = id(9);
+  const invalid: [string, unknown][] = [
+    ["empty array", []],
+    ["not an array", { not: "an array" }],
+    ["block_id not a uuid", [{ block_id: "not-a-uuid", type: "paragraph", text: "x" }]],
+    ["block_id missing", [{ type: "paragraph", text: "missing id" }]],
+    ["duplicate block_id", [{ block_id: dupe, type: "paragraph", text: "a" }, { block_id: dupe, type: "paragraph", text: "b" }]],
+    ["unknown type", [{ block_id: dupe, type: "video", text: "a" }]],
+    ["paragraph without text", [{ block_id: dupe, type: "paragraph" }]],
+    ["image without key", [{ block_id: dupe, type: "image" }]],
+    ["marks not an array", [{ block_id: dupe, type: "paragraph", text: "a", marks: "bold" }]],
+  ];
+  it.each(invalid)("rejects: %s", (_name, body) => expect(chapterBodySchema.safeParse(body).success).toBe(false));
+
+  it("is stricter than the RPC on purpose", () => {
+    const no = (b: unknown) => expect(chapterBodySchema.safeParse(b).success).toBe(false);
+    no([{ block_id: dupe, text: "type omitted" }]);
+    no([{ block_id: dupe, type: "paragraph", text: "a", extra: 1 }]);
+    no([{ block_id: dupe, type: "paragraph", text: "abc", marks: [{ type: "bold", from: 0, to: 9 }] }]);
+    no([{ block_id: dupe, type: "paragraph", text: "abc", marks: [{ type: "bold", from: 2, to: 2 }] }]);
+  });
+
+  it("validates a whole draft payload", () => {
+    const draft = { chapter_id: id(100), title: "  Chapter 1 ", body: valid, revision: 1 };
+    expect(chapterDraftSaveSchema.parse(draft).title).toBe("Chapter 1");
+    expect(chapterDraftSaveSchema.safeParse({ ...draft, revision: 0 }).success).toBe(false);
+    expect(chapterDraftSaveSchema.safeParse({ ...draft, title: "   " }).success).toBe(false);
+    expect(chapterDraftSaveSchema.safeParse({ ...draft, title: "x".repeat(201) }).success).toBe(false);
+  });
+});
+
+describe("rpc args", () => {
+  it("publish", () => {
+    expect(publishChapterArgsSchema.parse({ p_chapter_id: id(1) })).toEqual({ p_chapter_id: id(1) });
+    expect(publishChapterArgsSchema.safeParse({ p_chapter_id: "x" }).success).toBe(false);
+    expect(publishChapterArgsSchema.safeParse({ p_chapter_id: id(1), p_expected_revision: 0 }).success).toBe(false);
+  });
+  it("schedule needs an ISO timestamp with offset", () => {
+    const ok = { p_chapter_id: id(1), p_scheduled_for: "2030-01-01T09:00:00+07:00" };
+    expect(scheduleChapterArgsSchema.safeParse(ok).success).toBe(true);
+    expect(scheduleChapterArgsSchema.safeParse({ ...ok, p_scheduled_for: "tomorrow" }).success).toBe(false);
+    expect(scheduleChapterArgsSchema.safeParse({ ...ok, p_scheduled_for: "2030-01-01T09:00:00" }).success).toBe(false);
+  });
+  it("classifies SQLSTATEs", () => {
+    expect(classifyRpcError("PT409")).toBe("conflict");
+    expect(classifyRpcError("PT404")).toBe("notFound");
+    expect(classifyRpcError("42501")).toBe("forbidden");
+    expect(classifyRpcError("22023")).toBe("invalid");
+    expect(classifyRpcError("XX000")).toBe("unknown");
+    expect(classifyRpcError(undefined)).toBe("unknown");
+  });
+});
+
+describe("inputs", () => {
+  it("username follows the DB check", () => {
+    for (const ok of ["abc", "Reader_2", "a".repeat(30)]) expect(usernameSchema.safeParse(ok).success).toBe(true);
+    for (const bad of ["ab", "a".repeat(31), "has space", "dấu", "a-b"]) expect(usernameSchema.safeParse(bad).success).toBe(false);
+  });
+  it("slug", () => {
+    const s = slugSchema(120);
+    for (const ok of ["tale", "chapter-1", "a1-b2-c3"]) expect(s.safeParse(ok).success).toBe(true);
+    for (const bad of ["", "Tale", "a--b", "-a", "a-", "a b"]) expect(s.safeParse(bad).success).toBe(false);
+  });
+  it("story create applies the same defaults as the table", () => {
+    const s = storyCreateSchema.parse({ title: " Tale ", slug: "tale" });
+    expect(s).toMatchObject({ title: "Tale", synopsis: "", language_code: "vi", status: "draft", visibility: "private", is_mature: false });
+    expect(storyCreateSchema.safeParse({ title: "x", slug: "x", owner_id: id(1) }).success).toBe(false); // identity is not client input
+    expect(storyCreateSchema.safeParse({ title: "x", slug: "x", visibility: "secret" }).success).toBe(false);
+  });
+  it("comment", () => {
+    expect(commentCreateSchema.safeParse({ chapter_id: id(1), body: "  " }).success).toBe(false);
+    expect(commentCreateSchema.safeParse({ chapter_id: id(1), body: "x".repeat(10_001) }).success).toBe(false);
+    expect(commentCreateSchema.parse({ chapter_id: id(1), body: " hi " }).body).toBe("hi");
+  });
+  it("report needs exactly one target", () => {
+    const base = { reason: "spam" };
+    expect(reportCreateSchema.safeParse(base).success).toBe(false);
+    expect(reportCreateSchema.safeParse({ ...base, comment_id: id(1) }).success).toBe(true);
+    expect(reportCreateSchema.safeParse({ ...base, comment_id: id(1), story_id: id(2) }).success).toBe(false);
+    expect(reportCreateSchema.safeParse({ comment_id: id(1), reason: "x".repeat(41) }).success).toBe(false);
+  });
+  it("reading list", () => {
+    expect(readingListCreateSchema.parse({ title: "Faves" })).toMatchObject({ description: "", visibility: "private" });
+  });
+  it("notification payload matches what the outbox worker writes", () => {
+    const payload = { story_title: "T", story_slug: "t", chapter_title: "C", chapter_slug: "c", chapter_sort_order: 1 };
+    expect(chapterPublishedPayloadSchema.safeParse(payload).success).toBe(true);
+  });
+});

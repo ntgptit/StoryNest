@@ -84,13 +84,31 @@ Client không ghi trực tiếp trạng thái publish; mỗi lệnh gọi RPC l�
 - Lịch (`pg_cron`, tên job có tiền tố `storynest-`): `publish_due_chapters` và `process_outbox` mỗi phút, `purge_outbox` lúc 03:17 hằng ngày. Migration bật `pg_cron` nếu nền tảng hỗ trợ; nếu không chỉ in NOTICE và bạn cần gọi 3 lệnh đó từ nơi khác (Edge Function cron…). `cron.schedule` theo tên là upsert nên chạy lại migration không nhân đôi job.
 - Giám sát nhanh: `SELECT count(*) FILTER (WHERE failed_at IS NOT NULL) AS dead, count(*) FILTER (WHERE processed_at IS NULL AND failed_at IS NULL) AS pending FROM outbox_events;`
 
+### Type TypeScript và schema Zod
+
+| Package | Nội dung |
+| --- | --- |
+| `@storynest/database` | `database.types.ts` **sinh tự động** từ migration (cùng generator với Supabase CLI, chạy trên DB local, không cần project Supabase hay Docker) + helper `RpcArgs<>`, `RpcReturns<>`. |
+| `@storynest/validation` | Zod: enum, giới hạn độ dài, `chapterBodySchema` (hợp đồng `chapter_drafts.body`), tham số RPC, payload ghi (story, chapter, draft, comment, reading list, report), payload notification, `classifyRpcError`. |
+
+Lệnh (từ thư mục gốc): `pnpm install`, `pnpm db:types` (sinh lại), `pnpm db:types:check` (CI: báo lỗi nếu file đã commit bị cũ), `pnpm typecheck`, `pnpm test`.
+
+Chống lệch giữa DB và code (khi migration đổi, một trong các bước này sẽ fail):
+- `db-contract.generated.json` (cũng được sinh ra) chứa giá trị CHECK-enum và độ dài varchar thật của schema; test Zod so sánh với nó, vì type sinh ra chỉ coi các cột đó là `string`.
+- `db-conformance.ts` ép kiểu: output của Zod phải gán được vào `TablesInsert<...>` và tham số RPC của `Database`, nên đổi tên cột/tham số sẽ làm `pnpm typecheck` fail.
+- `chapterBodySchema` chặt hơn RPC có chủ đích (bắt buộc `type`, cấm key lạ, giới hạn số block/độ dài, `marks` phải nằm trong text). Các bản nháp lỗi mà test SQL chứng minh RPC từ chối cũng được test Zod từ chối; hai danh sách này đang được giữ đồng bộ bằng tay.
+- Payload ghi **không** có cột định danh (`owner_id`, `author_id`...): caller thêm `auth.uid()`, RLS từ chối giá trị khác. Type `Insert` của `Database` mô tả bảng chứ không mô tả quyền của API role.
+
+Giới hạn tầng ứng dụng (DB không giới hạn): `APP_LIMITS` trong `limits.ts` (bio, synopsis, số block, độ dài text...) là giá trị tạm, chỉnh được.
+
 ### Việc còn lại
 
-1. **Push notification** (FCM/APNs cho Capacitor): cần Edge Function đọc `notifications` mới hoặc thêm event outbox riêng; hiện chỉ có notification trong ứng dụng.
-2. **Thêm handler outbox** khi có tính năng mới (reply/like comment, follow tác giả, kiểm duyệt).
-3. **Kiểm tra `image_storage_key`**: RPC chỉ kiểm tra khác rỗng; cần chốt quy ước đường dẫn Supabase Storage + policy bucket.
-4. **Đếm lượt đọc** có dedupe, cập nhật `story_stats`/`chapter_stats` bất đồng bộ; archive chapter.
-5. **Tags**: hiện chỉ `service_role` tạo được tag mới.
-6. **Comment trên truyện của mình**: tác giả chưa ẩn/xóa được comment của người khác (hiện chỉ moderator).
-7. **Trên Supabase thật**: kiểm tra `citext`/`gin_trgm_ops` khi extension nằm ở schema `extensions`, xác nhận `pg_cron` bật và các job chạy (`select * from cron.job_run_details`), chạy `get_advisors`.
-8. **Sinh type TypeScript** vào `packages/database` và schema Zod cho `chapter_drafts.body` trong `packages/validation`.
+1. **Khởi tạo `apps/web`** (Next.js, Tailwind v4, shadcn/ui) và `packages/design-tokens`; dùng `@storynest/database` cho client Supabase có type và `@storynest/validation` cho form/editor.
+2. **Chuyển đổi Tiptap JSON <-> `chapter_drafts.body`** (và đếm từ bằng `countWords`) khi làm editor.
+3. **CI**: chạy `pnpm db:verify`, `pnpm db:types:check`, `pnpm typecheck`, `pnpm test` (cần PostgreSQL server trên runner).
+4. **Push notification** (FCM/APNs cho Capacitor): cần Edge Function hoặc event outbox riêng.
+5. **Thêm handler outbox** khi có tính năng mới (reply/like comment, follow tác giả, kiểm duyệt).
+6. **Kiểm tra `image_storage_key`**: RPC chỉ kiểm tra khác rỗng; cần chốt quy ước đường dẫn Supabase Storage + policy bucket.
+7. **Đếm lượt đọc** có dedupe, cập nhật `story_stats`/`chapter_stats` bất đồng bộ; archive chapter.
+8. **Tags**: hiện chỉ `service_role` tạo được tag mới. **Comment trên truyện của mình**: tác giả chưa ẩn/xóa được comment của người khác (hiện chỉ moderator).
+9. **Trên Supabase thật**: kiểm tra `citext`/`gin_trgm_ops` khi extension nằm ở schema `extensions`, xác nhận `pg_cron` bật và job chạy (`select * from cron.job_run_details`), chạy `get_advisors`, và đối chiếu type sinh ra với `generate_typescript_types` của project thật.
