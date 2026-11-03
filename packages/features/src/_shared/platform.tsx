@@ -10,6 +10,8 @@ export interface Navigation {
   push(href: string): void;
   replace(href: string): void;
   back(): void;
+  /** Re-render server-provided data after a session change (router.refresh on Next; no-op where nothing is server-rendered). */
+  refresh(): void;
   /** Current path without origin, e.g. "/story/123/my-story". Re-renders the caller on navigation. */
   pathname: string;
 }
@@ -28,6 +30,11 @@ export interface PlatformAdapter {
   Link: ComponentType<PlatformLinkProps>;
   /** A hook, called as `adapter.useNavigation()` from a component. */
   useNavigation: () => Navigation;
+  /**
+   * Public base URL of the app, used to build links that leave the app and come back: email confirmation, password
+   * reset, OAuth. Web returns window.location.origin; the Capacitor shell returns its universal-link domain.
+   */
+  appOrigin(): string;
   /** Open a URL outside the app (system browser / in-app browser on mobile). */
   openExternal(url: string): void;
 }

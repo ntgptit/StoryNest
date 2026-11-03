@@ -16,6 +16,7 @@
     "@storynest/design-tokens": "workspace:*",
     "@storynest/features": "workspace:*",
     "@storynest/ui": "workspace:*",
+    "@storynest/utils": "workspace:*",
     "@storynest/validation": "workspace:*",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",

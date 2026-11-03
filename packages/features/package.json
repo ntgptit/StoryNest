@@ -11,12 +11,14 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@hookform/resolvers": "7.0.2",
     "@storynest/database": "workspace:*",
     "@storynest/ui": "workspace:*",
     "@storynest/utils": "workspace:*",
     "@storynest/validation": "workspace:*",
     "@supabase/supabase-js": "2.118.0",
     "@tanstack/react-query": "5.105.3",
+    "react-hook-form": "7.91.0",
     "zod": "4.6.7"
   },
   "peerDependencies": {

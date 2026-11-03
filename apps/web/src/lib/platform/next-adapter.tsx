@@ -15,6 +15,7 @@ function useNextNavigation() {
     push: (href: string) => router.push(href),
     replace: (href: string) => router.replace(href),
     back: () => router.back(),
+    refresh: () => router.refresh(),
     pathname,
   };
 }
@@ -25,6 +26,7 @@ export const nextPlatformAdapter: PlatformAdapter = {
   isNative: false,
   Link: NextLink,
   useNavigation: useNextNavigation,
+  appOrigin: () => window.location.origin,
   openExternal(url) {
     // noopener: the opened page must not get a handle to this window.
     window.open(url, "_blank", "noopener,noreferrer");

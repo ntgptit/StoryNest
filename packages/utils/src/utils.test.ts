@@ -11,6 +11,7 @@ import {
   isUuid,
   newId,
   ok,
+  safeRedirectPath,
   slugify,
   unwrapOr,
 } from "./index.ts";
@@ -183,5 +184,35 @@ describe("debounce", () => {
     d.cancel();
     vi.advanceTimersByTime(500);
     expect(fn).not.toHaveBeenCalled();
+  });
+});
+
+describe("safeRedirectPath", () => {
+  it.each([
+    ["/", "/"],
+    ["/library", "/library"],
+    ["/story/1/a-b?tab=chapters#c2", "/story/1/a-b?tab=chapters#c2"],
+    ["/path with space", "/path%20with%20space"],
+  ])("accepts same-site path %j", (input, expected) => expect(safeRedirectPath(input)).toBe(expected));
+
+  it.each([
+    ["//evil.com"],
+    ["//evil.com/path"],
+    ["https://evil.com"],
+    ["http://evil.com/x"],
+    ["javascript:alert(1)"],
+    ["evil.com"],
+    ["/\\evil.com"],
+    ["/\\/evil.com"],
+    ["\\\\evil.com"],
+    ["/ok\nLocation: evil"],
+    ["/\t/evil.com"],
+    ["///evil.com"],
+    [""],
+  ])("rejects %j", (input) => expect(safeRedirectPath(input, "/home")).toBe("/home"));
+
+  it("rejects null, undefined and uses the fallback", () => {
+    expect(safeRedirectPath(null)).toBe("/");
+    expect(safeRedirectPath(undefined, "/library")).toBe("/library");
   });
 });

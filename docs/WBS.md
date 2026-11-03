@@ -134,7 +134,7 @@ Không có tài khoản thì không ghi được gì, nên đi trước. DB đã
 
 | WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
 | --- | --- | --- | --- | --- |
-| **1.1** ⬜ | Đăng ký / đăng nhập email + mật khẩu, Google OAuth; xác minh email; quên/đặt lại mật khẩu; callback route | 0.0, 0.3, 0.5 | 3 | Lỗi hiển thị đúng (sai mật khẩu, email trùng, link hết hạn); mọi form dùng Zod |
+| **1.1** 🟡 | Đăng ký / đăng nhập email + mật khẩu, Google OAuth; xác minh email; quên/đặt lại mật khẩu; callback route _Đã làm (email + mật khẩu): đăng ký (xác nhận email), đăng nhập, quên và đặt lại mật khẩu, `/auth/callback` (PKCE, `next` luôn qua `safeRedirectPath`), mã lỗi Supabase thật hiển thị đúng. **Chưa làm: Google OAuth** (cần client ID/secret). Kiểm chứng đăng nhập thành công + `handle_new_user` trên Supabase thật cần một tài khoản test và SMTP, sẽ làm ở WP 0.7._ | 0.0, 0.3, 0.5 | 3 | Lỗi hiển thị đúng (sai mật khẩu, email trùng, link hết hạn); mọi form dùng Zod |
 | **1.2** ⬜ | Đăng xuất; guard route phía server (redirect có `next`); `AuthProvider` đồng bộ phiên giữa tab | 1.1 | 1.5 | Truy cập `/studio` khi chưa đăng nhập → login rồi quay lại đúng trang |
 | **1.3** ⬜ | `AppShell` biết trạng thái đăng nhập (menu người dùng, nút Đăng nhập) | 0.5, 1.2 | 1 | |
 | **1.4** ⬜ | Hồ sơ cá nhân: xem/sửa `username`, `display_name`, `bio` (kiểm tra trùng username, thông báo lỗi rõ) | 1.3 | 1.5 | RLS cấm sửa `account_status` đã có test; UI không gửi cột đó |

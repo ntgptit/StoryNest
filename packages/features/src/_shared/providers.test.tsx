@@ -59,7 +59,8 @@ describe("PlatformProvider", () => {
         {children}
       </a>
     ),
-    useNavigation: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn(), pathname: "/story/1" }),
+    useNavigation: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn(), refresh: vi.fn(), pathname: "/story/1" }),
+    appOrigin: () => "https://app.test",
     openExternal: vi.fn(),
     ...overrides,
   });

@@ -9,11 +9,12 @@ import { APP_LIMITS, DB_LIMITS } from "./limits.ts";
 const uuid = z.uuid();
 const nonBlank = (max: number) => z.string().trim().min(1).max(max);
 
+/** Message code "username_invalid" for every rule, so one UI string covers them. */
 export const usernameSchema = z
   .string()
-  .min(DB_LIMITS.username.min)
-  .max(DB_LIMITS.username.max)
-  .regex(/^[A-Za-z0-9_]+$/, "letters, digits and underscore only");
+  .min(DB_LIMITS.username.min, { message: "username_invalid" })
+  .max(DB_LIMITS.username.max, { message: "username_invalid" })
+  .regex(/^[A-Za-z0-9_]+$/, { message: "username_invalid" });
 
 /** URL slug. Stricter than the DB (which only forbids blank): lowercase words joined by single hyphens. */
 export const slugSchema = (max: number) =>

@@ -52,6 +52,7 @@ describe("toAppError: other sources", () => {
     expect(toAppError(auth("AuthApiError", 400)).kind).toBe("invalid"); // wrong password / email taken
     expect(toAppError(auth("AuthApiError", 422)).kind).toBe("invalid");
     expect(toAppError(auth("AuthApiError", 401)).kind).toBe("unauthenticated");
+    expect(toAppError(auth("AuthApiError", 429)).kind).toBe("rateLimited");
     expect(toAppError(auth("AuthSessionMissingError", 400)).kind).toBe("invalid");
     expect(toAppError(auth("AuthRetryableFetchError", 0)).kind).toBe("network");
   });
@@ -61,6 +62,7 @@ describe("toAppError: other sources", () => {
     expect(toAppError({ status: 403, message: "m" }).kind).toBe("forbidden");
     expect(toAppError({ status: 404, message: "m" }).kind).toBe("notFound");
     expect(toAppError({ status: 409, message: "m" }).kind).toBe("conflict");
+    expect(toAppError({ status: 429, message: "m" }).kind).toBe("rateLimited");
     expect(toAppError({ status: 500, message: "m" }).kind).toBe("unknown");
   });
 
@@ -80,7 +82,7 @@ describe("toAppError: other sources", () => {
 describe("helpers", () => {
   it("errorMessageKey / isPermanent", () => {
     expect(errorMessageKey("notFound")).toBe("errors.notFound");
-    for (const kind of ["unauthenticated", "forbidden", "notFound", "conflict", "invalid"] as const) {
+    for (const kind of ["unauthenticated", "forbidden", "notFound", "conflict", "invalid", "rateLimited"] as const) {
       expect(isPermanent(kind)).toBe(true);
     }
     expect(isPermanent("network")).toBe(false);
