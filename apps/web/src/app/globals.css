@@ -1,0 +1,4 @@
+@import "@storynest/design-tokens/tokens.css";
+
+/* Tailwind only scans this app by default; the shared components live in a sibling package. */
+@source "../../../../packages/ui/src";

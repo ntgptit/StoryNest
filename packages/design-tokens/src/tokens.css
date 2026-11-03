@@ -1,0 +1,141 @@
+/*
+ * StoryNest design tokens (Tailwind CSS v4, CSS-first). The only place colours, radius and fonts are defined.
+ * Screens and components must use the semantic utilities (bg-background, text-muted-foreground, rounded-lg...)
+ * and never raw colours, hex values or arbitrary spacing.
+ *
+ * Theming: every colour is defined once with light-dark(); the active scheme comes from `color-scheme`.
+ * Default = follow the OS. Force a theme by adding class "light" or "dark" to <html>.
+ * Names follow shadcn/ui so components added with the shadcn CLI work unchanged.
+ */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* `dark:` applies when .dark is set, or when following an OS dark scheme and .light is not forced. */
+@custom-variant dark {
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:not(.light, .light *, .dark, .dark *)) {
+      @slot;
+    }
+  }
+}
+
+:root {
+  color-scheme: light dark;
+
+  --radius: 0.625rem;
+
+  --background: light-dark(oklch(0.99 0.006 85), oklch(0.18 0.012 60));
+  --foreground: light-dark(oklch(0.22 0.02 60), oklch(0.96 0.008 85));
+  --card: light-dark(oklch(1 0 0), oklch(0.22 0.014 60));
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+
+  --primary: light-dark(oklch(0.56 0.15 45), oklch(0.72 0.14 50));
+  --primary-foreground: light-dark(oklch(0.99 0.006 85), oklch(0.2 0.02 50));
+  --secondary: light-dark(oklch(0.955 0.012 80), oklch(0.27 0.014 60));
+  --secondary-foreground: light-dark(oklch(0.27 0.02 60), oklch(0.96 0.008 85));
+  --muted: light-dark(oklch(0.955 0.01 80), oklch(0.27 0.012 60));
+  --muted-foreground: light-dark(oklch(0.48 0.02 60), oklch(0.72 0.015 70));
+  --accent: light-dark(oklch(0.94 0.03 70), oklch(0.31 0.03 55));
+  --accent-foreground: light-dark(oklch(0.27 0.03 55), oklch(0.96 0.008 85));
+  --destructive: light-dark(oklch(0.577 0.215 27), oklch(0.7 0.19 22));
+
+  --border: light-dark(oklch(0.9 0.012 80), oklch(1 0 0 / 12%));
+  --input: light-dark(oklch(0.9 0.012 80), oklch(1 0 0 / 16%));
+  --ring: light-dark(oklch(0.56 0.15 45 / 50%), oklch(0.72 0.14 50 / 50%));
+
+  --chart-1: light-dark(oklch(0.56 0.15 45), oklch(0.72 0.14 50));
+  --chart-2: light-dark(oklch(0.6 0.1 185), oklch(0.7 0.11 185));
+  --chart-3: light-dark(oklch(0.4 0.07 230), oklch(0.62 0.1 230));
+  --chart-4: light-dark(oklch(0.83 0.16 85), oklch(0.82 0.15 85));
+  --chart-5: light-dark(oklch(0.77 0.17 65), oklch(0.74 0.16 65));
+
+  --sidebar: light-dark(oklch(0.975 0.008 85), oklch(0.21 0.013 60));
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  /* Reading experience: width is measured in characters so it scales with the reader's font size. */
+  --reader-measure: 66ch;
+  --reader-line-height: 1.75;
+
+  /* Minimum interactive size on touch devices (WCAG 2.5.8 target size, platform guidelines ~44px). */
+  --size-touch: 2.75rem;
+}
+:root.light { color-scheme: light; }
+:root.dark { color-scheme: dark; }
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* System stacks: no build-time font download, works offline inside the Capacitor shell. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-reader: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+}
+
+/* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
+@utility pt-safe { padding-top: env(safe-area-inset-top); }
+@utility pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+@utility px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+@utility touch-target {
+  min-height: var(--size-touch);
+  min-width: var(--size-touch);
+}
+
+/* Chapter text container: comfortable measure and rhythm. */
+@utility reader-prose {
+  max-width: var(--reader-measure);
+  font-family: var(--font-reader);
+  line-height: var(--reader-line-height);
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground font-sans antialiased; }
+}

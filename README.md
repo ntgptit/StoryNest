@@ -101,14 +101,31 @@ Chống lệch giữa DB và code (khi migration đổi, một trong các bướ
 
 Giới hạn tầng ứng dụng (DB không giới hạn): `APP_LIMITS` trong `limits.ts` (bio, synopsis, số block, độ dài text...) là giá trị tạm, chỉnh được.
 
+### Web (`apps/web`)
+
+Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, TypeScript strict.
+
+```bash
+pnpm install
+cp apps/web/.env.example apps/web/.env.local   # điền URL + publishable key của Supabase
+pnpm --filter @storynest/web dev                # http://localhost:3000
+pnpm --filter @storynest/web build
+```
+
+- **Design tokens** (`@storynest/design-tokens/tokens.css`): nơi duy nhất định nghĩa màu, radius, font. Mỗi màu chỉ khai báo một lần bằng `light-dark()`; mặc định theo hệ điều hành, ép bằng class `light`/`dark` trên `<html>`. Tên biến theo shadcn/ui nên component thêm bằng shadcn CLI dùng được ngay. Có sẵn utility `pt-safe`/`pb-safe`/`px-safe` (safe area của Capacitor), `touch-target` (tối thiểu 44px), `reader-prose` (độ rộng đọc ~66ch). Màn hình nghiệp vụ chỉ dùng utility ngữ nghĩa (`bg-background`, `text-muted-foreground`...), không dùng màu thô.
+- **`@storynest/ui`**: shadcn/ui (kiểu new-york) và `cn`; hiện có `Button` (thêm biến thể `size="touch"`). `components.json` trỏ CSS vào package token, nên `shadcn add <component>` chạy trong `packages/ui` sẽ ghi vào đúng chỗ. Web import dạng `@storynest/ui/components/button`.
+- **Supabase**: `lib/supabase/{client,server,session}.ts` có type `Database`; `src/proxy.ts` (Next 16 đổi tên từ `middleware`) làm mới cookie phiên bằng `getClaims()` (kiểm chữ ký JWT) và áp header `Cache-Control` từ `@supabase/ssr`. Thiếu biến môi trường: dev vẫn chạy UI, **production trả 500** thay vì lặng lẽ bỏ qua xác thực.
+- Font dùng system stack (không tải font lúc build, chạy offline trong Capacitor). Chưa có ESLint (`next lint` đã bị gỡ ở Next 16).
+
 ### Việc còn lại
 
-1. **Khởi tạo `apps/web`** (Next.js, Tailwind v4, shadcn/ui) và `packages/design-tokens`; dùng `@storynest/database` cho client Supabase có type và `@storynest/validation` cho form/editor.
-2. **Chuyển đổi Tiptap JSON <-> `chapter_drafts.body`** (và đếm từ bằng `countWords`) khi làm editor.
-3. **CI**: chạy `pnpm db:verify`, `pnpm db:types:check`, `pnpm typecheck`, `pnpm test` (cần PostgreSQL server trên runner).
-4. **Push notification** (FCM/APNs cho Capacitor): cần Edge Function hoặc event outbox riêng.
-5. **Thêm handler outbox** khi có tính năng mới (reply/like comment, follow tác giả, kiểm duyệt).
-6. **Kiểm tra `image_storage_key`**: RPC chỉ kiểm tra khác rỗng; cần chốt quy ước đường dẫn Supabase Storage + policy bucket.
-7. **Đếm lượt đọc** có dedupe, cập nhật `story_stats`/`chapter_stats` bất đồng bộ; archive chapter.
-8. **Tags**: hiện chỉ `service_role` tạo được tag mới. **Comment trên truyện của mình**: tác giả chưa ẩn/xóa được comment của người khác (hiện chỉ moderator).
-9. **Trên Supabase thật**: kiểm tra `citext`/`gin_trgm_ops` khi extension nằm ở schema `extensions`, xác nhận `pg_cron` bật và job chạy (`select * from cron.job_run_details`), chạy `get_advisors`, và đối chiếu type sinh ra với `generate_typescript_types` của project thật.
+1. **Auth UI**: đăng nhập/đăng ký (Supabase Auth), guard route, trang hồ sơ; bảo vệ route bằng kiểm tra quyền ở server (RLS vẫn là lớp chính).
+2. **Shared components** trong `packages/ui`: `StoryCard`, `ChapterList`, `ReaderToolbar`, `ReadingProgress`, `CommentThread`, bottom navigation; thêm component shadcn khi cần.
+3. **Trang đọc** `/{story}/{chapter}` (SSR + SEO), danh sách khám phá, TanStack Query/Zustand khi có nhu cầu thật.
+4. **ESLint** (flat config) và **CI**: `pnpm db:verify`, `pnpm db:types:check`, `pnpm typecheck`, `pnpm test`, `pnpm --filter @storynest/web build` (cần PostgreSQL server trên runner).
+5. **`apps/mobile`** (Capacitor static shell) và chiến lược export tĩnh cho phần không phụ thuộc server.
+6. **Chuyển đổi Tiptap JSON <-> `chapter_drafts.body`** (và đếm từ bằng `countWords`) khi làm editor.
+7. **Push notification** (FCM/APNs): cần Edge Function hoặc event outbox riêng; thêm handler outbox khi có tính năng mới.
+8. **Kiểm tra `image_storage_key`**: cần chốt quy ước đường dẫn Supabase Storage + policy bucket. **Đếm lượt đọc** có dedupe và archive chapter.
+9. **Tags**: hiện chỉ `service_role` tạo được tag mới. **Comment trên truyện của mình**: tác giả chưa ẩn/xóa được comment của người khác.
+10. **Trên Supabase thật**: kiểm tra `citext`/`gin_trgm_ops` khi extension nằm ở schema `extensions`, xác nhận `pg_cron` bật và job chạy, chạy `get_advisors`, đối chiếu type với `generate_typescript_types`.
