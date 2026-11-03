@@ -43,6 +43,9 @@
   --accent: light-dark(oklch(0.94 0.03 70), oklch(0.31 0.03 55));
   --accent-foreground: light-dark(oklch(0.27 0.03 55), oklch(0.96 0.008 85));
   --destructive: light-dark(oklch(0.577 0.215 27), oklch(0.7 0.19 22));
+  --destructive-foreground: oklch(0.985 0.005 85);
+  /* Dim layer behind dialogs and sheets: black in both schemes. */
+  --scrim: oklch(0 0 0 / 50%);
 
   --border: light-dark(oklch(0.9 0.012 80), oklch(1 0 0 / 12%));
   --input: light-dark(oklch(0.9 0.012 80), oklch(1 0 0 / 16%));
@@ -93,6 +96,8 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-scrim: var(--scrim);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

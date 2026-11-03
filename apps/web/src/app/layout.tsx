@@ -14,8 +14,8 @@ export const viewport: Viewport = {
   viewportFit: "cover", // required for the safe-area utilities (pt-safe, pb-safe) to have effect
   // The browser UI colour must be a literal; keep these in sync with --background in design-tokens.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fcfaf6" },
-    { media: "(prefers-color-scheme: dark)", color: "#1b1815" },
+    { media: "(prefers-color-scheme: light)", color: "#fcfaf6" }, // token-check-ignore: meta tag needs a literal
+    { media: "(prefers-color-scheme: dark)", color: "#1b1815" }, // token-check-ignore: meta tag needs a literal
   ],
 };
 

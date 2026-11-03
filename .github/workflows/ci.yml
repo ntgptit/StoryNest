@@ -25,6 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
+      - run: pnpm check:tokens
       - run: pnpm typecheck
       - run: pnpm test
       # Supabase env is only needed at request time, so the build does not require secrets.
