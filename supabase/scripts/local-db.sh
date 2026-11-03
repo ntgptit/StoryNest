@@ -3,7 +3,7 @@
 # applies every migration. Cleans up on exit. Requires PostgreSQL server binaries and the pgcrypto, citext and
 # pg_trgm extensions.
 #
-# After `start_local_db`:  $WORK (socket dir), $PORT, $LOCAL_DB_NAME, and `lpsql [psql args]` are available.
+# After `start_local_db`:  $WORK (socket dir), $PORT, $LOCAL_DB_NAME, $LOCAL_DB_USER and `lpsql [psql args]` are available.
 #   KEEP=1 keeps the work directory after exit (debugging).
 set -euo pipefail
 
@@ -16,6 +16,8 @@ WORK=""
 # Postgres refuses to run as root; fall back to the postgres OS user when needed.
 RUN=()
 [ "$(id -u)" = 0 ] && RUN=(su postgres -c)
+# initdb makes the OS user running the server the superuser: "postgres" when we su to it, otherwise ourselves (CI).
+if [ ${#RUN[@]} -gt 0 ]; then LOCAL_DB_USER=postgres; else LOCAL_DB_USER="$(id -un)"; fi
 run() { if [ ${#RUN[@]} -gt 0 ]; then "${RUN[@]}" "$*"; else bash -c "$*"; fi; }
 lpsql() { run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -v ON_ERROR_STOP=1 -q $*"; }
 
