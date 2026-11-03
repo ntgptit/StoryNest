@@ -119,6 +119,13 @@ pnpm --filter @storynest/web build
 - **Supabase**: `lib/supabase/{client,server,session}.ts` có type `Database`; `src/proxy.ts` (Next 16 đổi tên từ `middleware`) làm mới cookie phiên bằng `getClaims()` (kiểm chữ ký JWT) và áp header `Cache-Control` từ `@supabase/ssr`. Thiếu biến môi trường: dev vẫn chạy UI, **production trả 500** thay vì lặng lẽ bỏ qua xác thực.
 - Font dùng system stack (không tải font lúc build, chạy offline trong Capacitor). Chưa có ESLint (`next lint` đã bị gỡ ở Next 16).
 
+### Dự án Supabase dev và hardening
+
+- Project `storynest-dev` (ref `kqhztlatrizexskwmpsn`, ap-southeast-1). Điền URL + publishable key vào `apps/web/.env.local` (xem `.env.example`; không commit).
+- `*_hardening_and_indexes.sql` xử lý các cảnh báo advisor lần đầu: `search_path` cố định cho hàm trigger, các index khóa ngoại thật sự cần (có lý do từng index trong đầu file), gộp hai policy UPDATE của `comments` thành một. `40_hardening.test.sql` giữ các điều này không thụt lùi.
+- Lịch sử migration trên project được áp theo từng phần nhỏ (do popup xác nhận của công cụ Supabase với lệnh `DROP`), nên tên/số lượng migration ở đó khác thư mục `supabase/migrations`; trạng thái cuối cùng là một.
+- Việc còn mở về hạ tầng: bật Google OAuth + Redirect URL, tạo Storage bucket, chuyển các hàm helper `can_*`/`story_role` ra schema không expose.
+
 ### Việc còn lại
 
 1. **Auth UI**: đăng nhập/đăng ký (Supabase Auth), guard route, trang hồ sơ; bảo vệ route bằng kiểm tra quyền ở server (RLS vẫn là lớp chính).
