@@ -1123,16 +1123,9 @@ export type Database = {
       can_edit_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_story: { Args: { p_story_id: string }; Returns: boolean }
-      dearmor: { Args: { "": string }; Returns: string }
-      gen_random_uuid: { Args: Record<PropertyKey, never>; Returns: string }
-      gen_salt: { Args: { "": string }; Returns: string }
       is_active_account: { Args: Record<PropertyKey, never>; Returns: boolean }
       is_live_version: { Args: { p_version_id: string }; Returns: boolean }
       is_moderator: { Args: Record<PropertyKey, never>; Returns: boolean }
-      pgp_armor_headers: {
-        Args: { "": string }
-        Returns: Record<string, unknown>[]
-      }
       process_outbox: { Args: { p_limit?: number }; Returns: number }
       publish_chapter: {
         Args: { p_chapter_id: string; p_expected_revision?: number }
@@ -1148,8 +1141,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      show_limit: { Args: Record<PropertyKey, never>; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       story_role: { Args: { p_story_id: string }; Returns: string }
       unpublish_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
     }
