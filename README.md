@@ -17,6 +17,8 @@
 | Mobile | Capacitor (Android/iOS) |
 | Hosting / tooling | Vercel / pnpm workspaces |
 
+> Kế hoạch triển khai chi tiết (WBS, mốc, quyết định cần chốt): [`docs/WBS.md`](docs/WBS.md).
+
 ## Cấu trúc
 
 ```text
@@ -44,12 +46,103 @@ supabase/functions    Edge functions
 Schema nằm ở `supabase/migrations/20261103000000_init_schema.sql` (25 bảng, PostgreSQL 15+).
 Kiểm chứng migration trên cluster PostgreSQL tạm: `pnpm db:verify`.
 
-### Việc còn lại trước khi dùng schema trên Supabase
+### Auth + RLS (`20261103000100_auth_and_rls.sql`)
 
-Schema gốc cố ý chưa có phần authorization; các mục dưới là quyết định cần chốt, chưa được triển khai:
+- `app_users.id` tham chiếu `auth.users(id)`; trigger `on_auth_user_created` tự tạo profile (username lấy từ metadata/email, chuẩn hóa và chống trùng).
+- RLS bật trên cả 25 bảng; quyền của `anon`/`authenticated` bị thu hồi rồi cấp lại theo bảng/cột. Thiếu policy hoặc grant nghĩa là bị từ chối.
+- Client **không** ghi trực tiếp: `chapters.status/published_version_id`, `chapter_versions`, `chapter_version_blocks`, stats, notifications, categories/tags, `app_users.account_status`. Các thao tác này đi qua `service_role` hoặc RPC.
+- Moderator được xác định bằng JWT claim `app_metadata.role = 'moderator'` (chỉ server đặt được).
+- Story `unlisted` đọc được bởi bất kỳ ai biết id/slug; truy vấn discovery phải lọc `visibility = 'public'`.
+- Xóa tài khoản đi qua deactivation, không `DELETE` trên `auth.users` (đang bị `stories.owner_id ON DELETE RESTRICT` chặn).
 
-1. **Liên kết `app_users.id` với `auth.users(id)`** và tạo profile bằng trigger khi đăng ký.
-2. **RLS cho mọi bảng trong `public`** (Supabase expose schema này qua API). Hiện chưa bật RLS nên nếu apply lên project thật, dữ liệu sẽ truy cập được bằng anon key.
-3. **Publishing transaction** (xem ghi chú cuối file migration) nên là một RPC/Edge Function chạy trong một transaction, không để client tự ghép nhiều bước.
-4. **Đếm lượt đọc** qua event có dedupe + job bất đồng bộ, không increment mỗi lần refresh.
-5. Chốt extension: `pgcrypto`, `citext`, `pg_trgm` (Supabase đặt extension ở schema `extensions`; cần kiểm tra `gin_trgm_ops`/`citext` resolve đúng khi apply).
+Kiểm chứng: `pnpm db:verify` nạp shim `auth`/roles (`supabase/scripts/supabase-shim.sql`, chỉ dùng local), áp mọi migration rồi chạy `supabase/tests/*.sql`.
+Test mới chạy trên PostgreSQL thuần với shim, **chưa** chạy trên Supabase thật.
+
+### Publish chapter (`20261103000200_publish_chapter_rpc.sql`)
+
+Client không ghi trực tiếp trạng thái publish; mỗi lệnh gọi RPC là một transaction:
+
+| RPC | Quyền | Việc làm |
+| --- | --- | --- |
+| `publish_chapter(chapter_id, expected_revision?)` | owner / co_author / editor | Validate draft → snapshot version + blocks (bất biến) → trỏ `published_version_id` → ghi outbox. Trả về version id. |
+| `schedule_chapter(chapter_id, scheduled_for, expected_revision?)` | như trên | Validate draft, đặt `status='scheduled'`. Snapshot được chụp từ draft **tại thời điểm đến hạn**. |
+| `unpublish_chapter(chapter_id)` | owner / co_author | Về `draft` (hoặc hủy lịch). Giữ version và `first_published_at`. |
+| `publish_due_chapters(limit?)` | chỉ `service_role` | Publish các chapter đến hạn; lỗi một chapter chỉ log WARNING và thử lại ở lần chạy sau. |
+
+- Lỗi (SQLSTATE): `42501` không được phép, `PT404` không tìm thấy (kể cả khi không có quyền, để không lộ sự tồn tại), `PT409` xung đột (revision cũ, sai trạng thái), `22023` draft/tham số không hợp lệ. PostgREST map `PT404`/`PT409` sang HTTP 404/409.
+- `expected_revision` là optimistic lock: truyền `chapter_drafts.revision` client đang giữ để tránh publish nhầm bản đã bị thay đổi, đồng thời chống bấm đúp.
+- Publish lần đầu: story `draft` chuyển sang `ongoing`, tạo `chapter_stats`/`story_stats` nếu chưa có, ghi sự kiện `chapter.published` vào `outbox_events` (chỉ một lần cho mỗi chapter; publish lại bản sửa không báo lại).
+- Hợp đồng `chapter_drafts.body`: xem đầu file migration. `chapter_blocks` thiếu sẽ được tạo trong RPC; block id thuộc chapter khác bị từ chối.
+- Migration này cũng sửa trigger `deny_published_block_mutation` (tham chiếu bảng không có schema nên vỡ khi `search_path` rỗng).
+- Chạy job định kỳ bằng `pg_cron` (`select public.publish_due_chapters();`) hoặc Edge Function dùng service role. **Chưa** lên lịch.
+
+### Outbox worker + cron (`20261103000300_outbox_worker_and_cron.sql`)
+
+- `process_outbox(limit?)` (chỉ `service_role`): lấy sự kiện chưa xử lý bằng `FOR UPDATE SKIP LOCKED`, nên nhiều worker chạy song song vẫn an toàn. Mỗi sự kiện chạy trong subtransaction riêng: một sự kiện lỗi không chặn hàng đợi.
+- Retry theo backoff lũy thừa (2, 4, 8… phút, tối đa 256 phút); sau 5 lần lỗi sự kiện bị đánh dấu `failed_at` (dead letter) kèm `last_error`. Sự kiện lạ (typo) vào dead letter ngay sau 5 lần thay vì lặp mãi. Đưa lại hàng đợi sau khi sửa nguyên nhân:
+  `UPDATE outbox_events SET failed_at = NULL, attempts = 0, available_at = now() WHERE id = '...';`
+- Giao hàng *at-least-once*; handler phải idempotent. `chapter.published` tạo notification `chapter_published` cho mọi follower đang `active` của story (trừ người publish); `dedupe_key` theo từng người nhận nên replay không tạo bản trùng. Nếu chapter đã bị unpublish/xóa trước khi xử lý thì không gửi gì.
+- `purge_outbox(retention?)`: xóa sự kiện đã xử lý quá 14 ngày; dead letter được giữ lại.
+- Lịch (`pg_cron`, tên job có tiền tố `storynest-`): `publish_due_chapters` và `process_outbox` mỗi phút, `purge_outbox` lúc 03:17 hằng ngày. Migration bật `pg_cron` nếu nền tảng hỗ trợ; nếu không chỉ in NOTICE và bạn cần gọi 3 lệnh đó từ nơi khác (Edge Function cron…). `cron.schedule` theo tên là upsert nên chạy lại migration không nhân đôi job.
+- Giám sát nhanh: `SELECT count(*) FILTER (WHERE failed_at IS NOT NULL) AS dead, count(*) FILTER (WHERE processed_at IS NULL AND failed_at IS NULL) AS pending FROM outbox_events;`
+
+### Type TypeScript và schema Zod
+
+| Package | Nội dung |
+| --- | --- |
+| `@storynest/database` | `database.types.ts` **sinh tự động** từ migration (cùng generator với Supabase CLI, chạy trên DB local, không cần project Supabase hay Docker) + helper `RpcArgs<>`, `RpcReturns<>`. |
+| `@storynest/validation` | Zod: enum, giới hạn độ dài, `chapterBodySchema` (hợp đồng `chapter_drafts.body`), tham số RPC, payload ghi (story, chapter, draft, comment, reading list, report), payload notification, `classifyRpcError`. |
+
+Lệnh (từ thư mục gốc): `pnpm install`, `pnpm db:types` (sinh lại), `pnpm db:types:check` (CI: báo lỗi nếu file đã commit bị cũ), `pnpm typecheck`, `pnpm test`.
+
+Chống lệch giữa DB và code (khi migration đổi, một trong các bước này sẽ fail):
+- `db-contract.generated.json` (cũng được sinh ra) chứa giá trị CHECK-enum và độ dài varchar thật của schema; test Zod so sánh với nó, vì type sinh ra chỉ coi các cột đó là `string`.
+- `db-conformance.ts` ép kiểu: output của Zod phải gán được vào `TablesInsert<...>` và tham số RPC của `Database`, nên đổi tên cột/tham số sẽ làm `pnpm typecheck` fail.
+- `chapterBodySchema` chặt hơn RPC có chủ đích (bắt buộc `type`, cấm key lạ, giới hạn số block/độ dài, `marks` phải nằm trong text). Các bản nháp lỗi mà test SQL chứng minh RPC từ chối cũng được test Zod từ chối; hai danh sách này đang được giữ đồng bộ bằng tay.
+- Payload ghi **không** có cột định danh (`owner_id`, `author_id`...): caller thêm `auth.uid()`, RLS từ chối giá trị khác. Type `Insert` của `Database` mô tả bảng chứ không mô tả quyền của API role.
+
+Giới hạn tầng ứng dụng (DB không giới hạn): `APP_LIMITS` trong `limits.ts` (bio, synopsis, số block, độ dài text...) là giá trị tạm, chỉnh được.
+
+### Web (`apps/web`)
+
+Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4, TypeScript strict.
+
+```bash
+pnpm install
+cp apps/web/.env.example apps/web/.env.local   # điền URL + publishable key của Supabase
+pnpm --filter @storynest/web dev                # http://localhost:3000
+pnpm --filter @storynest/web build
+```
+
+- **Design tokens** (`@storynest/design-tokens/tokens.css`): nơi duy nhất định nghĩa màu, radius, font. Mỗi màu chỉ khai báo một lần bằng `light-dark()`; mặc định theo hệ điều hành, ép bằng class `light`/`dark` trên `<html>`. Tên biến theo shadcn/ui nên component thêm bằng shadcn CLI dùng được ngay. Có sẵn utility `pt-safe`/`pb-safe`/`px-safe` (safe area của Capacitor), `touch-target` (tối thiểu 44px), `reader-prose` (độ rộng đọc ~66ch). Màn hình nghiệp vụ chỉ dùng utility ngữ nghĩa (`bg-background`, `text-muted-foreground`...), không dùng màu thô.
+- **`@storynest/ui`**: shadcn/ui (kiểu new-york) và `cn`; hiện có `Button` (thêm biến thể `size="touch"`). `components.json` trỏ CSS vào package token, nên `shadcn add <component>` chạy trong `packages/ui` sẽ ghi vào đúng chỗ. Web import dạng `@storynest/ui/components/button`.
+- **Supabase**: `lib/supabase/{client,server,session}.ts` có type `Database`; `src/proxy.ts` (Next 16 đổi tên từ `middleware`) làm mới cookie phiên bằng `getClaims()` (kiểm chữ ký JWT) và áp header `Cache-Control` từ `@supabase/ssr`. Thiếu biến môi trường: dev vẫn chạy UI, **production trả 500** thay vì lặng lẽ bỏ qua xác thực.
+- Font dùng system stack (không tải font lúc build, chạy offline trong Capacitor). Chưa có ESLint (`next lint` đã bị gỡ ở Next 16).
+
+### Dự án Supabase dev và hardening
+
+- Project `storynest-dev` (ref `kqhztlatrizexskwmpsn`, ap-southeast-1). Điền URL + publishable key vào `apps/web/.env.local` (xem `.env.example`; không commit).
+- `*_hardening_and_indexes.sql` xử lý các cảnh báo advisor lần đầu: `search_path` cố định cho hàm trigger, các index khóa ngoại thật sự cần (có lý do từng index trong đầu file), gộp hai policy UPDATE của `comments` thành một. `40_hardening.test.sql` giữ các điều này không thụt lùi.
+- Lịch sử migration trên project được áp theo từng phần nhỏ (do popup xác nhận của công cụ Supabase với lệnh `DROP`), nên tên/số lượng migration ở đó khác thư mục `supabase/migrations`; trạng thái cuối cùng là một.
+- Việc còn mở về hạ tầng: bật Google OAuth + Redirect URL, tạo Storage bucket, chuyển các hàm helper `can_*`/`story_role` ra schema không expose.
+
+### Công cụ phát triển
+
+- `pnpm lint` (ESLint, gồm quy tắc **ranh giới package**: `utils`/`database` không phụ thuộc gì, `validation` chỉ zod + type DB, `ui` không dữ liệu/Next, `features` không `next/*`, cấm import xuyên vào `src/` của package khác), `pnpm format` / `pnpm format:check` (Prettier).
+- `pnpm gen:feature <tên-kebab-case>` tạo feature mới theo đúng layout (`api/ hooks/ screens/ components/ model/ keys.ts index.ts` + test).
+- `@storynest/utils`: hàm thuần có test (slugify tiếng Việt, formatCount, thời gian tương đối, cursor phân trang, URL Storage an toàn, debounce, Result).
+- CI (`.github/workflows/ci.yml`): job `checks` (format, lint, typecheck, test, build web) và job `database` (`db:verify`, `db:types:check` trên PostgreSQL).
+- TypeScript ghim **6.0.3**: `typescript-eslint` chưa hỗ trợ 7.x. Nâng lên khi có hỗ trợ.
+
+### Việc còn lại
+
+1. **Auth UI**: đăng nhập/đăng ký (Supabase Auth), guard route, trang hồ sơ; bảo vệ route bằng kiểm tra quyền ở server (RLS vẫn là lớp chính).
+2. **Shared components** trong `packages/ui`: `StoryCard`, `ChapterList`, `ReaderToolbar`, `ReadingProgress`, `CommentThread`, bottom navigation; thêm component shadcn khi cần.
+3. **Trang đọc** `/{story}/{chapter}` (SSR + SEO), danh sách khám phá, TanStack Query/Zustand khi có nhu cầu thật.
+4. **ESLint** (flat config) và **CI**: `pnpm db:verify`, `pnpm db:types:check`, `pnpm typecheck`, `pnpm test`, `pnpm --filter @storynest/web build` (cần PostgreSQL server trên runner).
+5. **`apps/mobile`** (Capacitor static shell) và chiến lược export tĩnh cho phần không phụ thuộc server.
+6. **Chuyển đổi Tiptap JSON <-> `chapter_drafts.body`** (và đếm từ bằng `countWords`) khi làm editor.
+7. **Push notification** (FCM/APNs): cần Edge Function hoặc event outbox riêng; thêm handler outbox khi có tính năng mới.
+8. **Kiểm tra `image_storage_key`**: cần chốt quy ước đường dẫn Supabase Storage + policy bucket. **Đếm lượt đọc** có dedupe và archive chapter.
+9. **Tags**: hiện chỉ `service_role` tạo được tag mới. **Comment trên truyện của mình**: tác giả chưa ẩn/xóa được comment của người khác.
+10. **Trên Supabase thật**: kiểm tra `citext`/`gin_trgm_ops` khi extension nằm ở schema `extensions`, xác nhận `pg_cron` bật và job chạy, chạy `get_advisors`, đối chiếu type với `generate_typescript_types`.

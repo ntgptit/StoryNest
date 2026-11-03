@@ -4,8 +4,10 @@
 -- Store book covers and chapter images in object storage, NOT bytea columns.
 -- Security: all authorisation must also be enforced by the API / RLS policies.
 BEGIN;
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-CREATE EXTENSION IF NOT EXISTS citext;
+-- Extensions live in the `extensions` schema (Supabase convention; keeps `public` free of extension objects).
+-- The role search_path must include it: Supabase does by default, supabase-shim.sql mirrors that locally.
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA extensions;
 
 -- 01. Accounts & author profiles. Optionally link id to auth.users(id) in Supabase.
 CREATE TABLE app_users (
@@ -335,7 +337,7 @@ CREATE TABLE chapter_stats (
 );
 
 -- Required before trigram indexes.
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA extensions;
 
 -- Access patterns and pagination: predicates first, ordering columns last.
 CREATE INDEX idx_user_follows_followed ON user_follows (followed_id, created_at DESC);
