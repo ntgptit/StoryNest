@@ -29,3 +29,13 @@ GRANT EXECUTE ON FUNCTION auth.jwt(), auth.uid() TO anon, authenticated, service
 -- migration's explicit REVOKEs are actually exercised.
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated, service_role;
+
+-- Stand-in for pg_cron (not installed on plain PostgreSQL): records job definitions only.
+CREATE SCHEMA cron;
+CREATE TABLE cron.job (jobname text PRIMARY KEY, schedule text NOT NULL, command text NOT NULL);
+CREATE FUNCTION cron.schedule(job_name text, schedule text, command text) RETURNS bigint
+LANGUAGE sql AS $$
+  INSERT INTO cron.job VALUES (job_name, schedule, command)
+  ON CONFLICT (jobname) DO UPDATE SET schedule = EXCLUDED.schedule, command = EXCLUDED.command
+  RETURNING 1::bigint
+$$;

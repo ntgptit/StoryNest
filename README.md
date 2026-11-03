@@ -74,12 +74,23 @@ Client không ghi trực tiếp trạng thái publish; mỗi lệnh gọi RPC l�
 - Migration này cũng sửa trigger `deny_published_block_mutation` (tham chiếu bảng không có schema nên vỡ khi `search_path` rỗng).
 - Chạy job định kỳ bằng `pg_cron` (`select public.publish_due_chapters();`) hoặc Edge Function dùng service role. **Chưa** lên lịch.
 
+### Outbox worker + cron (`20261103000300_outbox_worker_and_cron.sql`)
+
+- `process_outbox(limit?)` (chỉ `service_role`): lấy sự kiện chưa xử lý bằng `FOR UPDATE SKIP LOCKED`, nên nhiều worker chạy song song vẫn an toàn. Mỗi sự kiện chạy trong subtransaction riêng: một sự kiện lỗi không chặn hàng đợi.
+- Retry theo backoff lũy thừa (2, 4, 8… phút, tối đa 256 phút); sau 5 lần lỗi sự kiện bị đánh dấu `failed_at` (dead letter) kèm `last_error`. Sự kiện lạ (typo) vào dead letter ngay sau 5 lần thay vì lặp mãi. Đưa lại hàng đợi sau khi sửa nguyên nhân:
+  `UPDATE outbox_events SET failed_at = NULL, attempts = 0, available_at = now() WHERE id = '...';`
+- Giao hàng *at-least-once*; handler phải idempotent. `chapter.published` tạo notification `chapter_published` cho mọi follower đang `active` của story (trừ người publish); `dedupe_key` theo từng người nhận nên replay không tạo bản trùng. Nếu chapter đã bị unpublish/xóa trước khi xử lý thì không gửi gì.
+- `purge_outbox(retention?)`: xóa sự kiện đã xử lý quá 14 ngày; dead letter được giữ lại.
+- Lịch (`pg_cron`, tên job có tiền tố `storynest-`): `publish_due_chapters` và `process_outbox` mỗi phút, `purge_outbox` lúc 03:17 hằng ngày. Migration bật `pg_cron` nếu nền tảng hỗ trợ; nếu không chỉ in NOTICE và bạn cần gọi 3 lệnh đó từ nơi khác (Edge Function cron…). `cron.schedule` theo tên là upsert nên chạy lại migration không nhân đôi job.
+- Giám sát nhanh: `SELECT count(*) FILTER (WHERE failed_at IS NOT NULL) AS dead, count(*) FILTER (WHERE processed_at IS NULL AND failed_at IS NULL) AS pending FROM outbox_events;`
+
 ### Việc còn lại
 
-1. **Worker xử lý `outbox_events`**: tạo `notifications` cho follower, cập nhật stats, lập lịch `publish_due_chapters`.
-2. **Kiểm tra `image_storage_key`**: RPC chỉ kiểm tra khác rỗng; chưa xác minh file thuộc story/người dùng (cần chốt quy ước đường dẫn Supabase Storage + policy bucket).
-3. **Archive chapter**, và `story_stats`/`chapter_stats` cho phía đếm lượt đọc (có dedupe).
-4. **Tags**: hiện chỉ `service_role` tạo được tag mới.
-5. **Comment trên truyện của mình**: tác giả chưa ẩn/xóa được comment của người khác (hiện chỉ moderator).
-6. **Extension trên Supabase**: kiểm tra `citext`/`gin_trgm_ops` khi extension nằm ở schema `extensions`; chạy `get_advisors` sau khi apply.
-7. **Sinh type TypeScript** vào `packages/database` và schema Zod cho `chapter_drafts.body` trong `packages/validation` (khớp hợp đồng ở trên).
+1. **Push notification** (FCM/APNs cho Capacitor): cần Edge Function đọc `notifications` mới hoặc thêm event outbox riêng; hiện chỉ có notification trong ứng dụng.
+2. **Thêm handler outbox** khi có tính năng mới (reply/like comment, follow tác giả, kiểm duyệt).
+3. **Kiểm tra `image_storage_key`**: RPC chỉ kiểm tra khác rỗng; cần chốt quy ước đường dẫn Supabase Storage + policy bucket.
+4. **Đếm lượt đọc** có dedupe, cập nhật `story_stats`/`chapter_stats` bất đồng bộ; archive chapter.
+5. **Tags**: hiện chỉ `service_role` tạo được tag mới.
+6. **Comment trên truyện của mình**: tác giả chưa ẩn/xóa được comment của người khác (hiện chỉ moderator).
+7. **Trên Supabase thật**: kiểm tra `citext`/`gin_trgm_ops` khi extension nằm ở schema `extensions`, xác nhận `pg_cron` bật và các job chạy (`select * from cron.job_run_details`), chạy `get_advisors`.
+8. **Sinh type TypeScript** vào `packages/database` và schema Zod cho `chapter_drafts.body` trong `packages/validation`.
