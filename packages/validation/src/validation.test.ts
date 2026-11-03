@@ -23,6 +23,10 @@ import {
   slugSchema,
   storyCreateSchema,
   usernameSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  signInSchema,
+  signUpSchema,
 } from "./index.ts";
 
 type Contract = { enums: Record<string, string[]>; maxLengths: Record<string, number> };
@@ -189,5 +193,66 @@ describe("inputs", () => {
   it("notification payload matches what the outbox worker writes", () => {
     const payload = { story_title: "T", story_slug: "t", chapter_title: "C", chapter_slug: "c", chapter_sort_order: 1 };
     expect(chapterPublishedPayloadSchema.safeParse(payload).success).toBe(true);
+  });
+});
+
+describe("auth schemas", () => {
+  it("normalises email and accepts a valid sign-in", () => {
+    expect(signInSchema.parse({ email: "  Reader@Example.COM ", password: "x" }).email).toBe("reader@example.com");
+    expect(signInSchema.safeParse({ email: "nope", password: "x" }).success).toBe(false);
+    expect(signInSchema.safeParse({ email: "a@b.co", password: "" }).success).toBe(false);
+  });
+
+  it("sign-in does not apply the new-password length rule (old passwords must still work)", () => {
+    expect(signInSchema.safeParse({ email: "a@b.co", password: "short" }).success).toBe(true);
+  });
+
+  it("sign-up enforces password length in bytes, not characters", () => {
+    const base = { email: "a@b.co" };
+    expect(signUpSchema.safeParse({ ...base, password: "1234567" }).success).toBe(false);
+    expect(signUpSchema.safeParse({ ...base, password: "12345678" }).success).toBe(true);
+    expect(signUpSchema.safeParse({ ...base, password: "a".repeat(72) }).success).toBe(true);
+    expect(signUpSchema.safeParse({ ...base, password: "a".repeat(73) }).success).toBe(false);
+    // 25 three-byte characters = 75 bytes: short in characters, too long for bcrypt
+    expect(signUpSchema.safeParse({ ...base, password: "ệ".repeat(25) }).success).toBe(false);
+  });
+
+  it("sign-up treats empty optional fields as absent and validates the rest", () => {
+    const parsed = signUpSchema.parse({ email: "a@b.co", password: "12345678", username: "", display_name: "  " });
+    expect(parsed.username).toBeUndefined();
+    expect(parsed.display_name).toBeUndefined();
+    expect(signUpSchema.parse({ email: "a@b.co", password: "12345678", username: "reader_1" }).username).toBe(
+      "reader_1",
+    );
+    expect(signUpSchema.safeParse({ email: "a@b.co", password: "12345678", username: "no spaces" }).success).toBe(
+      false,
+    );
+    expect(signUpSchema.safeParse({ email: "a@b.co", password: "12345678", role: "admin" }).success).toBe(false);
+  });
+
+  it("forgot and reset", () => {
+    expect(forgotPasswordSchema.safeParse({ email: "a@b.co" }).success).toBe(true);
+    expect(resetPasswordSchema.safeParse({ password: "12345678", confirmPassword: "12345678" }).success).toBe(true);
+    const mismatch = resetPasswordSchema.safeParse({ password: "12345678", confirmPassword: "1234567x" });
+    expect(mismatch.success).toBe(false);
+    if (!mismatch.success) expect(mismatch.error.issues[0]?.path).toEqual(["confirmPassword"]);
+  });
+});
+
+describe("auth schema error codes (the UI translates these)", () => {
+  const codes = (result: { success: boolean; error?: { issues: { message: string }[] } }) =>
+    result.success ? [] : (result.error?.issues.map((i) => i.message) ?? []);
+
+  it("returns stable codes, never prose", () => {
+    expect(codes(signInSchema.safeParse({ email: "nope", password: "x" }))).toEqual(["email_invalid"]);
+    expect(codes(signInSchema.safeParse({ email: "a@b.co", password: "" }))).toEqual(["password_required"]);
+    expect(codes(signUpSchema.safeParse({ email: "a@b.co", password: "123" }))).toEqual(["password_too_short"]);
+    expect(codes(signUpSchema.safeParse({ email: "a@b.co", password: "a".repeat(80) }))).toEqual(["password_too_long"]);
+    expect(codes(signUpSchema.safeParse({ email: "a@b.co", password: "12345678", username: "a b" }))).toEqual([
+      "username_invalid",
+    ]);
+    expect(codes(resetPasswordSchema.safeParse({ password: "12345678", confirmPassword: "x" }))).toEqual([
+      "confirm_mismatch",
+    ]);
   });
 });

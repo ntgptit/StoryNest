@@ -10,6 +10,7 @@ export type AppErrorKind =
   | "forbidden" //       signed in but not allowed (RLS, role)
   | "notFound" //        missing, or hidden from this user
   | "conflict" //        stale revision, duplicate, wrong state: refresh and retry
+  | "rateLimited" //     too many requests: wait before trying again
   | "invalid" //         input rejected by validation or a constraint
   | "network" //         request never completed: retry later
   | "unknown";
@@ -101,12 +102,14 @@ export function toAppError(error: unknown): AppError {
     const status = typeof e.status === "number" ? e.status : undefined;
     if (e.name === "AuthApiError" || e.name === "AuthSessionMissingError" || e.name === "AuthRetryableFetchError") {
       if (e.name === "AuthRetryableFetchError") return new AppError("network", message, { code, cause: error });
+      if (status === 429) return new AppError("rateLimited", message, { code, details, cause: error });
       if (status === 422 || status === 400) {
         // Wrong password, email taken, weak password, etc.: the user can fix the input.
         return new AppError("invalid", message, { code, details, cause: error });
       }
       return new AppError("unauthenticated", message, { code, details, cause: error });
     }
+    if (status === 429) return new AppError("rateLimited", message, { code, details, cause: error });
     if (status === 401) return new AppError("unauthenticated", message, { code, details, cause: error });
     if (status === 403) return new AppError("forbidden", message, { code, details, cause: error });
     if (status === 404) return new AppError("notFound", message, { code, details, cause: error });

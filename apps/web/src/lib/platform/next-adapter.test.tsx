@@ -2,7 +2,7 @@
 import { cleanup, render, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const router = { push: vi.fn(), replace: vi.fn(), back: vi.fn() };
+const router = { push: vi.fn(), replace: vi.fn(), back: vi.fn(), refresh: vi.fn() };
 vi.mock("next/navigation", () => ({ useRouter: () => router, usePathname: () => "/story/1/x" }));
 vi.mock("next/link", () => ({
   default: ({ href, replace, children, ...rest }: { href: string; replace?: boolean; children?: unknown }) => (
@@ -30,9 +30,11 @@ describe("nextPlatformAdapter", () => {
     result.current.push("/library");
     result.current.replace("/login");
     result.current.back();
+    result.current.refresh();
     expect(router.push).toHaveBeenCalledWith("/library");
     expect(router.replace).toHaveBeenCalledWith("/login");
     expect(router.back).toHaveBeenCalledTimes(1);
+    expect(router.refresh).toHaveBeenCalledTimes(1);
     expect(result.current.pathname).toBe("/story/1/x");
   });
 
@@ -47,6 +49,10 @@ describe("nextPlatformAdapter", () => {
     expect(anchor.getAttribute("href")).toBe("/a");
     expect(anchor.getAttribute("data-replace")).toBe("true");
     expect(anchor.className).toBe("c");
+  });
+
+  it("reports the page origin for auth redirect links", () => {
+    expect(nextPlatformAdapter.appOrigin()).toBe(window.location.origin);
   });
 
   it("opens external links without giving the page access to this window", () => {

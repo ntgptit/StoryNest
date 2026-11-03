@@ -29,3 +29,19 @@ export function useOptionalDataClient(): DataClient | null {
   if (context === undefined) throw new Error("useOptionalDataClient must be used inside <DataProvider>.");
   return context.client;
 }
+
+/**
+ * Lazy variant for mutations: returns a function that yields the client when called (at submit time) and throws then
+ * if Supabase is not configured. Calling it during render would break static prerendering of pages that only
+ * contain a form (build without env vars) for no benefit.
+ */
+export function useDataClientGetter(): () => DataClient {
+  const context = useContext(DataContext);
+  if (context === undefined) throw new Error("useDataClientGetter must be used inside <DataProvider>.");
+  return () => {
+    if (context.client === null) {
+      throw new Error("Supabase is not configured (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).");
+    }
+    return context.client;
+  };
+}

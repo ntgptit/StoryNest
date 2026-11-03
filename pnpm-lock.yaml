@@ -53,6 +53,9 @@ importers:
       '@storynest/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@storynest/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@storynest/validation':
         specifier: workspace:*
         version: link:../../packages/validation
@@ -126,6 +129,9 @@ importers:
 
   packages/features:
     dependencies:
+      '@hookform/resolvers':
+        specifier: 7.0.2
+        version: 7.0.2(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(arktype@2.2.5)(react-hook-form@7.91.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
       '@storynest/database':
         specifier: workspace:*
         version: link:../database
@@ -144,6 +150,9 @@ importers:
       '@tanstack/react-query':
         specifier: 5.105.3
         version: 5.105.3(@types/react@19.3.0)(react@19.3.1)
+      react-hook-form:
+        specifier: 7.91.0
+        version: 7.91.0(@types/react@19.3.0)(react@19.3.1)
       zod:
         specifier: 4.6.7
         version: 4.6.7

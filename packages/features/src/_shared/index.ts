@@ -1,5 +1,5 @@
 export type { DataClient } from "./client.ts";
-export { DataProvider, useDataClient, useOptionalDataClient } from "./data.tsx";
+export { DataProvider, useDataClient, useDataClientGetter, useOptionalDataClient } from "./data.tsx";
 export { QueryProvider } from "./query-provider.tsx";
 export { createQueryClient, shouldRetry, type QueryClientOptions } from "./query.ts";
 export { AppError, errorMessageKey, isPermanent, toAppError, unwrap, type AppErrorKind } from "./errors.ts";
