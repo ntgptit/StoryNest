@@ -131,6 +131,7 @@ pnpm --filter @storynest/web build
 - `pnpm lint` (ESLint, gồm quy tắc **ranh giới package**: `utils`/`database` không phụ thuộc gì, `validation` chỉ zod + type DB, `ui` không dữ liệu/Next, `features` không `next/*`, cấm import xuyên vào `src/` của package khác), `pnpm format` / `pnpm format:check` (Prettier).
 - `pnpm gen:feature <tên-kebab-case>` tạo feature mới theo đúng layout (`api/ hooks/ screens/ components/ model/ keys.ts index.ts` + test).
 - `@storynest/utils`: hàm thuần có test (slugify tiếng Việt, formatCount, thời gian tương đối, cursor phân trang, URL Storage an toàn, debounce, Result).
+- `@storynest/features/_shared`: hạ tầng dùng chung cho mọi feature. `DataProvider` (client Supabase), `QueryProvider`, `PlatformProvider` (điều hướng/`isNative`/mở link ngoài qua adapter; web dùng `apps/web/src/lib/platform/next-adapter.tsx`), `AuthProvider` + `useAuth` (chỉ để hiển thị: phân quyền thật là RLS và proxy), `AppError`/`toAppError` (ánh xạ lỗi Postgres/PostgREST/Auth/Zod/mạng thành `kind` để UI quyết định), `ErrorBoundary`, `ToastProvider` (port, chưa mount).
 - CI (`.github/workflows/ci.yml`): job `checks` (format, lint, typecheck, test, build web) và job `database` (`db:verify`, `db:types:check` trên PostgreSQL).
 - TypeScript ghim **6.0.3**: `typescript-eslint` chưa hỗ trợ 7.x. Nâng lên khi có hỗ trợ.
 
