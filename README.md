@@ -44,12 +44,23 @@ supabase/functions    Edge functions
 Schema nằm ở `supabase/migrations/20261103000000_init_schema.sql` (25 bảng, PostgreSQL 15+).
 Kiểm chứng migration trên cluster PostgreSQL tạm: `pnpm db:verify`.
 
-### Việc còn lại trước khi dùng schema trên Supabase
+### Auth + RLS (`20261103000100_auth_and_rls.sql`)
 
-Schema gốc cố ý chưa có phần authorization; các mục dưới là quyết định cần chốt, chưa được triển khai:
+- `app_users.id` tham chiếu `auth.users(id)`; trigger `on_auth_user_created` tự tạo profile (username lấy từ metadata/email, chuẩn hóa và chống trùng).
+- RLS bật trên cả 25 bảng; quyền của `anon`/`authenticated` bị thu hồi rồi cấp lại theo bảng/cột. Thiếu policy hoặc grant nghĩa là bị từ chối.
+- Client **không** ghi trực tiếp: `chapters.status/published_version_id`, `chapter_versions`, `chapter_version_blocks`, stats, notifications, categories/tags, `app_users.account_status`. Các thao tác này đi qua `service_role` hoặc RPC.
+- Moderator được xác định bằng JWT claim `app_metadata.role = 'moderator'` (chỉ server đặt được).
+- Story `unlisted` đọc được bởi bất kỳ ai biết id/slug; truy vấn discovery phải lọc `visibility = 'public'`.
+- Xóa tài khoản đi qua deactivation, không `DELETE` trên `auth.users` (đang bị `stories.owner_id ON DELETE RESTRICT` chặn).
 
-1. **Liên kết `app_users.id` với `auth.users(id)`** và tạo profile bằng trigger khi đăng ký.
-2. **RLS cho mọi bảng trong `public`** (Supabase expose schema này qua API). Hiện chưa bật RLS nên nếu apply lên project thật, dữ liệu sẽ truy cập được bằng anon key.
-3. **Publishing transaction** (xem ghi chú cuối file migration) nên là một RPC/Edge Function chạy trong một transaction, không để client tự ghép nhiều bước.
-4. **Đếm lượt đọc** qua event có dedupe + job bất đồng bộ, không increment mỗi lần refresh.
-5. Chốt extension: `pgcrypto`, `citext`, `pg_trgm` (Supabase đặt extension ở schema `extensions`; cần kiểm tra `gin_trgm_ops`/`citext` resolve đúng khi apply).
+Kiểm chứng: `pnpm db:verify` nạp shim `auth`/roles (`supabase/scripts/supabase-shim.sql`, chỉ dùng local), áp mọi migration rồi chạy `supabase/tests/*.sql`.
+Test mới chạy trên PostgreSQL thuần với shim, **chưa** chạy trên Supabase thật.
+
+### Việc còn lại
+
+1. **RPC publish chapter** (một transaction, `SECURITY DEFINER`): tạo version + blocks, set `published_at`, `published_version_id`, `status`, `first_published_at`; cũng cần RPC cho unpublish/schedule/archive.
+2. **Tạo `story_stats`/`chapter_stats`** khi tạo story/chapter, và cập nhật bất đồng bộ (đếm lượt đọc có dedupe).
+3. **Tạo notification** server-side (outbox/job).
+4. **Tags**: hiện chỉ `service_role` tạo được tag mới; cần RPC nếu tác giả được tạo tag.
+5. **Comment trên truyện của mình**: tác giả chưa có quyền ẩn/xóa comment của người khác trên truyện của họ (hiện chỉ moderator).
+6. **Extension trên Supabase**: kiểm tra `citext`/`gin_trgm_ops` resolve đúng khi extension nằm ở schema `extensions`; chạy `get_advisors` (security/performance) sau khi apply.

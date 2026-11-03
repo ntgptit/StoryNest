@@ -15,13 +15,23 @@ if [ "$(id -u)" = 0 ]; then chown -R postgres "$WORK"; RUN=(su postgres -c); fi
 run() { if [ ${#RUN[@]} -gt 0 ]; then "${RUN[@]}" "$*"; else bash -c "$*"; fi; }
 
 run "$PG_BIN/initdb -D $WORK/data -A trust >/dev/null"
-run "$PG_BIN/pg_ctl -D $WORK/data -o '-p $PORT -k $WORK' -l $WORK/log -w start >/dev/null" || { cat "$WORK/log" >&2; exit 1; }
+run "$PG_BIN/pg_ctl -D $WORK/data -o '-p $PORT -k $WORK -c listen_addresses='"''"'' -l $WORK/log -w start >/dev/null" || { cat "$WORK/log" >&2; exit 1; }
 run "$PG_BIN/createdb -h $WORK -p $PORT verify"
 # Copy migrations into the work dir so the postgres OS user can read them.
 mkdir "$WORK/migrations" && cp "$ROOT"/supabase/migrations/*.sql "$WORK/migrations/" && chmod -R a+rX "$WORK/migrations"
+# Shim for Supabase-managed pieces (auth schema, API roles); the tests directory holds SQL assertions.
+cp "$ROOT/supabase/scripts/supabase-shim.sql" "$ROOT/supabase/tests/"*.sql "$WORK/migrations/" && chmod -R a+rX "$WORK/migrations"
+mkdir "$WORK/tests" && mv "$WORK/migrations/rls.test.sql" "$WORK/tests/" && mv "$WORK/migrations/supabase-shim.sql" "$WORK/"
+chmod -R a+rX "$WORK/tests" "$WORK/supabase-shim.sql"
+echo "applying supabase-shim.sql"
+run "$PG_BIN/psql -h $WORK -p $PORT -d verify -v ON_ERROR_STOP=1 -q -f '$WORK/supabase-shim.sql'"
 for f in "$WORK"/migrations/*.sql; do
   echo "applying $(basename "$f")"
   run "$PG_BIN/psql -h $WORK -p $PORT -d verify -v ON_ERROR_STOP=1 -q -f '$f'"
+done
+for t in "$WORK"/tests/*.sql; do
+  echo "running $(basename "$t")"
+  run "$PG_BIN/psql -h $WORK -p $PORT -d verify -v ON_ERROR_STOP=1 -q -f '$t'"
 done
 echo "tables: $(run "$PG_BIN/psql -h $WORK -p $PORT -d verify -Atc \"select count(*) from information_schema.tables where table_schema='public'\"")"
 echo "OK"
