@@ -56,11 +56,30 @@ Kiểm chứng migration trên cluster PostgreSQL tạm: `pnpm db:verify`.
 Kiểm chứng: `pnpm db:verify` nạp shim `auth`/roles (`supabase/scripts/supabase-shim.sql`, chỉ dùng local), áp mọi migration rồi chạy `supabase/tests/*.sql`.
 Test mới chạy trên PostgreSQL thuần với shim, **chưa** chạy trên Supabase thật.
 
+### Publish chapter (`20261103000200_publish_chapter_rpc.sql`)
+
+Client không ghi trực tiếp trạng thái publish; mỗi lệnh gọi RPC là một transaction:
+
+| RPC | Quyền | Việc làm |
+| --- | --- | --- |
+| `publish_chapter(chapter_id, expected_revision?)` | owner / co_author / editor | Validate draft → snapshot version + blocks (bất biến) → trỏ `published_version_id` → ghi outbox. Trả về version id. |
+| `schedule_chapter(chapter_id, scheduled_for, expected_revision?)` | như trên | Validate draft, đặt `status='scheduled'`. Snapshot được chụp từ draft **tại thời điểm đến hạn**. |
+| `unpublish_chapter(chapter_id)` | owner / co_author | Về `draft` (hoặc hủy lịch). Giữ version và `first_published_at`. |
+| `publish_due_chapters(limit?)` | chỉ `service_role` | Publish các chapter đến hạn; lỗi một chapter chỉ log WARNING và thử lại ở lần chạy sau. |
+
+- Lỗi (SQLSTATE): `42501` không được phép, `PT404` không tìm thấy (kể cả khi không có quyền, để không lộ sự tồn tại), `PT409` xung đột (revision cũ, sai trạng thái), `22023` draft/tham số không hợp lệ. PostgREST map `PT404`/`PT409` sang HTTP 404/409.
+- `expected_revision` là optimistic lock: truyền `chapter_drafts.revision` client đang giữ để tránh publish nhầm bản đã bị thay đổi, đồng thời chống bấm đúp.
+- Publish lần đầu: story `draft` chuyển sang `ongoing`, tạo `chapter_stats`/`story_stats` nếu chưa có, ghi sự kiện `chapter.published` vào `outbox_events` (chỉ một lần cho mỗi chapter; publish lại bản sửa không báo lại).
+- Hợp đồng `chapter_drafts.body`: xem đầu file migration. `chapter_blocks` thiếu sẽ được tạo trong RPC; block id thuộc chapter khác bị từ chối.
+- Migration này cũng sửa trigger `deny_published_block_mutation` (tham chiếu bảng không có schema nên vỡ khi `search_path` rỗng).
+- Chạy job định kỳ bằng `pg_cron` (`select public.publish_due_chapters();`) hoặc Edge Function dùng service role. **Chưa** lên lịch.
+
 ### Việc còn lại
 
-1. **RPC publish chapter** (một transaction, `SECURITY DEFINER`): tạo version + blocks, set `published_at`, `published_version_id`, `status`, `first_published_at`; cũng cần RPC cho unpublish/schedule/archive.
-2. **Tạo `story_stats`/`chapter_stats`** khi tạo story/chapter, và cập nhật bất đồng bộ (đếm lượt đọc có dedupe).
-3. **Tạo notification** server-side (outbox/job).
-4. **Tags**: hiện chỉ `service_role` tạo được tag mới; cần RPC nếu tác giả được tạo tag.
-5. **Comment trên truyện của mình**: tác giả chưa có quyền ẩn/xóa comment của người khác trên truyện của họ (hiện chỉ moderator).
-6. **Extension trên Supabase**: kiểm tra `citext`/`gin_trgm_ops` resolve đúng khi extension nằm ở schema `extensions`; chạy `get_advisors` (security/performance) sau khi apply.
+1. **Worker xử lý `outbox_events`**: tạo `notifications` cho follower, cập nhật stats, lập lịch `publish_due_chapters`.
+2. **Kiểm tra `image_storage_key`**: RPC chỉ kiểm tra khác rỗng; chưa xác minh file thuộc story/người dùng (cần chốt quy ước đường dẫn Supabase Storage + policy bucket).
+3. **Archive chapter**, và `story_stats`/`chapter_stats` cho phía đếm lượt đọc (có dedupe).
+4. **Tags**: hiện chỉ `service_role` tạo được tag mới.
+5. **Comment trên truyện của mình**: tác giả chưa ẩn/xóa được comment của người khác (hiện chỉ moderator).
+6. **Extension trên Supabase**: kiểm tra `citext`/`gin_trgm_ops` khi extension nằm ở schema `extensions`; chạy `get_advisors` sau khi apply.
+7. **Sinh type TypeScript** vào `packages/database` và schema Zod cho `chapter_drafts.body` trong `packages/validation` (khớp hợp đồng ở trên).
