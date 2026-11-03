@@ -1,6 +1,6 @@
 # StoryNest: WBS và kế hoạch triển khai
 
-Trạng thái tài liệu: **bản nháp để chốt** (2026-11-03). Mọi con số ước lượng (tổng ~172 ngày công) là **ước tính thô, sai số ±30%**, tính cho 1 fullstack developer có AI agent hỗ trợ, đã gồm test và tài liệu, **chưa gồm** thiết kế UX/UI, vận hành kiểm duyệt nội dung, pháp lý. Cập nhật cột trạng thái ở đây sau mỗi work package hoàn thành.
+Trạng thái tài liệu: **đã chốt 7 quyết định** ở mục 4 (2026-11-03); nội dung còn lại vẫn là kế hoạch, có thể điều chỉnh. Mọi con số ước lượng (tổng ~172 ngày công) là **ước tính thô, sai số ±30%**, tính cho 1 fullstack developer có AI agent hỗ trợ, đã gồm test và tài liệu, **chưa gồm** thiết kế UX/UI, vận hành kiểm duyệt nội dung, pháp lý. Cập nhật cột trạng thái ở đây sau mỗi work package hoàn thành.
 
 Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm · ⚠️ cần quyết định.
 
@@ -34,13 +34,13 @@ Ký hiệu: ✅ xong · 🟡 một phần · ⬜ chưa làm · ⚠️ cần quy�
 | D7 | Tìm kiếm mới có index trigram cho `title` | Không tìm theo mô tả, tag, tác giả | 5.1 |
 | D8 | Xóa/ẩn tài khoản đi qua deactivation nhưng chưa có luồng | `auth.users` không xóa được khi còn story (RESTRICT) | 6.4 |
 | D9 | Owner thêm collaborator không cần đồng ý | Có thể bị lạm dụng | 3.8 |
-| D10 | Slug story chỉ unique theo `(owner_id, slug)` | URL công khai không thể chỉ dùng slug | ⚠️ Q2 |
+| D10 | Slug story chỉ unique theo `(owner_id, slug)` | URL công khai không thể chỉ dùng slug | Q2 (đã chốt: id + slug) |
 
 ---
 
 ## 1. Kiến trúc thư mục và quy tắc
 
-### 1.1 Quyết định kiến trúc then chốt (cần chốt trước WP 0.3)
+### 1.1 Quyết định kiến trúc then chốt (đã chốt: Q1)
 
 > Web (Next.js SSR) và mobile (Capacitor static shell) phải dùng chung **màn hình**, không chỉ component. Muốn vậy, code dùng chung **không được phụ thuộc `next/*`**.
 
@@ -121,7 +121,7 @@ Quy ước khác: business logic nằm ở `api/` và `model/`, không nằm tro
 | **0.1** ⬜ | ESLint flat config + quy tắc ranh giới (1.3); Prettier; CI GitHub Actions: `db:verify`, `db:types:check`, `typecheck`, `test`, `build web` | — | 2 | CI xanh trên PR; vi phạm ranh giới làm CI đỏ |
 | **0.2** ⬜ | Tách `packages/utils`; dựng khung `packages/features` + template feature (1.2) + script `pnpm gen:feature <name>` | 0.1 | 1.5 | Sinh feature mới compile được, có test mẫu |
 | **0.3** ⬜ | **Common code** trong `features/_shared`: `DataProvider`, `QueryProvider` (cấu hình retry/staleTime), `PlatformProvider` + adapter Next, `AuthProvider` (session, user, profile), mô hình lỗi (`AppError` ← SQLSTATE `42501/PT404/PT409/22023`, lỗi mạng, validation), `useAppToast`, error boundary | 0.2, Q1 | 4 | Có test cho ánh xạ lỗi; web render được Screen mẫu qua adapter |
-| **0.4** ⬜ | **I18n** vi (mặc định) + en: cơ chế chọn ngôn ngữ, định dạng ngày/số/số nhiều, lint chặn chuỗi cứng trong screens | 0.3 | 1.5 | Đổi ngôn ngữ không reload; kiểm tra thiếu key bằng test |
+| **0.4** ⬜ | **I18n** (Q4: thư viện không phụ thuộc Next) vi (mặc định) + en: cơ chế chọn ngôn ngữ, định dạng ngày/số/số nhiều, lint chặn chuỗi cứng trong screens | 0.3 | 1.5 | Đổi ngôn ngữ không reload; kiểm tra thiếu key bằng test |
 | **0.5** ⬜ | **Shared widget, lớp primitive**: shadcn `Input, Textarea, Label, Form, Select, Checkbox, Switch, Dialog, Sheet, Drawer, DropdownMenu, Tabs, Tooltip, Sonner(toast), Skeleton, Avatar, Badge, Separator, ScrollArea, Sidebar`; widget khung: `AppShell` (header + sidebar desktop + `BottomNav` mobile), `PageHeader`, `EmptyState`, `ErrorState`, `InfiniteList`, `StatPill`, `ConfirmDialog` | 0.1 | 3.5 | Mỗi widget dùng token; có trang `/dev/gallery` (chỉ dev) hiển thị mọi trạng thái sáng/tối, desktop/mobile |
 | **0.6** ⬜ | **Utils** (`packages/utils`, có test): `slugify` (bỏ dấu tiếng Việt), `formatCount` (1,2K), ngày giờ (tương đối, múi giờ), `excerpt`, `buildStorageUrl`, `newId` (UUID phía client cho offline), `debounce`/`useAutosave`, mã hóa/giải mã cursor phân trang, `isNative`/safe-area hook, `Result` | 0.2 | 2 | Phủ test các trường hợp biên (dấu, emoji, rỗng) |
 | **0.7** ⬜ | Hạ tầng test: Vitest + Testing Library cho `features`; Playwright e2e smoke chạy với project Supabase dev (seed + user test) | 0.0, 0.3 | 2 | `pnpm test:e2e` chạy được cục bộ và trên CI |
@@ -203,7 +203,7 @@ Phần lớn rủi ro kỹ thuật nằm ở editor. Đây là vòng lặp còn 
 
 | WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
 | --- | --- | --- | --- | --- |
-| **5.1** ⬜ | **Tìm kiếm** truyện/tác giả/tag: RPC dùng `unaccent` + trigram (tiếng Việt không dấu vẫn tìm được) hoặc full-text, mở rộng index (D7); trang kết quả, gợi ý khi gõ | 2.2 | 4 | Tìm "doc truyen" ra "Đọc truyện"; có `EXPLAIN` chứng minh dùng index; chặn truy vấn quá ngắn |
+| **5.1** ⬜ | **Tìm kiếm** truyện/tác giả/tag (Q3): RPC dùng `unaccent` + trigram (tiếng Việt không dấu vẫn tìm được), mở rộng index (D7); trang kết quả, gợi ý khi gõ | 2.2 | 4 | Tìm "doc truyen" ra "Đọc truyện"; có `EXPLAIN` chứng minh dùng index; chặn truy vấn quá ngắn |
 | **5.2** ⬜ | Duyệt theo category/tag; **RPC tạo tag có kiểm soát (D4)** (chuẩn hóa slug, giới hạn số tag/story, chống spam) | 2.2 | 2.5 | Tag trùng được gộp; tác giả không tạo quá hạn mức |
 | **5.3** ⬜ | **Xếp hạng**: top/trending theo cửa sổ thời gian (dựa sự kiện đọc 2.6 + vote), materialized view làm mới bằng cron | 2.6, 4.8 | 3 | Làm mới không khóa đọc (`CONCURRENTLY`); có chỉ số độ trễ |
 | **5.4** ⬜ | **Trang tác giả** + follow tác giả, nguồn tin "từ tác giả bạn theo dõi" | 4.3 | 3 | Số follower khớp; tài khoản suspended không hiển thị |
@@ -219,7 +219,7 @@ Phần lớn rủi ro kỹ thuật nằm ở editor. Đây là vòng lặp còn 
 | **6.1** ⬜ | **Báo cáo + console kiểm duyệt** (`/moderation`): gửi báo cáo từ story/chương/bình luận/người dùng; hàng đợi, xem ngữ cảnh, hành động (ẩn bình luận, gỡ story, suspend tài khoản) qua RPC có **nhật ký kiểm toán** | 4.2 | 6 | Mọi hành động ghi audit (ai, khi nào, lý do); chỉ role moderator; có test quyền |
 | **6.2** ⬜ | Tác giả kiểm duyệt bình luận trên truyện của mình (D6) | 4.2 | 1.5 | Không "bỏ ẩn" được bình luận do moderator ẩn |
 | **6.3** ⬜ | Cài đặt: ngôn ngữ, tùy chọn đọc, tùy chọn thông báo (email/push/in-app), nội dung người lớn | 2.7, 4.6 | 2 | Lưu server-side, áp dụng trên mọi thiết bị |
-| **6.4** ⬜ | **Vòng đời tài khoản (D8)**: vô hiệu hóa, xóa (ẩn danh hóa nội dung theo chính sách), xuất dữ liệu cá nhân | 1.4 | 3 | Không phá FK RESTRICT; có quy trình rõ cho nội dung của người đã xóa |
+| **6.4** ⬜ | **Vòng đời tài khoản (D8, Q7)**: vô hiệu hóa; xóa = **ẩn danh hóa, giữ nội dung** (RPC xóa dữ liệu cá nhân, hiển thị "Người dùng đã xóa"); xuất dữ liệu cá nhân | 1.4 | 3 | Không hard-delete `auth.users`; không còn dữ liệu cá nhân sau khi xóa; story/bình luận vẫn hiển thị đúng; có test quyền và test ẩn danh hóa |
 | **6.5** ⬜ | **Thống kê cho tác giả**: lượt đọc/vote/bình luận theo chương và theo thời gian, tỉ lệ rời bỏ giữa các chương | 2.6, 4.8 | 4 | Số khớp `*_stats`; truy vấn có index, không quét bảng sự kiện |
 | **6.6** ⬜ | SEO và chia sẻ: sitemap động, OG image, JSON-LD (Book/Chapter), canonical, `robots`/`noindex` cho unlisted | 2.3, 2.4 | 2.5 | Lighthouse SEO ≥ 95 cho story/chương |
 | **6.7** ⬜ | **Push notification** (FCM/APNs): bảng token thiết bị, Edge Function gửi từ outbox, tôn trọng tùy chọn 6.3 | 4.7, 7.2 | 4 | Token hết hạn được dọn; không gửi trùng |
@@ -274,23 +274,25 @@ Phụ thuộc quyết định 1.1. Chỉ nên bắt đầu khi Phase 2 và 3 đ�
 
 Rủi ro cao nhất, nên làm sớm trong phase của nó: **editor + chuyển đổi `block_id` (3.5)**, **dedupe lượt đọc (2.6)**, **đọc offline (7.4)**, **kiểm tra Storage policy (D3)**.
 
-## 4. Quyết định cần bạn chốt
+## 4. Quyết định đã chốt (2026-11-03)
 
-| # | Câu hỏi | Đề xuất của mình |
+| # | Quyết định | Hệ quả cho WBS |
 | --- | --- | --- |
-| Q1 | Mobile dùng Screen dùng chung + Vite/router client (1.1) hay Next static export? | Vite + router client; chốt trước 0.3 |
-| Q2 ⚠️ | Dạng URL công khai (slug story chỉ unique theo owner): `/story/{id}/{slug}` hay `/@{username}/{slug}`? | `/story/{id}/{slug}` với canonical redirect (đổi slug không gãy link) |
-| Q3 | Tìm kiếm tiếng Việt: `unaccent` + trigram hay full-text (`tsvector`)? | Bắt đầu `unaccent` + trigram; đo lại ở 5.1 |
-| Q4 | i18n: tự viết nhẹ hay thư viện (ví dụ next-intl, không dùng được ở mobile)? | Thư viện không phụ thuộc Next để dùng chung với mobile |
-| Q5 | Cách quản lý Supabase: một project dev + một prod, hay dùng branching? | Hai project + migration qua CI; branching khi có nhiều người |
-| Q6 | Phạm vi MVP có cần OAuth và bình luận theo đoạn ngay không? | OAuth Google trong M1a; bình luận theo đoạn để M2 |
-| Q7 | Chính sách xóa tài khoản và nội dung (6.4) | Cần quyết định pháp lý/sản phẩm trước khi làm |
+| Q1 | **Mobile = Vite + router client**, Screen dùng chung không phụ thuộc `next/*`, adapter `PlatformProvider` cho mỗi nền tảng | Áp dụng kiến trúc 1.1; WP 0.3 và 7.1 theo hướng này |
+| Q2 | **URL công khai `/story/{id}/{slug}`** (và chương `/story/{id}/{chapterSlug}` hoặc theo id), canonical redirect khi slug đổi | Route ở 1.2 theo dạng này; D10 được giải quyết ở tầng routing, không đổi schema |
+| Q3 | **Tìm kiếm: `unaccent` + trigram**, đo lại ở 5.1 | WP 5.1: thêm extension `unaccent`, index trigram trên cột đã bỏ dấu |
+| Q4 | **i18n: thư viện không phụ thuộc Next** (dùng chung web + mobile) | WP 0.4: chọn cụ thể thư viện khi làm (cần hỗ trợ ICU/plural, tải ngôn ngữ động) |
+| Q5 | **Hai project Supabase (dev + prod)**, migration qua CI | WP 0.0 dựng project dev; 8.1 triển khai migration theo từng môi trường; chuyển sang branching khi có nhiều người sửa schema |
+| Q6 | **OAuth Google ở M1; bình luận theo đoạn ở M2** | WP 1.1 giữ OAuth; WP 4.2 là mốc của bình luận theo đoạn (M1 không có bình luận) |
+| Q7 | **Xóa tài khoản = ẩn danh hóa, giữ nội dung** | WP 6.4: xóa thông tin cá nhân (profile, email ở `auth.users`, avatar), đặt hiển thị "Người dùng đã xóa", story/bình luận giữ lại; không hard-delete `auth.users` nên FK RESTRICT không phải đổi; cần chính sách riêng cho story đang theo dõi và trường hợp tác giả muốn gỡ truyện (làm riêng trước khi ẩn danh) |
+
+Còn mở: chính sách pháp lý cho Q7 (thời hạn lưu, yêu cầu gỡ nội dung theo luật) cần người phụ trách xác nhận trước khi làm WP 6.4; WP 6.9 cũng cần nội dung pháp lý.
 
 ## 5. Việc bắt đầu ngay (Sprint 1, ~2 tuần)
 
 1. **0.0** Dựng project Supabase dev và đối chiếu với PostgreSQL thuần (chặn mọi thứ phía sau, vì chưa từng chạy trên Supabase thật).
 2. **0.1** ESLint + ranh giới + CI.
-3. Chốt **Q1, Q2** rồi làm **0.2, 0.3**.
+3. **0.2, 0.3** theo quyết định Q1, Q2 (đã chốt).
 4. **0.5** primitive cần cho form đăng nhập; **1.1, 1.2** đăng ký/đăng nhập/guard.
 
 Kết thúc sprint: có CI xanh, ứng dụng chạy với Supabase thật, đăng ký và đăng nhập được.
