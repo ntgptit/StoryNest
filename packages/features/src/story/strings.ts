@@ -1,5 +1,6 @@
 // Text of the story page. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   startReading: "Bắt đầu đọc",
@@ -38,4 +39,4 @@ const vi = {
   chaptersError: { title: "Không tải được danh sách chương", retry: "Thử lại" },
 } as const;
 
-export const storyText = defineText("story", vi);
+export const storyText = defineText("story", vi, en);

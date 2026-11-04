@@ -111,7 +111,9 @@ function LibraryList({
   );
 }
 
-const WHEN = { reading: t.readAt, saved: t.savedAt, following: t.followedAt } as const;
+// A function, not a constant: the phrase is read when it is drawn, so it follows the language.
+const when = (tab: LibraryTab, relative: string) =>
+  ({ reading: t.readAt, saved: t.savedAt, following: t.followedAt })[tab](relative);
 
 function LibraryItem({
   tab,
@@ -135,7 +137,12 @@ function LibraryItem({
   return (
     <div className="flex h-full flex-col gap-2">
       {entry.story ? (
-        <StoryCard story={toStoryCardData(entry.story, coverUrlFor)} labels={labels} LinkComponent={AppLink} />
+        <StoryCard
+          story={toStoryCardData(entry.story, coverUrlFor)}
+          labels={labels}
+          LinkComponent={AppLink}
+          locale={locale}
+        />
       ) : (
         <div role="note" className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-sm">
           <EyeOff aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
@@ -170,7 +177,7 @@ function LibraryItem({
         >
           {t.remove[tab]}
         </Button>
-        <span className="w-full text-xs text-muted-foreground">{WHEN[tab](formatRelativeTime(entry.at, locale))}</span>
+        <span className="w-full text-xs text-muted-foreground">{when(tab, formatRelativeTime(entry.at, locale))}</span>
       </div>
     </div>
   );

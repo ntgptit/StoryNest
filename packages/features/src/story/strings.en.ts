@@ -1,0 +1,37 @@
+// English text of the story page. Same keys as strings.ts (the completeness test compares them).
+export const en = {
+  startReading: "Start reading",
+  noChaptersYet: "This story has no published chapters yet.",
+  chaptersTitle: "Chapters",
+  chapterCount: (count: number) => `${count} chapter${count === 1 ? "" : "s"}`,
+  chapterLabel: (number: number) => `Chapter ${number}`,
+  words: (count: string) => `${count} words`,
+  synopsisTitle: "Synopsis",
+  noSynopsis: "The author hasn't written a synopsis yet.",
+  byAuthor: "Author",
+  tagsLabel: "Tags",
+  tagLink: (name: string) => `View stories tagged ${name}`,
+  library: {
+    follow: "Follow",
+    following: "Following",
+    save: "Save to library",
+    saved: "Saved",
+    guestHint: "Sign in to follow or save stories",
+    followed: "Followed. You'll be notified when there are new chapters.",
+    unfollowed: "Unfollowed.",
+    savedToast: "Saved to your library.",
+    removedToast: "Removed from your library.",
+    errors: {
+      forbidden: "You can't follow or save this story.",
+      network: "No connection. Check your network and try again.",
+      generic: "Couldn't complete that. Please try again.",
+    },
+  },
+  stats: { reads: "Reads", votes: "Votes", comments: "Comments", followers: "Followers" },
+  notFound: {
+    title: "Story not found",
+    description: "This story doesn't exist, was taken down or is private.",
+  },
+  error: { title: "Couldn't load the story", description: "Check your connection and try again.", retry: "Try again" },
+  chaptersError: { title: "Couldn't load the chapter list", retry: "Try again" },
+};

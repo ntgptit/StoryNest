@@ -1,0 +1,31 @@
+export const en = {
+  edit: {
+    title: "Edit profile",
+    description: "This information is shown publicly on your page.",
+    displayName: "Display name",
+    username: "Username",
+    usernameHint: "Letters, numbers and underscores, 3-30 characters. Changing it changes your profile address.",
+    bio: "Bio",
+    bioHint: "Up to 1000 characters.",
+    submit: "Save changes",
+    submitting: "Saving…",
+    cancel: "Cancel",
+    saved: "Profile saved.",
+    signInRequired: "You need to sign in to edit your profile.",
+    signIn: "Sign in",
+    missingProfile: "No profile found for this account.",
+  },
+  validation: {
+    usernameInvalid: "Username can only contain letters, numbers and underscores (3-30 characters).",
+    displayNameRequired: "Please enter a display name.",
+    displayNameTooLong: "Display name can be at most 100 characters.",
+    bioTooLong: "Bio can be at most 1000 characters.",
+  },
+  errors: {
+    usernameTaken: "This username is already taken.",
+    forbidden: "You don't have permission to edit this profile.",
+    notFound: "Profile not found.",
+    network: "No connection. Check your network and try again.",
+    generic: "Something went wrong. Please try again.",
+  },
+};

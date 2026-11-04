@@ -1,5 +1,6 @@
 // Text of the profile screens. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   edit: {
@@ -33,4 +34,4 @@ const vi = {
   },
 } as const;
 
-export const profileText = defineText("profile", vi);
+export const profileText = defineText("profile", vi, en);

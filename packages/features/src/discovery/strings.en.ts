@@ -1,0 +1,28 @@
+export const en = {
+  title: "Recently updated",
+  seeRanking: "See rankings",
+  seeFollowing: "From authors you follow",
+  shortcutsLabel: "Shortcuts",
+  categoriesLabel: "Categories",
+  popularTagsLabel: "Popular tags",
+  tagFilter: { label: (name: string) => `Filtering by tag #${name}`, clear: "Clear tag filter" },
+  allCategories: "All",
+  loadMore: "Load more",
+  endOfList: "You've seen all the stories.",
+  empty: { title: "No stories yet", description: "Check back later, or try another category." },
+  emptyTag: { title: "No stories with this tag yet", description: "Try clearing the tag filter, or pick another tag." },
+  error: { title: "Couldn't load stories", description: "Check your connection and try again.", retry: "Try again" },
+  mature: "18+",
+  unknownAuthor: "Anonymous author",
+  status: {
+    draft: "Draft",
+    ongoing: "Ongoing",
+    completed: "Completed",
+    hiatus: "On hiatus",
+  },
+  card: {
+    reads: "Reads",
+    votes: "Votes",
+    updated: (relative: string) => `Updated ${relative}`,
+  },
+};

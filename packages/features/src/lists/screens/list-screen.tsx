@@ -12,6 +12,7 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
 import { useAuth } from "../../_shared/auth.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
@@ -132,7 +133,12 @@ export function ListScreen({
         <ul aria-label={t.storiesLabel} className={GRID}>
           {items.map((item, index) => (
             <li key={item.storyId} className="flex flex-col gap-2">
-              <StoryCard story={toStoryCardData(item.story, coverUrlFor)} labels={labels} LinkComponent={AppLink} />
+              <StoryCard
+                story={toStoryCardData(item.story, coverUrlFor)}
+                labels={labels}
+                LinkComponent={AppLink}
+                locale={currentLocale()}
+              />
               {isOwner ? (
                 <div className="flex flex-wrap items-center gap-1">
                   <Button

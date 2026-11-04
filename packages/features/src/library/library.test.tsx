@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
 import type { DataClient } from "../_shared/client.ts";
 import { DataProvider } from "../_shared/data.tsx";
+import { setLanguage } from "../_shared/i18n.ts";
 import { AppError } from "../_shared/errors.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { TEST_USER_ID, testSession, withAuth } from "../_shared/test-auth.ts";
@@ -239,6 +240,20 @@ describe("LibraryScreen before the session is known", () => {
     resolveSession({ data: { session: testSession() } });
     expect(await screen.findByRole("heading", { name: "Truyện 1" })).toBeTruthy();
     expect(callOf(c.select("user_story_progress")[0]!, "eq")).toEqual(["user_id", TEST_USER_ID]);
+  });
+});
+
+describe("LibraryScreen in English", () => {
+  afterEach(() => setLanguage("vi", { persist: false }));
+
+  it("writes the 'read ... ago' line and the story card's age in English, not in a language captured when the module loaded", async () => {
+    setLanguage("en", { persist: false });
+    const c = fakeClient({ reading: [readingRow(1)] });
+    renderLibrary(c);
+    const list = within(await screen.findByRole("list", { name: t.listLabel(t.tabs.reading) }));
+    expect(list.getByText(/^Read /)).toBeTruthy();
+    expect(list.queryByText(/giờ trước|ngày trước|phút trước|Đọc /)).toBeNull();
+    expect(list.getByText(/^Updated .* ago$/)).toBeTruthy();
   });
 });
 

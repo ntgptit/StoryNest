@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
 import type { DataClient } from "../_shared/client.ts";
 import { DataProvider } from "../_shared/data.tsx";
+import { setLanguage } from "../_shared/i18n.ts";
 import { AppError } from "../_shared/errors.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { TEST_USER_ID, testSession, withAuth } from "../_shared/test-auth.ts";
@@ -465,6 +466,19 @@ describe("ListScreen", () => {
     expect(screen.queryByRole("button", { name: t.page.edit })).toBeNull();
     expect(screen.queryByRole("button", { name: t.page.remove })).toBeNull();
     expect(screen.queryByRole("button", { name: new RegExp(t.page.moveUp) })).toBeNull();
+  });
+
+  it("writes the age of each story in English when the language is English", async () => {
+    setLanguage("en", { persist: false });
+    try {
+      const c = fakeClient({ detail: detail({ owner_id: "someone-else" }), items: [itemRow(1, 1)] });
+      renderUi(c, <ListScreen listId={lid(1)} />, false);
+      const stories = within(await screen.findByRole("list", { name: t.page.storiesLabel }));
+      expect(stories.getByText(/^Updated .* ago$/)).toBeTruthy();
+      expect(stories.queryByText(/trước/)).toBeNull();
+    } finally {
+      setLanguage("vi", { persist: false });
+    }
   });
 
   it("says a list that cannot be seen was not found", async () => {

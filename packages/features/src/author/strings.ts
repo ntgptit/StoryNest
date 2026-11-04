@@ -1,5 +1,6 @@
 // Text of the author screens. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   followers: (n: string) => `${n} người theo dõi`,
@@ -35,4 +36,4 @@ const vi = {
   },
 } as const;
 
-export const authorText = defineText("author", vi);
+export const authorText = defineText("author", vi, en);

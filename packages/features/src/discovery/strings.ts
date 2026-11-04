@@ -1,5 +1,6 @@
 // Text of the discovery screens. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   title: "Mới cập nhật",
@@ -30,4 +31,4 @@ const vi = {
   },
 } as const;
 
-export const discoveryText = defineText("discovery", vi);
+export const discoveryText = defineText("discovery", vi, en);

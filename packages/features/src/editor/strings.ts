@@ -1,5 +1,6 @@
 // Text of the chapter editor. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   title: "Soạn chương",
@@ -109,4 +110,4 @@ const vi = {
   },
 } as const;
 
-export const editorText = defineText("editor", vi);
+export const editorText = defineText("editor", vi, en);

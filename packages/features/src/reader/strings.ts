@@ -1,5 +1,6 @@
 // Text of the chapter reader. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   backToStory: "Về trang truyện",
@@ -39,4 +40,4 @@ const vi = {
   error: { title: "Không tải được chương", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
 } as const;
 
-export const readerText = defineText("reader", vi);
+export const readerText = defineText("reader", vi, en);
