@@ -1489,6 +1489,15 @@ export type Database = {
           row_count: number
         }[]
       }
+      recommend_for_me: {
+        Args: { p_include_mature?: boolean; p_limit?: number }
+        Returns: {
+          detail: string
+          reason: string
+          score: number
+          story_id: string
+        }[]
+      }
       reconcile_comment_counts: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -1608,6 +1617,19 @@ export type Database = {
       set_user_follow: {
         Args: { p_followed: boolean; p_user_id: string }
         Returns: number
+      }
+      similar_stories: {
+        Args: {
+          p_include_mature?: boolean
+          p_limit?: number
+          p_story_id: string
+        }
+        Returns: {
+          detail: string
+          reason: string
+          score: number
+          story_id: string
+        }[]
       }
       story_role: { Args: { p_story_id: string }; Returns: string }
       tag_slug: { Args: { p_name: string }; Returns: string }
