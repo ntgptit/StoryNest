@@ -1,6 +1,6 @@
 "use client";
 
-import { BookMarked, Eye, Globe, Link2, Lock, PenLine, Plus } from "lucide-react";
+import { BookMarked, Eye, Globe, Link2, ListOrdered, Lock, PenLine, Plus } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
@@ -64,6 +64,12 @@ function StudioStoryRow({
               </AppLink>
             </Button>
           ) : null}
+          <Button asChild variant="outline" size="sm">
+            <AppLink href={`/studio/story/${story.id}/chapters`}>
+              <ListOrdered aria-hidden className="size-4" />
+              {studioText.chaptersLink}
+            </AppLink>
+          </Button>
           <Button asChild variant="outline" size="sm">
             <AppLink href={storyHref(story)}>
               <Eye aria-hidden className="size-4" />

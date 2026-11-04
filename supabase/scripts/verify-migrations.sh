@@ -3,6 +3,8 @@
 set -euo pipefail
 # shellcheck source=local-db.sh
 source "$(dirname "$0")/local-db.sh"
+# shellcheck source=concurrency-checks.sh
+source "$(dirname "$0")/concurrency-checks.sh"
 
 start_local_db
 for t in "$WORK"/tests/*.sql; do
@@ -17,5 +19,7 @@ if run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -v ON_ERROR_STOP=1 -q -
 fi
 [ "$(run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -Atc \"select count(*) from public.stories\"")" = "0" ] \
   || { echo "FAIL: the refused seed left data behind" >&2; exit 1; }
+# Real concurrency (two sessions at once) needs committed data, so it runs last: it commits fixtures that the checks above must not see.
+check_chapter_concurrency
 echo "tables: $(run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -Atc \"select count(*) from information_schema.tables where table_schema='public'\"")"
 echo "OK"

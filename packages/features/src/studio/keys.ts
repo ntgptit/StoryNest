@@ -4,4 +4,5 @@ export const studioKeys = {
   stories: (userId: string) => ["studio", "stories", userId] as const,
   deleted: (userId: string) => ["studio", "deleted", userId] as const,
   story: (storyId: string) => ["studio", "story", storyId] as const,
+  chapters: (storyId: string) => ["studio", "chapters", storyId] as const,
 };
