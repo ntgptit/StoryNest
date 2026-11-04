@@ -10,6 +10,28 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      abuse_limits: {
+        Row: {
+          code: string
+          max_value: number
+          note: string
+          window_seconds: number | null
+        }
+        ComputedFields: never
+        Insert: {
+          code: string
+          max_value: number
+          note?: string
+          window_seconds?: number | null
+        }
+        Update: {
+          code?: string
+          max_value?: number
+          note?: string
+          window_seconds?: number | null
+        }
+        Relationships: []
+      }
       app_users: {
         Row: {
           account_status: string
@@ -1472,6 +1494,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      comment_looks_like_spam: { Args: { p_body: string }; Returns: boolean }
       comment_reply_count: { Args: { p_comment_id: string }; Returns: number }
       comment_to_card: {
         Args: {
@@ -1512,6 +1535,7 @@ export type Database = {
         Args: { p_body: string; p_comment_id: string }
         Returns: undefined
       }
+      enforce_rate_limit: { Args: { p_action: string }; Returns: undefined }
       invite_collaborator: {
         Args: { p_role: string; p_story_id: string; p_username: string }
         Returns: string

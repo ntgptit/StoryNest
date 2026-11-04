@@ -62,6 +62,8 @@ export const commentText = {
     notFound: "Bình luận không còn tồn tại hoặc bạn không có quyền truy cập.",
     conflict: "Bình luận này đang ở trạng thái không thao tác được.",
     invalid: "Nội dung không hợp lệ. Hãy kiểm tra lại.",
+    spam: "Bình luận bị từ chối vì trông giống spam (quá nhiều liên kết hoặc ký tự lặp lại).",
+    rateLimited: "Bạn bình luận quá nhanh. Hãy chờ một lát rồi thử lại.",
     network: "Không có kết nối. Kiểm tra mạng và thử lại.",
     generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
   },
