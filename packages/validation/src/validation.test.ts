@@ -8,7 +8,9 @@ import {
   COMMENT_STATUSES,
   DB_LIMITS,
   REPORT_STATUSES,
+  STORY_ERROR,
   STORY_STATUSES,
+  storyFormSchema,
   DEFAULT_READER_PREFERENCES,
   READER_FONT,
   READER_FONTS,
@@ -346,5 +348,44 @@ describe("reader preferences", () => {
     expect(sorted(Object.values(READER_LINE_HEIGHT))).toEqual(sorted(READER_LINE_HEIGHTS));
     expect(sorted(Object.values(READER_FONT))).toEqual(sorted(READER_FONTS));
     expect(sorted(Object.values(READER_THEME))).toEqual(sorted(READER_THEMES));
+  });
+});
+
+describe("story form schema", () => {
+  const valid = {
+    title: "  Rừng sương mù ",
+    slug: "rung-suong-mu",
+    synopsis: "",
+    categoryId: "",
+    languageCode: "vi",
+    status: "draft",
+    visibility: "private",
+    isMature: false,
+  };
+  const codeOf = (input: unknown) => storyFormSchema.safeParse(input).error?.issues.map((i) => i.message);
+
+  it("accepts a normal form and trims text", () => {
+    const parsed = storyFormSchema.parse(valid);
+    expect(parsed.title).toBe("Rừng sương mù");
+  });
+
+  it("reports stable codes the UI translates", () => {
+    expect(codeOf({ ...valid, title: "   " })).toEqual([STORY_ERROR.titleRequired]);
+    expect(codeOf({ ...valid, title: "a".repeat(201) })).toEqual([STORY_ERROR.titleTooLong]);
+    // an empty slug also fails the pattern; the first code (shown to the user) is "required"
+    expect(codeOf({ ...valid, slug: "" })?.[0]).toBe(STORY_ERROR.slugRequired);
+    expect(codeOf({ ...valid, slug: "a".repeat(121) })).toEqual([STORY_ERROR.slugTooLong]);
+    for (const slug of ["Has-Capitals", "two  words", "-lead", "trail-", "a--b", "đường"]) {
+      expect(codeOf({ ...valid, slug }), slug).toEqual([STORY_ERROR.slugInvalid]);
+    }
+    expect(codeOf({ ...valid, synopsis: "a".repeat(5001) })).toEqual([STORY_ERROR.synopsisTooLong]);
+    expect(codeOf({ ...valid, languageCode: "Vietnamese" })).toEqual([STORY_ERROR.languageInvalid]);
+  });
+
+  it("rejects values outside the enums and unknown fields", () => {
+    expect(storyFormSchema.safeParse({ ...valid, status: "archived" }).success).toBe(false);
+    expect(storyFormSchema.safeParse({ ...valid, visibility: "friends" }).success).toBe(false);
+    expect(storyFormSchema.safeParse({ ...valid, categoryId: "abc" }).success).toBe(false);
+    expect(storyFormSchema.safeParse({ ...valid, owner_id: "x" }).success).toBe(false);
   });
 });

@@ -6,6 +6,7 @@ import { AuthProvider } from "../_shared/auth.tsx";
 import type { DataClient } from "../_shared/client.ts";
 import { DataProvider } from "../_shared/data.tsx";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
+import { ToastProvider } from "../_shared/toast.tsx";
 import { TEST_USER_ID, testSession, withAuth } from "../_shared/test-auth.ts";
 import { listMyStories } from "./api/studio.api.ts";
 import { mergeStudioStories, toStudioStory, type StudioStory, type StudioStoryRow } from "./model/studio-story.ts";
@@ -143,7 +144,9 @@ function renderStudio(client: DataClient) {
       <DataProvider client={client}>
         <AuthProvider>
           <PlatformProvider adapter={adapter}>
-            <StudioScreen />
+            <ToastProvider port={{ show: vi.fn() }}>
+              <StudioScreen />
+            </ToastProvider>
           </PlatformProvider>
         </AuthProvider>
       </DataProvider>

@@ -6,3 +6,4 @@ export { storyText } from "./strings.ts";
 export { storyHref } from "../discovery/index.ts";
 export { useStory, useStoryChapters } from "./hooks/use-story.ts";
 export type { ChapterListItem } from "./model/story-detail.ts";
+export { storyKeys } from "./keys.ts";
