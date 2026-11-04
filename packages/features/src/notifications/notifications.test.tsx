@@ -357,6 +357,8 @@ describe("NotificationBell", () => {
     const c = fakeClient({ unread: { current: 0 } });
     renderUi(c, <NotificationBell />);
     await screen.findByRole("link", { name: t.bell.label });
+    // The bell shows before its effect has opened the channel; wait for the channel instead of assuming it is there.
+    await waitFor(() => expect(c.channels).toHaveLength(1));
     const channel = c.channels[0]!;
     const fetches = () => c.selects().filter((o) => o.head).length;
     await waitFor(() => expect(fetches()).toBe(1));
