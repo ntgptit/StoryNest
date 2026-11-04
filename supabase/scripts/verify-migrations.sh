@@ -7,7 +7,15 @@ source "$(dirname "$0")/local-db.sh"
 start_local_db
 for t in "$WORK"/tests/*.sql; do
   echo "running $(basename "$t")"
-  lpsql "-f '$t'"
+  lpsql "-v seed_file=$WORK/seed/dev_seed.sql -f '$t'"
 done
+# The seed must refuse to run on a database that is not marked as dev, and must leave nothing behind when it refuses.
+echo "checking the seed environment guard"
+if run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -v ON_ERROR_STOP=1 -q -c \"SET storynest.environment = 'production'\" -f '$WORK/seed/dev_seed.sql'" >/dev/null 2>&1; then
+  echo "FAIL: the seed ran on a database not marked as development" >&2
+  exit 1
+fi
+[ "$(run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -Atc \"select count(*) from public.stories\"")" = "0" ] \
+  || { echo "FAIL: the refused seed left data behind" >&2; exit 1; }
 echo "tables: $(run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -Atc \"select count(*) from information_schema.tables where table_schema='public'\"")"
 echo "OK"
