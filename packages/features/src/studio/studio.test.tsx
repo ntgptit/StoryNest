@@ -175,6 +175,11 @@ describe("StudioScreen", () => {
     expect(items[1]!.textContent).toContain(studioText.chapterCount(1));
     const link = within(items[1]!).getByRole("link", { name: studioText.view });
     expect(link.getAttribute("href")).toBe(`/story/${uuid(1)}/truyen-1`);
+    // the audience figures are for the owner and co-authors: the owned story links to them, the one shared as editor does not
+    expect(within(items[1]!).getByRole("link", { name: studioText.statsLink }).getAttribute("href")).toBe(
+      `/studio/story/${uuid(1)}/stats`,
+    );
+    expect(within(items[0]!).queryByRole("link", { name: studioText.statsLink })).toBeNull();
   });
 
   it("shows an empty state when the author has no stories", async () => {

@@ -1405,6 +1405,19 @@ export type Database = {
       }
       aggregate_reads: { Args: { p_limit?: number }; Returns: number }
       archive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
+      author_chapter_stats: {
+        Args: { p_story_id: string }
+        Returns: {
+          chapter_id: string
+          comments: number
+          reads: number
+          retention: number
+          slug: string
+          sort_order: number
+          title: string
+          votes: number
+        }[]
+      }
       author_follower_count: { Args: { p_user_id: string }; Returns: number }
       author_profile: {
         Args: { p_username: string }
@@ -1417,6 +1430,15 @@ export type Database = {
           stories_count: number
           user_id: string
           username: string
+        }[]
+      }
+      author_story_daily: {
+        Args: { p_days?: number; p_story_id: string }
+        Returns: {
+          comments: number
+          day: string
+          reads: number
+          votes: number
         }[]
       }
       can_edit_chapter: { Args: { p_chapter_id: string }; Returns: boolean }

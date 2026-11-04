@@ -1,6 +1,6 @@
 "use client";
 
-import { BookMarked, Eye, Globe, Link2, ListOrdered, Lock, PenLine, Plus, Users } from "lucide-react";
+import { BarChart3, BookMarked, Eye, Globe, Link2, ListOrdered, Lock, PenLine, Plus, Users } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
@@ -76,6 +76,14 @@ function StudioStoryRow({
               <AppLink href={`/studio/story/${story.id}/team`}>
                 <Users aria-hidden className="size-4" />
                 {studioText.teamLink}
+              </AppLink>
+            </Button>
+          ) : null}
+          {story.role !== "editor" ? (
+            <Button asChild variant="outline" size="sm">
+              <AppLink href={`/studio/story/${story.id}/stats`}>
+                <BarChart3 aria-hidden className="size-4" />
+                {studioText.statsLink}
               </AppLink>
             </Button>
           ) : null}
