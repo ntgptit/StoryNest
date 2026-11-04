@@ -8,7 +8,7 @@ import { toStorySummary, type StoryListRow, type StorySummary } from "../model/s
 // One request returns the story with its author, category, counters and tags: no per-card follow-up queries.
 // The explicit relationship name is required: stories and app_users are linked several ways (owner, collaborators,
 // follows, saves, progress), so a bare `app_users(...)` embed is ambiguous (PostgREST error PGRST201).
-const STORY_COLUMNS = [
+export const STORY_COLUMNS = [
   "id, slug, title, synopsis, cover_storage_key, status, is_mature, language_code, updated_at",
   "owner:app_users!stories_owner_id_fkey(username, display_name)",
   "category:categories(slug, name)",
