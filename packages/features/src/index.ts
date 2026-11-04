@@ -15,3 +15,4 @@ export * from "./comments/index.ts";
 export * from "./library/index.ts";
 export * from "./lists/index.ts";
 export * from "./notifications/index.ts";
+export * from "./search/index.ts";

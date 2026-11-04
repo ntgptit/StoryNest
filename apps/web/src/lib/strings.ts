@@ -18,6 +18,7 @@ export const appText = {
     studio: "Studio",
     library: "Thư viện",
     list: "Danh sách đọc",
+    search: "Tìm kiếm",
     notifications: "Thông báo",
     newStory: "Truyện mới",
     editStory: "Chỉnh sửa truyện",

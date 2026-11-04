@@ -1448,6 +1448,52 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_authors: {
+        Args: {
+          p_include_mature?: boolean
+          p_limit?: number
+          p_offset?: number
+          p_query: string
+        }
+        Returns: {
+          avatar_storage_key: string
+          display_name: string
+          score: number
+          stories_count: number
+          user_id: string
+          username: string
+        }[]
+      }
+      search_normalize: { Args: { p_text: string }; Returns: string }
+      search_prepare: {
+        Args: { p_limit: number; p_offset: number; p_query: string }
+        Returns: {
+          pattern: string
+          q: string
+        }[]
+      }
+      search_stories: {
+        Args: {
+          p_include_mature?: boolean
+          p_limit?: number
+          p_offset?: number
+          p_query: string
+        }
+        Returns: {
+          score: number
+          story_id: string
+        }[]
+      }
+      search_tags: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          display_name: string
+          score: number
+          slug: string
+          stories_count: number
+          tag_id: number
+        }[]
+      }
       set_chapter_vote: {
         Args: { p_chapter_id: string; p_voted: boolean }
         Returns: number
