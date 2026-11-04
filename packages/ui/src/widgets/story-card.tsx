@@ -4,6 +4,7 @@ import { BookOpen, Heart } from "lucide-react";
 import { Badge } from "../components/badge.tsx";
 import { cn } from "../lib/utils.ts";
 import type { NavLinkComponent } from "./bottom-nav.tsx";
+import { StoryCover } from "./story-cover.tsx";
 
 export interface StoryCardData {
   href: string;
@@ -56,23 +57,13 @@ export function StoryCard({
         className,
       )}
     >
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-muted">
-        {story.coverUrl ? (
-          <img src={story.coverUrl} alt="" loading="lazy" className="size-full object-cover" />
-        ) : (
-          <div
-            aria-hidden
-            className="flex size-full items-center justify-center bg-secondary text-4xl font-semibold text-secondary-foreground"
-          >
-            {Array.from(story.title)[0]?.toLocaleUpperCase() ?? "?"}
-          </div>
-        )}
+      <StoryCover title={story.title} coverUrl={story.coverUrl}>
         {story.matureLabel ? (
           <Badge variant="destructive" className="absolute top-2 left-2">
             {story.matureLabel}
           </Badge>
         ) : null}
-      </div>
+      </StoryCover>
 
       <div className="flex flex-1 flex-col gap-1.5">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug group-hover:underline">{story.title}</h3>

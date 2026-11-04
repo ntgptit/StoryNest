@@ -4,3 +4,5 @@ export { prefetchDiscovery } from "./queries.ts";
 export { storyHref } from "./model/story-card.ts";
 export { discoveryText } from "./strings.ts";
 export { DEFAULT_PAGE_SIZE, type LatestStoriesFilter } from "./keys.ts";
+export { STORY_COLUMNS } from "./api/discovery.api.ts";
+export { statusLabel, toStorySummary, type StoryListRow, type StorySummary } from "./model/story-card.ts";
