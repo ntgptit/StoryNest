@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, PenLine, User } from "lucide-react";
+import { Home, Library, PenLine, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { AppShell } from "@storynest/ui/widgets/app-shell";
 import { BottomNav, type BottomNavItem } from "@storynest/ui/widgets/bottom-nav";
@@ -10,6 +10,7 @@ import { SiteHeader } from "./site-header.tsx";
 
 const NAV_ITEMS: readonly BottomNavItem[] = [
   { href: "/", label: shellText.nav.home, icon: Home },
+  { href: "/library", label: shellText.nav.library, icon: Library },
   { href: "/studio", label: shellText.nav.studio, icon: PenLine },
   { href: "/me", label: shellText.nav.me, icon: User },
 ];

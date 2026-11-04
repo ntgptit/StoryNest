@@ -5,10 +5,11 @@ export const shellText = {
   accountMenu: "Menu tài khoản",
   profile: "Hồ sơ",
   studio: "Studio",
+  library: "Thư viện",
   signOut: "Đăng xuất",
   signOutFailed: "Không đăng xuất được. Vui lòng thử lại.",
   mainNavigation: "Điều hướng chính",
-  nav: { home: "Trang chủ", studio: "Viết", me: "Tôi" },
+  nav: { home: "Trang chủ", library: "Thư viện", studio: "Viết", me: "Tôi" },
   me: {
     title: "Hồ sơ của bạn",
     edit: "Chỉnh sửa hồ sơ",
