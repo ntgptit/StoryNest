@@ -912,6 +912,59 @@ export type Database = {
           },
         ]
       }
+      story_invitations: {
+        Row: {
+          collaborator_role: string
+          created_at: string
+          id: string
+          invitee_id: string
+          inviter_id: string
+          responded_at: string | null
+          status: string
+          story_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          collaborator_role: string
+          created_at?: string
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          responded_at?: string | null
+          status?: string
+          story_id: string
+        }
+        Update: {
+          collaborator_role?: string
+          created_at?: string
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          responded_at?: string | null
+          status?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_invitations_invitee_id_fkey"
+            columns: ["invitee_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_invitations_inviter_id_fkey"
+            columns: ["inviter_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_invitations_story_id_fkey"
+            columns: ["story_id"]
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       story_saves: {
         Row: {
           saved_at: string
@@ -1198,6 +1251,10 @@ export type Database = {
       can_edit_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_story: { Args: { p_story_id: string }; Returns: boolean }
+      cancel_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
       create_chapter: {
         Args: {
           p_id?: string
@@ -1207,12 +1264,39 @@ export type Database = {
         }
         Returns: string
       }
+      invite_collaborator: {
+        Args: { p_role: string; p_story_id: string; p_username: string }
+        Returns: string
+      }
       is_active_account: { Args: Record<PropertyKey, never>; Returns: boolean }
       is_live_version: { Args: { p_version_id: string }; Returns: boolean }
       is_moderator: { Args: Record<PropertyKey, never>; Returns: boolean }
       is_valid_storage_key: {
         Args: { p_key: string; p_scope: string }
         Returns: boolean
+      }
+      list_my_invitations: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          collaborator_role: string
+          created_at: string
+          id: string
+          inviter_display_name: string
+          inviter_username: string
+          story_id: string
+          story_title: string
+        }[]
+      }
+      list_story_invitations: {
+        Args: { p_story_id: string }
+        Returns: {
+          collaborator_role: string
+          created_at: string
+          id: string
+          invitee_display_name: string
+          invitee_username: string
+          status: string
+        }[]
       }
       process_outbox: { Args: { p_limit?: number }; Returns: number }
       publish_chapter: {
@@ -1228,6 +1312,10 @@ export type Database = {
       }
       reorder_chapters: {
         Args: { p_chapter_ids: string[]; p_story_id: string }
+        Returns: undefined
+      }
+      respond_invitation: {
+        Args: { p_accept: boolean; p_invitation_id: string }
         Returns: undefined
       }
       save_reading_progress: {

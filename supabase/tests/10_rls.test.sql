@@ -131,8 +131,12 @@ DO $$
 DECLARE a constant uuid := '00000000-0000-0000-0000-00000000000a'; c constant uuid := '00000000-0000-0000-0000-00000000000c';
 BEGIN
   RESET ROLE; PERFORM tests.act_as(a);
-  PERFORM tests.rows('A adds editor', format($q$INSERT INTO story_collaborators (story_id, user_id, collaborator_role) VALUES ('10000000-0000-0000-0000-000000000001', %L, 'editor')$q$, c), 1);
-  RESET ROLE; PERFORM tests.act_as(c);
+  -- Collaborators are added only through an accepted invitation (WP 3.8, D9); even the owner cannot insert directly.
+  PERFORM tests.denied('A cannot add an editor without their consent', format($q$INSERT INTO story_collaborators (story_id, user_id, collaborator_role) VALUES ('10000000-0000-0000-0000-000000000001', %L, 'editor')$q$, c));
+  -- The editor is added as the accepted invitation would (service-side), so the checks below keep covering the editor role.
+  RESET ROLE;
+  INSERT INTO story_collaborators (story_id, user_id, collaborator_role) VALUES ('10000000-0000-0000-0000-000000000001', c, 'editor');
+  PERFORM tests.act_as(c);
   PERFORM tests.count_is('editor sees draft chapter', $q$SELECT 1 FROM chapters WHERE slug = 'c2'$q$, 1);
   PERFORM tests.rows('editor saves draft', format($q$INSERT INTO chapter_drafts (chapter_id, title, updated_by) VALUES ('20000000-0000-0000-0000-000000000002','Ch 2', %L)$q$, c), 1);
   PERFORM tests.rows('editor cannot change story', $q$UPDATE stories SET title = 'pwn' WHERE id = '10000000-0000-0000-0000-000000000001'$q$, 0);
