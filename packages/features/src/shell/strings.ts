@@ -6,6 +6,7 @@ export const shellText = {
   profile: "Hồ sơ",
   studio: "Studio",
   library: "Thư viện",
+  settings: "Cài đặt",
   signOut: "Đăng xuất",
   signOutFailed: "Không đăng xuất được. Vui lòng thử lại.",
   mainNavigation: "Điều hướng chính",

@@ -103,6 +103,7 @@ describe("UserMenu", () => {
     fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: "mouse" });
     expect(await screen.findByText("Nguyễn Văn An")).toBeTruthy();
     expect(screen.getByText("Hồ sơ").closest("a")?.getAttribute("href")).toBe("/me");
+    expect(screen.getByText("Cài đặt").closest("a")?.getAttribute("href")).toBe("/settings");
     expect(screen.getByText("Đăng xuất")).toBeTruthy();
   });
 
@@ -167,5 +168,30 @@ describe("MainShell", () => {
     );
     const control = within(screen.getByRole("banner")).getByRole("button", { name: adultContentText.button });
     expect(control.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("keeps the adult-content choice in step with the account: a signed-in member's account copy is read", async () => {
+    const { client } = fakeClient({ session, profile });
+    const from = vi.fn((table: string) =>
+      table === "user_settings"
+        ? { select: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }
+        : { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: profile, error: null }) }) }) },
+    );
+    setup(
+      <MainShell>
+        <p>page content</p>
+      </MainShell>,
+      {
+        ...client,
+        from,
+        // the notification bell listens to Realtime for a signed-in member
+        channel: () => {
+          const channel = { on: () => channel, subscribe: () => channel };
+          return channel;
+        },
+        removeChannel: vi.fn(),
+      } as unknown as DataClient,
+    );
+    await waitFor(() => expect(from).toHaveBeenCalledWith("user_settings"));
   });
 });

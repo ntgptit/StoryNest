@@ -66,6 +66,9 @@ export function UserMenu() {
         <DropdownMenuItem asChild>
           <AppLink href="/me">{shellText.profile}</AppLink>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <AppLink href="/settings">{shellText.settings}</AppLink>
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={signOut}>{shellText.signOut}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

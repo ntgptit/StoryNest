@@ -48,6 +48,10 @@
             "declined",
             "pending"
         ],
+        "user_settings.language_code": [
+            "en",
+            "vi"
+        ],
         "chapter_version_blocks.block_type": [
             "divider",
             "heading",
@@ -86,6 +90,7 @@
         "outbox_events.event_type": 60,
         "reading_lists.visibility": 12,
         "story_invitations.status": 12,
+        "user_settings.language_code": 12,
         "chapter_version_blocks.block_type": 16,
         "story_invitations.collaborator_role": 16,
         "story_collaborators.collaborator_role": 16

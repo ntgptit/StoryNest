@@ -6,6 +6,7 @@ import {
   CHAPTER_STATUSES,
   COLLABORATOR_ROLES,
   COMMENT_STATUSES,
+  STORY_LANGUAGES,
   HIDE_SOURCES,
   INVITATION_STATUSES,
   DB_LIMITS,
@@ -68,6 +69,7 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["story_invitations.status", INVITATION_STATUSES],
     ["story_invitations.collaborator_role", COLLABORATOR_ROLES],
     ["comments.status", COMMENT_STATUSES],
+    ["user_settings.language_code", STORY_LANGUAGES],
     ["comment_hides.source", HIDE_SOURCES],
     ["content_reports.status", REPORT_STATUSES],
   ];

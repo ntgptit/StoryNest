@@ -1265,6 +1265,47 @@ export type Database = {
           },
         ]
       }
+      user_settings: {
+        Row: {
+          age_confirmed: boolean
+          language_code: string
+          notify_chapter_published: boolean
+          notify_collaboration_answers: boolean
+          notify_comment_replied: boolean
+          show_mature: boolean
+          updated_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          age_confirmed?: boolean
+          language_code?: string
+          notify_chapter_published?: boolean
+          notify_collaboration_answers?: boolean
+          notify_comment_replied?: boolean
+          show_mature?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age_confirmed?: boolean
+          language_code?: string
+          notify_chapter_published?: boolean
+          notify_collaboration_answers?: boolean
+          notify_comment_replied?: boolean
+          show_mature?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_story_progress: {
         Row: {
           current_chapter_id: string
@@ -1485,6 +1526,10 @@ export type Database = {
           invitee_username: string
           status: string
         }[]
+      }
+      notification_enabled: {
+        Args: { p_event_type: string; p_user_id: string }
+        Returns: boolean
       }
       popular_tags: {
         Args: { p_limit?: number }
