@@ -156,8 +156,10 @@ describe("recommendation api", () => {
   });
 
   it("has query keys that tell stories and readers apart", () => {
-    expect(recommendationKeys.similar("a")).not.toEqual(recommendationKeys.similar("b"));
-    expect(recommendationKeys.forMe("u1")).not.toEqual(recommendationKeys.forMe("u2"));
+    expect(recommendationKeys.similar("a", false)).not.toEqual(recommendationKeys.similar("b", false));
+    expect(recommendationKeys.forMe("u1", false)).not.toEqual(recommendationKeys.forMe("u2", false));
+    expect(recommendationKeys.similar("a", true)).not.toEqual(recommendationKeys.similar("a", false));
+    expect(recommendationKeys.forMe("u1", true)).not.toEqual(recommendationKeys.forMe("u1", false));
   });
 });
 

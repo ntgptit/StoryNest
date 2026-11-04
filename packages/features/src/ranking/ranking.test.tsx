@@ -134,8 +134,9 @@ describe("ranking model", () => {
 
 describe("ranking query keys", () => {
   it("differ by period, so each tab has its own cache", () => {
-    const keys = RANKING_PERIODS.map((period) => JSON.stringify(rankingKeys.top(period)));
+    const keys = RANKING_PERIODS.map((period) => JSON.stringify(rankingKeys.top(period, false)));
     expect(new Set(keys).size).toBe(RANKING_PERIODS.length);
+    expect(rankingKeys.top("week", true)).not.toEqual(rankingKeys.top("week", false));
   });
 });
 

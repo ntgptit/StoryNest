@@ -5,6 +5,7 @@ import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { ReadingProgress } from "@storynest/ui/widgets/reading-progress";
+import { AdultGate } from "../../adult-content/index.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { storyHref, useStory, useStoryChapters } from "../../story/index.ts";
 import { CommentThread, commentText } from "../../comments/index.ts";
@@ -40,14 +41,18 @@ export function ReaderScreen({
   useApplyReaderPreferences();
   useReaderPreferencesSync();
 
-  if (chapter.isPending) return <ReaderSkeleton />;
-  if (chapter.isError) {
+  // The story says whether this is adult content, and that must be known before a single block is shown.
+  if (chapter.isPending || story.isPending) return <ReaderSkeleton />;
+  if (chapter.isError || story.isError) {
     return (
       <ErrorState
         title={readerText.error.title}
         description={readerText.error.description}
         retryLabel={readerText.error.retry}
-        onRetry={() => void chapter.refetch()}
+        onRetry={() => {
+          void chapter.refetch();
+          void story.refetch();
+        }}
       />
     );
   }
@@ -62,59 +67,61 @@ export function ReaderScreen({
   const chapterItems = chapters.data ?? [];
 
   return (
-    <div className="flex flex-col">
-      <ReadingTracker key={data.id} chapterId={data.id} blockIds={data.blocks.map((b) => b.id)} />
-      <div className="sticky top-0 z-10 -mx-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex h-12 max-w-3xl items-center justify-between gap-2 px-4">
-          {storyData ? (
-            <AppLink
-              href={storyHref(storyData)}
-              className="inline-flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft aria-hidden className="size-4 shrink-0" />
-              <span className="truncate">{storyData.title}</span>
-              <span className="sr-only">{readerText.backToStory}</span>
-            </AppLink>
-          ) : (
-            <span />
-          )}
-          <div className="flex items-center gap-1">
-            <ReaderSettingsSheet />
-            {storyData ? <TocSheet story={storyData} chapters={chapterItems} currentSlug={data.slug} /> : null}
+    <AdultGate isMature={storyData?.isMature ?? false}>
+      <div className="flex flex-col">
+        <ReadingTracker key={data.id} chapterId={data.id} blockIds={data.blocks.map((b) => b.id)} />
+        <div className="sticky top-0 z-10 -mx-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="mx-auto flex h-12 max-w-3xl items-center justify-between gap-2 px-4">
+            {storyData ? (
+              <AppLink
+                href={storyHref(storyData)}
+                className="inline-flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft aria-hidden className="size-4 shrink-0" />
+                <span className="truncate">{storyData.title}</span>
+                <span className="sr-only">{readerText.backToStory}</span>
+              </AppLink>
+            ) : (
+              <span />
+            )}
+            <div className="flex items-center gap-1">
+              <ReaderSettingsSheet />
+              {storyData ? <TocSheet story={storyData} chapters={chapterItems} currentSlug={data.slug} /> : null}
+            </div>
           </div>
+          <ReadingProgress label={readerText.progress} />
         </div>
-        <ReadingProgress label={readerText.progress} />
+
+        <article className="reader-text mx-auto flex w-full max-w-[var(--reader-measure)] flex-col gap-6 py-8">
+          <header className="flex flex-col gap-1">
+            <p className="text-sm text-muted-foreground">{readerText.chapterLabel(data.number)}</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{data.title}</h1>
+          </header>
+
+          {data.blocks.length === 0 ? (
+            <p className="text-muted-foreground">{readerText.emptyChapter}</p>
+          ) : (
+            <div className="flex flex-col gap-[1em]">
+              <ReaderBlocks chapterId={data.id} blocks={data.blocks} imageUrlFor={imageUrlFor} />
+            </div>
+          )}
+
+          <p className="pt-4 text-center text-sm text-muted-foreground" aria-hidden>
+            — {readerText.endOfChapter} —
+          </p>
+          <VoteButton chapterId={data.id} />
+          <section
+            id={COMMENTS_ANCHOR}
+            aria-label={commentText.title}
+            className="flex scroll-mt-20 flex-col gap-4 border-t pt-6"
+          >
+            <h2 className="text-lg font-semibold">{commentText.title}</h2>
+            <CommentThread chapterId={data.id} />
+          </section>
+          {storyData ? <ChapterNav story={storyData} chapters={chapterItems} chapterSlug={data.slug} /> : null}
+        </article>
       </div>
-
-      <article className="reader-text mx-auto flex w-full max-w-[var(--reader-measure)] flex-col gap-6 py-8">
-        <header className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">{readerText.chapterLabel(data.number)}</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{data.title}</h1>
-        </header>
-
-        {data.blocks.length === 0 ? (
-          <p className="text-muted-foreground">{readerText.emptyChapter}</p>
-        ) : (
-          <div className="flex flex-col gap-[1em]">
-            <ReaderBlocks chapterId={data.id} blocks={data.blocks} imageUrlFor={imageUrlFor} />
-          </div>
-        )}
-
-        <p className="pt-4 text-center text-sm text-muted-foreground" aria-hidden>
-          — {readerText.endOfChapter} —
-        </p>
-        <VoteButton chapterId={data.id} />
-        <section
-          id={COMMENTS_ANCHOR}
-          aria-label={commentText.title}
-          className="flex scroll-mt-20 flex-col gap-4 border-t pt-6"
-        >
-          <h2 className="text-lg font-semibold">{commentText.title}</h2>
-          <CommentThread chapterId={data.id} />
-        </section>
-        {storyData ? <ChapterNav story={storyData} chapters={chapterItems} chapterSlug={data.slug} /> : null}
-      </article>
-    </div>
+    </AdultGate>
   );
 }
 

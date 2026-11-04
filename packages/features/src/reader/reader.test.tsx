@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
@@ -8,6 +8,8 @@ import { DataProvider } from "../_shared/data.tsx";
 import { withAuth } from "../_shared/test-auth.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { ToastProvider } from "../_shared/toast.tsx";
+import { adultContentText } from "../adult-content/index.ts";
+import { NO_ADULT_CONTENT, setStoredAdultContent } from "../adult-content/model/store.ts";
 import type { ChapterListItem } from "../story/index.ts";
 import { getChapterContent } from "./api/reader.api.ts";
 import {
@@ -238,8 +240,8 @@ const listRows = [1, 2, 3].map((n) => ({
   version: { title: `Tựa ${n}`, word_count: 10 },
 }));
 
-function screenClient(chapter: () => { data: unknown; error: unknown }) {
-  const stories = builderFor(() => ({ data: storyRow, error: null }));
+function screenClient(chapter: () => { data: unknown; error: unknown }, mature = false) {
+  const stories = builderFor(() => ({ data: { ...storyRow, is_mature: mature }, error: null }));
   const chapters = builderFor(chapter);
   // The list query has no maybeSingle and is awaited; the reader's single-chapter query calls maybeSingle.
   const originalThen = chapters.builder.then;
@@ -273,6 +275,54 @@ function renderReader(client: DataClient, imageUrlFor?: (key: string) => string)
     </QueryClientProvider>,
   );
 }
+
+describe("ReaderScreen: adult stories", () => {
+  it("shows no chapter text while the story, which says whether it is adult, is still loading", async () => {
+    setStoredAdultContent(NO_ADULT_CONTENT);
+    const row = chapterRow({
+      version: { title: "Chương người lớn", word_count: 10, blocks: [block(1, { text_content: "Nội dung 18+" })] },
+    });
+    const client = screenClient(() => ({ data: row, error: null }), true);
+    // the chapter is there at once, the story only after a while
+    const stories = (client as unknown as { from: (name: string) => Record<string, unknown> }).from("stories");
+    const original = stories.maybeSingle as () => Promise<unknown>;
+    stories.maybeSingle = () => new Promise((resolve) => setTimeout(() => resolve(original()), 200));
+    renderReader(client);
+
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(screen.queryByText("Nội dung 18+")).toBeNull();
+    expect(screen.queryByRole("heading", { level: 1, name: "Chương người lớn" })).toBeNull();
+    expect(await screen.findByText(adultContentText.gate.title)).toBeTruthy();
+    expect(screen.queryByText("Nội dung 18+")).toBeNull();
+  });
+
+  it("shows nothing of an adult story's chapter until the reader confirms they are 18 or older", async () => {
+    setStoredAdultContent(NO_ADULT_CONTENT);
+    const row = chapterRow({
+      version: { title: "Chương người lớn", word_count: 10, blocks: [block(1, { text_content: "Nội dung 18+" })] },
+    });
+    renderReader(screenClient(() => ({ data: row, error: null }), true));
+
+    expect(await screen.findByText(adultContentText.gate.title)).toBeTruthy();
+    expect(screen.queryByRole("heading", { level: 1, name: "Chương người lớn" })).toBeNull();
+    expect(screen.queryByText("Nội dung 18+")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: adultContentText.gate.confirm }));
+    expect(await screen.findByRole("heading", { level: 1, name: "Chương người lớn" })).toBeTruthy();
+    expect(screen.getByText("Nội dung 18+")).toBeTruthy();
+    setStoredAdultContent(NO_ADULT_CONTENT);
+  });
+
+  it("an ordinary story's chapter needs no confirmation", async () => {
+    setStoredAdultContent(NO_ADULT_CONTENT);
+    const row = chapterRow({
+      version: { title: "Chương thường", word_count: 10, blocks: [block(1, { text_content: "Nội dung thường" })] },
+    });
+    renderReader(screenClient(() => ({ data: row, error: null }), false));
+    expect(await screen.findByRole("heading", { level: 1, name: "Chương thường" })).toBeTruthy();
+    expect(screen.queryByText(adultContentText.gate.title)).toBeNull();
+  });
+});
 
 describe("ReaderScreen", () => {
   it("renders the title, blocks with stable anchors, marks, images and prev/next links", async () => {

@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import type { AppError } from "../../_shared/errors.ts";
+import { useShowMature } from "../../adult-content/index.ts";
 import { toAppError } from "../../_shared/errors.ts";
 import { listPopularTags, type StoryPage } from "../api/discovery.api.ts";
 import { discoveryKeys, type LatestStoriesFilter } from "../keys.ts";
@@ -16,8 +17,11 @@ export function useCategories() {
 }
 
 /** Infinite feed of the latest stories. Waits for `categories` only when a category filter is active. */
-export function useLatestStories(filter: LatestStoriesFilter, categories: readonly Category[] | undefined) {
+export function useLatestStories(filterWanted: LatestStoriesFilter, categories: readonly Category[] | undefined) {
   const getClient = useDataClientGetter();
+  // Adult stories are in the feed only when the reader chose to see them: the choice is not the caller's to make.
+  const showMature = useShowMature();
+  const filter: LatestStoriesFilter = { ...filterWanted, includeMature: showMature };
   const needsCategories = Boolean(filter.categorySlug);
   return useInfiniteQuery<
     StoryPage,
