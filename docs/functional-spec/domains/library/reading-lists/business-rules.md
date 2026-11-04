@@ -45,7 +45,7 @@ Rule summary
 | Expected behavior | Form hints: "Only you can see it." / "Anyone with the link can see it. It isn't listed anywhere." / "Everyone can see it."; labels "Private" / "Anyone with the link" / "Public". |
 | Exceptions | An unlisted list can still be enumerated by a direct query (RLS cannot require knowing the id); pages that list lists must filter `visibility='public'` themselves (migration note; F-LIST-03). No page lists other people's public lists yet. |
 | Related screens | SCR-LIST-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:301-302`, `supabase/migrations/20261103000000_init_schema.sql:240-250`, `supabase/migrations/20261104000900_reading_lists.sql:17-18`, `supabase/tests/150_reading_lists.test.sql:53-62`, `packages/features/src/lists/strings.en.ts:16-21` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:301-302`, `supabase/migrations/20261103000000_init_schema.sql:236-246`, `supabase/migrations/20261104000900_reading_lists.sql:17-18`, `supabase/tests/150_reading_lists.test.sql:53-62`, `packages/features/src/lists/strings.en.ts:16-21` |
 | Status | Verified (SQL test) |
 
 ### BR-LIST-002 — Only the owner changes a list
@@ -69,7 +69,7 @@ Rule summary
 | Expected behavior | Errors under the field: "Please enter a list name." / "The list name can be up to 120 characters." / "The description can be up to 1,000 characters."; hint "Up to 1,000 characters." |
 | Exceptions | The add-to-list sheet's quick "Create and add" silently ignores a name over 120 characters (U-LIST-02). |
 | Related screens | SCR-LIST-01 (form dialog), Add-to-list sheet |
-| Evidence | `packages/features/src/lists/model/list.ts:94-103`, `packages/validation/src/limits.ts:10`, `:20`, `supabase/migrations/20261103000000_init_schema.sql:242`, `:249`, `packages/features/src/lists/components/list-form-dialog.tsx:52-57`, `:79-101`, `packages/features/src/lists/strings.en.ts:27`, `:35-39` |
+| Evidence | `packages/features/src/lists/model/list.ts:94-103`, `packages/validation/src/limits.ts:10`, `:20`, `supabase/migrations/20261103000000_init_schema.sql:239`, `:245`, `packages/features/src/lists/components/list-form-dialog.tsx:52-57`, `:79-101`, `packages/features/src/lists/strings.en.ts:27`, `:35-39` |
 | Status | Verified |
 
 ### BR-LIST-004 — Limits: 100 lists, 500 stories per list
@@ -177,7 +177,7 @@ Rule summary
 | Expected behavior | Dialog "Delete this list?" / "The list will be gone. The stories in it are not affected."; success → toast "List deleted." and navigation to `/library` (opens on the Reading tab). Failure → error toast, dialog stays. |
 | Exceptions | No undo. |
 | Related screens | SCR-LIST-01 |
-| Evidence | `packages/features/src/lists/api/lists.api.ts:101-104`, `packages/features/src/lists/screens/list-screen.tsx:207-225`, `supabase/migrations/20261103000000_init_schema.sql:254`, `packages/features/src/lists/lists.test.tsx:585` |
+| Evidence | `packages/features/src/lists/api/lists.api.ts:101-104`, `packages/features/src/lists/screens/list-screen.tsx:207-225`, `supabase/migrations/20261103000000_init_schema.sql:250`, `packages/features/src/lists/lists.test.tsx:585` |
 | Status | Verified |
 
 ### BR-LIST-013 — Error messages
