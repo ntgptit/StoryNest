@@ -11,6 +11,19 @@ export const BLOCK_TYPES = ["paragraph", "heading", "image", "divider"] as const
 export const COLLABORATOR_ROLES = ["co_author", "editor"] as const;
 export const INVITATION_STATUSES = ["pending", "accepted", "declined", "cancelled"] as const;
 export const COMMENT_STATUSES = ["visible", "hidden", "deleted"] as const;
+export const REPORT_REASONS = ["spam", "harassment", "hate", "sexual", "violence", "copyright", "other"] as const;
+export const MODERATION_ACTIONS = [
+  "hide_comment",
+  "restore_comment",
+  "remove_story",
+  "restore_story",
+  "suspend_user",
+  "reinstate_user",
+  "review_report",
+  "resolve_report",
+  "dismiss_report",
+] as const;
+export const MODERATION_TARGET_KINDS = ["comment", "story", "user", "report"] as const;
 export const HIDE_SOURCES = ["author", "moderator"] as const;
 export const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"] as const;
 
@@ -23,6 +36,9 @@ export const collaboratorRoleSchema = z.enum(COLLABORATOR_ROLES);
 export const invitationStatusSchema = z.enum(INVITATION_STATUSES);
 export const commentStatusSchema = z.enum(COMMENT_STATUSES);
 export const hideSourceSchema = z.enum(HIDE_SOURCES);
+export const reportReasonSchema = z.enum(REPORT_REASONS);
+export const moderationActionSchema = z.enum(MODERATION_ACTIONS);
+export const moderationTargetKindSchema = z.enum(MODERATION_TARGET_KINDS);
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
 
 // Named constants for the values code compares or filters on, so no query or condition spells a literal like
@@ -63,10 +79,47 @@ export const COMMENT_STATUS = { VISIBLE: "visible", HIDDEN: "hidden", DELETED: "
   CommentStatus
 >;
 
+export const REPORT_STATUS = {
+  PENDING: "pending",
+  REVIEWING: "reviewing",
+  RESOLVED: "resolved",
+  DISMISSED: "dismissed",
+} as const satisfies Record<string, ReportStatus>;
+export const REPORT_REASON = {
+  SPAM: "spam",
+  HARASSMENT: "harassment",
+  HATE: "hate",
+  SEXUAL: "sexual",
+  VIOLENCE: "violence",
+  COPYRIGHT: "copyright",
+  OTHER: "other",
+} as const satisfies Record<string, ReportReason>;
+export const MODERATION_ACTION = {
+  HIDE_COMMENT: "hide_comment",
+  RESTORE_COMMENT: "restore_comment",
+  REMOVE_STORY: "remove_story",
+  RESTORE_STORY: "restore_story",
+  SUSPEND_USER: "suspend_user",
+  REINSTATE_USER: "reinstate_user",
+  REVIEW_REPORT: "review_report",
+  RESOLVE_REPORT: "resolve_report",
+  DISMISS_REPORT: "dismiss_report",
+} as const satisfies Record<string, ModerationAction>;
+export const MODERATION_TARGET_KIND = {
+  COMMENT: "comment",
+  STORY: "story",
+  USER: "user",
+  REPORT: "report",
+} as const satisfies Record<string, ModerationTargetKind>;
+
+export type ReportReason = z.infer<typeof reportReasonSchema>;
+export type ModerationAction = z.infer<typeof moderationActionSchema>;
+export type ModerationTargetKind = z.infer<typeof moderationTargetKindSchema>;
 /** Who hid a comment: the story's author (can show it again) or a moderator (cannot be undone by the author). */
 export const HIDE_SOURCE = { AUTHOR: "author", MODERATOR: "moderator" } as const satisfies Record<string, HideSource>;
 
 export type HideSource = z.infer<typeof hideSourceSchema>;
+export type ReportStatus = z.infer<typeof reportStatusSchema>;
 export type CommentStatus = z.infer<typeof commentStatusSchema>;
 export type InvitationStatus = z.infer<typeof invitationStatusSchema>;
 export type CollaboratorRole = z.infer<typeof collaboratorRoleSchema>;

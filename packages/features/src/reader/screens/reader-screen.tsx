@@ -8,6 +8,7 @@ import { ReadingProgress } from "@storynest/ui/widgets/reading-progress";
 import { AdultGate } from "../../adult-content/index.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { storyHref, useStory, useStoryChapters } from "../../story/index.ts";
+import { ReportButton } from "../../moderation/index.ts";
 import { CommentThread, commentText } from "../../comments/index.ts";
 import { ReaderBlocks } from "../components/reader-blocks.tsx";
 import { VoteButton } from "../components/vote-button.tsx";
@@ -110,6 +111,9 @@ export function ReaderScreen({
             — {readerText.endOfChapter} —
           </p>
           <VoteButton chapterId={data.id} />
+          <div className="flex justify-center">
+            <ReportButton kind="chapter" targetId={data.id} />
+          </div>
           <section
             id={COMMENTS_ANCHOR}
             aria-label={commentText.title}

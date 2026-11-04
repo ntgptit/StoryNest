@@ -1,5 +1,5 @@
 // Argument schemas for the public RPCs (names match the Postgres parameters exactly).
-// Error contract of the RPCs: 42501 forbidden, PT404 not found, PT409 conflict, 22023 invalid input.
+// Error contract of the RPCs: 42501 forbidden, PT404 not found, PT409 conflict, 22023 invalid input, PT429 too many requests.
 import { z } from "zod";
 
 const uuid = z.uuid();
@@ -23,12 +23,13 @@ export type PublishChapterArgs = z.infer<typeof publishChapterArgsSchema>;
 export type ScheduleChapterArgs = z.infer<typeof scheduleChapterArgsSchema>;
 export type UnpublishChapterArgs = z.infer<typeof unpublishChapterArgsSchema>;
 
-/** SQLSTATEs raised by the publish RPCs. */
+/** SQLSTATEs raised by the RPCs. */
 export const RPC_ERROR = {
   forbidden: "42501",
   notFound: "PT404",
   conflict: "PT409",
   invalid: "22023",
+  rateLimited: "PT429",
 } as const;
 export type RpcErrorKind = keyof typeof RPC_ERROR;
 

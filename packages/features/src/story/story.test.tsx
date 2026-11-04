@@ -280,6 +280,7 @@ describe("StoryScreen", () => {
       `/story/${STORY_ID}/rung-suong-mu/chuong-2`,
     ]);
     expect(screen.getByText(storyText.chapterCount(2))).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Báo cáo truyện" })).toBeTruthy();
   });
 
   it("without published chapters there is no start button and a clear message", async () => {

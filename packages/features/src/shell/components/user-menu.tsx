@@ -12,6 +12,7 @@ import {
 } from "@storynest/ui/components/dropdown-menu";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { useAuth } from "../../_shared/auth.tsx";
+import { useIsModerator } from "../../moderation/index.ts";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { initials } from "../model/initials.ts";
@@ -22,6 +23,7 @@ export function UserMenu() {
   const auth = useAuth();
   const navigation = useNavigation();
   const toast = useAppToast();
+  const moderator = useIsModerator();
 
   if (auth.status === "loading") return <Skeleton className="size-9 rounded-full" aria-hidden />;
 
@@ -66,6 +68,11 @@ export function UserMenu() {
         <DropdownMenuItem asChild>
           <AppLink href="/me">{shellText.profile}</AppLink>
         </DropdownMenuItem>
+        {moderator ? (
+          <DropdownMenuItem asChild>
+            <AppLink href="/moderation">{shellText.moderation}</AppLink>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem asChild>
           <AppLink href="/settings">{shellText.settings}</AppLink>
         </DropdownMenuItem>

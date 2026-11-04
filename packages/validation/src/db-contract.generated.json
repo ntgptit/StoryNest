@@ -48,9 +48,26 @@
             "declined",
             "pending"
         ],
+        "moderation_actions.action": [
+            "dismiss_report",
+            "hide_comment",
+            "reinstate_user",
+            "remove_story",
+            "resolve_report",
+            "restore_comment",
+            "restore_story",
+            "review_report",
+            "suspend_user"
+        ],
         "user_settings.language_code": [
             "en",
             "vi"
+        ],
+        "moderation_actions.target_kind": [
+            "comment",
+            "report",
+            "story",
+            "user"
         ],
         "chapter_version_blocks.block_type": [
             "divider",

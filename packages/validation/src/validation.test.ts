@@ -8,6 +8,13 @@ import {
   COMMENT_STATUSES,
   STORY_LANGUAGES,
   HIDE_SOURCES,
+  MODERATION_ACTIONS,
+  MODERATION_ACTION,
+  MODERATION_TARGET_KINDS,
+  MODERATION_TARGET_KIND,
+  REPORT_REASONS,
+  REPORT_REASON,
+  REPORT_STATUS,
   INVITATION_STATUSES,
   DB_LIMITS,
   REPORT_STATUSES,
@@ -71,6 +78,8 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["comments.status", COMMENT_STATUSES],
     ["user_settings.language_code", STORY_LANGUAGES],
     ["comment_hides.source", HIDE_SOURCES],
+    ["moderation_actions.action", MODERATION_ACTIONS],
+    ["moderation_actions.target_kind", MODERATION_TARGET_KINDS],
     ["content_reports.status", REPORT_STATUSES],
   ];
   it.each(cases)("%s", (column, values) => {
@@ -88,6 +97,10 @@ describe("named enum constants", () => {
     ["VISIBILITY", VISIBILITY, VISIBILITIES],
     ["CHAPTER_STATUS", CHAPTER_STATUS, CHAPTER_STATUSES],
     ["BLOCK_TYPE", BLOCK_TYPE, BLOCK_TYPES],
+    ["REPORT_STATUS", REPORT_STATUS, REPORT_STATUSES],
+    ["REPORT_REASON", REPORT_REASON, REPORT_REASONS],
+    ["MODERATION_ACTION", MODERATION_ACTION, MODERATION_ACTIONS],
+    ["MODERATION_TARGET_KIND", MODERATION_TARGET_KIND, MODERATION_TARGET_KINDS],
   ] as const)("%s has exactly one constant per enum value", (_name, constants, values) => {
     expect(sorted(Object.values(constants))).toEqual(sorted(values));
   });
@@ -185,6 +198,7 @@ describe("rpc args", () => {
     expect(classifyRpcError("PT404")).toBe("notFound");
     expect(classifyRpcError("42501")).toBe("forbidden");
     expect(classifyRpcError("22023")).toBe("invalid");
+    expect(classifyRpcError("PT429")).toBe("rateLimited");
     expect(classifyRpcError("XX000")).toBe("unknown");
     expect(classifyRpcError(undefined)).toBe("unknown");
   });

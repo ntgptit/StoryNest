@@ -6,6 +6,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export interface CurrentUser {
   id: string;
   email: string | undefined;
+  /** From the signed token's app_metadata, which only the server can set. */
+  isModerator: boolean;
 }
 
 /**
@@ -17,7 +19,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
   if (!claims || claims.is_anonymous === true) return null;
-  return { id: claims.sub, email: claims.email };
+  return { id: claims.sub, email: claims.email, isModerator: claims.app_metadata?.role === "moderator" };
 }
 
 /**

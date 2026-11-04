@@ -21,3 +21,4 @@ export * from "./author/index.ts";
 export * from "./recommendations/index.ts";
 export * from "./adult-content/index.ts";
 export * from "./settings/index.ts";
+export * from "./moderation/index.ts";

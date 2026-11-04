@@ -16,7 +16,15 @@ beforeEach(() => getClaims.mockReset());
 describe("getCurrentUser", () => {
   it("returns the verified identity", async () => {
     getClaims.mockResolvedValue({ data: { claims: { sub: "u1", email: "a@b.co" } }, error: null });
-    await expect(getCurrentUser()).resolves.toEqual({ id: "u1", email: "a@b.co" });
+    await expect(getCurrentUser()).resolves.toEqual({ id: "u1", email: "a@b.co", isModerator: false });
+  });
+  it("knows a moderator only from the signed token's app_metadata", async () => {
+    getClaims.mockResolvedValue({ data: { claims: { sub: "m1", app_metadata: { role: "moderator" } } }, error: null });
+    await expect(getCurrentUser()).resolves.toMatchObject({ isModerator: true });
+    getClaims.mockResolvedValue({ data: { claims: { sub: "u1", app_metadata: { role: "reader" } } }, error: null });
+    await expect(getCurrentUser()).resolves.toMatchObject({ isModerator: false });
+    getClaims.mockResolvedValue({ data: { claims: { sub: "u1", user_metadata: { role: "moderator" } } }, error: null });
+    await expect(getCurrentUser()).resolves.toMatchObject({ isModerator: false }); // user_metadata is editable by the user
   });
   it("returns null without a valid session and for anonymous users", async () => {
     getClaims.mockResolvedValue({ data: null, error: { message: "no session" } });

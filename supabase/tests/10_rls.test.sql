@@ -106,7 +106,8 @@ BEGIN
   PERFORM tests.rows('B saves progress', format($q$INSERT INTO user_chapter_progress (user_id, chapter_id, last_version_id, percent_complete) VALUES (%L,'20000000-0000-0000-0000-000000000001','40000000-0000-0000-0000-000000000001', 50)$q$, b), 1);
   PERFORM tests.denied('B cannot insert notification', format($q$INSERT INTO notifications (recipient_id, event_type) VALUES (%L,'x')$q$, b));
   PERFORM tests.denied('B cannot touch stats', $q$UPDATE story_stats SET reads = 99$q$);
-  PERFORM tests.rows('B reports comment', format($q$INSERT INTO content_reports (reporter_id, comment_id, reason) VALUES (%L,'50000000-0000-0000-0000-000000000001','spam')$q$, b), 1);
+  PERFORM tests.denied('B cannot write a report directly', format($q$INSERT INTO content_reports (reporter_id, comment_id, reason) VALUES (%L,'50000000-0000-0000-0000-000000000001','spam')$q$, b));
+  PERFORM tests.ok('B reports A''s story through the function', public.submit_report('story', '10000000-0000-0000-0000-000000000001', 'spam') IS NOT NULL);
   PERFORM tests.rows('B cannot self-review report', $q$UPDATE content_reports SET status = 'resolved'$q$, 0);
   -- private reading list
   PERFORM tests.rows('B creates private list', format($q$INSERT INTO reading_lists (id, owner_id, title) VALUES ('60000000-0000-0000-0000-000000000001', %L, 'mine')$q$, b), 1);
@@ -150,8 +151,10 @@ DECLARE m constant uuid := '00000000-0000-0000-0000-00000000000d';
 BEGIN
   RESET ROLE; PERFORM tests.act_as(m, 'authenticated', 'moderator');
   PERFORM tests.count_is('moderator sees reports', 'SELECT 1 FROM content_reports', 1);
-  PERFORM tests.rows('moderator hides comment', $q$UPDATE comments SET status = 'hidden'$q$, 1);
-  PERFORM tests.rows('moderator reviews report', format($q$UPDATE content_reports SET status = 'resolved', reviewed_by = %L, reviewed_at = now()$q$, m), 1);
+  PERFORM tests.denied('moderator cannot hide a comment by writing the row', $q$UPDATE comments SET status = 'hidden'$q$);
+  PERFORM tests.denied('moderator cannot review a report by writing the row', format($q$UPDATE content_reports SET status = 'resolved', reviewed_by = %L, reviewed_at = now()$q$, m));
+  PERFORM tests.ok('moderator hides the comment through the function', public.moderate('hide_comment', '50000000-0000-0000-0000-000000000001', 'test hide') = 'hidden');
+  PERFORM public.resolve_report((SELECT id FROM content_reports LIMIT 1), 'resolved', 'test resolve');
   PERFORM tests.count_is('moderator sees private story', $q$SELECT 1 FROM stories WHERE slug = 'secret'$q$, 1);
   -- A forged client-side claim is not enough: app_metadata comes from the signed JWT only; a user without it has no access.
   RESET ROLE; PERFORM tests.act_as('00000000-0000-0000-0000-00000000000b');

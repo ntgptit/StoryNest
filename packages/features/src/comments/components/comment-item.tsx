@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@storynest/ui/components/dropdown-menu";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
+import { ReportButton } from "../../moderation/index.ts";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
@@ -177,6 +178,9 @@ export function CommentItem({
               >
                 {t.reply}
               </Button>
+            ) : null}
+            {!own && comment.status === COMMENT_STATUS.VISIBLE ? (
+              <ReportButton kind="comment" targetId={comment.id} label={t.report} />
             ) : null}
           </div>
         </>

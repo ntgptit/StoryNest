@@ -107,6 +107,25 @@ describe("UserMenu", () => {
     expect(screen.getByText("Đăng xuất")).toBeTruthy();
   });
 
+  it("shows the moderation entry to a moderator and to nobody else", async () => {
+    const asModerator = {
+      ...session,
+      user: { ...session.user, app_metadata: { role: "moderator" } },
+    } as unknown as Session;
+    const open = async () => {
+      const trigger = await screen.findByRole("button", { name: "Menu tài khoản" });
+      fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: "mouse" });
+    };
+    setup(<UserMenu />, fakeClient({ session: asModerator, profile }).client);
+    await open();
+    expect((await screen.findByText("Kiểm duyệt")).closest("a")?.getAttribute("href")).toBe("/moderation");
+    cleanup();
+    setup(<UserMenu />, fakeClient({ session, profile }).client);
+    await open();
+    await screen.findByText("Cài đặt");
+    expect(screen.queryByText("Kiểm duyệt")).toBeNull();
+  });
+
   it("falls back to the email while the profile is still loading", async () => {
     const { client } = fakeClient({ session, profile: null });
     setup(<UserMenu />, client);

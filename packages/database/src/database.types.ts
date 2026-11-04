@@ -551,8 +551,11 @@ export type Database = {
           reviewed_by: string | null
           status: string
           story_id: string | null
+          moderation_report_card:
+            | Database["public"]["CompositeTypes"]["moderation_report"]
+            | null
         }
-        ComputedFields: never
+        ComputedFields: "moderation_report_card"
         Insert: {
           chapter_id?: string | null
           comment_id?: string | null
@@ -619,6 +622,40 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      moderation_actions: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          reason: string
+          report_id: string | null
+          target_id: string
+          target_kind: string
+        }
+        ComputedFields: never
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          reason: string
+          report_id?: string | null
+          target_id: string
+          target_kind: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          report_id?: string | null
+          target_id?: string
+          target_kind?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -1393,6 +1430,10 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: undefined
       }
+      close_reports_for: {
+        Args: { p_actor: string; p_target_id: string }
+        Returns: undefined
+      }
       comment_counts_by_block: {
         Args: { p_chapter_id: string }
         Returns: {
@@ -1460,6 +1501,7 @@ export type Database = {
         Args: { p_key: string; p_scope: string }
         Returns: boolean
       }
+      last_moderation_action: { Args: { p_target_id: string }; Returns: string }
       list_comments: {
         Args: {
           p_block_id?: string
@@ -1516,6 +1558,22 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      list_reports: {
+        Args: {
+          p_cursor_at?: string
+          p_cursor_id?: string
+          p_limit?: number
+          p_newest_first?: boolean
+          p_status?: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["moderation_report"][]
+        SetofOptions: {
+          from: "*"
+          to: "moderation_report"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       list_story_invitations: {
         Args: { p_story_id: string }
         Returns: {
@@ -1526,6 +1584,30 @@ export type Database = {
           invitee_username: string
           status: string
         }[]
+      }
+      moderate: {
+        Args: {
+          p_action: string
+          p_reason: string
+          p_report_id?: string
+          p_target_id: string
+        }
+        Returns: string
+      }
+      moderation_report_card: {
+        Args: {
+          r: Omit<
+            Database["public"]["Tables"]["content_reports"]["Row"],
+            Database["public"]["Tables"]["content_reports"]["ComputedFields"]
+          >
+        }
+        Returns: Database["public"]["CompositeTypes"]["moderation_report"]
+        SetofOptions: {
+          from: "content_reports"
+          to: "moderation_report"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       notification_enabled: {
         Args: { p_event_type: string; p_user_id: string }
@@ -1600,6 +1682,10 @@ export type Database = {
       }
       reorder_list_items: {
         Args: { p_list_id: string; p_story_ids: string[] }
+        Returns: undefined
+      }
+      resolve_report: {
+        Args: { p_reason: string; p_report_id: string; p_status: string }
         Returns: undefined
       }
       respond_invitation: {
@@ -1714,6 +1800,15 @@ export type Database = {
         }[]
       }
       story_role: { Args: { p_story_id: string }; Returns: string }
+      submit_report: {
+        Args: {
+          p_description?: string
+          p_kind: string
+          p_reason: string
+          p_target_id: string
+        }
+        Returns: string
+      }
       tag_slug: { Args: { p_name: string }; Returns: string }
       top_stories: {
         Args: {
@@ -1753,6 +1848,26 @@ export type Database = {
         like_count: number | null
         liked_by_me: boolean | null
         reply_count: number | null
+      }
+      moderation_report: {
+        id: string | null
+        status: string | null
+        reason: string | null
+        description: string | null
+        created_at: string | null
+        reporter_id: string | null
+        reporter_name: string | null
+        target_kind: string | null
+        target_id: string | null
+        target_title: string | null
+        target_state: string | null
+        story_id: string | null
+        story_slug: string | null
+        chapter_slug: string | null
+        username: string | null
+        open_reports: number | null
+        reviewed_by: string | null
+        reviewed_at: string | null
       }
     }
   }

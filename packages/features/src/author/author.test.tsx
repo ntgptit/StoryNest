@@ -395,6 +395,16 @@ describe("AuthorScreen", () => {
     await screen.findByRole("heading", { name: "Tác Giả A" });
     expect(screen.queryByRole("button", { name: t.follow })).toBeNull();
     expect(screen.queryByRole("button", { name: t.following })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Báo cáo người dùng" })).toBeNull(); // nobody reports themselves
+  });
+
+  it("offers a visitor the report button for this person", async () => {
+    renderUi(
+      fakeClient({ profile: { data: [profileRow()], error: null } }).client,
+      <AuthorScreen username="tac_gia_a" />,
+    );
+    await screen.findByRole("heading", { name: "Tác Giả A" });
+    expect(await screen.findByRole("button", { name: "Báo cáo người dùng" })).toBeTruthy();
   });
 });
 

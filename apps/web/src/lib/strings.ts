@@ -24,6 +24,7 @@ export const appText = {
     following: "Từ tác giả bạn theo dõi",
     notifications: "Thông báo",
     settings: "Cài đặt",
+    moderation: "Kiểm duyệt",
     newStory: "Truyện mới",
     editStory: "Chỉnh sửa truyện",
     chapters: "Quản lý chương",
