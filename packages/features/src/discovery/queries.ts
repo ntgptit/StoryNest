@@ -37,6 +37,8 @@ export function latestStoriesQueryOptions(
 /**
  * Server-side prefetch of the first page (and the category tree) so the home page is rendered with content for
  * crawlers and first paint. The keys equal the client hooks' keys, so hydration finds the data.
+ * Like useLatestStories, the feed waits for the category tree only when a category filter needs expanding; otherwise
+ * both queries run in parallel (one round trip instead of two on every visit to the unfiltered home page).
  */
 export async function prefetchDiscovery(
   queryClient: QueryClient,
@@ -44,7 +46,11 @@ export async function prefetchDiscovery(
   filter: LatestStoriesFilter,
 ): Promise<void> {
   const getClient = () => client;
-  await queryClient.prefetchQuery(categoriesQueryOptions(getClient));
+  const categoriesLoaded = queryClient.prefetchQuery(categoriesQueryOptions(getClient));
+  if (filter.categorySlug) await categoriesLoaded;
   const categories = queryClient.getQueryData<Category[]>(discoveryKeys.categories()) ?? [];
-  await queryClient.prefetchInfiniteQuery(latestStoriesQueryOptions(getClient, filter, categories));
+  await Promise.all([
+    categoriesLoaded,
+    queryClient.prefetchInfiniteQuery(latestStoriesQueryOptions(getClient, filter, categories)),
+  ]);
 }

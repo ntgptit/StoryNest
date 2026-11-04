@@ -11,6 +11,7 @@ export const en = {
   signOut: "Sign out",
   signOutFailed: "Could not sign out. Please try again.",
   mainNavigation: "Main navigation",
+  loading: "Loading page…",
   language: {
     label: "Language",
     switchTo: (name: string) => `Switch to ${name}`,
