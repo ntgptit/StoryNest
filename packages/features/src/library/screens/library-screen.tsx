@@ -19,6 +19,9 @@ import { libraryText } from "../strings.ts";
 
 const t = libraryText;
 
+/** Same grid as the home feed: a story card is a tile, not a full-width row. */
+const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
+
 const EMPTY_ICON: Record<LibraryTab, LucideIcon> = {
   reading: BookOpen,
   saved: BookMarked,
@@ -78,9 +81,9 @@ function LibraryList({
   }
   if (list.isPending) {
     return (
-      <div className="flex flex-col gap-3" aria-busy>
-        {Array.from({ length: 3 }, (_, i) => (
-          <Skeleton key={i} className="h-32 w-full rounded-xl" aria-hidden />
+      <div className={GRID} aria-busy>
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} className="aspect-[2/3] w-full rounded-xl" aria-hidden />
         ))}
       </div>
     );
@@ -90,7 +93,7 @@ function LibraryList({
     return <EmptyState icon={Icon} title={t.empty[tab].title} description={t.empty[tab].description} />;
   }
   return (
-    <ul aria-label={t.listLabel(t.tabs[tab])} className="flex flex-col gap-4">
+    <ul aria-label={t.listLabel(t.tabs[tab])} className={GRID}>
       {list.data.map((entry) => (
         <li key={entry.storyId}>
           <LibraryItem tab={tab} entry={entry} locale={locale} coverUrlFor={coverUrlFor} />
@@ -122,7 +125,7 @@ function LibraryItem({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex h-full flex-col gap-2">
       {entry.story ? (
         <StoryCard story={toStoryCardData(entry.story, coverUrlFor)} labels={labels} LinkComponent={AppLink} />
       ) : (
@@ -159,7 +162,7 @@ function LibraryItem({
         >
           {t.remove[tab]}
         </Button>
-        <span className="text-xs text-muted-foreground">{WHEN[tab](formatRelativeTime(entry.at, locale))}</span>
+        <span className="w-full text-xs text-muted-foreground">{WHEN[tab](formatRelativeTime(entry.at, locale))}</span>
       </div>
     </div>
   );
