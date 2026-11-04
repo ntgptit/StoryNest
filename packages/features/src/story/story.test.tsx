@@ -207,6 +207,9 @@ describe("StoryScreen", () => {
     expect(screen.getByText("An Nhiên")).toBeTruthy();
     expect(screen.getByText("Giả tưởng")).toBeTruthy();
     expect(screen.getByText("#Phiêu lưu")).toBeTruthy();
+    expect(screen.getByRole("link", { name: storyText.tagLink("Phiêu lưu") }).getAttribute("href")).toBe(
+      "/?tag=phieu-luu",
+    );
 
     const start = await screen.findByRole("link", { name: storyText.startReading });
     expect(start.getAttribute("href")).toBe(`/story/${STORY_ID}/rung-suong-mu/chuong-1`);

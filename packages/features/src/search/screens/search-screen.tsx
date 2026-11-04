@@ -13,7 +13,7 @@ import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
 import { useNavigation, AppLink } from "../../_shared/platform.tsx";
-import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
+import { discoveryText, homeHref, toStoryCardData } from "../../discovery/index.ts";
 import { useSearchAuthors, useSearchStories, useSearchTags } from "../hooks/use-search.ts";
 import {
   SEARCH_MAX_LENGTH,
@@ -188,7 +188,7 @@ function AuthorResults({ term }: { term: string }) {
   );
 }
 
-// Rows are not links yet: the author page arrives with WP 5.4 and the tag page with WP 5.2.
+// Author rows are not links yet: the author page arrives with WP 5.4. Tag rows open the home feed filtered by that tag.
 function AuthorRow({ author }: { author: AuthorHit }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border p-3">
@@ -214,9 +214,14 @@ function TagResults({ term }: { term: string }) {
   return (
     <ul aria-label={t.tabs.tags} className="flex flex-col gap-2">
       {results.data.map((tag: TagHit) => (
-        <li key={tag.id} className="flex items-center justify-between gap-3 rounded-xl border p-3">
-          <span className="truncate font-medium">{tag.name}</span>
-          <span className="shrink-0 text-sm text-muted-foreground">{t.tagStoriesCount(tag.storiesCount)}</span>
+        <li key={tag.id}>
+          <AppLink
+            href={homeHref({ tagSlug: tag.slug })}
+            className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors hover:bg-accent"
+          >
+            <span className="truncate font-medium">#{tag.name}</span>
+            <span className="shrink-0 text-sm text-muted-foreground">{t.tagStoriesCount(tag.storiesCount)}</span>
+          </AppLink>
         </li>
       ))}
     </ul>

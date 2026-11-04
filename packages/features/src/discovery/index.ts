@@ -15,3 +15,5 @@ export {
 export { useCategories } from "./hooks/use-latest-stories.ts";
 export { type Category } from "./model/categories.ts";
 export { discoveryKeys } from "./keys.ts";
+export { homeHref } from "./model/home-href.ts";
+export { usePopularTags } from "./hooks/use-latest-stories.ts";

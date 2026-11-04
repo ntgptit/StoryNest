@@ -10,16 +10,21 @@ import { DiscoverHome } from "./discover-home";
 /**
  * Home: the latest stories. The first page is fetched here on the server and handed to the client through
  * hydration, so crawlers and the first paint already have the content; the client then continues the feed.
- * The category filter is a query-string link (`/?category=slug`), so every filtered view has its own URL.
+ * The category and tag filters are query-string links (`/?category=slug&tag=slug`), so every filtered view has its own URL.
  */
-export default async function HomePage({ searchParams }: { searchParams: Promise<{ category?: string | string[] }> }) {
-  const { category } = await searchParams;
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string | string[]; tag?: string | string[] }>;
+}) {
+  const { category, tag } = await searchParams;
   const categorySlug = typeof category === "string" && category !== "" ? category : undefined;
+  const tagSlug = typeof tag === "string" && tag !== "" ? tag : undefined;
 
   const queryClient = createQueryClient();
   if (isSupabaseConfigured()) {
     try {
-      await prefetchDiscovery(queryClient, await createSupabaseServerClient(), { categorySlug });
+      await prefetchDiscovery(queryClient, await createSupabaseServerClient(), { categorySlug, tagSlug });
     } catch (error) {
       // Prefetch is an optimisation: on failure the client fetches (and shows its own error state). Log it, though:
       // swallowing silently once hid a real bug (a client-only function called from the server).
@@ -36,7 +41,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <p className="max-w-xl text-base text-muted-foreground">{appText.home.intro}</p>
       </header>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <DiscoverHome categorySlug={categorySlug} />
+        <DiscoverHome categorySlug={categorySlug} tagSlug={tagSlug} />
       </HydrationBoundary>
     </div>
   );
