@@ -55,7 +55,8 @@ export const en = {
     unpublish: "Unpublish chapter",
     cancelSchedule: "Cancel schedule",
     working: "Working…",
-    saveFirst: "The draft couldn't be saved, so it wasn't published. Check the chapter title and content and try again.",
+    saveFirst:
+      "The draft couldn't be saved, so it wasn't published. Check the chapter title and content and try again.",
     published: "Chapter published.",
     republished: "New version published.",
     scheduled: "Publication scheduled.",

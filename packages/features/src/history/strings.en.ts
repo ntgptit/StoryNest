@@ -42,7 +42,11 @@ export const en = {
     openEditor: "Open editor",
     nothingToRestore: "This version has no content to restore.",
   },
-  error: { title: "Couldn't load the history", description: "Check your connection and try again.", retry: "Try again" },
+  error: {
+    title: "Couldn't load the history",
+    description: "Check your connection and try again.",
+    retry: "Try again",
+  },
   notFound: { title: "Chapter not found", description: "The chapter doesn't exist or you don't have access to it." },
   errors: {
     conflict: "The draft was just edited elsewhere. Reopen the editor and restore again.",

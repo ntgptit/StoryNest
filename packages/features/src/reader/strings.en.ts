@@ -32,6 +32,13 @@ export const en = {
   },
   endOfChapter: "End of chapter",
   emptyChapter: "This chapter has no content yet.",
-  notFound: { title: "Chapter not found", description: "The chapter doesn't exist, isn't published, or has been removed." },
-  error: { title: "Couldn't load the chapter", description: "Check your connection and try again.", retry: "Try again" },
+  notFound: {
+    title: "Chapter not found",
+    description: "The chapter doesn't exist, isn't published, or has been removed.",
+  },
+  error: {
+    title: "Couldn't load the chapter",
+    description: "Check your connection and try again.",
+    retry: "Try again",
+  },
 };

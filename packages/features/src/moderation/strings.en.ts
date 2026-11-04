@@ -44,7 +44,11 @@ export const en = {
     signInLink: "Sign in",
     tabs: { open: "Pending", closed: "Resolved" },
     empty: { open: "No reports are pending.", closed: "No reports have been handled yet." },
-    error: { title: "Couldn't load the queue", description: "Check your connection and try again.", retry: "Try again" },
+    error: {
+      title: "Couldn't load the queue",
+      description: "Check your connection and try again.",
+      retry: "Try again",
+    },
     loadMore: "Load more",
     loadingMore: "Loading…",
     openReports: (count: number) => (count > 1 ? `${count} pending reports about this item` : "1 report"),

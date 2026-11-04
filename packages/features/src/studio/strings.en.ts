@@ -6,8 +6,15 @@ export const en = {
   updated: (relative: string) => `Updated ${relative}`,
   visibility: { private: "Private", unlisted: "Anyone with the link", public: "Public" },
   role: { owner: "Owner", co_author: "Co-author", editor: "Editor" },
-  empty: { title: "You don't have any stories yet", description: "Stories you create or are invited to collaborate on will appear here." },
-  error: { title: "Couldn't load your stories", description: "Check your connection and try again.", retry: "Try again" },
+  empty: {
+    title: "You don't have any stories yet",
+    description: "Stories you create or are invited to collaborate on will appear here.",
+  },
+  error: {
+    title: "Couldn't load your stories",
+    description: "Check your connection and try again.",
+    retry: "Try again",
+  },
   listLabel: "My stories",
   create: "Write a new story",
   chaptersLink: "Manage chapters",
@@ -40,7 +47,8 @@ export const en = {
     archive: "Archive",
     unarchive: "Unarchive",
     archiveTitle: "Archive this chapter?",
-    archiveDescription: "The chapter will be hidden from readers but not deleted. You can unarchive and publish it again.",
+    archiveDescription:
+      "The chapter will be hidden from readers but not deleted. You can unarchive and publish it again.",
     archived: "Chapter archived.",
     unarchived: "Unarchived. The chapter is back to draft.",
     delete: "Delete",
@@ -138,7 +146,8 @@ export const en = {
     errors: {
       inviteNotFound: "No user found with this username.",
       inviteInvalid: "You can't invite this person (for example, yourself).",
-      inviteConflict: "This person is already a collaborator or has a pending invitation, or the story already has 20 pending invitations.",
+      inviteConflict:
+        "This person is already a collaborator or has a pending invitation, or the story already has 20 pending invitations.",
       gone: "The invitation or collaborator no longer exists.",
       settled: "The invitation was already handled or cancelled. The list has been reloaded.",
       forbidden: "You don't have permission to do this.",

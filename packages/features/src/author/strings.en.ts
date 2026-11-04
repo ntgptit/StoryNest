@@ -15,7 +15,11 @@ export const en = {
     title: "Author not found",
     description: "The author doesn't exist or the account is no longer visible.",
   },
-  error: { title: "Couldn't load the author page", description: "Check your connection and try again.", retry: "Try again" },
+  error: {
+    title: "Couldn't load the author page",
+    description: "Check your connection and try again.",
+    retry: "Try again",
+  },
   loadMore: "Load more",
   endOfList: "No more stories.",
   errors: {
@@ -26,7 +30,10 @@ export const en = {
   feed: {
     title: "From authors you follow",
     description: "Recently updated stories from the authors you follow.",
-    empty: { title: "No stories yet", description: "Follow a few authors and their updated stories will show up here." },
+    empty: {
+      title: "No stories yet",
+      description: "Follow a few authors and their updated stories will show up here.",
+    },
     link: "From authors you follow",
     error: { title: "Couldn't load the list", description: "Check your connection and try again.", retry: "Try again" },
   },

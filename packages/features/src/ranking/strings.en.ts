@@ -10,5 +10,9 @@ export const en = {
   loadMore: "Load more",
   endOfList: "You've reached the end of the ranking.",
   empty: { title: "No ranking yet", description: "Once people read and vote, stories will appear here." },
-  error: { title: "Couldn't load the ranking", description: "Check your connection and try again.", retry: "Try again" },
+  error: {
+    title: "Couldn't load the ranking",
+    description: "Check your connection and try again.",
+    retry: "Try again",
+  },
 };

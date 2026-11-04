@@ -13,7 +13,11 @@ export const en = {
   loadMore: "Load more",
   loadingMore: "Loading…",
   empty: { title: "No notifications yet", description: "New chapters and invites will show up here." },
-  error: { title: "Couldn't load notifications", description: "Check your connection and try again.", retry: "Try again" },
+  error: {
+    title: "Couldn't load notifications",
+    description: "Check your connection and try again.",
+    retry: "Try again",
+  },
   someone: "Someone",
   generic: "You have a new notification.",
   text: {

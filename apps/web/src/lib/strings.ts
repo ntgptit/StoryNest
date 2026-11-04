@@ -1,13 +1,11 @@
-// Text owned by the web app shell (metadata and the home hero). Feature screens keep their own strings.ts; WBS WP 0.4
-// replaces all of these modules with the i18n catalogue in one change.
+// Text owned by the web app shell. `appText` is what the SERVER writes (page titles, metadata): always Vietnamese for now (a
+// per-language address and hreflang are future work). `homeText` is shown by the client and follows the language.
+import { defineText } from "@storynest/features";
+
 export const appText = {
   siteName: "StoryNest",
   siteDescription: "Đọc và đăng truyện trực tuyến.",
   titleTemplate: "%s · StoryNest",
-  home: {
-    heading: "Nơi những câu chuyện được viết và được đọc.",
-    intro: "Khám phá truyện mới cập nhật và theo dõi tác giả yêu thích của bạn.",
-  },
   pageTitle: {
     login: "Đăng nhập",
     register: "Đăng ký",
@@ -39,3 +37,15 @@ export const appText = {
   /** Title of a chapter page: "<chapter> · <story>" (the site name is appended by the layout template). */
   chapterTitle: (chapter: string, story: string) => `${chapter} · ${story}`,
 } as const;
+
+export const homeText = defineText(
+  "app.home",
+  {
+    heading: "Nơi những câu chuyện được viết và được đọc.",
+    intro: "Khám phá truyện mới cập nhật và theo dõi tác giả yêu thích của bạn.",
+  },
+  {
+    heading: "Where stories are written and read.",
+    intro: "Discover newly updated stories and follow the authors you love.",
+  },
+);

@@ -2,10 +2,10 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { createQueryClient, prefetchDiscovery } from "@storynest/features";
 
 import { isSupabaseConfigured } from "@/lib/env";
-import { appText } from "@/lib/strings";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { DiscoverHome } from "./discover-home";
+import { HomeHero } from "./home-hero";
 
 /**
  * Home: the latest stories. The first page is fetched here on the server and handed to the client through
@@ -34,12 +34,7 @@ export default async function HomePage({
 
   return (
     <div className="flex flex-col gap-8 py-2 sm:py-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          {appText.home.heading}
-        </h1>
-        <p className="max-w-xl text-base text-muted-foreground">{appText.home.intro}</p>
-      </header>
+      <HomeHero />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <DiscoverHome categorySlug={categorySlug} tagSlug={tagSlug} />
       </HydrationBoundary>
