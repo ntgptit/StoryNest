@@ -1,6 +1,6 @@
 export type { DataClient } from "./client.ts";
 export { DataProvider, useDataClient, useDataClientGetter, useOptionalDataClient } from "./data.tsx";
-export { AVATAR_BUCKET, UserAvatar, firstLetter, useAvatarUrl } from "./avatar.tsx";
+export { AVATAR_BUCKET, UserAvatar, firstLetter, useAvatarUrl, usePublicUrl } from "./avatar.tsx";
 export { QueryProvider } from "./query-provider.tsx";
 export { createQueryClient, shouldRetry, type QueryClientOptions } from "./query.ts";
 export { AppError, errorMessageKey, isPermanent, toAppError, unwrap, type AppErrorKind } from "./errors.ts";
