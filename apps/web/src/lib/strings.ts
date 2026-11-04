@@ -16,6 +16,7 @@ export const appText = {
     profile: "Hồ sơ",
     editProfile: "Chỉnh sửa hồ sơ",
     studio: "Studio",
+    library: "Thư viện",
     newStory: "Truyện mới",
     editStory: "Chỉnh sửa truyện",
     chapters: "Quản lý chương",

@@ -5,7 +5,13 @@ export { storyHref } from "./model/story-card.ts";
 export { discoveryText } from "./strings.ts";
 export { DEFAULT_PAGE_SIZE, type LatestStoriesFilter } from "./keys.ts";
 export { STORY_COLUMNS } from "./api/discovery.api.ts";
-export { statusLabel, toStorySummary, type StoryListRow, type StorySummary } from "./model/story-card.ts";
+export {
+  statusLabel,
+  toStoryCardData,
+  toStorySummary,
+  type StoryListRow,
+  type StorySummary,
+} from "./model/story-card.ts";
 export { useCategories } from "./hooks/use-latest-stories.ts";
 export { type Category } from "./model/categories.ts";
 export { discoveryKeys } from "./keys.ts";
