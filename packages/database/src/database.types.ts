@@ -451,8 +451,12 @@ export type Database = {
           parent_comment_id: string | null
           status: string
           updated_at: string
+          comment_listable: boolean | null
+          comment_to_card:
+            | Database["public"]["CompositeTypes"]["comment_card"]
+            | null
         }
-        ComputedFields: never
+        ComputedFields: "comment_listable" | "comment_to_card"
         Insert: {
           author_id: string
           block_id?: string | null
@@ -1255,6 +1259,38 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: undefined
       }
+      comment_counts_by_block: {
+        Args: { p_chapter_id: string }
+        Returns: {
+          block_id: string
+          comment_count: number
+        }[]
+      }
+      comment_listable: {
+        Args: {
+          c: Omit<
+            Database["public"]["Tables"]["comments"]["Row"],
+            Database["public"]["Tables"]["comments"]["ComputedFields"]
+          >
+        }
+        Returns: boolean
+      }
+      comment_reply_count: { Args: { p_comment_id: string }; Returns: number }
+      comment_to_card: {
+        Args: {
+          c: Omit<
+            Database["public"]["Tables"]["comments"]["Row"],
+            Database["public"]["Tables"]["comments"]["ComputedFields"]
+          >
+        }
+        Returns: Database["public"]["CompositeTypes"]["comment_card"]
+        SetofOptions: {
+          from: "comments"
+          to: "comment_card"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_chapter: {
         Args: {
           p_id?: string
@@ -1263,6 +1299,11 @@ export type Database = {
           p_title: string
         }
         Returns: string
+      }
+      delete_comment: { Args: { p_comment_id: string }; Returns: undefined }
+      edit_comment: {
+        Args: { p_body: string; p_comment_id: string }
+        Returns: undefined
       }
       invite_collaborator: {
         Args: { p_role: string; p_story_id: string; p_username: string }
@@ -1274,6 +1315,23 @@ export type Database = {
       is_valid_storage_key: {
         Args: { p_key: string; p_scope: string }
         Returns: boolean
+      }
+      list_comments: {
+        Args: {
+          p_block_id?: string
+          p_chapter_id: string
+          p_cursor_at?: string
+          p_cursor_id?: string
+          p_limit?: number
+          p_newest_first?: boolean
+        }
+        Returns: Database["public"]["CompositeTypes"]["comment_card"][]
+        SetofOptions: {
+          from: "*"
+          to: "comment_card"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       list_my_invitations: {
         Args: Record<PropertyKey, never>
@@ -1287,6 +1345,21 @@ export type Database = {
           story_title: string
         }[]
       }
+      list_replies: {
+        Args: {
+          p_cursor_at?: string
+          p_cursor_id?: string
+          p_limit?: number
+          p_parent_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["comment_card"][]
+        SetofOptions: {
+          from: "*"
+          to: "comment_card"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       list_story_invitations: {
         Args: { p_story_id: string }
         Returns: {
@@ -1297,6 +1370,16 @@ export type Database = {
           invitee_username: string
           status: string
         }[]
+      }
+      post_comment: {
+        Args: {
+          p_block_id: string
+          p_body: string
+          p_chapter_id: string
+          p_id: string
+          p_parent_id: string
+        }
+        Returns: string
       }
       process_outbox: { Args: { p_limit?: number }; Returns: number }
       publish_chapter: {
@@ -1342,6 +1425,10 @@ export type Database = {
         Args: { p_chapter_id: string; p_voted: boolean }
         Returns: number
       }
+      set_comment_like: {
+        Args: { p_comment_id: string; p_liked: boolean }
+        Returns: number
+      }
       story_role: { Args: { p_story_id: string }; Returns: string }
       unarchive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       unpublish_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
@@ -1350,7 +1437,23 @@ export type Database = {
       [_ in never]: never
     }
     CompositeTypes: {
-      [_ in never]: never
+      comment_card: {
+        id: string | null
+        chapter_id: string | null
+        block_id: string | null
+        parent_comment_id: string | null
+        author_id: string | null
+        author_username: string | null
+        author_display_name: string | null
+        author_avatar_key: string | null
+        body: string | null
+        status: string | null
+        created_at: string | null
+        edited: boolean | null
+        like_count: number | null
+        liked_by_me: boolean | null
+        reply_count: number | null
+      }
     }
   }
 }
