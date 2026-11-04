@@ -69,10 +69,13 @@ export function useBlockCommentCounts(chapterId: string) {
   });
 }
 
-/** What changes with any comment write: the lists, the replies and the margin counts of that chapter. */
+/**
+ * What changes with any comment write: the lists, the replies and the margin counts of that chapter. They reload in the
+ * background; the write itself is finished (the box closes, the button frees up) without waiting for that.
+ */
 function useRefreshChapter(chapterId: string) {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: commentKeys.chapter(chapterId) });
+  return () => void queryClient.invalidateQueries({ queryKey: commentKeys.chapter(chapterId) });
 }
 
 export function usePostComment(chapterId: string) {

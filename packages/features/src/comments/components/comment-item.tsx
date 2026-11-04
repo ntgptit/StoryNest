@@ -111,6 +111,7 @@ export function CommentItem({
               label={commentText.composer.label}
               initial={comment.body ?? ""}
               submitLabel={t.saveEdit}
+              submittingLabel={t.saving}
               autoFocus
               onCancel={() => setEditing(false)}
               onSubmit={async (body) => {

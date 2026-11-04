@@ -32,6 +32,7 @@ export const commentText = {
     edit: "Sửa",
     delete: "Xóa",
     saveEdit: "Lưu",
+    saving: "Đang lưu…",
     saved: "Đã lưu chỉnh sửa.",
     deleted: "Đã xóa bình luận.",
     deletedPlaceholder: "Bình luận đã bị xóa.",

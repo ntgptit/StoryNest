@@ -21,6 +21,7 @@ export function CommentComposer({
   label,
   initial = "",
   submitLabel = t.submit,
+  submittingLabel = t.submitting,
   autoFocus = false,
   onSubmit,
   onCancel,
@@ -28,6 +29,7 @@ export function CommentComposer({
   label: string;
   initial?: string;
   submitLabel?: string;
+  submittingLabel?: string;
   autoFocus?: boolean;
   onSubmit: (body: string, id: string) => Promise<void>;
   onCancel?: (() => void) | undefined;
@@ -90,7 +92,7 @@ export function CommentComposer({
             </Button>
           ) : null}
           <Button type="submit" size="sm" disabled={sending}>
-            {sending ? t.submitting : submitLabel}
+            {sending ? submittingLabel : submitLabel}
           </Button>
         </div>
       </div>
