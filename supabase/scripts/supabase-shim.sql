@@ -18,11 +18,27 @@ GRANT USAGE ON SCHEMA auth TO anon, authenticated, service_role;
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 
 CREATE TABLE auth.users (
+    instance_id uuid,
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    aud varchar(255),
+    role varchar(255),
     email text,
+    encrypted_password varchar(255),
+    email_confirmed_at timestamptz,
     raw_user_meta_data jsonb NOT NULL DEFAULT '{}'::jsonb,
-    raw_app_meta_data jsonb NOT NULL DEFAULT '{}'::jsonb
+    raw_app_meta_data jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at timestamptz,
+    updated_at timestamptz,
+    confirmation_token varchar(255),
+    recovery_token varchar(255),
+    email_change varchar(255),
+    email_change_token_new varchar(255)
 );
+
+-- Seeds refuse to run unless the database says it is a dev database (see supabase/seed/dev_seed.sql).
+DO $$ BEGIN
+  EXECUTE format('ALTER DATABASE %I SET storynest.environment = %L', current_database(), 'local');
+END $$;
 
 CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql STABLE AS $$
   SELECT coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb

@@ -38,12 +38,13 @@ start_local_db() {
   run "$PG_BIN/createdb -h $WORK -p $PORT $LOCAL_DB_NAME"
 
   # Everything the postgres OS user must read lives inside $WORK.
-  mkdir "$WORK/migrations" "$WORK/tests" "$WORK/sql"
+  mkdir "$WORK/migrations" "$WORK/tests" "$WORK/sql" "$WORK/seed"
   cp "$ROOT"/supabase/migrations/*.sql "$WORK/migrations/"
   cp "$ROOT"/supabase/tests/*.sql "$WORK/tests/"
   cp "$ROOT"/supabase/scripts/sql/*.sql "$WORK/sql/" 2>/dev/null || true
+  cp "$ROOT"/supabase/seed/*.sql "$WORK/seed/" 2>/dev/null || true
   cp "$ROOT/supabase/scripts/supabase-shim.sql" "$WORK/"
-  chmod -R a+rX "$WORK/migrations" "$WORK/tests" "$WORK/sql" "$WORK/supabase-shim.sql"
+  chmod -R a+rX "$WORK/migrations" "$WORK/tests" "$WORK/sql" "$WORK/seed" "$WORK/supabase-shim.sql"
 
   echo "applying supabase-shim.sql" >&2
   lpsql "-f '$WORK/supabase-shim.sql'"

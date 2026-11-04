@@ -140,6 +140,15 @@ pnpm --filter @storynest/web build
 - CI (`.github/workflows/ci.yml`): job `checks` (format, lint, typecheck, test, build web) và job `database` (`db:verify`, `db:types:check` trên PostgreSQL).
 - TypeScript ghim **6.0.3**: `typescript-eslint` chưa hỗ trợ 7.x. Nâng lên khi có hỗ trợ.
 
+### Dữ liệu seed cho dev
+
+`supabase/seed/dev_seed.sql`: dữ liệu mẫu để phát triển và e2e (**không bao giờ chạy trên production**; nằm ngoài `migrations/` có chủ đích).
+
+- Chạy lại an toàn (id cố định, `ON CONFLICT DO NOTHING`, không có `DELETE`; chương chỉ được publish khi chưa publish nên không sinh phiên bản/sự kiện mới). Các chương được publish bằng chính RPC `publish_chapter` với tư cách tác giả.
+- Chốt chặn môi trường: seed từ chối chạy nếu phiên chưa `SET storynest.environment = 'dev';` (shim local tự đặt `local`; trên Supabase không dùng được `ALTER DATABASE ... SET` nên đặt `SET` ngay trong phiên chạy seed).
+- Local: `pnpm db:verify` áp seed hai lần trong test `50_seed` (đúng số lượng, khách đọc được gì, chạy lại không đổi gì, chốt chặn môi trường).
+- Tác giả demo (`demo_an`, `demo_binh`, `demo_chi`) không đăng nhập được (mật khẩu băm ngẫu nhiên, không có identity). Muốn dọn: `delete from auth.users where email like '%@seed.storynest.test'` (hồ sơ, truyện, chương xóa theo; cần xóa truyện trước vì `stories.owner_id` là RESTRICT).
+
 ### Việc còn lại
 
 1. **Auth UI**: đăng nhập/đăng ký (Supabase Auth), guard route, trang hồ sơ; bảo vệ route bằng kiểm tra quyền ở server (RLS vẫn là lớp chính).
