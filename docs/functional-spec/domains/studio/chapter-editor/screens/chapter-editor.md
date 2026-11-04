@@ -1,0 +1,224 @@
+# SCR-EDT-01 — Chapter editor
+
+Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.md](../workflows.md)
+
+## A. Identification
+
+| Field | Value |
+| --- | --- |
+| Screen ID | `SCR-EDT-01` |
+| Name | Chapter editor (vi `editorText.title` "Soạn chương"; browser title `appText.pageTitle.editChapter` "Soạn chương · StoryNest", always Vietnamese — owned by `OBJ-I18N`) |
+| Route | `/studio/story/{id}/chapter/{chapterId}` (protected prefix `/studio`, `robots: noindex`) |
+| Route file | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/page.tsx` → `chapter-editor-view.tsx` |
+| Screen component | `packages/features/src/editor/screens/chapter-editor-screen.tsx` (`ChapterEditorScreen` → `DraftEditor`), with `components/editor-toolbar.tsx`, `components/publish-panel.tsx` |
+| Roles | owner, co_author, editor (`BR-TEAM-*`); unpublish / cancel schedule: owner, co_author only |
+| Entry points | Chapter manager "Write" link (`packages/features/src/studio/screens/chapter-manager-screen.tsx:198`), "Back to editor" on SCR-HIST-01/02, "Open editor" after restore |
+| Workflows | WF-EDT-01 … WF-EDT-10, WF-HIST-03 (target) |
+
+## B. Components
+
+| ID | Component | Description | Evidence |
+| --- | --- | --- | --- |
+| SCR-EDT-01-C01 | Back link | "Back to chapters" → `/studio/story/{id}/chapters` | `chapter-editor-screen.tsx:293-298` |
+| SCR-EDT-01-C02 | Preview / Version history buttons | Outline links to `…/preview` and `…/history` | `chapter-editor-screen.tsx:299-306` |
+| SCR-EDT-01-C03 | Backup banner | `role="status"`; title, time, optional older-base warning; Restore / Discard | `chapter-editor-screen.tsx:309-333` |
+| SCR-EDT-01-C04 | Conflict alert | `role="alert"`; "The draft was edited elsewhere" + "Load latest version" | `chapter-editor-screen.tsx:335-346` |
+| SCR-EDT-01-C05 | Chapter title field | Label "Chapter title", placeholder "Chapter title", `maxLength=400`, inline error `role="alert"` | `chapter-editor-screen.tsx:348-366` |
+| SCR-EDT-01-C06 | Formatting toolbar | `role="toolbar"` "Formatting": Heading, Bold, Italic, Underline, Strikethrough (toggle, `aria-pressed`), Divider, Insert picture (+hidden file input "Choose a picture to insert"), Undo, Redo (disabled when unavailable). Icon buttons 36 px. Skeleton until editor ready | `editor-toolbar.tsx:46-121`, `packages/ui/src/components/button.tsx:25` |
+| SCR-EDT-01-C07 | Body editor | Tiptap `EditorContent`, `role="textbox"`, `aria-multiline`, `aria-label="Chapter content"`, reader typography (`reader-text`), min 50vh; image blocks as framed pictures | `chapter-editor-screen.tsx:208-225,374-377` |
+| SCR-EDT-01-C08 | Publish panel | `<section aria-label="Publish chapter">`: H2, state badge, archived hint, error alert, Publish / Publish new version, Schedule…, Unpublish / Cancel schedule | `publish-panel.tsx:121-160` |
+| SCR-EDT-01-C09 | Schedule dialog | Title "Schedule publication", `datetime-local` "Publish time" (min now+1 min), "Your time zone: {zone}", inline error, Cancel / Schedule | `publish-panel.tsx:162-199` |
+| SCR-EDT-01-C10 | Unpublish confirm dialog | "Unpublish this chapter?", destructive "Unpublish chapter", Cancel | `publish-panel.tsx:201-213` |
+| SCR-EDT-01-C11 | Footer status | `aria-live="polite"`: "{n} words · {status}" | `chapter-editor-screen.tsx:381-385` |
+| SCR-EDT-01-C12 | Save button | "Save draft" / "Saving…" | `chapter-editor-screen.tsx:386-388` |
+
+## C. User actions & system responses
+
+| Field | SCR-EDT-01-A01 Open editor |
+| --- | --- |
+| Trigger | Navigate to the route |
+| Preconditions | Signed in |
+| Expected behavior | Skeleton → editor with saved draft (`BR-EDT-001/002`) |
+| State change | None |
+| Validation | Draft body via `chapterBodySchema`; `storyId` must match |
+| Error behavior | Not found / Can't open the draft / Couldn't load the draft + Try again |
+| Navigation | Anonymous → `/login?next=…` |
+| Evidence | `page.tsx:11-14`, `chapter-editor-screen.tsx:47-67` |
+
+| Field | SCR-EDT-01-A02 Edit title |
+| --- | --- |
+| Trigger | Typing in C05 |
+| Preconditions | Editor ready |
+| Expected behavior | Marks dirty, backup in 0.5 s, autosave (`BR-EDT-009`) |
+| State change | Local title; later `chapter_drafts.title` |
+| Validation | Trimmed 1–200 chars at save time ("Please enter a chapter title." / "The chapter title can be up to 200 characters.") |
+| Error behavior | Inline alert under the field; status "Not saved: check the chapter title and content" |
+| Navigation | — |
+| Evidence | `chapter-editor-screen.tsx:355-365`, `model/draft-form.ts:12-15` |
+
+| Field | SCR-EDT-01-A03 Type / edit body |
+| --- | --- |
+| Trigger | Keyboard, paste, drag of an image block |
+| Preconditions | Editor ready |
+| Expected behavior | Word count updates; autosave; block ids preserved (`BR-EDT-004`) |
+| State change | `chapter_drafts.body` after save |
+| Validation | `BR-EDT-006` |
+| Error behavior | Unsupported content → "Part of the content can't be saved. Remove it and try again." |
+| Navigation | — |
+| Evidence | `chapter-editor-screen.tsx:217-220` |
+
+| Field | SCR-EDT-01-A04 Format (toolbar / shortcut) |
+| --- | --- |
+| Trigger | Toolbar button or shortcut (`BR-EDT-027`) |
+| Preconditions | Selection/cursor in body |
+| Expected behavior | Toggles heading/bold/italic/underline/strike; inserts divider; undo/redo; button pressed state follows the cursor; focus stays in the text |
+| State change | Document → autosave |
+| Validation | Only body-representable formats exist |
+| Error behavior | — |
+| Navigation | — |
+| Evidence | `editor-toolbar.tsx:33-103` |
+
+| Field | SCR-EDT-01-A05 Insert picture |
+| --- | --- |
+| Trigger | "Insert picture" → pick file |
+| Preconditions | Not already uploading |
+| Expected behavior | Upload then image block at cursor (`BR-EDT-014`) |
+| State change | Storage object; body after autosave |
+| Validation | JPEG/PNG/WebP, ≤ 10 MB input; bucket ≤ 5 MiB |
+| Error behavior | Toast per cause |
+| Navigation | — |
+| Evidence | `chapter-editor-screen.tsx:227-236`, `editor-toolbar.tsx:68-77,104-118` |
+
+| Field | SCR-EDT-01-A06 Save draft |
+| --- | --- |
+| Trigger | C12 |
+| Preconditions | Not saving; editor ready |
+| Expected behavior | Immediate save; toast "Draft saved." |
+| State change | revision +1 |
+| Validation | `BR-EDT-006` |
+| Error behavior | Status text; no toast |
+| Navigation | — |
+| Evidence | `chapter-editor-screen.tsx:282-285` |
+
+| Field | SCR-EDT-01-A07 Restore / discard local backup |
+| --- | --- |
+| Trigger | C03 buttons |
+| Preconditions | Banner visible |
+| Expected behavior | Restore → content replaced, toast "Unsaved version restored, saving automatically."; Discard → banner gone |
+| State change | Editor content / `localStorage` key removed |
+| Validation | Backup already schema-checked on read |
+| Error behavior | Restore disabled until editor ready |
+| Navigation | — |
+| Evidence | `chapter-editor-screen.tsx:265-273,316-330` |
+
+| Field | SCR-EDT-01-A08 Load latest version (conflict) |
+| --- | --- |
+| Trigger | C04 button |
+| Preconditions | Status conflict |
+| Expected behavior | Refetch draft; editor remounted; backup banner offers the author's text |
+| State change | Editor session reset |
+| Validation | — |
+| Error behavior | Refetch error → load error state |
+| Navigation | — |
+| Evidence | `chapter-editor-screen.tsx:76-79,342` |
+
+| Field | SCR-EDT-01-A09 Publish / Publish new version |
+| --- | --- |
+| Trigger | C08 primary button |
+| Preconditions | `canPublish` |
+| Expected behavior | Save first → `publish_chapter` → toast "Chapter published." / "New version published." |
+| State change | `BR-EDT-020` |
+| Validation | Save-first; server `BR-EDT-019` |
+| Error behavior | Inline `role="alert"` (`BR-EDT-025`) |
+| Navigation | — |
+| Evidence | `publish-panel.tsx:90-95,139-142` |
+
+| Field | SCR-EDT-01-A10 Schedule |
+| --- | --- |
+| Trigger | "Schedule…" → C09 → "Schedule" |
+| Preconditions | `canPublish` (shown also for published chapters, F-EDT-01) |
+| Expected behavior | Validate → save first → `schedule_chapter` → dialog closes, toast "Publication scheduled." |
+| State change | `status='scheduled'`, `scheduled_for` |
+| Validation | "Please choose a publish time." / "Choose a time in the future." |
+| Error behavior | Inline in dialog (picker) or panel alert (server) |
+| Navigation | — |
+| Evidence | `publish-panel.tsx:97-111,144-146,162-199` |
+
+| Field | SCR-EDT-01-A11 Unpublish / Cancel schedule |
+| --- | --- |
+| Trigger | C08 ghost button → C10 confirm |
+| Preconditions | `canUnpublishChapter` (owner/co_author; published/scheduled) |
+| Expected behavior | `unpublish_chapter` → toast "Chapter unpublished and returned to draft." |
+| State change | `BR-EDT-023` |
+| Validation | — |
+| Error behavior | Panel alert; dialog stays open |
+| Navigation | — |
+| Evidence | `publish-panel.tsx:149-158,201-213` |
+
+| Field | SCR-EDT-01-A12 Navigate away |
+| --- | --- |
+| Trigger | C01/C02/header link, tab close/reload |
+| Preconditions | — |
+| Expected behavior | `BR-EDT-012` (prompt only on browser unload) |
+| State change | Possible local backup |
+| Validation | — |
+| Error behavior | — |
+| Navigation | Chapters list / Preview / History / elsewhere |
+| Evidence | `chapter-editor-screen.tsx:238-263` |
+
+## D. UI states
+
+| State | Status | Behaviour / evidence |
+| --- | --- | --- |
+| Initial | Implemented | Skeleton `aria-busy` while the draft loads (`chapter-editor-screen.tsx:51`); toolbar skeleton until Tiptap mounts (`:368-372`) |
+| Loading | Implemented (partial) | Draft: skeleton. Save: "Saving…" button + status. Upload: "Uploading picture…". Publish: "Working…". **Missing**: publish panel renders nothing while its state loads (`publish-panel.tsx:59`) |
+| Empty | Implemented | Never-written draft → one empty paragraph, "0 words" (`body-converter.ts:161`) |
+| Populated | Implemented | Title, formatted body, word count |
+| Validation error | Implemented | Inline title/body message + status "Not saved: check…"; schedule dialog inline errors |
+| Request error | Implemented (partial) | Load error + retry; autosave "Couldn't save, retrying"; image toasts; publish alert. **Missing**: publish-state load failure is silent (F-EDT-04); permanent save errors look retryable (F-EDT-03) |
+| Success | Implemented | "Saved" status, toasts for manual save / publish / schedule / unpublish / restore |
+| Disabled | Implemented | Save while saving; Undo/Redo when unavailable; picture while uploading; publish buttons while busy; archived → buttons hidden + hint |
+| Unauthorized | Implemented | Anonymous → login redirect; no role → "Chapter not found"; editor → no Unpublish button |
+| Offline | Implemented | Autosave error + backoff + `online` retry; local backup; image/publish "No connection…" messages |
+| Unsaved changes | Implemented (partial) | Footer "Unsaved changes…", `beforeunload` prompt, backup banner. **Missing**: no in-app navigation guard / flush (F-EDT-02) |
+| Conflict | Implemented | Alert + reload + backup offer |
+| Not found / unreadable | Implemented | Empty states `notFound`, `cannotOpen` |
+
+## E. Acceptance criteria
+
+| ID | Given / When / Then | Type |
+| --- | --- | --- |
+| SCR-EDT-01-AC01 | Given an owner, co-author or editor, when they open the editor, then the saved title, body and word count are shown. | Happy |
+| SCR-EDT-01-AC02 | Given a user with no role or a chapter of another story, when they open the URL, then "Chapter not found" is shown and no draft content is revealed. | Permission |
+| SCR-EDT-01-AC03 | Given an anonymous visitor, when they open the URL, then they are redirected to `/login?next=<editor path>`. | Navigation |
+| SCR-EDT-01-AC04 | Given a stored body that fails `chapterBodySchema`, when the editor opens, then "Can't open the draft" is shown and nothing is saved. | Error |
+| SCR-EDT-01-AC05 | Given the author stops typing, when 2 s pass (or 10 s of continuous typing), then the draft is saved with the current revision and the footer shows "Saved". | State transition |
+| SCR-EDT-01-AC06 | Given a blank title, when a save runs, then no request is sent and "Please enter a chapter title." is shown. | Validation |
+| SCR-EDT-01-AC07 | Given the network is down, when a save fails, then the footer shows "Couldn't save, retrying", the text stays on screen and in the device backup, and the save succeeds without user action once online. | Error / Offline |
+| SCR-EDT-01-AC08 | Given another device saved the draft after it was opened here, when this device saves, then "The draft was edited elsewhere" is shown, nothing is overwritten, and after "Load latest version" the local text is offered for restore. | Edge |
+| SCR-EDT-01-AC09 | Given an unsaved local backup that differs from the server, when the editor opens, then the backup banner is shown; Restore replaces the content and autosaves; Discard removes it. | State transition |
+| SCR-EDT-01-AC10 | Given unsaved changes, when the author closes or reloads the tab, then the browser asks for confirmation. | Navigation |
+| SCR-EDT-01-AC11 | Given an edited paragraph, when it is saved, then its `block_id` is unchanged; a new paragraph gets a new UUID; a pasted copy gets new ids. | Edge |
+| SCR-EDT-01-AC12 | Given a JPEG ≤ 10 MB, when it is inserted, then it is uploaded to `<story_id>/<uuid>.webp` and an image block appears at the cursor; a GIF shows "Only JPG, PNG or WebP pictures can be inserted." | Happy / Validation |
+| SCR-EDT-01-AC13 | Given unsaved text, when Publish is pressed, then the text is saved first and that revision is published; a double click creates one version. | Happy / Edge |
+| SCR-EDT-01-AC14 | Given someone saved the draft after this page loaded, when Publish is pressed with no local edits, then PT409 shows "The draft or chapter status was changed elsewhere. Reload the page and try again." | Error |
+| SCR-EDT-01-AC15 | Given an editor role, when the panel loads for a published chapter, then "Publish new version" is visible and "Unpublish chapter" is not. | Permission |
+| SCR-EDT-01-AC16 | Given a local time 10:37 in Asia/Ho_Chi_Minh, when scheduled, then the server receives 03:37Z and the badge reads "Scheduled for … 10:37 (Asia/Ho_Chi_Minh)". | Happy |
+| SCR-EDT-01-AC17 | Given a time less than one minute ahead or empty, when "Schedule" is pressed, then an inline error is shown and no request is sent. | Validation |
+| SCR-EDT-01-AC18 | Given an archived chapter, when the panel loads, then no publish/schedule buttons are shown and "Unarchive it in the chapter list before publishing." is displayed. | State |
+| SCR-EDT-01-AC19 | Given an owner, when they confirm "Unpublish chapter", then the chapter returns to draft and the toast "Chapter unpublished and returned to draft." is shown. | Happy |
+| SCR-EDT-01-AC20 `[Proposed]` | Given a published chapter, when the panel loads, then "Schedule…" is not offered (or is explained as unavailable). | Edge (F-EDT-01) |
+| SCR-EDT-01-AC21 `[Proposed]` | Given unsaved changes, when the author follows an in-app link (Preview, Version history, Back to chapters), then pending changes are saved before navigating, or the author is asked to confirm. | Navigation (F-EDT-02) |
+| SCR-EDT-01-AC22 `[Proposed]` | Given the publish state cannot be loaded, when the editor is shown, then the panel shows a loading placeholder and an error with retry instead of disappearing. | Error (F-EDT-04) |
+| SCR-EDT-01-AC23 `[Proposed]` | Given the session expired or the role was revoked, when a save fails with 401/403, then autosave stops and the author is told to sign in again / that they lost access, with the text kept on the device. | Error (F-EDT-03) |
+| SCR-EDT-01-AC24 `[Proposed]` | Given a scheduled chapter whose due time passed and which was not published, when the editor opens, then the panel says the scheduled publish failed and why. | Error (F-EDT-05) |
+
+## F. Findings referenced
+
+F-EDT-01, F-EDT-02, F-EDT-03, F-EDT-04, F-EDT-05, F-EDT-06, F-EDT-07, F-EDT-08, F-EDT-09, F-EDT-10, U-EDT-01, U-EDT-02,
+U-EDT-03, U-EDT-04, U-EDT-05 (findings draft; to be consolidated in `audits/`).
+
+## G. Open questions
+
+Q-EDT-01 (empty chapters publishable?), Q-EDT-02 (scheduled snapshot content and attribution), Q-EDT-03 (may editors
+cancel a schedule?), Q-EDT-04 (same-browser multi-tab backup), Q-EDT-05 (schedule the next version of a live chapter?).

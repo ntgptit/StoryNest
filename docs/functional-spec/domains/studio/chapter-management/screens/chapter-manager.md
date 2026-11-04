@@ -1,0 +1,143 @@
+# SCR-CHM-01 — Chapter manager
+
+## A. Identification
+| Field | Value |
+| --- | --- |
+| Screen ID | `SCR-CHM-01` |
+| Name | Chapter manager ("Manage chapters") |
+| Route | `/studio/story/[id]/chapters` |
+| Route file | `apps/web/src/app/(main)/studio/story/[id]/chapters/page.tsx` (view `chapter-manager-view.tsx`) |
+| Screen component | `packages/features/src/studio/screens/chapter-manager-screen.tsx` (`ChapterManagerScreen` → `ChapterManager`, `AddChapterForm`); `components/rename-slug-dialog.tsx`; `ui/widgets/confirm-dialog.tsx` |
+| Roles | Owner, co-author (all actions); editor (add, move, rename slug, write) |
+| Entry points | SCR-STM-01 row "Manage chapters" (all roles); SCR-STM-03 link "Manage chapters" |
+| Workflows | WF-CHM-01..06 |
+| Rules | BR-CHM-001..015, BR-STM-022, BR-STM-023 |
+
+## B. Components
+| ID | Component | Notes / evidence |
+| --- | --- | --- |
+| SCR-CHM-01-C01 | Header "Manage chapters" / "Order, URL slugs and status of the chapters in "<story>"." | `chapter-manager-screen.tsx:122`, `strings.en.ts:22-23` |
+| SCR-CHM-01-C02 | Link "Back to story details" → `/studio/story/{id}` | `chapter-manager-screen.tsx:123-128` |
+| SCR-CHM-01-C03 | Ordered list "Chapter list": row with "Chapter n", title / "(untitled)", status badge, "Deleted" badge, `/slug` | `chapter-manager-screen.tsx:134-156` |
+| SCR-CHM-01-C04 | Live-row actions: Move up / Move down (icon buttons, aria-label "Move up: <title>"), "Write", "Change URL slug", [owner/co-author] "Archive" or "Unarchive", "Delete" | `chapter-manager-screen.tsx:176-240` |
+| SCR-CHM-01-C05 | Deleted-row action: [owner/co-author] "Restore" | `chapter-manager-screen.tsx:158-174` |
+| SCR-CHM-01-C06 | Numbering note | `chapter-manager-screen.tsx:248` |
+| SCR-CHM-01-C07 | Empty state "This story has no chapters yet" / "Add the first chapter below." | `chapter-manager-screen.tsx:130-131` |
+| SCR-CHM-01-C08 | Add form "Add chapter": "Chapter title", "URL slug", submit ("Adding…") | `chapter-manager-screen.tsx:314-371` |
+| SCR-CHM-01-C09 | Rename dialog "Change chapter URL slug" | `components/rename-slug-dialog.tsx:66-100` |
+| SCR-CHM-01-C10 | Confirm dialog (archive or delete; delete is destructive) | `chapter-manager-screen.tsx:267-283` |
+| SCR-CHM-01-C11 | Skeleton; error state (retry both queries); "Story not found" empty state | `chapter-manager-screen.tsx:50-72` |
+
+## C. User actions & system responses
+
+| Field | SCR-CHM-01-A01 Add chapter |
+| --- | --- |
+| Trigger | Submit the add form |
+| Preconditions | Role on story; not busy |
+| Expected behavior | `create_chapter`; toast "Chapter added."; form reset; list reload |
+| State change | New chapter (draft) + draft row |
+| Validation | Title required ≤ 200; slug required ≤ 120, lowercase/digits/hyphens |
+| Error behavior | Slug taken → field; other → toast (BR-CHM-014) |
+| Navigation | Stays |
+| Evidence | `chapter-manager-screen.tsx:299-312`; `chapter-management.test.tsx:381,399,414` |
+
+| Field | SCR-CHM-01-A02 Move up / down |
+| --- | --- |
+| Trigger | Arrow buttons |
+| Preconditions | Not first (up) / not last (down) among live chapters; no reorder running |
+| Expected behavior | Optimistic reorder → `reorder_chapters` → reload |
+| State change | `sort_order` renumbered |
+| Validation | Server: full live set exactly once |
+| Error behavior | Rollback + toast "The chapter list was changed elsewhere…" (22023) or other kind |
+| Navigation | — |
+| Evidence | `chapter-manager-screen.tsx:105-109,177-196`; `chapter-management.test.tsx:301-368` |
+
+| Field | SCR-CHM-01-A03 Write |
+| --- | --- |
+| Trigger | "Write" |
+| Expected behavior | Navigate to SCR-EDT-01 `/studio/story/{id}/chapter/{chapterId}` |
+| Evidence | `chapter-manager-screen.tsx:197-199` |
+
+| Field | SCR-CHM-01-A04 Change URL slug |
+| --- | --- |
+| Trigger | "Change URL slug" → dialog → "Save URL slug" |
+| Preconditions | Live chapter |
+| Expected behavior | Update slug; toast "URL slug changed."; close |
+| State change | `chapters.slug` |
+| Validation | `chapterSlugFormSchema`; unchanged → close without request |
+| Error behavior | Taken → field; other → toast; dialog stays open |
+| Navigation | — |
+| Evidence | `components/rename-slug-dialog.tsx:44-64`; `chapter-management.test.tsx:428` |
+
+| Field | SCR-CHM-01-A05 Archive |
+| --- | --- |
+| Trigger | "Archive" → confirm "Archive" |
+| Preconditions | Owner/co-author; not archived |
+| Expected behavior | `archive_chapter`; toast "Chapter archived."; badge "Archived"; button becomes "Unarchive" |
+| Error behavior | Toast; dialog stays open |
+| Evidence | `chapter-manager-screen.tsx:220-229,277-282`; `chapter-management.test.tsx:443` |
+
+| Field | SCR-CHM-01-A06 Unarchive |
+| --- | --- |
+| Trigger | "Unarchive" (no confirm; disabled while running) |
+| Expected behavior | `unarchive_chapter`; toast "Unarchived. The chapter is back to draft." |
+| Evidence | `chapter-manager-screen.tsx:205-219` |
+
+| Field | SCR-CHM-01-A07 Delete |
+| --- | --- |
+| Trigger | "Delete" → confirm "Delete" (destructive) |
+| Preconditions | Owner/co-author |
+| Expected behavior | `deleted_at` set; toast "Chapter deleted."; row moves last, struck through |
+| Error behavior | Toast; dialog stays open |
+| Evidence | `chapter-manager-screen.tsx:230-238,277-281`; `chapter-management.test.tsx:457` |
+
+| Field | SCR-CHM-01-A08 Restore |
+| --- | --- |
+| Trigger | "Restore" on a deleted row (no confirm) |
+| Preconditions | Owner/co-author |
+| Expected behavior | `deleted_at` cleared; toast "Chapter restored." |
+| Evidence | `chapter-manager-screen.tsx:158-174` |
+
+| Field | SCR-CHM-01-A09 Back to story details / Retry |
+| --- | --- |
+| Trigger | Link; "Try again" in error state |
+| Expected behavior | Navigate to SCR-STM-03 (editor sees read-only notice there); refetch story and chapters |
+| Evidence | `chapter-manager-screen.tsx:51-62,123-128` |
+
+## D. UI states
+| State | Status | Evidence / note |
+| --- | --- | --- |
+| Initial | Implemented | Skeleton until story and chapters load |
+| Loading | Implemented | `Skeleton aria-busy`; add form `aria-busy` while adding |
+| Empty | Implemented | C07 + add form |
+| Populated | Implemented | C03 |
+| Validation error | Implemented | Add form and rename dialog field messages |
+| Request error | Implemented | Error state (load), toasts (actions) |
+| Success | Implemented | Toasts |
+| Disabled | Implemented | Arrows at ends / while reordering; restore/unarchive while running; add submit while adding |
+| Unauthorized | Implemented | Guest redirect; no role → "Story not found"; editor → management actions hidden |
+| Offline | Partial | Network toast; optimistic reorder rolled back |
+| Unsaved changes | Not applicable | Actions apply immediately (add form text is lost on leave — minor) |
+| Deleted story | Missing | No notice; add/move fail with "Chapter not found." (U-CHM-02) |
+| Scheduled chapter | Partial | Badge "Scheduled" without date (U-CHM-01) |
+
+## E. Acceptance criteria
+- SCR-CHM-01-AC01 Given chapters 1–3 and one deleted chapter, Then the deleted one is listed last with "Deleted" and only "Restore" (owner/co-author).
+- SCR-CHM-01-AC02 Given I click "Move up" on chapter 3, Then the order shows 3,1,2 immediately And `reorder_chapters` receives the three live ids in that order.
+- SCR-CHM-01-AC03 Given the server refuses the order, Then the previous order is restored And "The chapter list was changed elsewhere…" is shown.
+- SCR-CHM-01-AC04 Given the first live chapter, Then "Move up" is disabled; given the last, "Move down" is disabled.
+- SCR-CHM-01-AC05 Given I add "Chương 1", Then the slug defaults to `chuong-1` And after success the form is empty And a new id is used for the next add.
+- SCR-CHM-01-AC06 Given an existing slug, When I add or rename to it, Then the slug field shows "This story already has a chapter with this URL slug.".
+- SCR-CHM-01-AC07 Given I am an editor, Then I see Move, Write and Change URL slug, and no Archive, Unarchive, Delete or Restore.
+- SCR-CHM-01-AC08 Given I archive a published chapter, Then readers no longer see it And it shows "Archived" with "Unarchive".
+- SCR-CHM-01-AC09 Given I unarchive, Then the chapter is "Draft" (not published).
+- SCR-CHM-01-AC10 Given I am not a member of the story, Then "Story not found" is shown.
+- SCR-CHM-01-AC11 Given an editor calls the API to set `deleted_at` on a chapter, Then it is refused `[Proposed]` (F-CHM-01).
+- SCR-CHM-01-AC12 Given a scheduled chapter, Then its row shows the scheduled date/time in my time zone `[Proposed]` (U-CHM-01).
+- SCR-CHM-01-AC13 Given the story is deleted, Then a notice is shown and add/reorder are disabled `[Proposed]` (U-CHM-02).
+
+## F. Findings referenced
+F-CHM-01, F-STM-04, F-CHM-03, U-CHM-01, U-CHM-02, U-CHM-03, U-STM-05.
+
+## G. Open questions
+Q-TEAM-02.

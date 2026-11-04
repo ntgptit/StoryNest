@@ -27,7 +27,7 @@ Documented scope: `docs/WBS.md:154` (WP 2.2), `docs/WBS.md:206-211` (WP 5.1–5.
 | OBJ-SRCH | Search (incl. header SearchBox) | [search](search/business-rules.md) | [SCR-SRCH-01 Search results `/search`](search/screens/search-results.md) | BR-SRCH-001…011 | WF-SRCH-01…03 |
 | OBJ-RANK | Rankings | [ranking](ranking/business-rules.md) | [SCR-RANK-01 Rankings `/ranking`](ranking/screens/rankings.md) | BR-RANK-001…008 | WF-RANK-01…02 |
 | OBJ-REC | Recommendations | [recommendations](recommendations/business-rules.md) | none (embedded in SCR-HOME-01 and the story page SCR-STORY-*) | BR-REC-001…008 | WF-REC-01…02 |
-| OBJ-AUTHOR | Author page, follow, following feed | [author](author/business-rules.md) | [SCR-AUTHOR-01 Author page `/author/[username]`](author/screens/author-page.md), [SCR-AUTHOR-02 Following feed `/following`](author/screens/following-feed.md) | BR-AUTHOR-001…011 | WF-AUTHOR-01…03 |
+| OBJ-AUTHOR | Author page, follow, following feed | [author](author/business-rules.md) | [SCR-AUTHOR-01 Author page `/author/[username]`](author/screens/author-page.md), [SCR-AUTHOR-02 Following feed `/following`](author/screens/following-feed.md) | BR-AUTHOR-001…012 | WF-AUTHOR-01…03 |
 
 ## Discovery eligibility — cross-list consistency check (key deliverable)
 
@@ -84,6 +84,7 @@ that disappeared between the two requests (`discovery/model/order-by-ids.ts:1-8`
 - Q-HOME-01 — Should stories of suspended/deactivated authors also disappear from the home feed (as in every other list), or is the current behaviour intended? See [findings](#findings-index).
 - Q-TAX-01 — How are categories provisioned in production (no migration inserts them)?
 - Q-RANK-01 — Should "Today" follow the reader's time zone instead of UTC?
+- Q-TAX-02, Q-SRCH-01, Q-REC-01, Q-AUTHOR-01 — object-level questions, listed in the screen/rule files and the findings draft.
 
 ## Findings index
 Detailed blocks are in the analysis findings draft (`findings-discovery.md`, merged into `audits/` by the

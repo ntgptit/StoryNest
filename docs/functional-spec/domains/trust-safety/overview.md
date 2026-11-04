@@ -23,14 +23,14 @@ OBJ-CMT), `docs/WBS.md:221` (WP 6.3, account copy of the 18+ choice), `docs/WBS.
 | Member (reader / author) | Signed in, `app_users.account_status = 'active'` | Report anything they can see that is not their own (20 per 24 h); 18+ choice saved to the account; comments limited to 10 / 10 min and 200 / day, spam filter | `supabase/migrations/20261104002000_moderation.sql:130-175`, `20261104002200_abuse_limits.sql:32-37` |
 | Story owner / co-author | `story_role` owner/co_author | Hides/unhides comments on their own story — **owned by OBJ-CMT** (`domains/community/comments/`, WP 6.2); cannot bring back a story a moderator removed | `20261104001800_comment_moderation_by_author.sql:1-22`, `20261104002000_moderation.sql:102-116` |
 | Moderator | JWT `app_metadata.role = 'moderator'` (set only by service role) | `/moderation` console, all moderation RPCs, reads the audit table; exempt from comment/report rate limits and the spam filter | `20261103000100_auth_and_rls.sql:10,69-72`, `apps/web/src/lib/auth/require-user.ts:22`, `20261104002200_abuse_limits.sql:16,49,96` |
-| Suspended member | `account_status = 'suspended'` (by `moderate('suspend_user')`) | Can still sign in; every write that requires `is_active_account()` is refused (42501): report, comment, follow, create story… No UI notice | `20261103000100_auth_and_rls.sql:74-80`, `supabase/tests/260_moderation.test.sql:240` |
+| Suspended member | `account_status = 'suspended'` (by `moderate('suspend_user')`) | Can still sign in; every write that requires `is_active_account()` is refused (42501): report, comment, follow, create story… No UI notice | `20261103000100_auth_and_rls.sql:74-80`, `supabase/tests/260_moderation.test.sql:241` |
 | Administrator (no UI) | Service role / SQL | Grants the moderator role, edits `abuse_limits` thresholds, reads audit log via SQL | `20261104002200_abuse_limits.sql:3,38-39`, `docs/WBS.md:219` ("Chưa làm") |
 
 ## Business objects
 
 | Object ID | Name | Folder | Screens | Rules | Workflows |
 | --- | --- | --- | --- | --- | --- |
-| OBJ-MOD | Reports & moderation console | [moderation](moderation/business-rules.md) | [SCR-MOD-01 Moderation console `/moderation`](moderation/screens/moderation-console.md), [SCR-MOD-02 Report dialog (embedded)](moderation/screens/report-dialog.md) | BR-MOD-001…020 | [WF-MOD-01…06](moderation/workflows.md) |
+| OBJ-MOD | Reports & moderation console | [moderation](moderation/business-rules.md) | [SCR-MOD-01 Moderation console `/moderation`](moderation/screens/moderation-console.md), [SCR-MOD-02 Report dialog (embedded)](moderation/screens/flag-content-dialog.md) | BR-MOD-001…021 | [WF-MOD-01…06](moderation/workflows.md) |
 | OBJ-MAT | Mature (adult, 18+) content | [mature-content](mature-content/business-rules.md) | [SCR-MAT-01 Adult content gate (embedded) + header toggle](mature-content/screens/adult-content-gate.md) | BR-MAT-001…011 | [WF-MAT-01…04](mature-content/workflows.md) |
 | OBJ-ABU | Abuse limits & spam filter | [abuse-limits](abuse-limits/business-rules.md) | none (rules + workflows only) | BR-ABU-001…009 | [WF-ABU-01…03](abuse-limits/workflows.md) |
 

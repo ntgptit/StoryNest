@@ -30,7 +30,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Success criteria | The author sees the saved draft and can type. |
 | Postconditions | No data changed. |
 | Affected objects | `chapter_drafts`, `chapters` (read), `story_role` RPC. |
-| Related screens | SCR-EDT-01, SCR-CHM (chapter manager) |
+| Related screens | SCR-EDT-01, chapter manager (`OBJ-CHM`) |
 | Status | Verified (`editor-screen.test.tsx:187-305`) |
 
 ### WF-EDT-02 — Write and autosave the draft
@@ -165,5 +165,5 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Success criteria | Typed text is either on the server or offered back on return. |
 | Postconditions | Possibly a local backup. |
 | Affected objects | `localStorage`, `chapter_drafts` |
-| Related screens | SCR-EDT-01, SCR-HIST-01, SCR-HIST-02, chapter manager |
+| Related screens | SCR-EDT-01, SCR-HIST-01, SCR-HIST-02, chapter manager (`OBJ-CHM`) |
 | Status | Verified (`editor-screen.test.tsx:382,399`) |

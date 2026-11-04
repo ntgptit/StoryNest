@@ -80,7 +80,7 @@
 | Expected behavior | Hidden from the public by RLS. The story page query additionally filters `deleted_at IS NULL`, so a deleted story is a **404 for everyone on the public page, team and moderators included**. Its chapters are unreadable to the public (`can_read_chapter` checks `s.deleted_at`). A story removed by a moderator cannot be restored by its owner (trigger raises 42501). |
 | Exceptions | The team can still see the row through RLS (for the studio and restore, see OBJ-STM). |
 | Related screens | SCR-STORY-01, SCR-READ-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:97-99,108-109,209`, `packages/features/src/story/api/story.api.ts:33`, `supabase/migrations/20261104002000_moderation.sql:15-18,104-116,381-395`, `packages/features/src/story/story.test.tsx:106` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:97-99,108-109,205-206,212`, `packages/features/src/story/api/story.api.ts:33`, `supabase/migrations/20261104002000_moderation.sql:15-18,104-116,381-395`, `packages/features/src/story/story.test.tsx:106` |
 | Status | Verified |
 
 ### BR-STORY-005 — Team and moderator access
@@ -92,7 +92,7 @@
 | Expected behavior | The public story page renders a private or draft story for these users (no JSON-LD, `noindex`). The chapter list still shows only published chapters (BR-STORY-010). Drafts are previewed in the studio (OBJ-HIST). |
 | Exceptions | Soft-deleted stories are still a 404 on the public page (BR-STORY-004). |
 | Related screens | SCR-STORY-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:77-112,198-202`, `supabase/tests/10_rls.test.sql:125-126,141,158` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:83-112,198-202`, `supabase/tests/10_rls.test.sql:125-126,141,158` |
 | Status | Verified (SQL test) |
 
 ### BR-STORY-006 — Hidden equals missing
@@ -212,7 +212,7 @@
 | Expected behavior | Follow / Save semantics, optimistic UI and errors: `BR-LIB-*` ([library](../../library/overview.md)). Add to list: `BR-LIST-*`. Report: `BR-MOD-*` ([trust-safety](../../trust-safety/overview.md)). The server allows follow/save only when `can_read_story` is true. |
 | Exceptions | The Report button is shown to the author on their own story, and the server refuses it (F-STORY-01). |
 | Related screens | SCR-STORY-01 |
-| Evidence | `packages/features/src/story/components/story-actions.tsx:15-60`, `packages/features/src/story/screens/story-screen.tsx:111-114`, `supabase/migrations/20261103000100_auth_and_rls.sql:291-297`, `packages/features/src/story/library.test.tsx:145` |
+| Evidence | `packages/features/src/story/components/story-actions.tsx:15-60`, `packages/features/src/story/screens/story-screen.tsx:111-114`, `supabase/migrations/20261103000100_auth_and_rls.sql:290-297`, `packages/features/src/story/library.test.tsx:145` |
 | Status | Verified |
 
 ### BR-STORY-016 — Author account status does not gate readability
