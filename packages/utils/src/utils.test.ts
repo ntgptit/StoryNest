@@ -1,6 +1,9 @@
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildPublicStorageUrl,
+  buildStorageKey,
+  isValidStorageKey,
   debounce,
   decodeCursor,
   encodeCursor,
@@ -214,5 +217,53 @@ describe("safeRedirectPath", () => {
   it("rejects null, undefined and uses the fallback", () => {
     expect(safeRedirectPath(null)).toBe("/");
     expect(safeRedirectPath(undefined, "/library")).toBe("/library");
+  });
+});
+
+describe("storage key convention", () => {
+  const story = "19000000-0000-4000-8000-000000000001";
+  const other = "19000000-0000-4000-8000-000000000002";
+
+  it("accepts <scope>/<file> and rejects everything else", () => {
+    expect(isValidStorageKey(`${story}/cover-1.webp`, story)).toBe(true);
+    expect(isValidStorageKey(`${story}/A_b.9.PNG`, story)).toBe(true);
+    expect(isValidStorageKey(`${story}/${"a".repeat(200)}`, story)).toBe(true);
+    for (const key of [
+      `${other}/x.png`, // another scope
+      "x.png", // no folder
+      `${story}/a/b.png`, // nested
+      `${story}/../${other}/x.png`, // traversal
+      `${story}/.hidden`,
+      `${story}/a b.png`,
+      `${story}/`,
+      `${story}/${"a".repeat(201)}`,
+      `/${story}/x.png`,
+    ]) {
+      expect(isValidStorageKey(key, story), key).toBe(false);
+    }
+    expect(isValidStorageKey(`${story}/x.png`, "not-a-uuid")).toBe(false);
+  });
+
+  it("compares the scope in lowercase, as the database stores ids", () => {
+    const lettered = "abcdef00-0000-4000-8000-000000000001"; // has letters, so upper and lower case differ
+    expect(isValidStorageKey(`${lettered}/x.png`, lettered.toUpperCase())).toBe(true);
+    expect(isValidStorageKey(`${lettered.toUpperCase()}/x.png`, lettered)).toBe(false);
+  });
+
+  it("builds a fresh valid key from an extension only", () => {
+    const a = buildStorageKey(story, "webp");
+    const b = buildStorageKey(story, ".PNG");
+    expect(isValidStorageKey(a, story)).toBe(true);
+    expect(isValidStorageKey(b, story)).toBe(true);
+    expect(b.endsWith(".png")).toBe(true);
+    expect(a).not.toBe(buildStorageKey(story, "webp"));
+    expect(() => buildStorageKey(story, "we/bp")).toThrow();
+    expect(() => buildStorageKey(story, "")).toThrow();
+    expect(() => buildStorageKey("nope", "png")).toThrow();
+  });
+
+  it("uses the same file-name rule as the database function", () => {
+    const sql = readFileSync("../../supabase/migrations/20261104000300_storage_key_convention.sql", "utf8");
+    expect(sql).toContain("'/[A-Za-z0-9][A-Za-z0-9._-]{0,199}$'");
   });
 });
