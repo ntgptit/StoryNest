@@ -6,7 +6,7 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "gate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm check:hardcode && pnpm check:tokens && pnpm db:types:check && pnpm db:verify && pnpm --filter @storynest/web build",
+    "gate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm check:hardcode && pnpm check:tokens && pnpm db:types:check && pnpm db:verify && pnpm --filter @storynest/web build && pnpm check:bundle",
     "db:verify": "bash supabase/scripts/verify-migrations.sh",
     "db:types": "bash supabase/scripts/gen-types.sh",
     "db:types:check": "bash supabase/scripts/gen-types.sh --check",
@@ -17,7 +17,8 @@
     "format:check": "prettier --check .",
     "gen:feature": "node scripts/gen-feature.mjs",
     "check:tokens": "node scripts/check-tokens.mjs",
-    "check:hardcode": "node scripts/check-hardcode.mjs"
+    "check:hardcode": "node scripts/check-hardcode.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

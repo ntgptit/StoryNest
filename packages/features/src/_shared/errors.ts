@@ -1,4 +1,3 @@
-import { ZodError } from "zod";
 import { classifyRpcError } from "@storynest/validation";
 
 /**
@@ -70,11 +69,20 @@ const POSTGRES_KIND: Record<string, AppErrorKind> = {
   PGRST303: "unauthenticated",
 };
 
+/**
+ * A Zod validation error, recognised by its shape (zod v4 sets `name` to "ZodError" and carries `issues`) rather than
+ * `instanceof`: importing the ZodError class would put zod into every route's bundle, because every data hook maps its
+ * errors through this module.
+ */
+function isZodError(error: unknown): error is Error & { issues: unknown[] } {
+  return error instanceof Error && error.name === "ZodError" && Array.isArray((error as { issues?: unknown }).issues);
+}
+
 /** Normalises anything thrown or returned as `{ error }` by supabase-js, fetch or Zod into an AppError. */
 export function toAppError(error: unknown): AppError {
   if (error instanceof AppError) return error;
 
-  if (error instanceof ZodError) {
+  if (isZodError(error)) {
     return new AppError("invalid", "Validation failed", { details: error.issues, cause: error });
   }
 
