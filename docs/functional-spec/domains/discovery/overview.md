@@ -87,6 +87,5 @@ that disappeared between the two requests (`discovery/model/order-by-ids.ts:1-8`
 - Q-TAX-02, Q-SRCH-01, Q-REC-01, Q-AUTHOR-01 — object-level questions, listed in the screen/rule files and the findings draft.
 
 ## Findings index
-Detailed blocks are in the analysis findings draft (`findings-discovery.md`, merged into `audits/` by the
-orchestrator): F-HOME-01, F-HOME-02, U-HOME-01, U-HOME-02, F-TAX-01, F-TAX-02, U-TAX-01, F-SRCH-01, U-SRCH-01,
+Detailed finding blocks were handed to the orchestrator for the `audits/` folder: F-HOME-01, F-HOME-02, U-HOME-01, U-HOME-02, F-TAX-01, F-TAX-02, U-TAX-01, F-SRCH-01, U-SRCH-01,
 U-SRCH-02, U-RANK-01, U-RANK-02, F-REC-01, F-AUTHOR-01, F-AUTHOR-02, U-AUTHOR-01, U-AUTHOR-02.

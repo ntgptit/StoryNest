@@ -114,7 +114,7 @@
 
 - **SCR-MAT-01-AC01** Given a guest with no stored choice, when they open an 18+ story by link, then they see only the gate (no title, cover, synopsis, read button, report button or comments). *(Verified)*
 - **SCR-MAT-01-AC02** Given the gate, when the reader clicks "I'm 18 or older, continue", then the story renders and the header toggle reports pressed. *(Verified)*
-- **SCR-MAT-01-AC03** Given an 18+ chapter whose story loads after the chapter, then nothing of the chapter is shown before the story is known. *(Verified, `adult-content.test.tsx` reader case)*
+- **SCR-MAT-01-AC03** Given an 18+ chapter whose story loads after the chapter, then nothing of the chapter is shown before the story is known. *(Verified, `packages/features/src/reader/reader.test.tsx:279-281`)*
 - **SCR-MAT-01-AC04** Given the header dialog in hidden state, when "Keep hidden" is clicked, then no list changes. *(Verified)*
 - **SCR-MAT-01-AC05** Given 18+ shown, when "Hide 18+ stories again" is clicked on an 18+ story page, then the gate appears again and lists drop 18+ stories. *(Verified)*
 - **SCR-MAT-01-AC06** Given a stored value `{"ageConfirmed":false,"show":true}`, then 18+ content stays hidden. *(Verified)*

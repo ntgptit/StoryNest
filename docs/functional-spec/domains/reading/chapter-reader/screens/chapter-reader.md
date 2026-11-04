@@ -12,8 +12,8 @@
 | Screen component | `packages/features/src/reader/screens/reader-screen.tsx` (`ReaderScreen`) |
 | Pre-paint script | `buildReaderBootstrapScript(CHAPTER_PATH_PATTERN)` in `apps/web/src/app/layout.tsx:37` |
 | Roles | Guest, Member, Story team, Moderator, Crawler |
-| Business rules | [BR-READ-001…018](../business-rules.md), [BR-PROG-*](../../reading-progress/business-rules.md), [BR-VOTE-*](../../community/vote/business-rules.md), `BR-CMT-*`, `BR-MOD-*`, `BR-MAT-*` |
-| Workflows | [WF-READ-01…06](../workflows.md), [WF-PROG-01, 02, 04](../../reading-progress/workflows.md), [WF-VOTE-01, 02](../../community/vote/workflows.md) |
+| Business rules | [BR-READ-001…018](../business-rules.md), [BR-PROG-*](../../reading-progress/business-rules.md), [BR-VOTE-*](../../../community/vote/business-rules.md), `BR-CMT-*`, `BR-MOD-*`, `BR-MAT-*` |
+| Workflows | [WF-READ-01…06](../workflows.md), [WF-PROG-01, 02, 04](../../reading-progress/workflows.md), [WF-VOTE-01, 02](../../../community/vote/workflows.md) |
 | Entry points | SCR-STORY-01 (CTA, chapter list), TOC / prev / next, library "Continue with chapter N" (SCR-LIB-01), notifications, external links |
 | Layout | Main shell. A sticky top toolbar (h-12, translucent) with a 2px progress bar, and a centred article column `max-width: 66ch` with the reader font, size and line height |
 
@@ -31,7 +31,7 @@
 | SCR-READ-01-C08 | Chapter blocks | Paragraph / heading (h2) / image / divider with anchors `b-{id}` and inline marks | `reader/components/reader-blocks.tsx`, `block-view.tsx`, `rich-text.tsx` |
 | SCR-READ-01-C09 | Inline comment buttons | Small speech-bubble button + count at the end of each paragraph or heading. Opens a bottom sheet with that block's `CommentThread` (owned by OBJ-CMT, SCR-CMT-01) | `reader-blocks.tsx:40-77` |
 | SCR-READ-01-C10 | End marker | "— End of chapter —" (`aria-hidden`) | `reader-screen.tsx:110-112` |
-| SCR-READ-01-C11 | Vote button | Toggle + "N votes" (`aria-live`) ([BR-VOTE-*](../../community/vote/business-rules.md)) | `reader/components/vote-button.tsx` |
+| SCR-READ-01-C11 | Vote button | Toggle + "N votes" (`aria-live`) ([BR-VOTE-*](../../../community/vote/business-rules.md)) | `reader/components/vote-button.tsx` |
 | SCR-READ-01-C12 | Report button | `ReportButton kind="chapter"` (`BR-MOD-*`) | `reader-screen.tsx:114-116` |
 | SCR-READ-01-C13 | Comments section | `section#comments`, h2 + chapter-level `CommentThread` (SCR-CMT-01) | `reader-screen.tsx:117-124` |
 | SCR-READ-01-C14 | Chapter nav | "Previous chapter" / "Next chapter" links with `rel`, or disabled placeholders | `reader/components/chapter-nav.tsx` |
@@ -128,7 +128,7 @@
 | --- | --- |
 | Trigger | C11 |
 | Preconditions | Signed in. Otherwise "Sign in to vote" → `/login?next=<chapter path>` |
-| Expected behavior | [WF-VOTE-01](../../community/vote/workflows.md#wf-vote-01--vote-or-unvote-a-chapter) |
+| Expected behavior | [WF-VOTE-01](../../../community/vote/workflows.md#wf-vote-01--vote-or-unvote-a-chapter) |
 | State change | `chapter_votes`, counters |
 | Validation | Server: active account + chapter readable |
 | Error behavior | Rollback + toast "You can't vote for this chapter." / "No connection…" / "Couldn't vote. Please try again." |
