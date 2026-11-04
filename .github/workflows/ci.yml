@@ -1,8 +1,11 @@
 name: CI
 
+# Dev phase: CI is not run on push or pull request. The gate runs locally before a merge (`pnpm gate`).
+# It can still be started by hand (Actions tab -> Run workflow). To switch it back on, restore:
+#   push:
+#   pull_request:
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
