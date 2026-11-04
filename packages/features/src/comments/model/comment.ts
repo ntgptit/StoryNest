@@ -125,8 +125,14 @@ export function bodyProblemMessage(problem: BodyProblem): string {
   return problem === "empty" ? commentText.validation.empty : commentText.validation.tooLong;
 }
 
+/** What the server says (as the hint of a refused write) when it turns a comment away as spam. */
+export const SPAM_HINT = "spam";
+
 export function commentErrorMessage(error: AppError): string {
+  if (error.kind === "invalid" && error.details === SPAM_HINT) return commentText.errors.spam;
   switch (error.kind) {
+    case "rateLimited":
+      return commentText.errors.rateLimited;
     case "forbidden":
       return commentText.errors.forbidden;
     case "notFound":

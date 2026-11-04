@@ -101,6 +101,12 @@ describe("comment model", () => {
     expect(commentErrorMessage(new AppError("forbidden", "x"))).toBe(commentText.errors.forbidden);
     expect(commentErrorMessage(new AppError("conflict", "x"))).toBe(commentText.errors.conflict);
     expect(commentErrorMessage(new AppError("unknown", "x"))).toBe(commentText.errors.generic);
+    expect(commentErrorMessage(new AppError("rateLimited", "x"))).toBe(commentText.errors.rateLimited);
+    expect(commentErrorMessage(new AppError("invalid", "x", { details: "spam" }))).toBe(commentText.errors.spam);
+    expect(commentErrorMessage(new AppError("invalid", "x", { details: "something else" }))).toBe(
+      commentText.errors.invalid,
+    );
+    expect(commentErrorMessage(new AppError("invalid", "x"))).toBe(commentText.errors.invalid);
   });
 });
 
@@ -311,6 +317,23 @@ describe("CommentThread", () => {
     }
     const [one, two] = c.of("post_comment");
     expect(two!.args.p_id).not.toBe(one!.args.p_id);
+  });
+
+  it.each([
+    [
+      "a posting limit",
+      { code: "PT429", message: "too many requests", hint: "comment_rate_burst" },
+      commentText.errors.rateLimited,
+    ],
+    ["spam", { code: "22023", message: "this looks like spam", hint: "spam" }, commentText.errors.spam],
+  ])("tells the author why a comment was turned away for %s, and keeps the text", async (_name, error, message) => {
+    const c = fakeClient({ post_comment: () => ({ data: null, error }) });
+    renderUi(c, thread());
+    const box = await screen.findByLabelText(commentText.composer.label);
+    fireEvent.change(box, { target: { value: "Nội dung" } });
+    fireEvent.click(screen.getByRole("button", { name: commentText.composer.submit }));
+    expect(await screen.findByText(message)).toBeTruthy();
+    expect((box as HTMLTextAreaElement).value).toBe("Nội dung");
   });
 
   it("keeps the text and reuses the same id when sending failed, so a retry cannot post twice", async () => {
