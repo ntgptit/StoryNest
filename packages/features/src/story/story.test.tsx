@@ -7,6 +7,7 @@ import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
 import { testSession, withAuth } from "../_shared/test-auth.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
+import { ToastProvider } from "../_shared/toast.tsx";
 import { getStory, listStoryChapters } from "./api/story.api.ts";
 import {
   chapterHref,
@@ -184,7 +185,9 @@ function renderScreen(client: DataClient) {
       <DataProvider client={client}>
         <AuthProvider>
           <PlatformProvider adapter={adapter}>
-            <StoryScreen storyId={STORY_ID} />
+            <ToastProvider port={{ show: vi.fn() }}>
+              <StoryScreen storyId={STORY_ID} />
+            </ToastProvider>
           </PlatformProvider>
         </AuthProvider>
       </DataProvider>

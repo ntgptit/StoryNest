@@ -1389,6 +1389,10 @@ export type Database = {
       publish_due_chapters: { Args: { p_limit?: number }; Returns: number }
       purge_outbox: { Args: { p_retention?: string }; Returns: number }
       purge_read_events: { Args: { p_retention?: string }; Returns: number }
+      reconcile_library_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       reconcile_vote_counts: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -1427,6 +1431,14 @@ export type Database = {
       }
       set_comment_like: {
         Args: { p_comment_id: string; p_liked: boolean }
+        Returns: number
+      }
+      set_story_follow: {
+        Args: { p_followed: boolean; p_story_id: string }
+        Returns: number
+      }
+      set_story_save: {
+        Args: { p_saved: boolean; p_story_id: string }
         Returns: number
       }
       story_role: { Args: { p_story_id: string }; Returns: string }

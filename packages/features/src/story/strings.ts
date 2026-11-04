@@ -10,6 +10,22 @@ export const storyText = {
   noSynopsis: "Tác giả chưa viết phần giới thiệu.",
   byAuthor: "Tác giả",
   tagsLabel: "Thẻ",
+  library: {
+    follow: "Theo dõi",
+    following: "Đang theo dõi",
+    save: "Lưu vào thư viện",
+    saved: "Đã lưu",
+    guestHint: "Đăng nhập để theo dõi hoặc lưu truyện",
+    followed: "Đã theo dõi. Bạn sẽ nhận thông báo khi có chương mới.",
+    unfollowed: "Đã bỏ theo dõi.",
+    savedToast: "Đã lưu vào thư viện.",
+    removedToast: "Đã bỏ khỏi thư viện.",
+    errors: {
+      forbidden: "Bạn không thể theo dõi hoặc lưu truyện này.",
+      network: "Không có kết nối. Kiểm tra mạng và thử lại.",
+      generic: "Không thực hiện được. Vui lòng thử lại.",
+    },
+  },
   stats: { reads: "Lượt đọc", votes: "Lượt bình chọn", comments: "Bình luận", followers: "Người theo dõi" },
   notFound: {
     title: "Không tìm thấy truyện",
