@@ -13,3 +13,4 @@ export * from "./editor/index.ts";
 export * from "./history/index.ts";
 export * from "./comments/index.ts";
 export * from "./library/index.ts";
+export * from "./lists/index.ts";

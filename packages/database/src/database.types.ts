@@ -1250,6 +1250,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_story_to_list: {
+        Args: { p_list_id: string; p_story_id: string }
+        Returns: number
+      }
       aggregate_reads: { Args: { p_limit?: number }; Returns: number }
       archive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       can_edit_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
@@ -1403,6 +1407,10 @@ export type Database = {
       }
       reorder_chapters: {
         Args: { p_chapter_ids: string[]; p_story_id: string }
+        Returns: undefined
+      }
+      reorder_list_items: {
+        Args: { p_list_id: string; p_story_ids: string[] }
         Returns: undefined
       }
       respond_invitation: {

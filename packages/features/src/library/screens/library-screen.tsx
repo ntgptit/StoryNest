@@ -12,12 +12,15 @@ import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
+import { MyLists } from "../../lists/index.ts";
 import { discoveryText, storyHref, toStoryCardData } from "../../discovery/index.ts";
 import { useLibraryList, useRemoveFromLibrary } from "../hooks/use-library.ts";
 import { LIBRARY_TABS, libraryErrorMessage, type LibraryEntry, type LibraryTab } from "../model/library.ts";
 import { libraryText } from "../strings.ts";
 
 const t = libraryText;
+/** The fourth tab belongs to the lists feature, so it is not one of the three the library loads itself. */
+const LISTS_TAB = "lists";
 
 /** Same grid as the home feed: a story card is a tile, not a full-width row. */
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
@@ -36,23 +39,27 @@ export function LibraryScreen({
   locale?: string;
   coverUrlFor?: ((key: string) => string) | undefined;
 }) {
-  const [tab, setTab] = useState<LibraryTab>("reading");
+  const [tab, setTab] = useState<LibraryTab | typeof LISTS_TAB>("reading");
   return (
     <section aria-label={t.title} className="flex flex-col gap-6">
       <PageHeader title={t.title} description={t.description} />
-      <Tabs value={tab} onValueChange={(value) => setTab(value as LibraryTab)}>
+      <Tabs value={tab} onValueChange={(value) => setTab(value as LibraryTab | typeof LISTS_TAB)}>
         <TabsList aria-label={t.tabsLabel}>
           {LIBRARY_TABS.map((value) => (
             <TabsTrigger key={value} value={value}>
               {t.tabs[value]}
             </TabsTrigger>
           ))}
+          <TabsTrigger value={LISTS_TAB}>{t.tabs.lists}</TabsTrigger>
         </TabsList>
         {LIBRARY_TABS.map((value) => (
           <TabsContent key={value} value={value} className="pt-4">
             <LibraryList tab={value} locale={locale} coverUrlFor={coverUrlFor} />
           </TabsContent>
         ))}
+        <TabsContent value={LISTS_TAB} className="pt-4">
+          <MyLists locale={locale} />
+        </TabsContent>
       </Tabs>
     </section>
   );

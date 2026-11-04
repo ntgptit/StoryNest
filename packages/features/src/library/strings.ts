@@ -3,7 +3,7 @@ export const libraryText = {
   title: "Thư viện",
   description: "Truyện bạn đang đọc, đã lưu và đang theo dõi.",
   tabsLabel: "Các phần của thư viện",
-  tabs: { reading: "Đang đọc", saved: "Đã lưu", following: "Đang theo dõi" },
+  tabs: { reading: "Đang đọc", saved: "Đã lưu", following: "Đang theo dõi", lists: "Danh sách" },
   listLabel: (tab: string) => `Truyện ${tab.toLowerCase()}`,
   empty: {
     reading: { title: "Bạn chưa đọc truyện nào", description: "Truyện bạn mở đọc sẽ xuất hiện ở đây để đọc tiếp." },

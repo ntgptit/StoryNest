@@ -3,6 +3,7 @@
 import { Bell, BellRing, Bookmark, BookmarkCheck } from "lucide-react";
 import { Button } from "@storynest/ui/components/button";
 import { useNavigation } from "../../_shared/platform.tsx";
+import { AddToListButton } from "../../lists/index.ts";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useStoryLibrary } from "../hooks/use-story-library.ts";
 import { libraryErrorMessage } from "../model/library.ts";
@@ -54,6 +55,7 @@ export function StoryActions({ storyId }: { storyId: string }) {
         {saved ? <BookmarkCheck aria-hidden className="size-4" /> : <Bookmark aria-hidden className="size-4" />}
         {saved ? t.saved : t.save}
       </Button>
+      <AddToListButton storyId={storyId} />
     </div>
   );
 }
