@@ -11,9 +11,14 @@ export const AVATAR_BUCKET = "avatars";
  * bucket is public, so this needs no request: the client only builds the address.
  */
 export function useAvatarUrl(storageKey: string | null | undefined): string | null {
+  return usePublicUrl(AVATAR_BUCKET, storageKey);
+}
+
+/** Public address of an object in a PUBLIC bucket, or null without a key or a client. Builds the address only. */
+export function usePublicUrl(bucket: string, storageKey: string | null | undefined): string | null {
   const client = useContext(DataContext)?.client ?? null;
   if (client === null || storageKey === null || storageKey === undefined || storageKey === "") return null;
-  return client.storage.from(AVATAR_BUCKET).getPublicUrl(storageKey).data.publicUrl;
+  return client.storage.from(bucket).getPublicUrl(storageKey).data.publicUrl;
 }
 
 /** The first letter of a name, for the fallback circle ("?" when there is none). */

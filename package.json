@@ -6,6 +6,7 @@
     "node": ">=22.12"
   },
   "scripts": {
+    "gate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm check:hardcode && pnpm check:tokens && pnpm db:types:check && pnpm db:verify && pnpm --filter @storynest/web build",
     "db:verify": "bash supabase/scripts/verify-migrations.sh",
     "db:types": "bash supabase/scripts/gen-types.sh",
     "db:types:check": "bash supabase/scripts/gen-types.sh --check",

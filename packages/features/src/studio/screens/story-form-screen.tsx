@@ -31,6 +31,7 @@ import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { statusLabel, useCategories } from "../../discovery/index.ts";
 import type { StoryForEdit } from "../api/story-write.api.ts";
+import { CoverEditor } from "../components/cover-editor.tsx";
 import { TagEditor } from "../components/tag-editor.tsx";
 import {
   useCreateStory,
@@ -201,6 +202,12 @@ function StoryFields({
             {bannerError}
           </p>
         ) : null}
+
+        {edit ? (
+          <CoverEditor story={{ id: storyId, coverStorageKey: edit.coverStorageKey }} title={form.watch("title")} />
+        ) : (
+          <p className="text-sm text-muted-foreground">{t.cover.saveFirst}</p>
+        )}
 
         <FormField
           control={form.control}
