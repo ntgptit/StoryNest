@@ -2,12 +2,12 @@
 
 import { UserRound } from "lucide-react";
 import { formatCount } from "@storynest/utils";
-import { Avatar, AvatarFallback } from "@storynest/ui/components/avatar";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
+import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
 import { discoveryText, toStoryCardData, useLatestStories } from "../../discovery/index.ts";
 import { ReportButton } from "../../moderation/index.ts";
@@ -69,11 +69,11 @@ function AuthorPage({
   return (
     <article className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start gap-4">
-        <Avatar className="size-16">
-          <AvatarFallback className="text-xl">
-            {Array.from(profile.displayName)[0]?.toLocaleUpperCase() ?? "?"}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          storageKey={profile.avatarStorageKey}
+          fallback={firstLetter(profile.displayName)}
+          className="size-16"
+        />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h1 className="truncate text-2xl font-semibold tracking-tight">{profile.displayName}</h1>
           <p className="text-sm text-muted-foreground">

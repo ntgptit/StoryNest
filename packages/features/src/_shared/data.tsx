@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, type ReactNode } from "react";
 import type { DataClient } from "./client.ts";
 
-const DataContext = createContext<{ client: DataClient | null } | undefined>(undefined);
+export const DataContext = createContext<{ client: DataClient | null } | undefined>(undefined);
 
 /**
  * Supplies the Supabase client created by the host app. `client` may be null when the app runs without

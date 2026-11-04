@@ -2,7 +2,6 @@
 
 import { Search, UserRound, Tag as TagIcon, type LucideIcon } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { Avatar, AvatarFallback } from "@storynest/ui/components/avatar";
 import { Button } from "@storynest/ui/components/button";
 import { Input } from "@storynest/ui/components/input";
 import { Skeleton } from "@storynest/ui/components/skeleton";
@@ -12,6 +11,7 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
+import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
 import { useNavigation, AppLink } from "../../_shared/platform.tsx";
 import { authorHref } from "../../author/index.ts";
 import { discoveryText, homeHref, toStoryCardData } from "../../discovery/index.ts";
@@ -197,9 +197,7 @@ function AuthorRow({ author }: { author: AuthorHit }) {
       href={authorHref(author.username)}
       className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-accent"
     >
-      <Avatar>
-        <AvatarFallback>{Array.from(author.displayName)[0]?.toLocaleUpperCase() ?? "?"}</AvatarFallback>
-      </Avatar>
+      <UserAvatar storageKey={author.avatarStorageKey} fallback={firstLetter(author.displayName)} />
       <div className="min-w-0">
         <p className="truncate font-medium">{author.displayName}</p>
         <p className="truncate text-sm text-muted-foreground">
