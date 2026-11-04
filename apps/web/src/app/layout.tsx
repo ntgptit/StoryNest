@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from "next";
 
+import { buildReaderBootstrapScript } from "@storynest/features";
+
+import { CHAPTER_PATH_PATTERN } from "@/lib/routes";
+
 import "./globals.css";
 import { appText } from "@/lib/strings";
 
@@ -23,7 +27,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
+    // suppressHydrationWarning on <html>: the bootstrap script below sets data-reader-* on it before hydration.
+    <html lang="vi" suppressHydrationWarning>
+      <head>
+        {/* Applies the stored reader preferences on chapter pages while the page is parsed: no flash of the wrong background. */}
+        <script dangerouslySetInnerHTML={{ __html: buildReaderBootstrapScript(CHAPTER_PATH_PATTERN) }} />
+      </head>
       <body className="min-h-dvh">
         <Providers>{children}</Providers>
       </body>
