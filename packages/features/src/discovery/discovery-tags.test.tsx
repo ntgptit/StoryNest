@@ -8,7 +8,7 @@ import { DataProvider } from "../_shared/data.tsx";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { testSession, withAuth } from "../_shared/test-auth.ts";
 import { listLatestStories, listPopularTags } from "./api/discovery.api.ts";
-import { DiscoverScreen, discoveryKeys, homeHref } from "./index.ts";
+import { DiscoverScreen, discoveryKeys, homeFilterFrom, homeHref } from "./index.ts";
 import { toPopularTag } from "./model/popular-tags.ts";
 import { discoveryText } from "./strings.ts";
 
@@ -83,6 +83,27 @@ describe("homeHref", () => {
   });
 });
 
+describe("homeFilterFrom", () => {
+  it("reads back what homeHref wrote, from a server page or from URLSearchParams", () => {
+    const params = new URL(`https://app.test${homeHref({ categorySlug: "lang-man", tagSlug: "a&b" })}`).searchParams;
+    expect(homeFilterFrom({ category: params.getAll("category"), tag: params.getAll("tag") })).toEqual({
+      categorySlug: "lang-man",
+      tagSlug: "a&b",
+    });
+    expect(homeFilterFrom({ category: "lang-man", tag: undefined })).toEqual({
+      categorySlug: "lang-man",
+      tagSlug: undefined,
+    });
+  });
+  it("treats a missing, empty or repeated parameter as no filter, the same on both sides", () => {
+    const none = { categorySlug: undefined, tagSlug: undefined };
+    expect(homeFilterFrom({})).toEqual(none);
+    expect(homeFilterFrom({ category: "", tag: null })).toEqual(none);
+    expect(homeFilterFrom({ category: [], tag: [""] })).toEqual(none);
+    expect(homeFilterFrom({ category: ["a", "b"], tag: ["x", "y"] })).toEqual(none);
+  });
+});
+
 describe("feed query keys", () => {
   it("differ by tag, so switching the tag never shows another filter's cached stories", () => {
     const all = discoveryKeys.latest({});
@@ -145,8 +166,8 @@ describe("listLatestStories with a tag", () => {
 const adapter: PlatformAdapter = {
   platform: "web",
   isNative: false,
-  Link: ({ href, replace: _r, children, ...rest }) => (
-    <a href={href} {...rest}>
+  Link: ({ href, replace: _r, shallow, children, ...rest }) => (
+    <a href={href} data-shallow={shallow ? "true" : undefined} {...rest}>
       {children}
     </a>
   ),

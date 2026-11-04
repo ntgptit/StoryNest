@@ -12,7 +12,7 @@ const ACTIVE = "border-primary bg-primary text-primary-foreground";
 
 /**
  * Tag filters of the home feed: the active tag (with a link that removes it) and the most used tags as links. All of it
- * is plain links, like the category chips, so a filtered view has its own URL. A category filter stays on.
+ * is shallow links, like the category chips, so a filtered view has its own URL. A category filter stays on.
  */
 export function TagFilters({
   categorySlug,
@@ -33,6 +33,7 @@ export function TagFilters({
           <span className="font-medium">{discoveryText.tagFilter.label(activeName ?? tagSlug)}</span>
           <AppLink
             href={homeHref({ categorySlug })}
+            shallow
             className="inline-flex items-center gap-1 text-muted-foreground underline-offset-2 hover:underline"
           >
             <X aria-hidden className="size-3.5" />
@@ -49,6 +50,7 @@ export function TagFilters({
                 <li key={tag.slug} className="shrink-0">
                   <AppLink
                     href={homeHref({ categorySlug, tagSlug: active ? undefined : tag.slug })}
+                    shallow
                     aria-current={active ? "page" : undefined}
                     className={`${CHIP} ${active ? ACTIVE : IDLE}`}
                   >
