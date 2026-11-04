@@ -11,6 +11,7 @@ import { ErrorState } from "./error-state.tsx";
 import { InfiniteList } from "./infinite-list.tsx";
 import { PageHeader } from "./page-header.tsx";
 import { StatPill } from "./stat-pill.tsx";
+import { StoryCard, type StoryCardData } from "./story-card.tsx";
 
 afterEach(cleanup);
 
@@ -205,5 +206,55 @@ describe("ConfirmDialog", () => {
     await waitFor(() => expect((screen.getByText("Cancel") as HTMLButtonElement).disabled).toBe(true));
     expect((screen.getByText("Delete") as HTMLButtonElement).disabled).toBe(true);
     await act(async () => finish());
+  });
+});
+
+describe("StoryCard", () => {
+  const story: StoryCardData = {
+    href: "/story/1/anh-chieu",
+    title: "Ánh chiều",
+    authorName: "An Nhiên",
+    synopsis: "  Một lá thư không đề tên\n được tìm thấy.  ",
+    categoryName: "Lãng mạn",
+    statusLabel: "Đang ra",
+    reads: 1234,
+    votes: 56,
+    updatedAt: "2026-11-03T09:00:00Z",
+  };
+  const labels = { reads: "Lượt đọc", votes: "Lượt bình chọn", updated: (relative: string) => `Cập nhật ${relative}` };
+  const now = new Date("2026-11-03T12:00:00Z");
+
+  it("is one link carrying the story's details", () => {
+    render(<StoryCard story={story} labels={labels} LinkComponent={Anchor} locale="en" now={now} />);
+    const link = screen.getByRole("link");
+    expect(link.getAttribute("href")).toBe("/story/1/anh-chieu");
+    expect(link.textContent).toContain("Ánh chiều");
+    expect(link.textContent).toContain("An Nhiên");
+    expect(screen.getByText("Lãng mạn")).toBeTruthy();
+    expect(screen.getByText("Đang ra")).toBeTruthy();
+    expect(screen.getByText("Một lá thư không đề tên được tìm thấy.")).toBeTruthy(); // whitespace collapsed
+    expect(screen.getByText("Lượt đọc: 1.2K")).toBeTruthy(); // accessible counter text
+    expect(screen.getByText("Cập nhật 3 hours ago")).toBeTruthy();
+  });
+
+  it("shows the cover when there is one, otherwise the title's initial", () => {
+    const { rerender } = render(<StoryCard story={story} labels={labels} LinkComponent={Anchor} now={now} />);
+    expect(screen.getByText("Á")).toBeTruthy();
+    expect(document.querySelector("img")).toBeNull();
+    rerender(
+      <StoryCard
+        story={{ ...story, coverUrl: "https://cdn.test/c.png" }}
+        labels={labels}
+        LinkComponent={Anchor}
+        now={now}
+      />,
+    );
+    expect(document.querySelector("img")?.getAttribute("src")).toBe("https://cdn.test/c.png");
+    expect(document.querySelector("img")?.getAttribute("alt")).toBe(""); // decorative: the title is the accessible name
+  });
+
+  it("flags mature stories", () => {
+    render(<StoryCard story={{ ...story, matureLabel: "18+" }} labels={labels} LinkComponent={Anchor} now={now} />);
+    expect(screen.getByText("18+")).toBeTruthy();
   });
 });
