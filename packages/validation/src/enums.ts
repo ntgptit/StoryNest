@@ -9,6 +9,7 @@ export const VISIBILITIES = ["private", "unlisted", "public"] as const;
 export const CHAPTER_STATUSES = ["draft", "scheduled", "published", "archived"] as const;
 export const BLOCK_TYPES = ["paragraph", "heading", "image", "divider"] as const;
 export const COLLABORATOR_ROLES = ["co_author", "editor"] as const;
+export const INVITATION_STATUSES = ["pending", "accepted", "declined", "cancelled"] as const;
 export const COMMENT_STATUSES = ["visible", "hidden", "deleted"] as const;
 export const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"] as const;
 
@@ -18,6 +19,7 @@ export const visibilitySchema = z.enum(VISIBILITIES);
 export const chapterStatusSchema = z.enum(CHAPTER_STATUSES);
 export const blockTypeSchema = z.enum(BLOCK_TYPES);
 export const collaboratorRoleSchema = z.enum(COLLABORATOR_ROLES);
+export const invitationStatusSchema = z.enum(INVITATION_STATUSES);
 export const commentStatusSchema = z.enum(COMMENT_STATUSES);
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
 
@@ -47,6 +49,15 @@ export const BLOCK_TYPE = {
   DIVIDER: "divider",
 } as const satisfies Record<string, BlockType>;
 
+export const INVITATION_STATUS = {
+  PENDING: "pending",
+  ACCEPTED: "accepted",
+  DECLINED: "declined",
+  CANCELLED: "cancelled",
+} as const satisfies Record<string, InvitationStatus>;
+
+export type InvitationStatus = z.infer<typeof invitationStatusSchema>;
+export type CollaboratorRole = z.infer<typeof collaboratorRoleSchema>;
 export type StoryStatus = z.infer<typeof storyStatusSchema>;
 export type Visibility = z.infer<typeof visibilitySchema>;
 export type ChapterStatus = z.infer<typeof chapterStatusSchema>;

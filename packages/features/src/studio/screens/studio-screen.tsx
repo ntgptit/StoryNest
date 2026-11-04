@@ -1,6 +1,6 @@
 "use client";
 
-import { BookMarked, Eye, Globe, Link2, ListOrdered, Lock, PenLine, Plus } from "lucide-react";
+import { BookMarked, Eye, Globe, Link2, ListOrdered, Lock, PenLine, Plus, Users } from "lucide-react";
 import { useState, type ComponentType } from "react";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
@@ -14,6 +14,7 @@ import type { Visibility } from "@storynest/validation";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { discoveryText, statusLabel, storyHref } from "../../discovery/index.ts";
+import { MyInvitations } from "../components/my-invitations.tsx";
 import { useMyStories } from "../hooks/use-my-stories.ts";
 import { useDeletedStories, useSetStoryDeleted } from "../hooks/use-story-editing.ts";
 import { storyErrorMessage } from "../model/story-form.ts";
@@ -70,6 +71,14 @@ function StudioStoryRow({
               {studioText.chaptersLink}
             </AppLink>
           </Button>
+          {story.role === "owner" ? (
+            <Button asChild variant="outline" size="sm">
+              <AppLink href={`/studio/story/${story.id}/team`}>
+                <Users aria-hidden className="size-4" />
+                {studioText.teamLink}
+              </AppLink>
+            </Button>
+          ) : null}
           <Button asChild variant="outline" size="sm">
             <AppLink href={storyHref(story)}>
               <Eye aria-hidden className="size-4" />
@@ -106,6 +115,7 @@ export function StudioScreen({
           </Button>
         }
       />
+      <MyInvitations />
       {stories.isError ? (
         <ErrorState
           title={studioText.error.title}
