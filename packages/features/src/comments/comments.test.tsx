@@ -341,7 +341,10 @@ describe("CommentThread", () => {
     const c = fakeClient({ post_comment: () => ({ data: cid(1), error: null }) });
     renderUi(c, <CommentThread chapterId={CHAPTER} blockId={BLOCK} />);
     const box = await screen.findByLabelText(commentText.composer.label);
-    expect(c.of("list_comments")[0]!.args).toMatchObject({ p_block_id: BLOCK, p_newest_first: false });
+    // the composer is on screen before the list query has been issued: wait for the call instead of assuming it
+    await waitFor(() =>
+      expect(c.of("list_comments")[0]?.args).toMatchObject({ p_block_id: BLOCK, p_newest_first: false }),
+    );
     fireEvent.change(box, { target: { value: "đoạn này" } });
     fireEvent.click(screen.getByRole("button", { name: commentText.composer.submit }));
     await waitFor(() => expect(c.of("post_comment")[0]?.args).toMatchObject({ p_block_id: BLOCK }));
