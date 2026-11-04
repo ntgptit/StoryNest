@@ -10,11 +10,13 @@ import { storyKeys } from "../../story/index.ts";
 import {
   createStory,
   setStoryDeleted,
+  setStoryTags,
   updateStory,
   type DeletedStory,
   type StoryForEdit,
 } from "../api/story-write.api.ts";
 import { studioKeys } from "../keys.ts";
+import type { TagChip } from "../model/tags.ts";
 import { deletedStoriesQueryOptions, storyForEditQueryOptions } from "../queries.ts";
 
 /** The story to edit with the caller's role (null = not found / not theirs). Idle until the session is known. */
@@ -98,6 +100,22 @@ export function useSetStoryDeleted() {
     mutationFn: async ({ storyId, deleted }) => {
       try {
         await setStoryDeleted(getClient(), storyId, deleted);
+      } catch (error) {
+        throw toAppError(error);
+      }
+    },
+    onSuccess: invalidate,
+  });
+}
+
+/** Replaces a story's tags. Resolves to the tags as stored (cleaned and merged by the database). */
+export function useSetStoryTags() {
+  const getClient = useDataClientGetter();
+  const invalidate = useInvalidateStoryViews();
+  return useMutation<TagChip[], AppError, { storyId: string; names: string[] }>({
+    mutationFn: async ({ storyId, names }) => {
+      try {
+        return await setStoryTags(getClient(), storyId, names);
       } catch (error) {
         throw toAppError(error);
       }

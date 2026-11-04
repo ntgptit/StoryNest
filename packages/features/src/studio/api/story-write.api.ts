@@ -10,6 +10,7 @@ import type { DataClient } from "../../_shared/client.ts";
 import { AppError, unwrap } from "../../_shared/errors.ts";
 import { toStoryPayload, toStoryUpdate } from "../model/story-form.ts";
 import type { StudioRole } from "../model/studio-story.ts";
+import type { TagChip } from "../model/tags.ts";
 
 export interface StoryForEdit {
   id: string;
@@ -17,6 +18,8 @@ export interface StoryForEdit {
   form: StoryForm;
   role: StudioRole;
   deletedAt: string | null;
+  /** The story's tags, by name. */
+  tags: TagChip[];
 }
 
 const EDIT_COLUMNS =
@@ -75,10 +78,17 @@ export async function getStoryForEdit(
   // A moderator can read any story through RLS, but the studio only opens stories the user works on.
   if (role === null) return null;
 
+  const tagRows =
+    unwrap(await client.from("story_tags").select("tag:tags(slug, display_name)").eq("story_id", storyId)) ?? [];
+  const tags = tagRows
+    .flatMap((r) => (r.tag ? [{ slug: String(r.tag.slug), name: r.tag.display_name }] : []))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   return {
     id: row.id,
     role,
     deletedAt: row.deleted_at,
+    tags,
     form: {
       title: row.title,
       slug: row.slug,
@@ -110,4 +120,13 @@ export async function listDeletedStories(client: DataClient, userId: string): Pr
         .order("deleted_at", { ascending: false }),
     ) ?? [];
   return rows.flatMap((r) => (r.deleted_at ? [{ id: r.id, title: r.title, deletedAt: r.deleted_at }] : []));
+}
+
+/**
+ * Replaces the story's tags by these names. The database cleans and merges them by slug, creates the unknown ones
+ * (within a daily quota) and refuses bad input, a story that is not the caller's to tag, and too many tags.
+ */
+export async function setStoryTags(client: DataClient, storyId: string, names: readonly string[]): Promise<TagChip[]> {
+  const rows = unwrap(await client.rpc("set_story_tags", { p_story_id: storyId, p_names: [...names] })) ?? [];
+  return rows.map((r) => ({ slug: String(r.slug), name: r.display_name }));
 }

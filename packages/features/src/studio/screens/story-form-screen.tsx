@@ -25,12 +25,20 @@ import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
+import { toAppError } from "../../_shared/errors.ts";
 import { translateErrors } from "../../_shared/form-resolver.ts";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { statusLabel, useCategories } from "../../discovery/index.ts";
 import type { StoryForEdit } from "../api/story-write.api.ts";
-import { useCreateStory, useSetStoryDeleted, useStoryForEdit, useUpdateStory } from "../hooks/use-story-editing.ts";
+import { TagEditor } from "../components/tag-editor.tsx";
+import {
+  useCreateStory,
+  useSetStoryDeleted,
+  useSetStoryTags,
+  useStoryForEdit,
+  useUpdateStory,
+} from "../hooks/use-story-editing.ts";
 import {
   NO_CATEGORY,
   categoryOptions,
@@ -40,6 +48,7 @@ import {
   storyErrorMessage,
   validationMessage,
 } from "../model/story-form.ts";
+import { sameTags, tagsErrorMessage, type TagChip } from "../model/tags.ts";
 import { studioText } from "../strings.ts";
 
 const t = studioText.form;
@@ -113,7 +122,13 @@ function StoryFields({
   const create = useCreateStory(() => storyId);
   const update = useUpdateStory(storyId);
   const setDeleted = useSetStoryDeleted();
+  const setTagsMutation = useSetStoryTags();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Tags are saved with the story but are not part of the story form (they live in their own table, behind an RPC).
+  const [tags, setTags] = useState<TagChip[]>(edit?.tags ?? []);
+  const [savedTags, setSavedTags] = useState<TagChip[]>(edit?.tags ?? []);
+  const [tagsError, setTagsError] = useState<string | null>(null);
+  const tagsChanged = !sameTags(tags, savedTags);
   // The slug follows the title until the author edits it (always manual when editing an existing story).
   const slugTouched = useRef(mode === "edit");
 
@@ -127,33 +142,57 @@ function StoryFields({
     if (isSlugTaken(error)) form.setError("slug", { type: "server", message: studioText.errors.slugTaken });
   };
 
-  const submit = form.handleSubmit((values) => {
+  /** Saves the tags; false (and a message) when the database refuses them. The story itself is already saved. */
+  const saveTags = async (id: string): Promise<boolean> => {
+    try {
+      const stored = await setTagsMutation.mutateAsync({ storyId: id, names: tags.map((tag) => tag.name) });
+      setTags(stored);
+      setSavedTags(stored);
+      setTagsError(null);
+      return true;
+    } catch (error) {
+      const reason = tagsErrorMessage(toAppError(error));
+      setTagsError(reason);
+      toast.error(studioText.tags.savedWithoutTags(reason));
+      return false;
+    }
+  };
+
+  const submit = form.handleSubmit(async (values) => {
     if (mode === "create") {
       create.mutate(values, {
-        onSuccess: (id) => {
+        onSuccess: async (id) => {
+          if (tags.length > 0) await saveTags(id);
           toast.success(t.created);
           navigation.push(`/studio/story/${id}`);
         },
         onError: onFailure,
       });
-    } else {
-      update.mutate(values, {
-        onSuccess: () => {
-          toast.success(t.saved);
-          form.reset(values);
-        },
-        onError: onFailure,
-      });
+      return;
     }
+    // Only the tags changed: leave the story row alone (an update would move it to the top of "recently updated").
+    if (!form.formState.isDirty) {
+      if (tagsChanged && (await saveTags(storyId))) toast.success(t.saved);
+      return;
+    }
+    update.mutate(values, {
+      onSuccess: async () => {
+        form.reset(values);
+        if (tagsChanged && !(await saveTags(storyId))) return;
+        toast.success(t.saved);
+      },
+      onError: onFailure,
+    });
   });
 
+  const busy = save.isPending || setTagsMutation.isPending;
   const bannerError = save.error && !isSlugTaken(save.error) ? storyErrorMessage(save.error) : null;
   const options = categoryOptions(categories.data ?? []);
   const deleted = edit?.deletedAt != null;
 
   return (
     <Form {...form}>
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={save.isPending}>
+      <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={busy}>
         {bannerError ? (
           <p
             role="alert"
@@ -253,6 +292,8 @@ function StoryFields({
           )}
         />
 
+        <TagEditor value={tags} onChange={setTags} disabled={setTagsMutation.isPending} error={tagsError} />
+
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -347,8 +388,8 @@ function StoryFields({
         />
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={save.isPending || (mode === "edit" && !form.formState.isDirty)}>
-            {save.isPending ? t.submitting : mode === "create" ? t.submitCreate : t.submitSave}
+          <Button type="submit" disabled={busy || (mode === "edit" && !form.formState.isDirty && !tagsChanged)}>
+            {busy ? t.submitting : mode === "create" ? t.submitCreate : t.submitSave}
           </Button>
           <Button asChild variant="ghost">
             <AppLink href="/studio">{t.cancel}</AppLink>
