@@ -1,5 +1,7 @@
 // Text of the author screens. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const authorText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   followers: (n: string) => `${n} người theo dõi`,
   stories: (n: string) => `${n} truyện`,
   storiesTitle: "Truyện của tác giả",
@@ -32,3 +34,5 @@ export const authorText = {
     error: { title: "Không tải được danh sách", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   },
 } as const;
+
+export const authorText = defineText("author", vi);

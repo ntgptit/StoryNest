@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { CommentThread, commentText, useBlockCommentCounts } from "../../comments/index.ts";
 import type { ReaderBlock } from "../model/chapter.ts";
 import { BlockView } from "./block-view.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const EXCERPT_LENGTH = 120;
 
@@ -24,7 +25,7 @@ export function ReaderBlocks({
   chapterId,
   blocks,
   imageUrlFor,
-  locale = "vi",
+  locale = currentLocale(),
 }: {
   chapterId: string;
   blocks: readonly ReaderBlock[];

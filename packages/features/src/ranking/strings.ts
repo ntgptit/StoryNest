@@ -1,5 +1,7 @@
 // Text of the ranking screen. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const rankingText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   title: "Xếp hạng",
   description: "Truyện được đọc và bình chọn nhiều nhất.",
   periodsLabel: "Khoảng thời gian",
@@ -13,3 +15,5 @@ export const rankingText = {
   empty: { title: "Chưa có xếp hạng", description: "Khi có người đọc và bình chọn, truyện sẽ xuất hiện ở đây." },
   error: { title: "Không tải được bảng xếp hạng", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
 } as const;
+
+export const rankingText = defineText("ranking", vi);

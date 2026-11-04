@@ -1,5 +1,7 @@
 // Text of the search screens. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const searchText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   title: "Tìm kiếm",
   inputLabel: "Tìm truyện, tác giả hoặc thẻ",
   placeholder: "Tìm truyện, tác giả, thẻ…",
@@ -24,3 +26,5 @@ export const searchText = {
   storiesCount: (n: number) => `${n} truyện`,
   tagStoriesCount: (n: number) => `${n} truyện`,
 } as const;
+
+export const searchText = defineText("search", vi);

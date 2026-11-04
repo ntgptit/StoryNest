@@ -9,7 +9,8 @@ import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { shellText } from "../strings.ts";
 import { SiteHeader } from "./site-header.tsx";
 
-const NAV_ITEMS: readonly BottomNavItem[] = [
+// A function, not a constant: the labels are read when the shell renders, so they follow the language.
+const navItems = (): readonly BottomNavItem[] => [
   { href: "/", label: shellText.nav.home, icon: Home },
   { href: "/library", label: shellText.nav.library, icon: Library },
   { href: "/studio", label: shellText.nav.studio, icon: PenLine },
@@ -23,7 +24,7 @@ export function MainShell({ children }: { children: ReactNode }) {
     <AppShell
       header={<SiteHeader />}
       bottomNav={
-        <BottomNav items={NAV_ITEMS} pathname={pathname} LinkComponent={AppLink} label={shellText.mainNavigation} />
+        <BottomNav items={navItems()} pathname={pathname} LinkComponent={AppLink} label={shellText.mainNavigation} />
       }
     >
       <AdultContentSync />

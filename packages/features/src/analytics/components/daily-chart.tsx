@@ -3,11 +3,12 @@
 import { formatCount } from "@storynest/utils";
 import { barPercent, sumDaily, type DailyPoint } from "../model/stats.ts";
 import { analyticsText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = analyticsText.daily;
 
 /** One bar per day, as tall as that day's reads relative to the busiest day. The figures are also in the label. */
-export function DailyChart({ points, locale = "vi" }: { points: readonly DailyPoint[]; locale?: string }) {
+export function DailyChart({ points, locale = currentLocale() }: { points: readonly DailyPoint[]; locale?: string }) {
   const totals = sumDaily(points);
   const max = Math.max(0, ...points.map((p) => p.reads));
   if (totals.reads + totals.votes + totals.comments === 0) {

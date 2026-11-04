@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Hardcode guard. Fails on, outside of tests:
 //   1. user-facing Vietnamese text in code: it belongs in a `strings.ts` module (the single place WBS WP 0.4 will
-//      replace with the i18n catalogue). Comments are ignored; `strings.ts` files are the allowed home.
+//      replace with the i18n catalogue). Comments are ignored; `strings.ts` files (and their `strings.en.ts` translations) are the allowed home.
 //   2. string literals as query filter values, e.g. .eq("status", "published"): use the enum constants from
 //      @storynest/validation (STORY_STATUS, CHAPTER_STATUS, VISIBILITY, ...), which a test keeps equal to the schema.
 //   3. literal text in accessibility/label attributes (aria-label="Đóng", placeholder="..."): use a strings entry.
@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(fileURLToPath(import.meta.url), "../..");
 const SKIP_DIRS = new Set(["node_modules", ".next", "dist", "out"]);
-const SKIP_FILE = /(\.test\.tsx?|strings\.ts|\.generated\.\w+|database\.types\.ts)$/;
+const SKIP_FILE = /(\.test\.tsx?|strings(\.en)?\.ts|\.generated\.\w+|database\.types\.ts)$/;
 // The component gallery is a developer-only page (404 in production) with throwaway demo text.
 const SKIP_PATH = /apps\/web\/src\/app\/dev\//;
 const EXT = /\.tsx?$/;

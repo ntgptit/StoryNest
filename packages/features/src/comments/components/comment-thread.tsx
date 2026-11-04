@@ -11,6 +11,7 @@ import { commentErrorMessage } from "../model/comment.ts";
 import { commentText } from "../strings.ts";
 import { CommentComposer } from "./comment-composer.tsx";
 import { CommentItem } from "./comment-item.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 /**
  * The comments of a chapter (`blockId` omitted) or of one paragraph: a box to write in, the comments a page at a time,
@@ -21,7 +22,7 @@ export function CommentThread({
   chapterId,
   blockId = null,
   newestFirst = blockId === null,
-  locale = "vi",
+  locale = currentLocale(),
 }: {
   chapterId: string;
   blockId?: string | null;

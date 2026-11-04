@@ -6,6 +6,7 @@ import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
 import { reasonText, type Recommendation } from "../model/recommendation.ts";
 import { useRecommendedForMe, useSimilarStories } from "../hooks/use-recommendations.ts";
 import { recommendationText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
@@ -53,7 +54,7 @@ function RecommendationList({
 /** "You may also like" on a story page. Nothing is shown while loading, when it fails or when there is nothing to suggest. */
 export function SimilarStories({
   storyId,
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   storyId: string;
@@ -73,7 +74,7 @@ export function SimilarStories({
 
 /** "Suggested for you" on the home page, for a signed-in reader. Nothing for a guest or when there is nothing to suggest. */
 export function ForYouStories({
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   locale?: string;

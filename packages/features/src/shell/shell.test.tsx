@@ -9,11 +9,16 @@ import { DataProvider } from "../_shared/data.tsx";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { ToastProvider } from "../_shared/toast.tsx";
 import { adultContentText } from "../adult-content/index.ts";
+import { getLanguage, setLanguage } from "../_shared/i18n.ts";
+import { LanguageProvider } from "../_shared/language.tsx";
 import { MainShell } from "./components/main-shell.tsx";
 import { UserMenu } from "./components/user-menu.tsx";
 import { initials } from "./model/initials.ts";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  setLanguage("vi", { persist: false });
+});
 
 const session = { access_token: "t", user: { id: "u1", email: "reader@example.com" } } as unknown as Session;
 const profile = {
@@ -60,7 +65,9 @@ function setup(ui: ReactNode, client: DataClient, pathname = "/") {
       <DataProvider client={client}>
         <PlatformProvider adapter={adapter}>
           <ToastProvider port={{ show: toast }}>
-            <AuthProvider>{ui}</AuthProvider>
+            <AuthProvider>
+              <LanguageProvider>{ui}</LanguageProvider>
+            </AuthProvider>
           </ToastProvider>
         </PlatformProvider>
       </DataProvider>
@@ -156,6 +163,32 @@ describe("UserMenu", () => {
     fireEvent.click(await screen.findByText("Đăng xuất"));
     await waitFor(() => expect(toast).toHaveBeenCalledWith("error", "Không đăng xuất được. Vui lòng thử lại."));
     expect(navigation.replace).not.toHaveBeenCalled();
+  });
+});
+
+describe("language switcher", () => {
+  it("shows the language in force, offers the other one by name, and switches the whole frame at once", async () => {
+    const { client } = fakeClient({ session: null });
+    setup(
+      <MainShell>
+        <p>page content</p>
+      </MainShell>,
+      client,
+      "/",
+    );
+    const header = within(screen.getByRole("banner"));
+    const button = header.getByRole("button", { name: "Chuyển sang English" });
+    expect(button.textContent).toBe("VI");
+    fireEvent.click(button);
+    await waitFor(() => expect(getLanguage()).toBe("en"));
+    const back = await within(screen.getByRole("banner")).findByRole("button", { name: "Switch to Tiếng Việt" });
+    expect(back.textContent).toBe("EN");
+    expect(await screen.findByText("Sign in")).toBeTruthy();
+    expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeTruthy();
+    expect(screen.getByText("Library")).toBeTruthy();
+    fireEvent.click(back);
+    expect(await screen.findByText("Đăng nhập")).toBeTruthy();
+    expect(screen.getByRole("navigation", { name: "Điều hướng chính" })).toBeTruthy();
   });
 });
 

@@ -1,0 +1,31 @@
+// English text of the app frame. Same keys as strings.ts (the completeness test compares them).
+export const en = {
+  appName: "StoryNest",
+  signIn: "Sign in",
+  accountMenu: "Account menu",
+  profile: "Profile",
+  studio: "Studio",
+  library: "Library",
+  settings: "Settings",
+  moderation: "Moderation",
+  signOut: "Sign out",
+  signOutFailed: "Could not sign out. Please try again.",
+  mainNavigation: "Main navigation",
+  language: {
+    label: "Language",
+    switchTo: (name: string) => `Switch to ${name}`,
+    names: { vi: "Tiếng Việt", en: "English" },
+  },
+  nav: { home: "Home", library: "Library", studio: "Write", me: "Me" },
+  me: {
+    title: "Your profile",
+    edit: "Edit profile",
+    description: "Account information.",
+    email: "Email",
+    username: "Username",
+    displayName: "Display name",
+    bio: "About",
+    noBio: "No bio yet.",
+    missingProfile: "No profile was found for this account.",
+  },
+};

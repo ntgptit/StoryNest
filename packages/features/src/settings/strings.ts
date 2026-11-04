@@ -1,5 +1,8 @@
 // Text of the settings page. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const settingsText = {
+import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
+
+const vi = {
   title: "Cài đặt",
   description: "Lưu trong tài khoản, dùng trên mọi thiết bị.",
   signIn: "Đăng nhập để chỉnh cài đặt.",
@@ -9,8 +12,8 @@ export const settingsText = {
   language: {
     title: "Ngôn ngữ",
     label: "Ngôn ngữ giao diện",
-    description: "Ngôn ngữ khác sẽ dùng được khi bản dịch sẵn sàng.",
-    options: { vi: "Tiếng Việt", en: "English (sắp có)" },
+    description: "Chọn ngôn ngữ giao diện. Phần chưa dịch hiển thị bằng tiếng Việt.",
+    options: { vi: "Tiếng Việt", en: "English" },
   },
   reading: {
     title: "Đọc truyện",
@@ -36,3 +39,5 @@ export const settingsText = {
     },
   },
 } as const;
+
+export const settingsText = defineText("settings", vi, en);

@@ -1,5 +1,7 @@
 // Text of the studio (author workspace). Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const studioText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   title: "Studio",
   description: "Truyện bạn đang viết và truyện bạn được mời cộng tác.",
   view: "Xem trang truyện",
@@ -212,3 +214,5 @@ export const studioText = {
     generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
   },
 } as const;
+
+export const studioText = defineText("studio", vi);

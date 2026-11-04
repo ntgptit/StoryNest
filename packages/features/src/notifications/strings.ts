@@ -1,5 +1,7 @@
 // Text of the in-app notifications. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const notificationText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   title: "Thông báo",
   description: "Chương mới, trả lời bình luận và lời mời cộng tác.",
   bell: {
@@ -32,3 +34,5 @@ export const notificationText = {
     generic: "Không thực hiện được. Vui lòng thử lại.",
   },
 } as const;
+
+export const notificationText = defineText("notifications", vi);

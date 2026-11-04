@@ -11,13 +11,14 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
 import { useFollowedStories } from "../hooks/use-author.ts";
 import { authorText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = authorText;
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
 /** Stories updated by the authors the signed-in reader follows, newest first. */
 export function FollowingScreen({
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   locale?: string;

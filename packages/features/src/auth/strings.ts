@@ -1,5 +1,7 @@
 // All user-facing text of the auth screens, in one place so WBS WP 0.4 (i18n) can replace it in a single change.
-export const authText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   appName: "StoryNest",
   signIn: {
     title: "Đăng nhập",
@@ -77,3 +79,5 @@ export const authText = {
     generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
   },
 } as const;
+
+export const authText = defineText("auth", vi);

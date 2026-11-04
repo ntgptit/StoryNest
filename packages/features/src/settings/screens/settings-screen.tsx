@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { STORY_LANGUAGES, type StoryLanguage } from "@storynest/validation";
 import { Label } from "@storynest/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@storynest/ui/components/select";
 import { Skeleton } from "@storynest/ui/components/skeleton";
@@ -10,6 +9,7 @@ import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { useAuth } from "../../_shared/auth.tsx";
+import { isLanguage, LANGUAGES, setLanguage, useLanguage } from "../../_shared/index.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useAdultContent } from "../../adult-content/index.ts";
@@ -86,10 +86,14 @@ function SettingsForm() {
   const save = useSaveSettings();
   const toast = useAppToast();
   const adult = useAdultContent();
+  const language = useLanguage();
   const [confirmingAdult, setConfirmingAdult] = useState(false);
   useReaderPreferencesSync();
 
-  const change = (next: AccountSettings) => save.mutate(next, { onError: () => toast.error(t.saveFailed) });
+  // The language lives in its own store (and is saved to the account by LanguageSync); a save of the other settings
+  // must carry the language in force, not the one that was cached when the page loaded.
+  const change = (next: AccountSettings) =>
+    save.mutate(withLanguage(next, language), { onError: () => toast.error(t.saveFailed) });
 
   return (
     <div className="flex w-full max-w-xl flex-col gap-6">
@@ -109,16 +113,13 @@ function SettingsForm() {
           <Section title={t.language.title} description={t.language.description}>
             <div className="flex flex-col gap-2">
               <Label htmlFor="settings-language">{t.language.label}</Label>
-              <Select
-                value={settings.data.language}
-                onValueChange={(value) => change(withLanguage(settings.data, value as StoryLanguage))}
-              >
+              <Select value={language} onValueChange={(value) => isLanguage(value) && setLanguage(value)}>
                 <SelectTrigger id="settings-language" className="w-56">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STORY_LANGUAGES.map((code) => (
-                    <SelectItem key={code} value={code} disabled={code !== "vi"}>
+                  {LANGUAGES.map((code) => (
+                    <SelectItem key={code} value={code}>
                       {t.language.options[code]}
                     </SelectItem>
                   ))}

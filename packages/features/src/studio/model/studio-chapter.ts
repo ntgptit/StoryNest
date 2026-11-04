@@ -81,17 +81,18 @@ export function applyOrder(chapters: readonly StudioChapter[], orderedIds: reado
   );
 }
 
-const VALIDATION_TEXT: Record<string, string> = {
+// A function, not a constant: the text is read when it is needed, so it follows the language.
+const VALIDATION_TEXT = (): Record<string, string> => ({
   [CHAPTER_ERROR.titleRequired]: studioText.chapters.validation.titleRequired,
   [CHAPTER_ERROR.titleTooLong]: studioText.chapters.validation.titleTooLong,
   [CHAPTER_ERROR.slugRequired]: studioText.chapters.validation.slugRequired,
   [CHAPTER_ERROR.slugTooLong]: studioText.chapters.validation.slugTooLong,
   [CHAPTER_ERROR.slugInvalid]: studioText.chapters.validation.slugInvalid,
-};
+});
 
 export function chapterValidationMessage(code: string | undefined): string | undefined {
   if (code === undefined) return undefined;
-  return VALIDATION_TEXT[code] ?? studioText.errors.generic;
+  return VALIDATION_TEXT()[code] ?? studioText.errors.generic;
 }
 
 const UNIQUE_VIOLATION = "23505";

@@ -1,5 +1,7 @@
 // Text of the comments. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const commentText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   title: "Bình luận",
   threadLabel: "Danh sách bình luận",
   repliesLabel: "Các trả lời",
@@ -68,3 +70,5 @@ export const commentText = {
     generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
   },
 } as const;
+
+export const commentText = defineText("comments", vi);

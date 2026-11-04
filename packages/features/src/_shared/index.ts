@@ -24,3 +24,21 @@ export {
   type AuthState,
   type Profile,
 } from "./auth.tsx";
+export {
+  DEFAULT_LANGUAGE,
+  LANGUAGES,
+  LANGUAGE_STORAGE_KEY,
+  currentLocale,
+  defineText,
+  getLanguage,
+  isLanguage,
+  languageChoices,
+  plural,
+  readStoredLanguage,
+  registeredCatalogs,
+  setLanguage,
+  subscribeLanguage,
+  type Language,
+  type Messages,
+} from "./i18n.ts";
+export { LanguageProvider, useLanguage } from "./language.tsx";

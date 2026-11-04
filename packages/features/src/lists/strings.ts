@@ -1,5 +1,7 @@
 // Text of the reading lists. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const listText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   title: "Danh sách đọc",
   myLists: {
     title: "Danh sách của tôi",
@@ -85,3 +87,5 @@ export const listText = {
     generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
   },
 } as const;
+
+export const listText = defineText("lists", vi);

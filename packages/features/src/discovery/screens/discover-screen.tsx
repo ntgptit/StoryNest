@@ -14,6 +14,7 @@ import { toStoryCardData } from "../model/story-card.ts";
 import { discoveryText } from "../strings.ts";
 import { CategoryChips } from "./category-chips.tsx";
 import { TagFilters } from "./tag-filters.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
@@ -22,7 +23,7 @@ export function DiscoverScreen({
   categorySlug,
   tagSlug,
   pageSize,
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   categorySlug?: string | undefined;

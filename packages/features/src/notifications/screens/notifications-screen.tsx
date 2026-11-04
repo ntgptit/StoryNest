@@ -12,11 +12,12 @@ import { useAppToast } from "../../_shared/toast.tsx";
 import { useMarkAllRead, useMarkRead, useNotificationList, useUnreadCount } from "../hooks/use-notifications.ts";
 import { describeNotification, notificationErrorMessage, type AppNotification } from "../model/notification.ts";
 import { notificationText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = notificationText;
 
 /** The reader's notifications, newest first: unread ones marked, a click marks one read and opens what it is about. */
-export function NotificationsScreen({ locale = "vi" }: { locale?: string }) {
+export function NotificationsScreen({ locale = currentLocale() }: { locale?: string }) {
   const list = useNotificationList();
   const unread = useUnreadCount();
   const markAll = useMarkAllRead();

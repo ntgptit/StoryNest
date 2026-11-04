@@ -4,6 +4,8 @@ import { useState, type ReactNode } from "react";
 import {
   AuthProvider,
   DataProvider,
+  LanguageProvider,
+  LanguageSync,
   PlatformProvider,
   QueryProvider,
   ToastProvider,
@@ -31,7 +33,11 @@ export function Providers({ children }: { children: ReactNode }) {
         <PlatformProvider adapter={nextPlatformAdapter}>
           <ToastProvider port={sonnerToastPort}>
             <TooltipProvider>
-              <AuthProvider>{children}</AuthProvider>
+              <AuthProvider>
+                {/* Outside the language provider on purpose: that one re-mounts what is below it when the language changes. */}
+                <LanguageSync />
+                <LanguageProvider>{children}</LanguageProvider>
+              </AuthProvider>
               <Toaster />
             </TooltipProvider>
           </ToastProvider>

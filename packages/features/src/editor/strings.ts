@@ -1,5 +1,7 @@
 // Text of the chapter editor. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const editorText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   title: "Soạn chương",
   backToChapters: "Về danh sách chương",
   links: { preview: "Xem trước", history: "Lịch sử phiên bản" },
@@ -106,3 +108,5 @@ export const editorText = {
     reload: "Tải lại bản mới",
   },
 } as const;
+
+export const editorText = defineText("editor", vi);

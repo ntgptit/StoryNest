@@ -14,6 +14,7 @@ import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
 import { useRankingFreshness, useTopStories } from "../hooks/use-ranking.ts";
 import { RANKING_PERIODS, rankingHref, type RankedStory, type RankingPeriod } from "../model/ranking.ts";
 import { rankingText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = rankingText;
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
@@ -21,7 +22,7 @@ const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 /** Top stories of a period. The period comes from the address, so each tab has its own link. */
 export function RankingScreen({
   period,
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   period: RankingPeriod;

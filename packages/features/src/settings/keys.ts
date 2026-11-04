@@ -3,4 +3,5 @@
 export const settingsKeys = {
   all: ["settings"] as const,
   account: (userId: string) => ["settings", "account", userId] as const,
+  language: (userId: string) => ["settings", "language", userId] as const,
 };

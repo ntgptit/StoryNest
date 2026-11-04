@@ -28,6 +28,7 @@ import {
   type DiffEntry,
 } from "../model/history.ts";
 import { historyText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = historyText;
 const DRAFT = "draft";
@@ -37,7 +38,7 @@ export function HistoryScreen({
   storyId,
   chapterId,
   imageUrlFor,
-  locale = "vi",
+  locale = currentLocale(),
 }: {
   storyId: string;
   chapterId: string;
