@@ -15,6 +15,7 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import type { ChapterDraft } from "../api/draft.api.ts";
 import { EditorToolbar } from "../components/editor-toolbar.tsx";
+import { PublishPanel } from "../components/publish-panel.tsx";
 import { useChapterDraft, useSaveChapterDraft } from "../hooks/use-chapter-draft.ts";
 import { createAutosaver, type Autosaver, type AutosaveStatus, type SaveOutcome } from "../model/autosaver.ts";
 import { bodyToDoc, type EditorNode } from "../model/body-converter.ts";
@@ -241,6 +242,13 @@ function DraftEditor({
     toast.success(t.backup.restored);
   };
 
+  /** The revision to publish: unsaved text is saved first; null when that did not work (invalid, conflict, offline). */
+  const ensureSaved = async (): Promise<number | null> => {
+    if (edits.current !== savedEdits.current) await autosaver.current?.saveNow();
+    const clean = edits.current === savedEdits.current;
+    return clean ? revision.current : null;
+  };
+
   const onSaveClick = () => {
     manualSave.current = true;
     void autosaver.current?.saveNow();
@@ -323,6 +331,8 @@ function DraftEditor({
         editor={editor}
         className="reader-text min-h-[50vh] rounded-lg border bg-card p-4 text-card-foreground [&_.ProseMirror]:min-h-[45vh] [&_.ProseMirror]:outline-none [&_.ProseMirror>*+*]:mt-[1em] [&_h2]:text-xl [&_h2]:font-semibold [&_hr]:my-6 [&_hr]:border-border [&_figure]:rounded-md [&_figure]:border [&_figure]:border-dashed [&_figure]:p-6"
       />
+
+      <PublishPanel chapterId={draft.chapterId} locale={locale} ensureSaved={ensureSaved} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground" aria-live="polite">
