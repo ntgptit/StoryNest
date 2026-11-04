@@ -18,6 +18,7 @@ export const appText = {
     studio: "Studio",
     newStory: "Truyện mới",
     editStory: "Chỉnh sửa truyện",
+    chapters: "Quản lý chương",
     storyFallback: "Truyện",
     chapterFallback: "Chương",
   },

@@ -80,6 +80,12 @@ function EditStory({ storyId }: { storyId: string }) {
   return (
     <div className="flex max-w-xl flex-col gap-6">
       <PageHeader title={t.editTitle} description={t.editDescription} />
+      <AppLink
+        href={`/studio/story/${storyId}/chapters`}
+        className="w-fit text-sm font-medium text-primary underline-offset-4 hover:underline"
+      >
+        {t.chaptersLink}
+      </AppLink>
       {story.data.deletedAt ? <p className="text-sm text-muted-foreground">{t.deletedNotice}</p> : null}
       {story.data.role === "editor" ? (
         <p className="text-sm text-muted-foreground">{t.readOnly}</p>

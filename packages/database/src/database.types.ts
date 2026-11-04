@@ -1194,9 +1194,19 @@ export type Database = {
     }
     Functions: {
       aggregate_reads: { Args: { p_limit?: number }; Returns: number }
+      archive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       can_edit_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_story: { Args: { p_story_id: string }; Returns: boolean }
+      create_chapter: {
+        Args: {
+          p_id?: string
+          p_slug: string
+          p_story_id: string
+          p_title: string
+        }
+        Returns: string
+      }
       is_active_account: { Args: Record<PropertyKey, never>; Returns: boolean }
       is_live_version: { Args: { p_version_id: string }; Returns: boolean }
       is_moderator: { Args: Record<PropertyKey, never>; Returns: boolean }
@@ -1216,6 +1226,10 @@ export type Database = {
         Args: { p_anon_id?: string; p_chapter_id: string }
         Returns: boolean
       }
+      reorder_chapters: {
+        Args: { p_chapter_ids: string[]; p_story_id: string }
+        Returns: undefined
+      }
       save_reading_progress: {
         Args: {
           p_chapter_id: string
@@ -1233,6 +1247,7 @@ export type Database = {
         Returns: undefined
       }
       story_role: { Args: { p_story_id: string }; Returns: string }
+      unarchive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       unpublish_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
     }
     Enums: {

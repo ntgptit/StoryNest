@@ -9,6 +9,9 @@ import {
   DB_LIMITS,
   REPORT_STATUSES,
   STORY_ERROR,
+  CHAPTER_ERROR,
+  chapterFormSchema,
+  chapterSlugFormSchema,
   STORY_STATUSES,
   storyFormSchema,
   DEFAULT_READER_PREFERENCES,
@@ -387,5 +390,34 @@ describe("story form schema", () => {
     expect(storyFormSchema.safeParse({ ...valid, visibility: "friends" }).success).toBe(false);
     expect(storyFormSchema.safeParse({ ...valid, categoryId: "abc" }).success).toBe(false);
     expect(storyFormSchema.safeParse({ ...valid, owner_id: "x" }).success).toBe(false);
+  });
+});
+
+describe("chapter form schemas", () => {
+  const codeOf = (
+    schema: { safeParse: (v: unknown) => { error?: { issues: { message: string }[] } } },
+    input: unknown,
+  ) => schema.safeParse(input).error?.issues.map((i) => i.message);
+
+  it("accepts a title and slug, trimming both", () => {
+    expect(chapterFormSchema.parse({ title: "  Chương 1 ", slug: " chuong-1 " })).toEqual({
+      title: "Chương 1",
+      slug: "chuong-1",
+    });
+  });
+
+  it("reports stable codes", () => {
+    expect(codeOf(chapterFormSchema, { title: "  ", slug: "a" })).toEqual([CHAPTER_ERROR.titleRequired]);
+    expect(codeOf(chapterFormSchema, { title: "a".repeat(201), slug: "a" })).toEqual([CHAPTER_ERROR.titleTooLong]);
+    expect(codeOf(chapterFormSchema, { title: "a", slug: "" })?.[0]).toBe(CHAPTER_ERROR.slugRequired);
+    expect(codeOf(chapterFormSchema, { title: "a", slug: "a".repeat(121) })).toEqual([CHAPTER_ERROR.slugTooLong]);
+    for (const slug of ["Cap", "a b", "-a", "a-", "a--b", "đ"]) {
+      expect(codeOf(chapterFormSchema, { title: "a", slug }), slug).toEqual([CHAPTER_ERROR.slugInvalid]);
+    }
+    expect(codeOf(chapterSlugFormSchema, { slug: "Bad" })).toEqual([CHAPTER_ERROR.slugInvalid]);
+  });
+
+  it("rejects unknown fields", () => {
+    expect(chapterFormSchema.safeParse({ title: "a", slug: "a", sort_order: 1 }).success).toBe(false);
   });
 });
