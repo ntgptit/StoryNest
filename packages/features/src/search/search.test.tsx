@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
 import { DataProvider } from "../_shared/data.tsx";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
-import type { StoryListRow } from "../discovery/index.ts";
+import { orderByIds, type StoryListRow } from "../discovery/index.ts";
 import { searchAuthors, searchStories, searchTags } from "./api/search.api.ts";
 import { useSearchStories } from "./hooks/use-search.ts";
 import { SearchBox, SearchScreen, searchHref, tabFromParam } from "./index.ts";
@@ -17,7 +17,6 @@ import {
   SUGGESTION_DELAY_MS,
   nextOffset,
   normalizeTerm,
-  orderByIds,
   termState,
 } from "./model/search.ts";
 import { searchText } from "./strings.ts";

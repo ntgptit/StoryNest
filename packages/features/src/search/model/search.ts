@@ -103,12 +103,3 @@ export function toAuthorHit(row: AuthorRow): AuthorHit {
 export function toTagHit(row: TagRow): TagHit {
   return { id: Number(row.tag_id), slug: row.slug, name: row.display_name, storiesCount: Number(row.stories_count) };
 }
-
-/** Puts `rows` in the order of `ids` and drops ids that did not come back (a story hidden between the two requests). */
-export function orderByIds<T extends { id: string }>(ids: readonly string[], rows: readonly T[]): T[] {
-  const byId = new Map(rows.map((row) => [row.id, row]));
-  return ids.flatMap((id) => {
-    const row = byId.get(id);
-    return row ? [row] : [];
-  });
-}

@@ -22,6 +22,7 @@ fi
 # Real concurrency (two sessions at once) needs committed data, so it runs last: it commits fixtures that the checks above must not see.
 check_chapter_concurrency
 check_tag_quota_concurrency
+check_ranking_refresh_nonblocking
 echo "concurrency checks passed"
 echo "tables: $(run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -Atc \"select count(*) from information_schema.tables where table_schema='public'\"")"
 echo "OK"

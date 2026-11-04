@@ -44,9 +44,14 @@ export function DiscoverScreen({
 
   return (
     <section aria-labelledby="discover-title" className="flex flex-col gap-4">
-      <h2 id="discover-title" className="text-xl font-semibold tracking-tight">
-        {discoveryText.title}
-      </h2>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="discover-title" className="text-xl font-semibold tracking-tight">
+          {discoveryText.title}
+        </h2>
+        <AppLink href="/ranking" className="text-sm font-medium text-primary underline-offset-4 hover:underline">
+          {discoveryText.seeRanking}
+        </AppLink>
+      </div>
 
       {categories.data ? (
         <CategoryChips categories={rootCategories(categories.data)} activeSlug={categorySlug} tagSlug={tagSlug} />

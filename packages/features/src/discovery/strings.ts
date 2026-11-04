@@ -1,6 +1,7 @@
 // Text of the discovery screens. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 export const discoveryText = {
   title: "Mới cập nhật",
+  seeRanking: "Xem xếp hạng",
   categoriesLabel: "Thể loại",
   popularTagsLabel: "Thẻ phổ biến",
   tagFilter: { label: (name: string) => `Đang lọc theo thẻ #${name}`, clear: "Bỏ lọc thẻ" },

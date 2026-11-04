@@ -19,6 +19,7 @@ export const appText = {
     library: "Thư viện",
     list: "Danh sách đọc",
     search: "Tìm kiếm",
+    ranking: "Xếp hạng",
     notifications: "Thông báo",
     newStory: "Truyện mới",
     editStory: "Chỉnh sửa truyện",

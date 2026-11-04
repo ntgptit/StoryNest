@@ -708,6 +708,28 @@ export type Database = {
         }
         Relationships: []
       }
+      ranking_state: {
+        Row: {
+          duration_ms: number
+          id: boolean
+          refreshed_at: string
+          row_count: number
+        }
+        ComputedFields: never
+        Insert: {
+          duration_ms?: number
+          id?: boolean
+          refreshed_at?: string
+          row_count?: number
+        }
+        Update: {
+          duration_ms?: number
+          id?: boolean
+          refreshed_at?: string
+          row_count?: number
+        }
+        Relationships: []
+      }
       reading_list_items: {
         Row: {
           added_at: string
@@ -1257,7 +1279,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      story_rankings: {
+        Row: {
+          period: string | null
+          reads: number | null
+          score: number | null
+          story_id: string | null
+          votes: number | null
+        }
+        ComputedFields: never
+        Relationships: []
+      }
     }
     Functions: {
       add_story_to_list: {
@@ -1422,6 +1454,15 @@ export type Database = {
       publish_due_chapters: { Args: { p_limit?: number }; Returns: number }
       purge_outbox: { Args: { p_retention?: string }; Returns: number }
       purge_read_events: { Args: { p_retention?: string }; Returns: number }
+      ranking_freshness: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          duration_ms: number
+          lag_seconds: number
+          refreshed_at: string
+          row_count: number
+        }[]
+      }
       reconcile_comment_counts: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -1439,6 +1480,7 @@ export type Database = {
         Args: { p_anon_id?: string; p_chapter_id: string }
         Returns: boolean
       }
+      refresh_rankings: { Args: Record<PropertyKey, never>; Returns: number }
       reorder_chapters: {
         Args: { p_chapter_ids: string[]; p_story_id: string }
         Returns: undefined
@@ -1539,6 +1581,21 @@ export type Database = {
       }
       story_role: { Args: { p_story_id: string }; Returns: string }
       tag_slug: { Args: { p_name: string }; Returns: string }
+      top_stories: {
+        Args: {
+          p_include_mature?: boolean
+          p_limit?: number
+          p_offset?: number
+          p_period: string
+        }
+        Returns: {
+          rank_position: number
+          reads: number
+          score: number
+          story_id: string
+          votes: number
+        }[]
+      }
       unarchive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       unpublish_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
     }
