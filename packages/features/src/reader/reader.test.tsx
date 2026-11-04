@@ -7,6 +7,7 @@ import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
 import { withAuth } from "../_shared/test-auth.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
+import { ToastProvider } from "../_shared/toast.tsx";
 import type { ChapterListItem } from "../story/index.ts";
 import { getChapterContent } from "./api/reader.api.ts";
 import {
@@ -251,7 +252,9 @@ function screenClient(chapter: () => { data: unknown; error: unknown }) {
     selected.includes("chapter_version_blocks")
       ? (originalThen as typeof resolve)(resolve)
       : resolve({ data: listRows, error: null });
-  const from = (name: string) => (name === "stories" ? stories.builder : chapters.builder);
+  const stats = builderFor(() => ({ data: { votes: 3 }, error: null }));
+  const from = (name: string) =>
+    name === "stories" ? stories.builder : name === "chapter_stats" ? stats.builder : chapters.builder;
   return withAuth({ from }, null);
 }
 
@@ -261,7 +264,9 @@ function renderReader(client: DataClient, imageUrlFor?: (key: string) => string)
       <DataProvider client={client}>
         <AuthProvider>
           <PlatformProvider adapter={adapter}>
-            <ReaderScreen storyId={STORY_ID} chapterSlug="chuong-2" imageUrlFor={imageUrlFor} />
+            <ToastProvider port={{ show: vi.fn() }}>
+              <ReaderScreen storyId={STORY_ID} chapterSlug="chuong-2" imageUrlFor={imageUrlFor} />
+            </ToastProvider>
           </PlatformProvider>
         </AuthProvider>
       </DataProvider>

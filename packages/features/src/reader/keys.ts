@@ -2,4 +2,6 @@
 export const readerKeys = {
   all: ["reader"] as const,
   chapter: (storyId: string, chapterSlug: string) => ["reader", "chapter", storyId, chapterSlug] as const,
+  /** My vote and the count of one chapter. The user is part of the key: another account must never see my state. */
+  vote: (chapterId: string, userId: string | null) => ["reader", "vote", chapterId, userId ?? "guest"] as const,
 };

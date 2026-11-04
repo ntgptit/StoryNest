@@ -8,6 +8,7 @@ import { ReadingProgress } from "@storynest/ui/widgets/reading-progress";
 import { AppLink } from "../../_shared/platform.tsx";
 import { storyHref, useStory, useStoryChapters } from "../../story/index.ts";
 import { BlockView } from "../components/block-view.tsx";
+import { VoteButton } from "../components/vote-button.tsx";
 import { ChapterNav } from "../components/chapter-nav.tsx";
 import { ReaderSettingsSheet } from "../components/reader-settings-sheet.tsx";
 import { ReadingTracker } from "../components/reading-tracker.tsx";
@@ -102,6 +103,7 @@ export function ReaderScreen({
         <p className="pt-4 text-center text-sm text-muted-foreground" aria-hidden>
           — {readerText.endOfChapter} —
         </p>
+        <VoteButton chapterId={data.id} />
         {storyData ? <ChapterNav story={storyData} chapters={chapterItems} chapterSlug={data.slug} /> : null}
       </article>
     </div>
