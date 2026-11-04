@@ -7,7 +7,8 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { ReadingProgress } from "@storynest/ui/widgets/reading-progress";
 import { AppLink } from "../../_shared/platform.tsx";
 import { storyHref, useStory, useStoryChapters } from "../../story/index.ts";
-import { BlockView } from "../components/block-view.tsx";
+import { CommentThread, commentText } from "../../comments/index.ts";
+import { ReaderBlocks } from "../components/reader-blocks.tsx";
 import { VoteButton } from "../components/vote-button.tsx";
 import { ChapterNav } from "../components/chapter-nav.tsx";
 import { ReaderSettingsSheet } from "../components/reader-settings-sheet.tsx";
@@ -94,9 +95,7 @@ export function ReaderScreen({
           <p className="text-muted-foreground">{readerText.emptyChapter}</p>
         ) : (
           <div className="flex flex-col gap-[1em]">
-            {data.blocks.map((block) => (
-              <BlockView key={block.id} block={block} imageUrlFor={imageUrlFor} />
-            ))}
+            <ReaderBlocks chapterId={data.id} blocks={data.blocks} imageUrlFor={imageUrlFor} />
           </div>
         )}
 
@@ -104,6 +103,10 @@ export function ReaderScreen({
           — {readerText.endOfChapter} —
         </p>
         <VoteButton chapterId={data.id} />
+        <section aria-label={commentText.title} className="flex flex-col gap-4 border-t pt-6">
+          <h2 className="text-lg font-semibold">{commentText.title}</h2>
+          <CommentThread chapterId={data.id} />
+        </section>
         {storyData ? <ChapterNav story={storyData} chapters={chapterItems} chapterSlug={data.slug} /> : null}
       </article>
     </div>

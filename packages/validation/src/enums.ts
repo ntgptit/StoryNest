@@ -56,6 +56,12 @@ export const INVITATION_STATUS = {
   CANCELLED: "cancelled",
 } as const satisfies Record<string, InvitationStatus>;
 
+export const COMMENT_STATUS = { VISIBLE: "visible", HIDDEN: "hidden", DELETED: "deleted" } as const satisfies Record<
+  string,
+  CommentStatus
+>;
+
+export type CommentStatus = z.infer<typeof commentStatusSchema>;
 export type InvitationStatus = z.infer<typeof invitationStatusSchema>;
 export type CollaboratorRole = z.infer<typeof collaboratorRoleSchema>;
 export type StoryStatus = z.infer<typeof storyStatusSchema>;
