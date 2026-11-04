@@ -36,14 +36,3 @@ export function wordCountOf(doc: EditorNode): number {
 export function isDraftConflict(error: AppError): boolean {
   return error.kind === "conflict";
 }
-
-export function saveErrorMessage(error: AppError): string {
-  switch (error.kind) {
-    case "forbidden":
-      return editorText.errors.forbidden;
-    case "network":
-      return editorText.errors.network;
-    default:
-      return editorText.errors.generic;
-  }
-}
