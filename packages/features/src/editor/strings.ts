@@ -10,6 +10,24 @@ export const editorText = {
   saving: "Đang lưu…",
   saved: "Đã lưu bản nháp.",
   unsaved: "Có thay đổi chưa lưu",
+  status: {
+    idle: "",
+    dirty: "Có thay đổi chưa lưu, sẽ tự lưu",
+    saving: "Đang lưu…",
+    saved: "Đã lưu",
+    error: "Chưa lưu được, đang thử lại",
+    conflict: "Chưa lưu: bản nháp đã đổi ở nơi khác",
+    invalid: "Chưa lưu: kiểm tra lại tên chương và nội dung",
+  },
+  leaveWarning: "Có thay đổi chưa lưu. Rời trang có thể làm mất chúng.",
+  backup: {
+    title: "Có bản chưa lưu trên thiết bị này",
+    description: (when: string) => `Bạn đã gõ nội dung này lúc ${when} nhưng nó chưa được lưu lên máy chủ.`,
+    olderBase: "Bản đó dựa trên phiên bản cũ hơn của bản nháp: khôi phục sẽ ghi đè các thay đổi mới hơn.",
+    restore: "Khôi phục bản chưa lưu",
+    discard: "Bỏ bản chưa lưu",
+    restored: "Đã khôi phục bản chưa lưu, đang tự lưu.",
+  },
   toolbar: {
     label: "Định dạng",
     paragraph: "Đoạn văn",
@@ -41,10 +59,5 @@ export const editorText = {
     description:
       "Ai đó (hoặc bạn ở thiết bị khác) đã lưu bản nháp này sau khi bạn mở. Tải lại để lấy bản mới; thay đổi chưa lưu ở đây sẽ mất.",
     reload: "Tải lại bản mới",
-  },
-  errors: {
-    forbidden: "Bạn không có quyền sửa chương này.",
-    network: "Không có kết nối. Kiểm tra mạng và thử lại.",
-    generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
   },
 } as const;

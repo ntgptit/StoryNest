@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/core";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
+import { StrictMode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
 import type { DataClient } from "../_shared/client.ts";
@@ -24,7 +25,11 @@ for (const proto of [Element.prototype, Range.prototype] as {
   proto.getBoundingClientRect ??= () => zeroRect;
 }
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+  window.localStorage.clear();
+});
 
 const t = editorText;
 const STORY_ID = "5eed0000-0000-4000-8000-00000000d001";
@@ -85,20 +90,23 @@ const adapter: PlatformAdapter = {
 };
 const toasts = { show: vi.fn() };
 
-function setup(t1: ReturnType<typeof fakeClient>) {
+function setup(t1: ReturnType<typeof fakeClient>, strict = false) {
   const editor: { current: Editor | null } = { current: null };
+  const Wrapper = strict ? StrictMode : ({ children }: { children: React.ReactNode }) => <>{children}</>;
   render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <DataProvider client={withAuth(t1, testSession())}>
-        <AuthProvider>
-          <PlatformProvider adapter={adapter}>
-            <ToastProvider port={toasts}>
-              <ChapterEditorScreen storyId={STORY_ID} chapterId={CHAPTER_ID} onEditor={(e) => (editor.current = e)} />
-            </ToastProvider>
-          </PlatformProvider>
-        </AuthProvider>
-      </DataProvider>
-    </QueryClientProvider>,
+    <Wrapper>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <DataProvider client={withAuth(t1, testSession())}>
+          <AuthProvider>
+            <PlatformProvider adapter={adapter}>
+              <ToastProvider port={toasts}>
+                <ChapterEditorScreen storyId={STORY_ID} chapterId={CHAPTER_ID} onEditor={(e) => (editor.current = e)} />
+              </ToastProvider>
+            </PlatformProvider>
+          </AuthProvider>
+        </DataProvider>
+      </QueryClientProvider>
+    </Wrapper>,
   );
   return editor;
 }
@@ -291,6 +299,181 @@ describe("ChapterEditorScreen", () => {
       }),
     );
     expect(await screen.findByText(t.notFound.title)).toBeTruthy();
+  });
+});
+
+describe("autosave and recovery", () => {
+  const type = (editor: { current: Editor | null }, text: string) =>
+    act(() => void editor.current?.commands.insertContent(text));
+  const backupKey = `storynest.draftBackup.${CHAPTER_ID}`;
+
+  it("saves by itself after a pause, quietly, against the current revision", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const t1 = fakeClient({});
+    const editor = setup(t1);
+    await editorReady(editor);
+    toasts.show.mockClear();
+    type(editor, " thêm");
+    await act(async () => void (await vi.advanceTimersByTimeAsync(1500)));
+    expect(t1.updates).toHaveLength(0); // still inside the pause
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(t1.updates).toHaveLength(1);
+    expect(t1.updates[0]?.calls).toContainEqual(["eq", ["revision", 3]]);
+    expect(await screen.findByText(new RegExp(t.status.saved))).toBeTruthy();
+    expect(toasts.show).not.toHaveBeenCalled(); // background saves do not pop toasts
+  });
+
+  it("still autosaves under React Strict Mode (effects run, are cleaned up and run again on the same component)", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const t1 = fakeClient({});
+    const editor = setup(t1, true);
+    await editorReady(editor);
+    type(editor, " strict");
+    await act(async () => void (await vi.advanceTimersByTimeAsync(2300)));
+    expect(t1.updates).toHaveLength(1);
+  });
+
+  it("when the connection fails it keeps the text, says so, retries, and finishes without the author doing anything", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let attempts = 0;
+    const t1 = fakeClient({
+      updateRows: () => {
+        attempts += 1;
+        return attempts === 1
+          ? { data: null, error: { message: "Failed to fetch", name: "TypeError" } }
+          : { data: [{ revision: 4 }], error: null };
+      },
+    });
+    const editor = setup(t1);
+    await editorReady(editor);
+    type(editor, " ngoại tuyến");
+    await act(async () => void (await vi.advanceTimersByTimeAsync(2100)));
+    expect(await screen.findByText(new RegExp(t.status.error))).toBeTruthy();
+    expect(editor.current?.getText()).toContain("ngoại tuyến");
+    expect(window.localStorage.getItem(backupKey)).toContain("ngoại tuyến"); // a copy on this device meanwhile
+    await act(async () => void (await vi.advanceTimersByTimeAsync(2200)));
+    expect(t1.updates).toHaveLength(2);
+    expect(await screen.findByText(new RegExp(t.status.saved))).toBeTruthy();
+    await waitFor(() => expect(window.localStorage.getItem(backupKey)).toBeNull()); // saved: the copy is not needed
+  });
+
+  it("retries at once when the browser reports it is back online", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let attempts = 0;
+    const t1 = fakeClient({
+      updateRows: () => {
+        attempts += 1;
+        return attempts === 1
+          ? { data: null, error: { message: "Failed to fetch", name: "TypeError" } }
+          : { data: [{ revision: 4 }], error: null };
+      },
+    });
+    const editor = setup(t1);
+    await editorReady(editor);
+    type(editor, "x");
+    await act(async () => void (await vi.advanceTimersByTimeAsync(2100)));
+    await screen.findByText(new RegExp(t.status.error));
+    act(() => void window.dispatchEvent(new Event("online")));
+    await act(async () => void (await vi.advanceTimersByTimeAsync(50)));
+    expect(t1.updates).toHaveLength(2);
+  });
+
+  it("warns before leaving while there is unsaved text, and not once it is saved", async () => {
+    const t1 = fakeClient({});
+    const editor = setup(t1);
+    await editorReady(editor);
+    const leave = () => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+    expect(leave()).toBe(false); // nothing typed
+    type(editor, " chưa lưu");
+    expect(leave()).toBe(true);
+    clickSave();
+    await waitFor(() => expect(t1.updates).toHaveLength(1));
+    await waitFor(() => expect(leave()).toBe(false));
+  });
+
+  it("saves as soon as the tab is hidden instead of waiting for the pause", async () => {
+    const t1 = fakeClient({});
+    const editor = setup(t1);
+    await editorReady(editor);
+    type(editor, " ẩn tab");
+    Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+    act(() => void document.dispatchEvent(new Event("visibilitychange")));
+    await waitFor(() => expect(t1.updates).toHaveLength(1));
+    Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
+  });
+
+  it("offers an unsaved copy from this device and restores it as the new text, which then autosaves", async () => {
+    window.localStorage.setItem(
+      backupKey,
+      JSON.stringify({
+        baseRevision: 3,
+        title: "Tên đã gõ",
+        body: [{ block_id: bid(1), type: "paragraph", text: "Chữ chưa kịp lưu" }],
+        savedAt: new Date().toISOString(),
+      }),
+    );
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const t1 = fakeClient({});
+    const editor = setup(t1);
+    expect(await screen.findByText(t.backup.title)).toBeTruthy();
+    await editorReady(editor);
+    fireEvent.click(screen.getByRole("button", { name: t.backup.restore }));
+    expect(editor.current?.getText()).toContain("Chữ chưa kịp lưu");
+    expect((screen.getByLabelText(t.chapterTitle) as HTMLInputElement).value).toBe("Tên đã gõ");
+    expect(screen.queryByText(t.backup.title)).toBeNull();
+    await act(async () => void (await vi.advanceTimersByTimeAsync(2200)));
+    expect(t1.updates).toHaveLength(1);
+    expect(t1.updates[0]?.values).toMatchObject({ title: "Tên đã gõ" });
+  });
+
+  it("warns when the unsaved copy was written on an older revision, and can be discarded", async () => {
+    window.localStorage.setItem(
+      backupKey,
+      JSON.stringify({
+        baseRevision: 1,
+        title: "Cũ",
+        body: [{ block_id: bid(1), type: "paragraph", text: "bản cũ" }],
+        savedAt: new Date().toISOString(),
+      }),
+    );
+    setup(fakeClient({}));
+    expect(await screen.findByText(new RegExp(t.backup.olderBase))).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: t.backup.discard }));
+    expect(screen.queryByText(t.backup.title)).toBeNull();
+    expect(window.localStorage.getItem(backupKey)).toBeNull();
+  });
+
+  it("does not bother the author with a copy identical to what the server has", async () => {
+    window.localStorage.setItem(
+      backupKey,
+      JSON.stringify({ baseRevision: 3, title: "Chương một", body: BODY, savedAt: new Date().toISOString() }),
+    );
+    setup(fakeClient({}));
+    await screen.findByLabelText(t.chapterTitle);
+    expect(screen.queryByText(t.backup.title)).toBeNull();
+  });
+
+  it("after a conflict the author's text is kept on this device and offered back after reloading", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const t1 = fakeClient({ updateRows: () => ({ data: [], error: null }) });
+    const editor = setup(t1);
+    await editorReady(editor);
+    type(editor, " bản của tôi");
+    await act(async () => void (await vi.advanceTimersByTimeAsync(600))); // the periodic copy is written
+    window.localStorage.clear(); // ...and lost: the conflict itself must write one again
+    await act(async () => void (await vi.advanceTimersByTimeAsync(1600)));
+    expect(await screen.findByText(t.conflict.title)).toBeTruthy();
+    expect(window.localStorage.getItem(backupKey)).toContain("bản của tôi");
+    expect(t1.updates).toHaveLength(1);
+    await act(async () => void (await vi.advanceTimersByTimeAsync(30_000)));
+    expect(t1.updates).toHaveLength(1); // a conflict is not retried in the background
+
+    fireEvent.click(screen.getByRole("button", { name: t.conflict.reload }));
+    expect(await screen.findByText(t.backup.title)).toBeTruthy(); // my version is offered on top of the fresh draft
   });
 });
 
