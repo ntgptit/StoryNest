@@ -14,6 +14,7 @@ const vi = {
   signOut: "Đăng xuất",
   signOutFailed: "Không đăng xuất được. Vui lòng thử lại.",
   mainNavigation: "Điều hướng chính",
+  loading: "Đang tải trang…",
   language: {
     label: "Ngôn ngữ",
     switchTo: (name: string) => `Chuyển sang ${name}`,

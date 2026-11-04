@@ -10,6 +10,7 @@ import { DataProvider } from "../_shared/data.tsx";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { testSession, withAuth } from "../_shared/test-auth.ts";
 import { listCategories, listLatestStories } from "./api/discovery.api.ts";
+import { prefetchDiscovery } from "./queries.ts";
 import { categoryIdsFor, rootCategories, type Category } from "./model/categories.ts";
 import { statusLabel, storyHref, toStoryCardData, toStorySummary, type StoryListRow } from "./model/story-card.ts";
 import { DiscoverScreen } from "./index.ts";
@@ -154,6 +155,62 @@ describe("listLatestStories", () => {
   it("turns database errors into AppError", async () => {
     const { client } = storiesClient(() => ({ data: null, error: { code: "42501", message: "denied" } }));
     await expect(listLatestStories(client, {})).rejects.toMatchObject({ name: "AppError", kind: "forbidden" });
+  });
+});
+
+describe("prefetchDiscovery", () => {
+  /** A client whose category query stays pending until released; records which tables were queried, in order. */
+  function gatedClient() {
+    const started: string[] = [];
+    const storyCalls: Call[] = [];
+    let releaseCategories: () => void = () => {};
+    const categoriesGate = new Promise<void>((resolve) => (releaseCategories = resolve));
+    const categoryRows = CATEGORIES.map((c) => ({
+      id: c.id,
+      slug: c.slug,
+      name: c.name,
+      parent_id: c.parentId,
+      sort_order: c.sortOrder,
+    }));
+    const client = {
+      from(table: string) {
+        started.push(table);
+        const builder: Record<string, unknown> = {};
+        for (const method of ["select", "eq", "is", "neq", "in", "or", "order", "limit", "returns"]) {
+          builder[method] = (...args: unknown[]) => {
+            if (table === "stories") storyCalls.push([method, args]);
+            return builder;
+          };
+        }
+        const answer =
+          table === "categories"
+            ? categoriesGate.then(() => ({ data: categoryRows, error: null }))
+            : Promise.resolve({ data: [], error: null });
+        builder.then = (resolve: (value: unknown) => unknown, reject: (error: unknown) => unknown) =>
+          answer.then(resolve, reject);
+        return builder;
+      },
+    };
+    return { client: client as unknown as DataClient, started, storyCalls, releaseCategories };
+  }
+
+  it("loads the unfiltered feed in parallel with the category tree", async () => {
+    const gated = gatedClient();
+    const done = prefetchDiscovery(new QueryClient(), gated.client, {});
+    await vi.waitFor(() => expect(gated.started).toEqual(["categories", "stories"]));
+    gated.releaseCategories();
+    await done;
+  });
+
+  it("waits for the category tree when a category filter must be expanded", async () => {
+    const gated = gatedClient();
+    const done = prefetchDiscovery(new QueryClient(), gated.client, { categorySlug: "lang-man" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(gated.started).toEqual(["categories"]);
+    gated.releaseCategories();
+    await done;
+    expect(gated.started).toEqual(["categories", "stories"]);
+    expect(gated.storyCalls).toContainEqual(["in", ["category_id", [1, 3]]]);
   });
 });
 

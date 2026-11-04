@@ -12,11 +12,17 @@ export interface LoadedStory {
 }
 
 /**
+ * The query client of one story's pages for this request. Shared through cache() so the story and its chapter can
+ * be loaded in parallel into the same client, and one dehydrate hands the browser all of it.
+ */
+export const storyQueryClient = cache((_storyId: string): QueryClient => createQueryClient());
+
+/**
  * Loads a story once per request: `generateMetadata` and the page both call this, and React's cache() makes the
  * second call free. The query client is kept so the page can hydrate the client with the same data.
  */
 export const loadStory = cache(async (storyId: string): Promise<LoadedStory> => {
-  const queryClient = createQueryClient();
+  const queryClient = storyQueryClient(storyId);
   if (!isSupabaseConfigured()) return { queryClient, story: undefined };
   try {
     return { queryClient, story: await prefetchStory(queryClient, await createSupabaseServerClient(), storyId) };
