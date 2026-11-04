@@ -20,6 +20,8 @@ export const appText = {
     editStory: "Chỉnh sửa truyện",
     chapters: "Quản lý chương",
     team: "Cộng tác viên",
+    history: "Lịch sử phiên bản",
+    preview: "Xem trước",
     editChapter: "Soạn chương",
     storyFallback: "Truyện",
     chapterFallback: "Chương",

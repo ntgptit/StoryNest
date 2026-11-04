@@ -73,10 +73,13 @@ function toBlock(row: BlockRow): ReaderBlock | null {
   }
 }
 
+/** Snapshot rows (any order) as the blocks the reader draws, in reading order. Unknown block types are skipped. */
+export function toReaderBlocks(rows: readonly BlockRow[]): ReaderBlock[] {
+  return [...rows].sort((a, b) => a.sort_order - b.sort_order).flatMap((b) => toBlock(b) ?? []);
+}
+
 export function toChapterContent(row: ChapterContentRow): ChapterContent {
-  const blocks = [...(row.version?.blocks ?? [])]
-    .sort((a, b) => a.sort_order - b.sort_order)
-    .flatMap((b) => toBlock(b) ?? []);
+  const blocks = toReaderBlocks(row.version?.blocks ?? []);
   return {
     id: row.id,
     slug: row.slug,

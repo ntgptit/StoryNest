@@ -259,12 +259,22 @@ function DraftEditor({
 
   return (
     <div className="flex max-w-3xl flex-col gap-4">
-      <AppLink
-        href={`/studio/story/${storyId}/chapters`}
-        className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
-      >
-        {t.backToChapters}
-      </AppLink>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <AppLink
+          href={`/studio/story/${storyId}/chapters`}
+          className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
+        >
+          {t.backToChapters}
+        </AppLink>
+        <div className="flex gap-1.5">
+          <Button asChild size="sm" variant="outline">
+            <AppLink href={`/studio/story/${storyId}/chapter/${draft.chapterId}/preview`}>{t.links.preview}</AppLink>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <AppLink href={`/studio/story/${storyId}/chapter/${draft.chapterId}/history`}>{t.links.history}</AppLink>
+          </Button>
+        </div>
+      </div>
 
       {backup ? (
         <div role="status" className="flex flex-col gap-2 rounded-md border bg-card p-3 text-sm">

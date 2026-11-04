@@ -2,6 +2,7 @@
 export const editorText = {
   title: "Soạn chương",
   backToChapters: "Về danh sách chương",
+  links: { preview: "Xem trước", history: "Lịch sử phiên bản" },
   chapterTitle: "Tên chương",
   chapterTitlePlaceholder: "Tên chương",
   bodyLabel: "Nội dung chương",

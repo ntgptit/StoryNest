@@ -10,3 +10,4 @@ export * from "./reader/index.ts";
 export * from "./progress/index.ts";
 export * from "./studio/index.ts";
 export * from "./editor/index.ts";
+export * from "./history/index.ts";
