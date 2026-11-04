@@ -4,7 +4,16 @@ Bộ quy tắc này áp dụng cho mọi thay đổi trong StoryNest (Next.js 16
 
 ## 0. Cách áp dụng
 
-1. **Đo trước, tối ưu sau.** Chỉ tối ưu khi đã xác định bottleneck bằng số liệu. Mỗi thay đổi vì performance phải có: số liệu before/after, nguyên nhân gốc, và test chống regression (unit test của hành vi, hoặc kiểm tra tự động như budget bundle).
+1. **Đo trước, tối ưu sau.** Chỉ tối ưu khi đã xác định bottleneck bằng số liệu.
+   - **Điều kiện chấp nhận (pass/fail) của mỗi PR performance:** mô tả PR phải có đủ 6 mục. Thiếu mục nào là chưa đạt:
+     1. nguyên nhân gốc;
+     2. baseline (số đo trước);
+     3. thay đổi;
+     4. cải thiện đo được (cùng cách đo, cùng route);
+     5. test (chức năng và chống regression);
+     6. cách rollback.
+   - **Thay đổi đụng tới authentication, cache hoặc hydration:** test chức năng phải có và xanh trước khi đánh giá tốc độ.
+   - **Mỗi PR chỉ sửa một nhóm nguyên nhân.** Không gộp các sửa không liên quan.
 2. **Không kết luận từ `next dev`.** Dev mode compile theo yêu cầu và có runtime khác. Mọi số liệu dùng `pnpm --filter @storynest/web build && pnpm --filter @storynest/web start` (xem mục 12).
 3. **Mỗi PR** tự kiểm theo checklist ở mục 14 (cũng có trong `.github/pull_request_template.md`). Mục nào không áp dụng thì ghi "N/A"; mục nào có rủi ro thì ghi số đo.
 4. **Mức ưu tiên.** P0 (critical): chậm nghiêm trọng, quá tải hoặc lỗi production, sửa trước khi merge tính năng mới trên cùng đường đi. P1 (high): ảnh hưởng trực tiếp tốc độ và khả năng mở rộng, xếp vào sprint gần nhất. P2 (medium): làm khi P0/P1 đã xử lý.
@@ -31,9 +40,10 @@ Quy tắc của dự án:
 - **Screen trong `packages/features` là client component** theo quyết định Q1 (dùng chung web và mobile). Bù lại, route file trong `apps/web/src/app` luôn là Server Component mỏng: đọc params, prefetch, render Screen. Không thêm `"use client"` vào route file.
 - **Root layout và `(main)/layout.tsx` không gọi `cookies()`/`headers()` và không fetch.** Chỉ page cần người dùng mới gọi `createSupabaseServerClient()` hoặc `requireUser()`.
 - **Dữ liệu công khai** (truyện, chương, danh mục, tag, xếp hạng, sitemap, OG) đọc bằng client ẩn danh (không cookie). Chỉ dùng client gắn cookie khi kết quả phụ thuộc người xem. Lý do: client gắn cookie làm route dynamic và không cache được.
+- **Trang cá nhân tải dữ liệu ban đầu trên server** (quyết định Q8). Dùng client gắn cookie (`requireUser` + RLS) và QueryClient theo request, rồi `HydrationBoundary`. Không bao giờ dùng cache dùng chung cho dữ liệu này.
 - **Mỗi route group có loading boundary** (`loading.tsx`) để click có phản hồi ngay và Next prefetch được layout + skeleton. Route nặng có thể thêm boundary riêng gần nội dung hơn.
 - **Server prefetch chỉ chờ phần quyết định HTTP status** (404, redirect, metadata). Phần còn lại prefetch song song hoặc để client lấy.
-- **Không thay DOM của SSR sau hydration** (ví dụ đổi `key` ở provider cấp cao để áp dụng cài đặt). Giá trị ảnh hưởng nội dung, như ngôn ngữ, phải có trên server: lấy từ cookie hoặc URL.
+- **Không thay DOM của SSR sau hydration** (ví dụ đổi `key` ở provider cấp cao để áp dụng cài đặt). Giá trị ảnh hưởng nội dung phải có trên server. Ngôn ngữ của trang public lấy từ URL (`/vi/...`, `/en/...`, quyết định Q9); cookie hoặc profile chỉ là preference.
 
 ## 2. Data fetching & API (P0)
 
@@ -72,11 +82,20 @@ Kiểm:
 - [ ] Có kiểm cache hit/miss và chi phí revalidation.
 - [ ] Không giả định cache bộ nhớ được chia sẻ giữa các serverless instance.
 
-Hiện trạng cấu hình: **không bật Cache Components**, nên `fetch` mặc định không cache và route dùng `cookies()` là dynamic. Muốn cache phía server thì dùng `unstable_cache` (hoặc bật Cache Components với `"use cache"`/`cacheLife`/`cacheTag`; quyết định này phải ghi vào WBS trước khi làm). Tra tài liệu trong `apps/web/node_modules/next/dist/docs/`, không dựa vào trí nhớ.
+Hiện trạng cấu hình: **chưa bật Cache Components**, nên `fetch` mặc định không cache và route dùng `cookies()` là dynamic.
+
+Quyết định Q10:
+
+- Cache phía server cho dữ liệu public dùng **Cache Components + `"use cache"`** (`cacheLife`, `cacheTag`, `revalidateTag`/`updateTag`).
+- **Không thêm `unstable_cache` mới.**
+- Cache Components được bật trong một PR riêng, có đánh giá tương thích và rollout từng phần. Không bật kèm trong PR khác.
+- **Không dùng `experimental.staleTimes`.** Tài liệu Next ghi đây là tính năng experimental, không khuyến nghị cho production. Đừng nhầm với `staleTime` của TanStack Query, là cấu hình phía client và được phép.
+
+Tra tài liệu trong `apps/web/node_modules/next/dist/docs/`, không dựa vào trí nhớ.
 
 Chiến lược mặc định theo loại dữ liệu (thay đổi phải ghi lý do trong PR):
 
-| Dữ liệu | Server (cross-request) | Client (TanStack `staleTime`) | Invalidate khi |
+| Dữ liệu | Server (`"use cache"` + `cacheLife`, sau khi bật Cache Components) | Client (TanStack `staleTime`) | Invalidate khi (`cacheTag`/query key) |
 | --- | --- | --- | --- |
 | Danh mục | 10 phút | 10 phút | migration/seed |
 | Tag phổ biến, xếp hạng | 5 phút (khớp cron refresh) | 5 phút | cron refresh |
@@ -88,7 +107,7 @@ Chiến lược mặc định theo loại dữ liệu (thay đổi phải ghi l�
 
 Quy tắc của dự án:
 
-- **Không cache dữ liệu cá nhân ở server.** Query key của dữ liệu cá nhân phải chứa user id. Khi đăng xuất hoặc đổi user: `queryClient.clear()`.
+- **Không cache dữ liệu cá nhân ở server** (không `"use cache"`, không CDN). Query key của dữ liệu cá nhân phải chứa user id. Khi đăng xuất hoặc đổi user, cache phía client của người trước phải bị xóa trước khi màn hình của người sau render. Đây là yêu cầu **cô lập dữ liệu (P0)**, không chỉ là tối ưu.
 - **Mutation chỉ invalidate đúng key bị ảnh hưởng.** Không dùng `["feature"]` cho cả feature nếu biết key cụ thể. Không viết key bằng chuỗi literal. Cập nhật lạc quan đã chính xác thì không refetch toàn bộ.
 - **Không đặt `dynamic = "force-dynamic"`** cho route có `revalidate` (force-dynamic vô hiệu hóa revalidate).
 - **Không dựa vào biến module làm cache dùng chung.** Mỗi serverless instance có bộ nhớ riêng; ngoại lệ hợp lệ duy nhất hiện có là JWKS của `auth-js` (TTL 10 phút).
@@ -300,4 +319,6 @@ Các mục tiêu nội bộ là gợi ý; điều chỉnh khi có số liệu pr
 - [ ] Không có dependency hoặc import mới làm tăng JS first-load của route quá 5% (ghi số từ `route-bundle-stats.json` nếu có thay đổi ở client).
 - [ ] Đổi filter hay tab trên cùng màn hình dùng shallow link. Click có phản hồi ≤ 100 ms.
 - [ ] Ảnh có kích thước. Ảnh trong màn hình đầu không lazy.
-- [ ] Nếu PR nhằm cải thiện performance: có số liệu before/after, nguyên nhân gốc, test chống regression.
+- [ ] Nếu PR nhằm cải thiện performance: mô tả có đủ 6 mục (nguyên nhân gốc, baseline, thay đổi, cải thiện đo được, test, rollback).
+- [ ] Nếu đụng authentication, cache hoặc hydration: test chức năng xanh trước khi đo tốc độ.
+- [ ] Không dùng `unstable_cache` mới, không dùng `experimental.staleTimes`.

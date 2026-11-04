@@ -274,7 +274,7 @@ Phụ thuộc quyết định 1.1. Chỉ nên bắt đầu khi Phase 2 và 3 đ�
 
 Rủi ro cao nhất, nên làm sớm trong phase của nó: **editor + chuyển đổi `block_id` (3.5)**, **dedupe lượt đọc (2.6)**, **đọc offline (7.4)**, **kiểm tra Storage policy (D3)**.
 
-## 4. Quyết định đã chốt (2026-11-03)
+## 4. Quyết định đã chốt (2026-11-03, bổ sung Q8–Q10 ngày 2026-11-04)
 
 | # | Quyết định | Hệ quả cho WBS |
 | --- | --- | --- |
@@ -285,6 +285,9 @@ Rủi ro cao nhất, nên làm sớm trong phase của nó: **editor + chuyển 
 | Q5 | **Hai project Supabase (dev + prod)**, migration qua CI | WP 0.0 dựng project dev; 8.1 triển khai migration theo từng môi trường; chuyển sang branching khi có nhiều người sửa schema |
 | Q6 | **OAuth Google ở M1; bình luận theo đoạn ở M2** | WP 1.1 giữ OAuth; WP 4.2 là mốc của bình luận theo đoạn (M1 không có bình luận) |
 | Q7 | **Xóa tài khoản = ẩn danh hóa, giữ nội dung** | WP 6.4: xóa thông tin cá nhân (profile, email ở `auth.users`, avatar), đặt hiển thị "Người dùng đã xóa", story/bình luận giữ lại; không hard-delete `auth.users` nên FK RESTRICT không phải đổi; cần chính sách riêng cho story đang theo dõi và trường hợp tác giả muốn gỡ truyện (làm riêng trước khi ẩn danh) |
+| Q8 | **Trang cá nhân được prefetch ở server** (2026-11-04) | Trang cần đăng nhập (library, studio, settings, notifications, following, moderation…) tải dữ liệu ban đầu trên server bằng client gắn cookie (kiểm auth + RLS), QueryClient theo request rồi `HydrationBoundary`. **Không bao giờ** đưa dữ liệu cá nhân vào cache dùng chung (`"use cache"`, CDN). Thay quy ước cũ "dữ liệu cá nhân không prefetch ở server" trong các `keys.ts` |
+| Q9 | **URL là nguồn xác định ngôn ngữ cho trang public** (2026-11-04) | Trang public có tiền tố `/vi/...`, `/en/...`, canonical và `hreflang` thống nhất. Cookie hoặc profile chỉ lưu preference (dùng để chuyển hướng khi chưa có tiền tố). Server render đúng ngôn ngữ, nên `LanguageProvider` không còn đổi `key`/remount sau hydration. Ảnh hưởng: WP 0.4 (cơ chế hiện tại là localStorage + đồng bộ tài khoản), SEO (WP 6.6), route tree `apps/web/src/app` |
+| Q10 | **Cache Components + `"use cache"` cho dữ liệu public** (2026-11-04) | Không thêm `unstable_cache` mới. Bật Cache Components trong một PR riêng, có đánh giá tương thích (proxy, `cookies()`, route dynamic) và rollout từng phần. Không dùng `experimental.staleTimes` |
 
 Còn mở: chính sách pháp lý cho Q7 (thời hạn lưu, yêu cầu gỡ nội dung theo luật) cần người phụ trách xác nhận trước khi làm WP 6.4; WP 6.9 cũng cần nội dung pháp lý.
 

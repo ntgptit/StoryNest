@@ -9,6 +9,13 @@
 - Database dev, chỉ đọc: Supabase advisors, `pg_stat_statements`, `cron.job`.
 - Đọc toàn bộ code và 30 migration.
 
+**Cập nhật 2026-11-04 sau review:**
+
+- Đã chốt Q8–Q10 (WBS mục 4): prefetch trang cá nhân ở server, locale theo URL, Cache Components + `"use cache"`.
+- Đổi cô lập cache khi đổi tài khoản lên P0.
+- Mọi kết luận về index phải xác nhận bằng `EXPLAIN (ANALYZE, BUFFERS)` trên dữ liệu seed đủ lớn.
+- Kế hoạch sửa ở mục 5 thay bằng thứ tự đã duyệt, kèm cột trạng thái.
+
 **Cách đọc nhãn**
 
 - **Đã đo:** có số liệu.
@@ -24,7 +31,7 @@ Có ba nút thắt lớn nhất, đều đã có số liệu hoặc đã xác mi
    - Nguyên nhân gốc: các package không khai báo `sideEffects`, nên barrel `@storynest/features` kéo mọi feature vào mọi trang.
    - Đã thử khai báo: còn 338–361 KB (**−38%**), 1140 test vẫn xanh.
    - Trên mobile CPU 4x, long task khi tải mỗi trang là 540–770 ms.
-2. **Database: nhiều đường đi nóng không có index phù hợp hoặc tính aggregate theo từng lượt xem.**
+2. **Database: nhiều đường đi nóng thiếu index phù hợp hoặc tính aggregate theo từng lượt xem.**
    - Danh sách và đếm bình luận khi mở chương.
    - `similar_stories` trên trang truyện.
    - `popular_tags` trên trang chủ.
@@ -32,7 +39,7 @@ Có ba nút thắt lớn nhất, đều đã có số liệu hoặc đã xác mi
    - Thông báo.
    - Job cron mỗi phút.
 
-   Dữ liệu dev quá nhỏ nên chưa thấy chậm; với vài nghìn truyện và vài trăm nghìn lượt đọc, các query này thành seq scan hoặc hash join toàn bảng.
+   Thiếu index không đồng nghĩa chắc chắn full-table scan: planner có thể dùng index khác hoặc tập dữ liệu lọc nhỏ. Dữ liệu dev quá nhỏ (9 truyện) nên chưa kết luận được plan. **Các mục DB dưới đây là nguy cơ đã xác minh từ SQL; mức độ phải xác nhận bằng EXPLAIN trên seed (PR D) trước khi thêm index.**
 3. **Không có cache cross-request nào.**
    - Mọi trang công khai (truyện, chương, OG, sitemap, robots) dùng client gắn cookie, nên route luôn dynamic và trả `private, no-store`. Mỗi lượt xem, kể cả bot, truy vấn lại DB.
    - Sitemap đặt `revalidate = 3600` nhưng `force-dynamic` vô hiệu hóa nó.
@@ -95,9 +102,10 @@ Mỗi dòng: mã, mục checklist, bằng chứng, hướng sửa, nhãn.
 
 | Mã | Mục | Phát hiện | Bằng chứng | Hướng sửa | Nhãn |
 | --- | --- | --- | --- | --- | --- |
-| P0-1 | §5 | Mọi route tải toàn bộ feature, kể cả editor | `packages/features/package.json`, `packages/ui/package.json` không có `sideEffects`; `providers.tsx`, `(main)/layout.tsx` import từ barrel `@storynest/features` | Khai báo `"sideEffects": ["*.css"]` cho `features`, `ui`, `utils`, `validation`, rồi đo lại; thêm budget bundle vào gate | Đã đo: −38% |
-| P0-2 | §6 | `list_comments` và `comment_counts_by_block` không dùng được index; `comment_to_card` (plpgsql) chạy trên mọi bình luận gốc trước `LIMIT` | `init_schema.sql:355` index partial `WHERE status='visible'`, nhưng query không lọc status; `comments.sql:157` `block_id IS NOT DISTINCT FROM` | Index `(chapter_id, block_id, created_at DESC, id DESC) WHERE parent_comment_id IS NULL`; tách nhánh NULL/không NULL; `LIMIT` trước rồi mới `LATERAL comment_to_card`; về sau dùng counter like/reply | Đã xác minh |
-| P0-3 | §6 | `similar_stories` (trang truyện) hash join toàn bộ `chapter_read_events`; CTE `eligible` quét mọi truyện công khai | `recommendations.sql:49-58`; không có index bắt đầu bằng `reader_id` | Bảng `story_similarity` tính hằng đêm trên 30 ngày gần nhất; tối thiểu thêm index `(reader_id, story_id)` | Đã xác minh |
+| P0-0 | §3 (cô lập dữ liệu) | Đổi tài khoản trong cùng tab: dữ liệu cá nhân của người trước (tiến độ "đọc tiếp", studio, lịch sử…) có thể hiển thị tới khi refetch xong (tối đa gcTime 5 phút). Lý do: chỉ `authKeys` bị xóa khi `SIGNED_OUT`, và nhiều key cá nhân không chứa user id | `_shared/auth.tsx:65`; `progressKeys`, `studioKeys`, `historyKeys` | Xóa cache của người trước khi user id đổi hoặc khi đăng xuất, trước khi màn hình người sau render; test chức năng | Đã xác minh |
+| P0-1 | §5 | Mọi route tải toàn bộ feature, kể cả editor | `packages/features/package.json`, `packages/ui/package.json` không có `sideEffects`; `providers.tsx`, `(main)/layout.tsx` import từ barrel `@storynest/features` | Kiểm từng side effect (CSS import, đăng ký module) rồi mới khai báo `sideEffects`; đo chunk tải thực tế theo route | Đã đo: −38% (thử nghiệm) |
+| P0-2 | §6 | (nguy cơ) `list_comments` và `comment_counts_by_block` không dùng được index; `comment_to_card` (plpgsql) chạy trên mọi bình luận gốc trước `LIMIT` | `init_schema.sql:355` index partial `WHERE status='visible'`, nhưng query không lọc status; `comments.sql:157` `block_id IS NOT DISTINCT FROM` | Index `(chapter_id, block_id, created_at DESC, id DESC) WHERE parent_comment_id IS NULL`; tách nhánh NULL/không NULL; `LIMIT` trước rồi mới `LATERAL comment_to_card`; về sau dùng counter like/reply | Đã xác minh từ SQL; plan cần EXPLAIN |
+| P0-3 | §6 | `similar_stories` (trang truyện) hash join toàn bộ `chapter_read_events`; CTE `eligible` quét mọi truyện công khai | `recommendations.sql:49-58`; không có index bắt đầu bằng `reader_id` | Bảng `story_similarity` tính hằng đêm trên 30 ngày gần nhất; tối thiểu thêm index `(reader_id, story_id)` | Đã xác minh từ SQL; plan cần EXPLAIN |
 | P0-4 | §6, §3 | `popular_tags` (mỗi lượt vào trang chủ) đếm toàn bộ `story_tags` với RLS `can_read_story()` trên từng dòng (SECURITY INVOKER) | `tags.sql:100-121` | Materialized `tag_usage`, refresh cùng `refresh_rankings`; RPC đọc bảng đó (SECURITY DEFINER); `search_tags` tương tự | Đã xác minh; chi phí là giả thuyết |
 | P0-5 | §3, §10 | Sitemap và robots truy vấn DB mỗi request, kèm `count: "exact"` và offset | `app/sitemap.ts:9-10` (`revalidate` bị `force-dynamic` vô hiệu); `robots.ts:27,34` (hai count tuần tự); `sitemap-data.ts:25,49` | Bỏ `force-dynamic`; bỏ `count` khỏi query danh sách; count song song hoặc bằng RPC `sitemap_counts()`; phân trang keyset theo id; kiểm giới hạn max-rows 1000 của PostgREST với trang 5000 | Đã xác minh |
 
@@ -105,13 +113,13 @@ Mỗi dòng: mã, mục checklist, bằng chứng, hướng sửa, nhãn.
 
 | Mã | Mục | Phát hiện | Bằng chứng | Hướng sửa | Nhãn |
 | --- | --- | --- | --- | --- | --- |
-| P1-1 | §3, §1 | Trang công khai không cache được: dữ liệu public đọc bằng client gắn cookie, nên route dynamic | `lib/story/load-story.ts:28`, `load-chapter.ts:23`, `(main)/page.tsx:27`, hai `opengraph-image.tsx` | Client ẩn danh + `unstable_cache` theo tag (`story:{id}`, `chapter:{id}`), `revalidate` khoảng 60 s; chỉ fallback về client gắn cookie khi kết quả ẩn danh là null (truyện riêng tư, nhóm) | Đã xác minh |
+| P1-1 | §3, §1 | Trang công khai không cache được: dữ liệu public đọc bằng client gắn cookie, nên route dynamic | `lib/story/load-story.ts:28`, `load-chapter.ts:23`, `(main)/page.tsx:27`, hai `opengraph-image.tsx` | Theo Q10: client ẩn danh + `"use cache"` với `cacheTag` (`story:{id}`, `chapter:{id}`) và `cacheLife` khoảng 60 s, sau khi bật Cache Components; chỉ fallback về client gắn cookie khi kết quả ẩn danh là null (truyện riêng tư, nhóm) | Đã xác minh |
 | P1-2 | §3 | OG image chương tải cả truyện, danh sách chương và mọi block chỉ để vẽ tiêu đề; không cache | `[chapterSlug]/opengraph-image.tsx:19` | Query nhẹ chỉ lấy tiêu đề, client ẩn danh, đặt `revalidate` | Đã xác minh |
 | P1-3 | §1, §2 | Mỗi lần chuyển chương lại tải và gửi lại toàn bộ danh sách chương (không giới hạn) dù client đã có | `story.api.ts:43-52` (không `.limit`); `load-chapter.ts` chờ `loadStory` | Trang chương chỉ chờ story + chapter; danh sách chương lấy phía client với `staleTime` dài, hoặc chỉ lấy chương trước/sau; phân trang danh sách trên trang truyện | Đã xác minh |
-| P1-4 | §4 | `LanguageProvider` đổi `key` sau hydration nên remount toàn bộ cây (DOM SSR, realtime channel, editor, khôi phục vị trí đọc) với người dùng không chọn tiếng Việt | `_shared/language.tsx:27,35` | Gửi ngôn ngữ trong cookie và render trên server (cần bỏ biến module `current` khỏi đường render server); tối thiểu không dùng remount cho lần áp dụng đầu | Đã đo |
+| P1-4 | §4 | `LanguageProvider` đổi `key` sau hydration nên remount toàn bộ cây (DOM SSR, realtime channel, editor, khôi phục vị trí đọc) với người dùng không chọn tiếng Việt | `_shared/language.tsx:27,35` | Theo Q9: locale lấy từ URL và render trên server (cần bỏ biến module `current` khỏi đường render server); không dùng remount để áp dụng ngôn ngữ | DOM bị thay: đã đo. Realtime channel có đóng/mở lại không: **chưa kiểm chứng**, cần instrumentation lifecycle riêng |
 | P1-5 | §4 | Editor cấu hình lại và serialize toàn bộ tài liệu mỗi phím gõ | `chapter-editor-screen.tsx:191-201`: `extensions: editorExtensions()` và `editorProps` tạo mới mỗi render; `setWords(wordCountOf(getJSON()))` trong `onUpdate` | Hằng số module cho extensions/props; content ban đầu tạo một lần; đếm từ trong timer 500 ms đã có | Đã xác minh; độ trễ là giả thuyết |
 | P1-6 | §8 | Tab kỳ của ranking và tab/submit của search gây render server cho trang không có dữ liệu server | `ranking-screen.tsx:45` (`navigation.replace`); `search-screen.tsx:58,87` | Dùng pattern shallow như filter trang chủ; view đọc `useSearchParams` | Đã xác minh |
-| P1-7 | §2, §3 | `staleTime` 30 s cộng `refetchOnWindowFocus` nên quay lại tab trình đọc gây khoảng 8 request; infinite list refetch mọi trang đã tải, tuần tự | `_shared/query.ts:25-28`; `reader/queries.ts` không đặt `staleTime` | Nội dung chương `staleTime: Infinity` (publish sẽ invalidate); truyện và danh sách chương 5 phút; infinite list: `refetchOnWindowFocus: false` hoặc `maxPages` | Đã xác minh |
+| P1-7 | §2, §3 | (TanStack Query, không phải `experimental.staleTimes` của Next) `staleTime` 30 s cộng `refetchOnWindowFocus` nên quay lại tab trình đọc gây khoảng 8 request; infinite list refetch mọi trang đã tải, tuần tự | `_shared/query.ts:25-28`; `reader/queries.ts` không đặt `staleTime` | Nội dung chương `staleTime: Infinity` (publish sẽ invalidate); truyện và danh sách chương 5 phút; infinite list: `refetchOnWindowFocus: false` hoặc `maxPages` | Đã xác minh |
 | P1-8 | §2 | Không Supabase client nào có timeout (server, browser, proxy, ẩn danh) | `supabase/server.ts`, `client.ts`, `session.ts`, `sitemap-data.ts` | `global.fetch` bọc `AbortSignal.timeout(8000)` | Đã xác minh |
 | P1-9 | §2 | Trang tác giả: hai request client tuần tự sau hydration, không SSR | `author-screen.tsx:61` (feed chờ profile) | Prefetch server; feed lọc theo `owner!inner(username)` để không phải chờ profile | Đã xác minh |
 | P1-10 | §6 | Feed trang chủ không có index khớp thứ tự sắp xếp; cursor `OR` không làm điều kiện index được; bộ lọc tag là subplan theo từng truyện | `init_schema.sql:344` (`idx_stories_discover` bắt đầu bằng `language_code`); `discovery.api.ts:86` | Partial index `(updated_at DESC, id DESC)` và `(category_id, updated_at DESC, id DESC)`; thêm `.lte("updated_at", …)` trước `.or`; RPC lọc theo tag trả id | Đã xác minh |
@@ -124,9 +132,9 @@ Mỗi dòng: mã, mục checklist, bằng chứng, hướng sửa, nhãn.
 | P1-17 | §5 | zod và mọi schema RPC nằm trong bundle mọi trang (`_shared/errors.ts` import `ZodError` và `@storynest/validation`; `lib/env.ts` dùng zod trong providers) | `errors.ts:1-2`, `validation/src/rpc.ts`, `enums.ts`, `apps/web/src/lib/env.ts` | Tách mã lỗi RPC và enum sang module không dùng zod; kiểm `ZodError` theo cấu trúc; env kiểm bằng `URL.canParse` | Đã xác minh; dung lượng còn lại sau P0-1 phải đo lại |
 | P1-18 | §10 | Không có giám sát: không `instrumentation.ts`, không Web Vitals/RUM, QueryClient không có `onError` | không tìm thấy trong repo; `providers.tsx:29` | WBS 8.2: OTel/Sentry + Speed Insights hoặc `useReportWebVitals` ở `apps/web` | Đã xác minh |
 | P1-19 | §10 | Rate limit chỉ có cho comment/report. Vote, like, follow, invite, upload và search ẩn danh không giới hạn | `abuse_limits.sql:52-56`; `search.sql:149` | Thêm action vào `enforce_rate_limit`; giới hạn search ở edge hoặc trong RPC | Đã xác minh |
-| P1-20 | §3 | Dữ liệu cá nhân có thể hiện trong tối đa 5 phút sau khi đổi tài khoản trong cùng tab: chỉ `authKeys` bị xóa khi đăng xuất; nhiều key cá nhân không chứa user id | `_shared/auth.tsx:65`; `progressKeys`, `studioKeys`, `historyKeys` | `queryClient.clear()` khi `SIGNED_OUT` hoặc khi user id đổi | Đã xác minh |
+| P1-20 | §3 | Chuyển lên P0-0 (cô lập dữ liệu) | | | |
 | P1-21 | §6, §10 | Region: Supabase `ap-southeast-1`; chưa có cấu hình region deploy (chưa có project Vercel) | `list_projects`; không có `vercel.json`/`preferredRegion` | Khi tạo project deploy: chọn `sin1` | Đã xác minh |
-| P1-22 | §1, §8 | Trang cá nhân (library, studio, settings…): một vòng server chỉ để kiểm đăng nhập, rồi mới có waterfall fetch phía client | `(main)/library/page.tsx:12` v.v. | **Cần quyết định.** WBS ghi "dữ liệu cá nhân không prefetch ở server". Lựa chọn: (a) giữ nguyên, chấp nhận 2 vòng; (b) prefetch truy vấn đầu tiên ở server (không cache, dehydrate) | Đã xác minh |
+| P1-22 | §1, §8 | Trang cá nhân (library, studio, settings…): một vòng server chỉ để kiểm đăng nhập, rồi mới có waterfall fetch phía client | `(main)/library/page.tsx:12` v.v. | **Đã chốt Q8:** prefetch truy vấn đầu tiên ở server bằng client gắn cookie, QueryClient theo request, không cache dùng chung | Đã xác minh |
 
 ### P2
 
@@ -179,28 +187,23 @@ Mỗi dòng: mã, mục checklist, bằng chứng, hướng sửa, nhãn.
   - Ảnh upload đã resize, có cache 1 năm và key duy nhất.
   - `_next/static` immutable.
 
-## 5. Kế hoạch sửa (đề xuất, mỗi dòng một PR)
+## 5. Kế hoạch sửa (đã duyệt 2026-11-04, làm tuần tự)
 
-Thứ tự theo mục 13 của checklist, nhưng ưu tiên việc rẻ mà có số đo lớn. Mỗi PR phải có số đo before/after và test chống regression.
+Mỗi PR chỉ sửa một nhóm nguyên nhân. Mô tả PR phải có đủ 6 mục (nguyên nhân gốc, baseline, thay đổi, cải thiện đo được, test, rollback). Không merge khi chưa review. Cập nhật cột trạng thái và WBS sau mỗi PR được merge.
 
-| PR | Nội dung | Mã | Kiểm chứng |
-| --- | --- | --- | --- |
-| A. Bundle | `sideEffects` cho các package; tách zod khỏi `_shared`/env; budget bundle tự động trong `gate` (đọc `route-bundle-stats.json`) | P0-1, P1-17, P2-10 (một phần) | `route-bundle-stats.json` before/after; script budget fail khi vượt |
-| B. Sửa nhanh an toàn | Timeout Supabase; `queryClient.clear()` khi đổi user; bỏ `force-dynamic` ở sitemap/robots và count song song; `staleTime` theo loại dữ liệu; ranking/search shallow | P0-5, P1-6, P1-7, P1-8, P1-20 | Unit test cho từng hành vi; curl header; Playwright đếm request khi focus |
-| C. Dữ liệu seed quy mô lớn | Script seed (ví dụ 10k truyện, 200k chương, 1M lượt đọc, 200k bình luận) cho PostgreSQL local (hạ tầng `db:verify`) và bộ `EXPLAIN` chuẩn | điều kiện để chạy D, E | Plan và thời gian của từng query nóng (baseline) |
-| D. Index và rewrite query | Bình luận, feed + cursor, thông báo, `scheduled_for`, citext author, FK index, bỏ index chặn HOT | P0-2, P1-10, P1-12, P1-13, P1-15, P1-16, P2-12 | EXPLAIN before/after trên seed của PR C; test DB hiện có |
-| E. Tính trước aggregate | `tag_usage`, `story_similarity`, rollup xếp hạng, RPC đọc chương/danh sách chương kiểm quyền một lần | P0-3, P0-4, P1-11, P1-14 | EXPLAIN và thời gian cron trên seed |
-| F. Cache dữ liệu công khai | Client ẩn danh + `unstable_cache` cho trang chủ, truyện, chương, OG; danh sách chương không chờ trên trang chương | P1-1, P1-2, P1-3 | Header cache; đếm request Supabase mỗi lượt xem |
-| G. Rendering | Ngôn ngữ từ cookie (không remount); editor | P1-4, P1-5 | Playwright: DOM SSR giữ nguyên; Performance panel khi gõ |
-| H. Quan sát | `instrumentation.ts`, Web Vitals, `onError` của QueryClient (WBS 8.2) | P1-18 | Sự kiện xuất hiện ở công cụ giám sát |
-| I. Rate limit | Action mới trong `enforce_rate_limit`; search | P1-19 | Test DB |
-| J. Còn lại | Các mục P2 | P2-* | Theo từng mục |
+| # | PR | Nội dung | Mã | Trạng thái |
+| --- | --- | --- | --- | --- |
+| 1 | Filter trang chủ | Filter dạng shallow, giữ danh sách cũ khi tải | (trước audit) | PR #53, chờ review |
+| 2 | Tài liệu | Rulebook này, audit, quyết định Q8–Q10 | — | PR này |
+| 3 | A. Bundle | Kiểm từng side effect, khai báo `sideEffects`, tách zod khỏi đường tải mọi trang nếu đo thấy đáng; kiểm chống regression bundle | P0-1, P1-17 | chưa làm |
+| 4 | B1. Cô lập cache | Xóa cache cá nhân khi đăng xuất hoặc đổi user, trước khi màn hình người sau render | P0-0 | chưa làm |
+| 5 | B2. Sửa nhanh đã xác minh | Timeout Supabase; sitemap/robots (bỏ `force-dynamic`, bỏ count thừa, count song song); tab ranking/search dạng shallow | P0-5, P1-6, P1-8 | chưa làm |
+| 6 | C. Rendering | `LanguageProvider` (locale theo URL, Q9; kiểm lifecycle realtime riêng); editor cấu hình lại mỗi phím gõ | P1-4, P1-5 | chưa làm |
+| 7 | D. Database | Seed benchmark đủ lớn; EXPLAIN (ANALYZE, BUFFERS) before/after; chỉ thêm index hoặc rewrite khi plan xác nhận | P0-2..P0-4, P1-10..P1-16, P2-12 | chưa làm |
+| 8 | E. Cache public | Bật Cache Components (rollout riêng), `"use cache"` cho dữ liệu public, OG, danh sách chương; `staleTime` TanStack theo loại dữ liệu; prefetch trang cá nhân (Q8) | P1-1..P1-3, P1-7, P1-9, P1-22 | chưa làm |
+| 9 | F. Giám sát và gate | `instrumentation.ts`, Web Vitals, `onError`; gate performance tự động (pass/fail) | P1-18, P2-10 | chưa làm |
 
-Cần người phụ trách quyết định:
-
-- **P1-22:** prefetch dữ liệu cá nhân trên server hay giữ nguyên quyết định hiện tại.
-- **P1-4:** ngôn ngữ theo cookie, hay theo URL (ảnh hưởng SEO/hreflang, WBS 0.4).
-- **Bật Cache Components hay dùng `unstable_cache`** (PR F).
+Các mục còn lại (P1-19 rate limit, P1-21 region khi deploy, P2-*) xếp sau, mỗi mục một PR.
 
 ## Phụ lục A. Mutation → key bị invalidate
 
