@@ -27,6 +27,7 @@ import {
   resetPasswordSchema,
   signInSchema,
   signUpSchema,
+  profileFormSchema,
 } from "./index.ts";
 
 type Contract = { enums: Record<string, string[]>; maxLengths: Record<string, number> };
@@ -254,5 +255,32 @@ describe("auth schema error codes (the UI translates these)", () => {
     expect(codes(resetPasswordSchema.safeParse({ password: "12345678", confirmPassword: "x" }))).toEqual([
       "confirm_mismatch",
     ]);
+  });
+});
+
+describe("profileFormSchema", () => {
+  const base = { username: "reader_1", display_name: "  Người Đọc  ", bio: "" };
+
+  it("trims names and turns an empty bio into null (clears it)", () => {
+    expect(profileFormSchema.parse(base)).toEqual({ username: "reader_1", display_name: "Người Đọc", bio: null });
+    expect(profileFormSchema.parse({ ...base, bio: "  hi  " }).bio).toBe("hi");
+    expect(profileFormSchema.parse({ ...base, bio: "   " }).bio).toBeNull();
+  });
+
+  it("returns stable codes", () => {
+    const codes = (input: object) => {
+      const r = profileFormSchema.safeParse(input);
+      return r.success ? [] : r.error.issues.map((i) => i.message);
+    };
+    expect(codes({ ...base, username: "a b" })).toEqual(["username_invalid"]);
+    expect(codes({ ...base, username: "ab" })).toEqual(["username_invalid"]);
+    expect(codes({ ...base, display_name: "   " })).toEqual(["display_name_required"]);
+    expect(codes({ ...base, display_name: "x".repeat(101) })).toEqual(["display_name_too_long"]);
+    expect(codes({ ...base, bio: "x".repeat(1001) })).toEqual(["bio_too_long"]);
+  });
+
+  it("rejects fields a user must not set through this form", () => {
+    expect(profileFormSchema.safeParse({ ...base, account_status: "active" }).success).toBe(false);
+    expect(profileFormSchema.safeParse({ ...base, avatar_storage_key: "x" }).success).toBe(false);
   });
 });

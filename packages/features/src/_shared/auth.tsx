@@ -18,7 +18,7 @@ export const authKeys = {
   profile: (userId: string) => ["auth", "profile", userId] as const,
 };
 
-const PROFILE_COLUMNS = "id, username, display_name, bio, avatar_storage_key, account_status";
+export const PROFILE_COLUMNS = "id, username, display_name, bio, avatar_storage_key, account_status";
 
 /** The signed-in user's own profile (RLS also lets everyone read active profiles; we always ask by id). */
 export async function fetchProfile(client: DataClient, userId: string): Promise<Profile | null> {
