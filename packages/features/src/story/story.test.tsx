@@ -159,6 +159,11 @@ describe("model", () => {
     expect(isIndexable(toStoryDetail(storyRow({ visibility: "private" })))).toBe(false);
   });
 
+  it("an adult story is never offered to search engines, even when public", () => {
+    expect(isIndexable(toStoryDetail(storyRow({ visibility: "public", is_mature: true })))).toBe(false);
+    expect(isIndexable(toStoryDetail(storyRow({ visibility: "public", is_mature: false })))).toBe(true);
+  });
+
   it("treats an unknown visibility as private (never indexable)", () => {
     expect(isIndexable(toStoryDetail(storyRow({ visibility: "weird" })))).toBe(false);
   });
