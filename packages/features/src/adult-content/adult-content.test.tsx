@@ -13,7 +13,8 @@ import { DiscoverScreen } from "../discovery/index.ts";
 import { RankingScreen } from "../ranking/index.ts";
 import { ForYouStories, SimilarStories } from "../recommendations/index.ts";
 import { SearchBox, SearchScreen } from "../search/index.ts";
-import { AdultContentButton, AdultGate, useAdultContent, useShowMature } from "./index.ts";
+import { AdultContentButton, AdultContentSync, AdultGate, useAdultContent, useShowMature } from "./index.ts";
+import { getRemoteAdultContent, saveRemoteAdultContent } from "./api/adult-content.api.ts";
 import {
   ADULT_CONTENT_STORAGE_KEY,
   NO_ADULT_CONTENT,
@@ -393,5 +394,127 @@ describe("every list follows the choice", () => {
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "truyen" } });
     await waitFor(() => expect(shown.rpcCalls.some((c) => c.name === "search_stories")).toBe(true), { timeout: 2000 });
     expect(mature(shown.rpcCalls.filter((c) => c.name === "search_stories"))).toEqual([true]);
+  });
+});
+
+describe("the account copy (WP 6.3)", () => {
+  function syncClient(remote: { age_confirmed: boolean; show_mature: boolean } | null, selectError: unknown = null) {
+    const upsert = vi.fn(async () => ({ data: null, error: null }));
+    const select = vi.fn(() => ({ maybeSingle: async () => ({ data: remote, error: selectError }) }));
+    const from = vi.fn(() => ({ select, upsert }));
+    return { from, select, upsert };
+  }
+  function renderSync(client: DataClient) {
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <DataProvider client={client}>
+          <AuthProvider>
+            <AdultContentSync />
+          </AuthProvider>
+        </DataProvider>
+      </QueryClientProvider>,
+    );
+  }
+
+  it("reads null for no row and the two columns for a saved one; saves only those columns", async () => {
+    const none = syncClient(null);
+    expect(await getRemoteAdultContent(none as unknown as DataClient)).toBeNull();
+    expect(none.from).toHaveBeenCalledWith("user_settings");
+    expect(none.select).toHaveBeenCalledWith("age_confirmed, show_mature");
+    const saved = syncClient({ age_confirmed: true, show_mature: false });
+    expect(await getRemoteAdultContent(saved as unknown as DataClient)).toEqual({ ageConfirmed: true, show: false });
+    await saveRemoteAdultContent(saved as unknown as DataClient, "u1", { ageConfirmed: true, show: true });
+    expect(saved.upsert).toHaveBeenCalledWith(
+      { user_id: "u1", age_confirmed: true, show_mature: true },
+      { onConflict: "user_id" },
+    );
+  });
+
+  it("does nothing for a guest", async () => {
+    const c = syncClient({ age_confirmed: true, show_mature: true });
+    setStoredAdultContent({ ageConfirmed: true, show: false });
+    renderSync(withAuth(c, null));
+    await act(async () => {});
+    expect(c.from).not.toHaveBeenCalled();
+    expect(getStoredAdultContent()).toEqual({ ageConfirmed: true, show: false });
+  });
+
+  it("adopts the choice of an account that confirmed its age, on a device that never asked", async () => {
+    const c = syncClient({ age_confirmed: true, show_mature: true });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(getStoredAdultContent()).toEqual({ ageConfirmed: true, show: true }));
+    expect(c.upsert).not.toHaveBeenCalled();
+  });
+
+  it("lets a confirmed account decide even when the device says otherwise", async () => {
+    setStoredAdultContent({ ageConfirmed: true, show: true });
+    const c = syncClient({ age_confirmed: true, show_mature: false });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(getStoredAdultContent()).toEqual({ ageConfirmed: true, show: false }));
+  });
+
+  it("keeps the device choice when the account row only holds defaults, and uploads a confirmed one", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    setStoredAdultContent({ ageConfirmed: true, show: true });
+    const c = syncClient({ age_confirmed: false, show_mature: false });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(getStoredAdultContent()).toEqual({ ageConfirmed: true, show: true });
+    expect(c.upsert).toHaveBeenCalledWith(
+      { user_id: expect.any(String), age_confirmed: true, show_mature: true },
+      { onConflict: "user_id" },
+    );
+    vi.useRealTimers();
+  });
+
+  it("uploads nothing when neither side has confirmed", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const c = syncClient(null);
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(c.upsert).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it("saves a change made on the device once, after a short pause", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const c = syncClient({ age_confirmed: true, show_mature: false });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => {});
+    act(() => setStoredAdultContent({ ageConfirmed: true, show: true }));
+    act(() => setStoredAdultContent({ ageConfirmed: true, show: false }));
+    act(() => setStoredAdultContent({ ageConfirmed: true, show: true }));
+    expect(c.upsert).not.toHaveBeenCalled();
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(c.upsert).toHaveBeenCalledTimes(1);
+    expect(c.upsert).toHaveBeenCalledWith(
+      { user_id: expect.any(String), age_confirmed: true, show_mature: true },
+      { onConflict: "user_id" },
+    );
+    vi.useRealTimers();
+  });
+
+  it("does not save what the account already holds", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const c = syncClient({ age_confirmed: true, show_mature: true });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(getStoredAdultContent().show).toBe(true));
+    act(() => setStoredAdultContent({ ageConfirmed: true, show: true }));
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(c.upsert).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it("keeps working on the device when the account copy cannot be read", async () => {
+    setStoredAdultContent({ ageConfirmed: true, show: true });
+    const c = syncClient(null, { message: "x", code: "XX000" });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => {});
+    expect(getStoredAdultContent()).toEqual({ ageConfirmed: true, show: true });
+    expect(c.upsert).not.toHaveBeenCalled();
   });
 });

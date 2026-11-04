@@ -5,7 +5,8 @@ export const adultContentText = {
     title: "Nội dung dành cho người lớn",
     hiddenDescription: "Truyện 18+ đang được ẩn khỏi mọi danh sách. Chỉ bật nếu bạn từ 18 tuổi trở lên.",
     shownDescription: "Truyện 18+ đang được hiển thị trong các danh sách.",
-    deviceNote: "Lựa chọn này được lưu trên thiết bị này.",
+    deviceNote:
+      "Lựa chọn này được lưu trên thiết bị này; khi đăng nhập, nó được lưu cả vào tài khoản để dùng trên mọi thiết bị.",
     enable: "Tôi từ 18 tuổi trở lên, hiện truyện 18+",
     keepHidden: "Giữ ẩn",
     disable: "Ẩn lại truyện 18+",

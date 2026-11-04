@@ -4,6 +4,7 @@ import { Home, Library, PenLine, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { AppShell } from "@storynest/ui/widgets/app-shell";
 import { BottomNav, type BottomNavItem } from "@storynest/ui/widgets/bottom-nav";
+import { AdultContentSync } from "../../adult-content/index.ts";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { shellText } from "../strings.ts";
 import { SiteHeader } from "./site-header.tsx";
@@ -25,6 +26,7 @@ export function MainShell({ children }: { children: ReactNode }) {
         <BottomNav items={NAV_ITEMS} pathname={pathname} LinkComponent={AppLink} label={shellText.mainNavigation} />
       }
     >
+      <AdultContentSync />
       {children}
     </AppShell>
   );
