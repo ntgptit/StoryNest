@@ -101,7 +101,7 @@ storynest/
 | `features` | `ui`, `utils`, `validation`, `database` | `next/*`, `apps/*`; feature khác chỉ qua `index.ts` |
 | `apps/web`, `apps/mobile` | mọi package | import ngược lẫn nhau |
 
-Quy ước khác: business logic nằm ở `api/` và `model/`, không nằm trong component hay hook; mọi ghi quan trọng đi qua RPC hoặc `api/` có test; không màu/spacing thô (chỉ token); chuỗi UI qua i18n; một feature = một PR/vertical slice gồm cả DB (nếu cần) → validation → api → UI → test.
+Quy ước khác: business logic nằm ở `api/` và `model/`, không nằm trong component hay hook; mọi ghi quan trọng đi qua RPC hoặc `api/` có test; không màu/spacing thô (chỉ token); chuỗi UI qua i18n; một feature = một PR/vertical slice gồm cả DB (nếu cần) → validation → api → UI → test. Mọi PR tuân theo quy tắc performance ở [`PERFORMANCE.md`](PERFORMANCE.md).
 
 ---
 
@@ -250,7 +250,7 @@ Phụ thuộc quyết định 1.1. Chỉ nên bắt đầu khi Phase 2 và 3 đ�
 | **8.1** | CI/CD: Vercel preview, **triển khai migration có kiểm soát** (nhánh Supabase/preview DB), quy trình rollback | 2 |
 | **8.2** | Giám sát: Sentry (web + mobile), log Supabase, cảnh báo cho outbox dead letter và cron thất bại | 2 |
 | **8.3** | Rà soát bảo mật: RLS audit lại sau mỗi phase, `get_advisors`, kiểm tra quyền Storage, secret scanning, header bảo mật/CSP | 3 |
-| **8.4** | Hiệu năng: ngân sách (LCP/INP/bundle), kiểm tra N+1 và kế hoạch truy vấn cho trang nóng, test tải trên đường đọc | 3 |
+| **8.4** | Hiệu năng: ngân sách (LCP/INP/bundle), kiểm tra N+1 và kế hoạch truy vấn cho trang nóng, test tải trên đường đọc. _Quy tắc: [`PERFORMANCE.md`](PERFORMANCE.md). Audit lần đầu (2026-11-04) và kế hoạch PR A–J: [`perf-audit-2026-11-04.md`](perf-audit-2026-11-04.md)._ | 3 |
 | **8.5** | Trợ năng: kiểm WCAG 2.1 AA trên các màn core (bàn phím, tương phản, screen reader, cỡ chữ) | 2 |
 | **8.6** | Sao lưu/khôi phục (PITR), kịch bản sự cố, danh sách kiểm tra phát hành | 2 |
 
