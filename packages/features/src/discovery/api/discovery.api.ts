@@ -79,6 +79,7 @@ export async function listLatestStories(
   }
 
   if (options.tagSlug) query = query.eq(TAG_FILTER_PATH, options.tagSlug);
+  if (options.authorId) query = query.eq("owner_id", options.authorId);
 
   if (options.cursor) {
     const { updatedAt, id } = readCursor(options.cursor);

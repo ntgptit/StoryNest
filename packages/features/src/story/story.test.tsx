@@ -204,7 +204,7 @@ describe("StoryScreen", () => {
     renderScreen(client);
 
     expect(await screen.findByRole("heading", { level: 1, name: "Rừng sương mù" })).toBeTruthy();
-    expect(screen.getByText("An Nhiên")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "An Nhiên" }).getAttribute("href")).toBe("/author/demo_an");
     expect(screen.getByText("Giả tưởng")).toBeTruthy();
     expect(screen.getByText("#Phiêu lưu")).toBeTruthy();
     expect(screen.getByRole("link", { name: storyText.tagLink("Phiêu lưu") }).getAttribute("href")).toBe(

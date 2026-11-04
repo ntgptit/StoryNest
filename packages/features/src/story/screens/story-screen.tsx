@@ -12,6 +12,7 @@ import { cn } from "@storynest/ui/lib/utils";
 import { formatCount } from "@storynest/utils";
 import { AppLink } from "../../_shared/platform.tsx";
 import { progressText, resolveContinueChapter, useStoryProgress } from "../../progress/index.ts";
+import { authorHref } from "../../author/index.ts";
 import { discoveryText, homeHref, statusLabel } from "../../discovery/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
@@ -65,7 +66,17 @@ export function StoryScreen({
         <div className="flex flex-col gap-3">
           <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{data.title}</h1>
           <p className="text-sm text-muted-foreground">
-            {storyText.byAuthor} <span className="font-medium text-foreground">{data.author.displayName}</span>
+            {storyText.byAuthor}{" "}
+            {data.author.username ? (
+              <AppLink
+                href={authorHref(data.author.username)}
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                {data.author.displayName}
+              </AppLink>
+            ) : (
+              <span className="font-medium text-foreground">{data.author.displayName}</span>
+            )}
           </p>
 
           <div className="flex flex-wrap items-center gap-1.5">

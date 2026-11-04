@@ -13,6 +13,7 @@ import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
 import { useNavigation, AppLink } from "../../_shared/platform.tsx";
+import { authorHref } from "../../author/index.ts";
 import { discoveryText, homeHref, toStoryCardData } from "../../discovery/index.ts";
 import { useSearchAuthors, useSearchStories, useSearchTags } from "../hooks/use-search.ts";
 import {
@@ -188,10 +189,13 @@ function AuthorResults({ term }: { term: string }) {
   );
 }
 
-// Author rows are not links yet: the author page arrives with WP 5.4. Tag rows open the home feed filtered by that tag.
+// Author rows open the author page; tag rows open the home feed filtered by that tag.
 function AuthorRow({ author }: { author: AuthorHit }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border p-3">
+    <AppLink
+      href={authorHref(author.username)}
+      className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-accent"
+    >
       <Avatar>
         <AvatarFallback>{Array.from(author.displayName)[0]?.toLocaleUpperCase() ?? "?"}</AvatarFallback>
       </Avatar>
@@ -201,7 +205,7 @@ function AuthorRow({ author }: { author: AuthorHit }) {
           @{author.username} · {t.storiesCount(author.storiesCount)}
         </p>
       </div>
-    </div>
+    </AppLink>
   );
 }
 

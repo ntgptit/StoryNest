@@ -17,3 +17,4 @@ export * from "./lists/index.ts";
 export * from "./notifications/index.ts";
 export * from "./search/index.ts";
 export * from "./ranking/index.ts";
+export * from "./author/index.ts";

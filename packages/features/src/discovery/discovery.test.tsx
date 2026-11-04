@@ -5,8 +5,10 @@ import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { decodeCursor, encodeCursor } from "@storynest/utils";
 import type { DataClient } from "../_shared/client.ts";
+import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
+import { testSession, withAuth } from "../_shared/test-auth.ts";
 import { listCategories, listLatestStories } from "./api/discovery.api.ts";
 import { categoryIdsFor, rootCategories, type Category } from "./model/categories.ts";
 import { statusLabel, storyHref, toStoryCardData, toStorySummary, type StoryListRow } from "./model/story-card.ts";
@@ -214,11 +216,13 @@ const adapter: PlatformAdapter = {
   openExternal: vi.fn(),
 };
 
-function renderScreen(client: DataClient, ui: ReactNode) {
+function renderScreen(client: DataClient, ui: ReactNode, signedIn = false) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <DataProvider client={client}>
-        <PlatformProvider adapter={adapter}>{ui}</PlatformProvider>
+      <DataProvider client={withAuth(client, signedIn ? testSession() : null)}>
+        <AuthProvider>
+          <PlatformProvider adapter={adapter}>{ui}</PlatformProvider>
+        </AuthProvider>
       </DataProvider>
     </QueryClientProvider>,
   );

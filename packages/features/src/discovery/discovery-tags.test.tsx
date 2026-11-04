@@ -3,8 +3,10 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
+import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
+import { testSession, withAuth } from "../_shared/test-auth.ts";
 import { listLatestStories, listPopularTags } from "./api/discovery.api.ts";
 import { DiscoverScreen, discoveryKeys, homeHref } from "./index.ts";
 import { toPopularTag } from "./model/popular-tags.ts";
@@ -153,15 +155,35 @@ const adapter: PlatformAdapter = {
   openExternal: vi.fn(),
 };
 
-function renderScreen(client: DataClient, ui: ReactNode) {
+function renderScreen(client: DataClient, ui: ReactNode, signedIn = false) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <DataProvider client={client}>
-        <PlatformProvider adapter={adapter}>{ui}</PlatformProvider>
+      <DataProvider client={withAuth(client, signedIn ? testSession() : null)}>
+        <AuthProvider>
+          <PlatformProvider adapter={adapter}>{ui}</PlatformProvider>
+        </AuthProvider>
       </DataProvider>
     </QueryClientProvider>,
   );
 }
+
+describe("home shortcuts", () => {
+  it("offers the ranking to everyone and the feed of followed authors only to a signed-in reader", async () => {
+    const guest = fakeClient({ stories: [storyRow(1)] });
+    renderScreen(guest.client, <DiscoverScreen />);
+    const shortcuts = within(await screen.findByRole("navigation", { name: t.shortcutsLabel }));
+    expect(shortcuts.getByRole("link", { name: t.seeRanking }).getAttribute("href")).toBe("/ranking");
+    expect(shortcuts.queryByRole("link", { name: t.seeFollowing })).toBeNull();
+    cleanup();
+
+    renderScreen(fakeClient({ stories: [storyRow(1)] }).client, <DiscoverScreen />, true);
+    const signedIn = within(await screen.findByRole("navigation", { name: t.shortcutsLabel }));
+    await waitFor(() =>
+      expect(signedIn.getByRole("link", { name: t.seeFollowing }).getAttribute("href")).toBe("/following"),
+    );
+    expect(signedIn.getByRole("link", { name: t.seeRanking })).toBeTruthy();
+  });
+});
 
 describe("home feed tag filters", () => {
   it("shows the popular tags as links to the filtered feed", async () => {

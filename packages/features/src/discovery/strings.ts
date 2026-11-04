@@ -2,6 +2,8 @@
 export const discoveryText = {
   title: "Mới cập nhật",
   seeRanking: "Xem xếp hạng",
+  seeFollowing: "Từ tác giả bạn theo dõi",
+  shortcutsLabel: "Lối tắt",
   categoriesLabel: "Thể loại",
   popularTagsLabel: "Thẻ phổ biến",
   tagFilter: { label: (name: string) => `Đang lọc theo thẻ #${name}`, clear: "Bỏ lọc thẻ" },

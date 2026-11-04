@@ -1298,6 +1298,20 @@ export type Database = {
       }
       aggregate_reads: { Args: { p_limit?: number }; Returns: number }
       archive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
+      author_follower_count: { Args: { p_user_id: string }; Returns: number }
+      author_profile: {
+        Args: { p_username: string }
+        Returns: {
+          avatar_storage_key: string
+          bio: string
+          display_name: string
+          followers_count: number
+          is_following: boolean
+          stories_count: number
+          user_id: string
+          username: string
+        }[]
+      }
       can_edit_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_story: { Args: { p_story_id: string }; Returns: boolean }
@@ -1388,6 +1402,18 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      list_followed_stories: {
+        Args: {
+          p_cursor_at?: string
+          p_cursor_id?: string
+          p_include_mature?: boolean
+          p_limit?: number
+        }
+        Returns: {
+          story_id: string
+          updated_at: string
+        }[]
       }
       list_my_invitations: {
         Args: Record<PropertyKey, never>
@@ -1578,6 +1604,10 @@ export type Database = {
           slug: string
           tag_id: number
         }[]
+      }
+      set_user_follow: {
+        Args: { p_followed: boolean; p_user_id: string }
+        Returns: number
       }
       story_role: { Args: { p_story_id: string }; Returns: string }
       tag_slug: { Args: { p_name: string }; Returns: string }

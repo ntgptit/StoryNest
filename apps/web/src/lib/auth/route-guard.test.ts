@@ -2,10 +2,16 @@ import { describe, expect, it } from "vitest";
 import { decideAuthRedirect, isGuestOnlyPath, isProtectedPath } from "./route-guard.ts";
 
 describe("isProtectedPath", () => {
-  it.each(["/me", "/me/edit", "/studio", "/studio/stories/1", "/library", "/settings/account", "/notifications"])(
-    "%s is protected",
-    (path) => expect(isProtectedPath(path)).toBe(true),
-  );
+  it.each([
+    "/me",
+    "/me/edit",
+    "/studio",
+    "/studio/stories/1",
+    "/library",
+    "/settings/account",
+    "/notifications",
+    "/following",
+  ])("%s is protected", (path) => expect(isProtectedPath(path)).toBe(true));
   it.each(["/", "/login", "/story/1/a", "/members", "/menu", "/studio-fans", "/library-of-congress", "/dev/gallery"])(
     "%s is public (prefix matching is by path segment, not by string)",
     (path) => expect(isProtectedPath(path)).toBe(false),
