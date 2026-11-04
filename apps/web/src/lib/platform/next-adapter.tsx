@@ -4,8 +4,25 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { PlatformAdapter, PlatformLinkProps } from "@storynest/features";
 
-function NextLink({ href, replace, ...rest }: PlatformLinkProps) {
-  return <Link href={href} replace={replace} {...rest} />;
+function NextLink({ href, replace, shallow, ...rest }: PlatformLinkProps) {
+  if (!shallow) return <Link href={href} replace={replace} {...rest} />;
+  // Shallow: the screen re-renders from useSearchParams, which Next keeps in sync with the native history API, so
+  // asking the server to render the page again would only freeze the screen for a round trip. onNavigate fires for
+  // in-app clicks only: Ctrl/Cmd-click and middle-click still open the full page in a new tab.
+  return (
+    <Link
+      href={href}
+      replace={replace}
+      prefetch={false}
+      scroll={false}
+      onNavigate={(event) => {
+        event.preventDefault();
+        if (replace) window.history.replaceState(null, "", href);
+        else window.history.pushState(null, "", href);
+      }}
+      {...rest}
+    />
+  );
 }
 
 function useNextNavigation() {

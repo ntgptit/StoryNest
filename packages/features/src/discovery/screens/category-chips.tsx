@@ -6,7 +6,10 @@ import { discoveryText } from "../strings.ts";
 const CHIP =
   "touch-target inline-flex shrink-0 items-center rounded-full border px-4 text-sm font-medium transition-colors";
 
-/** Category filter as plain links (`/?category=slug`): shareable URL, no client-side state, works with SSR. A tag filter stays on. */
+/**
+ * Category filter as links (`/?category=slug`): shareable URL, works with SSR, no state besides the URL. Shallow: the
+ * feed re-renders from the URL, so switching does not wait for a server render. A tag filter stays on.
+ */
 export function CategoryChips({
   categories,
   activeSlug,
@@ -20,6 +23,7 @@ export function CategoryChips({
     <li key={href} className="shrink-0">
       <AppLink
         href={href}
+        shallow
         aria-current={active ? "page" : undefined}
         className={`${CHIP} ${active ? "border-primary bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}
       >

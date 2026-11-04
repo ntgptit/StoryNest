@@ -94,7 +94,10 @@ export function DiscoverScreen({
           description={tagSlug ? discoveryText.emptyTag.description : discoveryText.empty.description}
         />
       ) : (
-        <>
+        <div
+          aria-busy={feed.isPlaceholderData || undefined}
+          className={`transition-opacity ${feed.isPlaceholderData ? "opacity-60" : ""}`}
+        >
           <InfiniteList
             items={stories}
             getKey={(story) => story.id}
@@ -107,7 +110,8 @@ export function DiscoverScreen({
                 locale={locale}
               />
             )}
-            hasMore={feed.hasNextPage}
+            // The previous filter's list is only a stand-in: never page it on behalf of the new filter.
+            hasMore={feed.hasNextPage && !feed.isPlaceholderData}
             isLoadingMore={feed.isFetchingNextPage}
             onLoadMore={() => void feed.fetchNextPage()}
             loadMoreLabel={discoveryText.loadMore}
@@ -122,7 +126,7 @@ export function DiscoverScreen({
               className="py-4"
             />
           ) : null}
-        </>
+        </div>
       )}
     </section>
   );

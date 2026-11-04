@@ -20,6 +20,12 @@ export type PlatformLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "h
   href: string;
   /** Replace the current history entry instead of pushing. */
   replace?: boolean;
+  /**
+   * Change only the address: for links between views of the SAME screen that already re-renders from the URL
+   * (filters, tabs). Web: no server render, no prefetch, no scroll to the top; the browser history still gets an
+   * entry and the URL stays shareable. Platforms without a server treat it as a normal link.
+   */
+  shallow?: boolean;
 };
 
 export interface PlatformAdapter {
