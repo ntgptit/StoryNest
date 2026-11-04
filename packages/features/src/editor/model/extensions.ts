@@ -4,32 +4,39 @@ import StarterKit from "@tiptap/starter-kit";
 import { BLOCK_ID_ATTRIBUTE, HEADING_LEVEL, NODE, STORAGE_KEY_ATTRIBUTE } from "./body-converter.ts";
 
 /**
- * An uploaded picture as a block of its own. It is an atom (not editable text) holding only the storage key; the
- * picker that inserts one arrives with Storage (WBS WP 0.0/3.3), but chapters that already contain images must load
- * and save without losing them, so the node exists now.
+ * An uploaded picture as a block of its own. It is an atom (not editable text) holding only the storage key. When
+ * `imageUrl` can turn the key into an address the block shows the picture, otherwise an empty frame (a chapter that
+ * already contains images must still load and save without losing them).
  */
-export const ImageBlock = Node.create({
-  name: NODE.image,
-  group: "block",
-  atom: true,
-  selectable: true,
-  draggable: true,
-  addAttributes() {
-    return {
-      [STORAGE_KEY_ATTRIBUTE]: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("data-storage-key"),
-        renderHTML: (attributes) => ({ "data-storage-key": attributes[STORAGE_KEY_ATTRIBUTE] }),
-      },
-    };
-  },
-  parseHTML() {
-    return [{ tag: "figure[data-image-block]" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["figure", mergeAttributes({ "data-image-block": "" }, HTMLAttributes)];
-  },
-});
+export function createImageBlock(imageUrl?: (key: string) => string | null) {
+  return Node.create({
+    name: NODE.image,
+    group: "block",
+    atom: true,
+    selectable: true,
+    draggable: true,
+    addAttributes() {
+      return {
+        [STORAGE_KEY_ATTRIBUTE]: {
+          default: null,
+          parseHTML: (element) => element.getAttribute("data-storage-key"),
+          renderHTML: (attributes) => ({ "data-storage-key": attributes[STORAGE_KEY_ATTRIBUTE] }),
+        },
+      };
+    },
+    parseHTML() {
+      return [{ tag: "figure[data-image-block]" }];
+    },
+    renderHTML({ node, HTMLAttributes }) {
+      const attributes = mergeAttributes({ "data-image-block": "" }, HTMLAttributes);
+      const key = node.attrs[STORAGE_KEY_ATTRIBUTE];
+      const url = typeof key === "string" && imageUrl ? imageUrl(key) : null;
+      return url ? ["figure", attributes, ["img", { src: url, alt: "", draggable: "false" }]] : ["figure", attributes];
+    },
+  });
+}
+
+export const ImageBlock = createImageBlock();
 
 /**
  * Exactly what a chapter body can hold: paragraphs, one heading level, bold/italic/underline/strike, hard breaks,
@@ -37,7 +44,7 @@ export const ImageBlock = Node.create({
  * the body would have to drop. Every top-level block gets a permanent id (UniqueID): new blocks get a fresh uuid, a
  * pasted copy of a block gets a new one while the original keeps its id.
  */
-export function editorExtensions(): AnyExtension[] {
+export function editorExtensions(options: { imageUrl?: (key: string) => string | null } = {}): AnyExtension[] {
   return [
     StarterKit.configure({
       heading: { levels: [HEADING_LEVEL] },
@@ -50,7 +57,7 @@ export function editorExtensions(): AnyExtension[] {
       code: false,
       link: false,
     }),
-    ImageBlock,
+    createImageBlock(options.imageUrl),
     UniqueID.configure({
       attributeName: BLOCK_ID_ATTRIBUTE,
       types: [NODE.paragraph, NODE.heading, NODE.divider, NODE.image],

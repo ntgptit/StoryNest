@@ -2,9 +2,10 @@
 
 import type { Editor } from "@tiptap/core";
 import { useEditorState } from "@tiptap/react";
-import { Bold, Heading2, Italic, Minus, Redo2, Strikethrough, Underline, Undo2 } from "lucide-react";
-import type { ComponentType } from "react";
+import { Bold, Heading2, ImagePlus, Italic, Minus, Redo2, Strikethrough, Underline, Undo2 } from "lucide-react";
+import { useRef, type ComponentType } from "react";
 import { Button } from "@storynest/ui/components/button";
+import { IMAGE_ACCEPTED_TYPES } from "../../_shared/image-prepare.ts";
 import { editorText } from "../strings.ts";
 
 const t = editorText.toolbar;
@@ -18,7 +19,17 @@ type Item = {
 };
 
 /** Formatting buttons for exactly what a chapter body can hold. State comes from the editor, so it follows the cursor. */
-export function EditorToolbar({ editor }: { editor: Editor }) {
+export function EditorToolbar({
+  editor,
+  onImage,
+  imageBusy = false,
+}: {
+  editor: Editor;
+  /** Called with the file the author picked; without it there is no picture button. */
+  onImage?: ((file: File) => void) | undefined;
+  imageBusy?: boolean;
+}) {
+  const fileInput = useRef<HTMLInputElement>(null);
   const state = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
@@ -54,6 +65,16 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
       run: () => editor.chain().focus().toggleStrike().run(),
     },
     { label: t.divider, icon: Minus, run: () => editor.chain().focus().setHorizontalRule().run() },
+    ...(onImage
+      ? [
+          {
+            label: imageBusy ? t.imageUploading : t.image,
+            icon: ImagePlus,
+            disabled: imageBusy,
+            run: () => fileInput.current?.click(),
+          },
+        ]
+      : []),
     { label: t.undo, icon: Undo2, disabled: !state.canUndo, run: () => editor.chain().focus().undo().run() },
     { label: t.redo, icon: Redo2, disabled: !state.canRedo, run: () => editor.chain().focus().redo().run() },
   ];
@@ -80,6 +101,21 @@ export function EditorToolbar({ editor }: { editor: Editor }) {
           <Icon aria-hidden className="size-4" />
         </Button>
       ))}
+      {onImage ? (
+        <input
+          ref={fileInput}
+          type="file"
+          accept={IMAGE_ACCEPTED_TYPES.join(",")}
+          aria-label={t.imageInput}
+          className="sr-only"
+          tabIndex={-1}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = ""; // picking the same file again must still fire
+            if (file) onImage(file);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
