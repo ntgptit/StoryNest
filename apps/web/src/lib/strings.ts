@@ -19,6 +19,7 @@ export const appText = {
     newStory: "Truyện mới",
     editStory: "Chỉnh sửa truyện",
     chapters: "Quản lý chương",
+    editChapter: "Soạn chương",
     storyFallback: "Truyện",
     chapterFallback: "Chương",
   },

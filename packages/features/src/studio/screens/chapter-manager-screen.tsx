@@ -194,6 +194,9 @@ function ChapterManager({
                         >
                           <ArrowDown aria-hidden className="size-4" />
                         </Button>
+                        <Button asChild size="sm" variant="outline">
+                          <AppLink href={`/studio/story/${storyId}/chapter/${chapter.id}`}>{t.write}</AppLink>
+                        </Button>
                         <Button type="button" size="sm" variant="ghost" onClick={() => setRenaming(chapter)}>
                           {t.rename}
                         </Button>
