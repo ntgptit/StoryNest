@@ -22,6 +22,7 @@ export function InfiniteList<T>({
   loadMoreLabel,
   endMessage,
   className,
+  listClassName,
 }: {
   items: readonly T[];
   getKey: (item: T) => string;
@@ -33,6 +34,8 @@ export function InfiniteList<T>({
   loadMoreLabel?: string;
   endMessage?: ReactNode;
   className?: string;
+  /** Classes of the <ul>; defaults to a vertical stack. Pass grid classes for a card grid. */
+  listClassName?: string;
 }) {
   const sentinel = useRef<HTMLDivElement | null>(null);
   const latest = useRef({ hasMore, isLoadingMore, onLoadMore });
@@ -54,7 +57,7 @@ export function InfiniteList<T>({
 
   return (
     <div className={className}>
-      <ul className={cn("flex flex-col")}>
+      <ul className={cn("flex flex-col", listClassName)}>
         {items.map((item, index) => (
           <li key={getKey(item)}>{renderItem(item, index)}</li>
         ))}
