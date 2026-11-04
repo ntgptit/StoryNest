@@ -1,4 +1,5 @@
 import { AppLink } from "../../_shared/platform.tsx";
+import { NotificationBell } from "../../notifications/index.ts";
 import { shellText } from "../strings.ts";
 import { UserMenu } from "./user-menu.tsx";
 
@@ -10,6 +11,7 @@ export function SiteHeader() {
         {shellText.appName}
       </AppLink>
       <div className="ml-auto flex items-center gap-2">
+        <NotificationBell />
         <UserMenu />
       </div>
     </>

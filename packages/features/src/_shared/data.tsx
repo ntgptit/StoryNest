@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useCallback, useContext, type ReactNode } from "react";
 import type { DataClient } from "./client.ts";
 
 const DataContext = createContext<{ client: DataClient | null } | undefined>(undefined);
@@ -38,10 +38,13 @@ export function useOptionalDataClient(): DataClient | null {
 export function useDataClientGetter(): () => DataClient {
   const context = useContext(DataContext);
   if (context === undefined) throw new Error("useDataClientGetter must be used inside <DataProvider>.");
-  return () => {
-    if (context.client === null) {
+  const client = context.client;
+  // Stable between renders (it only changes with the client): an effect that depends on it must not run again on
+  // every render, which would drop and re-open a realtime channel each time.
+  return useCallback(() => {
+    if (client === null) {
       throw new Error("Supabase is not configured (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).");
     }
-    return context.client;
-  };
+    return client;
+  }, [client]);
 }
