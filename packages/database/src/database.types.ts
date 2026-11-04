@@ -1200,6 +1200,10 @@ export type Database = {
       is_active_account: { Args: Record<PropertyKey, never>; Returns: boolean }
       is_live_version: { Args: { p_version_id: string }; Returns: boolean }
       is_moderator: { Args: Record<PropertyKey, never>; Returns: boolean }
+      is_valid_storage_key: {
+        Args: { p_key: string; p_scope: string }
+        Returns: boolean
+      }
       process_outbox: { Args: { p_limit?: number }; Returns: number }
       publish_chapter: {
         Args: { p_chapter_id: string; p_expected_revision?: number }
