@@ -146,6 +146,53 @@ export type Database = {
           },
         ]
       }
+      chapter_read_events: {
+        Row: {
+          aggregated_at: string | null
+          chapter_id: string
+          created_at: string
+          id: number
+          is_anonymous: boolean
+          read_day: string
+          reader_id: string
+          story_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          aggregated_at?: string | null
+          chapter_id: string
+          created_at?: string
+          id?: never
+          is_anonymous: boolean
+          read_day: string
+          reader_id: string
+          story_id: string
+        }
+        Update: {
+          aggregated_at?: string | null
+          chapter_id?: string
+          created_at?: string
+          id?: never
+          is_anonymous?: boolean
+          read_day?: string
+          reader_id?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_read_events_chapter_id_fkey"
+            columns: ["chapter_id"]
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_read_events_story_id_fkey"
+            columns: ["story_id"]
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chapter_stats: {
         Row: {
           chapter_id: string
@@ -1120,6 +1167,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aggregate_reads: { Args: { p_limit?: number }; Returns: number }
       can_edit_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_story: { Args: { p_story_id: string }; Returns: boolean }
@@ -1133,6 +1181,11 @@ export type Database = {
       }
       publish_due_chapters: { Args: { p_limit?: number }; Returns: number }
       purge_outbox: { Args: { p_retention?: string }; Returns: number }
+      purge_read_events: { Args: { p_retention?: string }; Returns: number }
+      record_chapter_read: {
+        Args: { p_anon_id?: string; p_chapter_id: string }
+        Returns: boolean
+      }
       save_reading_progress: {
         Args: {
           p_chapter_id: string
