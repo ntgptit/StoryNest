@@ -20,6 +20,7 @@ import { useDeletedStories, useSetStoryDeleted } from "../hooks/use-story-editin
 import { storyErrorMessage } from "../model/story-form.ts";
 import type { StudioStory } from "../model/studio-story.ts";
 import { studioText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const VISIBILITY_ICON: Record<Visibility, ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
   private: Lock,
@@ -101,7 +102,7 @@ function StudioStoryRow({
 
 /** Author workspace home: every story I own or was invited to, with its state and quick actions. */
 export function StudioScreen({
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   locale?: string;

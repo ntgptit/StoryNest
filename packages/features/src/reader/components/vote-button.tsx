@@ -8,11 +8,12 @@ import { useAppToast } from "../../_shared/toast.tsx";
 import { useChapterVote } from "../hooks/use-chapter-vote.ts";
 import { voteErrorMessage } from "../model/vote.ts";
 import { readerText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = readerText.vote;
 
 /** Vote for a chapter. A guest is sent to sign in and brought back here. Renders nothing until the count is known. */
-export function VoteButton({ chapterId, locale = "vi" }: { chapterId: string; locale?: string }) {
+export function VoteButton({ chapterId, locale = currentLocale() }: { chapterId: string; locale?: string }) {
   const { state, toggle, signedIn, loadingSession } = useChapterVote(chapterId);
   const navigation = useNavigation();
   const toast = useAppToast();

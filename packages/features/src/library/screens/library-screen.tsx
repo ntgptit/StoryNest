@@ -17,6 +17,7 @@ import { discoveryText, storyHref, toStoryCardData } from "../../discovery/index
 import { useLibraryList, useRemoveFromLibrary } from "../hooks/use-library.ts";
 import { LIBRARY_TABS, libraryErrorMessage, type LibraryEntry, type LibraryTab } from "../model/library.ts";
 import { libraryText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = libraryText;
 /** The fourth tab belongs to the lists feature, so it is not one of the three the library loads itself. */
@@ -33,7 +34,7 @@ const EMPTY_ICON: Record<LibraryTab, LucideIcon> = {
 
 /** The reader's shelf: what they are reading (continue in one tap), what they saved and what they follow. */
 export function LibraryScreen({
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   locale?: string;

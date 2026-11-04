@@ -1,5 +1,7 @@
 // Text of the adult-content filter. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const adultContentText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   button: "Nội dung người lớn (18+)",
   dialog: {
     title: "Nội dung dành cho người lớn",
@@ -19,3 +21,5 @@ export const adultContentText = {
     back: "Quay lại",
   },
 } as const;
+
+export const adultContentText = defineText("adult-content", vi);

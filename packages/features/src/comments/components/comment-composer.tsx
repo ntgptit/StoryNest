@@ -7,6 +7,7 @@ import { Button } from "@storynest/ui/components/button";
 import { Textarea } from "@storynest/ui/components/textarea";
 import { bodyProblemMessage, checkBody } from "../model/comment.ts";
 import { commentText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = commentText.composer;
 /** The counter only appears when the limit is near, so it does not nag. */
@@ -82,7 +83,7 @@ export function CommentComposer({
         >
           {error ??
             (text.length >= SHOW_COUNTER_FROM
-              ? t.count(formatCount(text.length, "vi"), formatCount(DB_LIMITS.commentBody, "vi"))
+              ? t.count(formatCount(text.length, currentLocale()), formatCount(DB_LIMITS.commentBody, currentLocale()))
               : "")}
         </p>
         <div className="flex gap-2">

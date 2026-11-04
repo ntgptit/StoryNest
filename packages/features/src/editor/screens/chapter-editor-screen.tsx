@@ -23,6 +23,7 @@ import { checkDraft, isDraftConflict, wordCountOf } from "../model/draft-form.ts
 import { editorExtensions } from "../model/extensions.ts";
 import { clearBackup, differsFromServer, readBackup, writeBackup, type DraftBackup } from "../model/local-backup.ts";
 import { editorText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = editorText;
 
@@ -31,7 +32,7 @@ export function ChapterEditorScreen({
   storyId,
   chapterId,
   onEditor,
-  locale = "vi",
+  locale = currentLocale(),
 }: {
   storyId: string;
   chapterId: string;

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
@@ -9,6 +9,10 @@ import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx"
 import { testSession, withAuth } from "../_shared/test-auth.ts";
 import { ToastProvider } from "../_shared/toast.tsx";
 import { NO_ADULT_CONTENT, getStoredAdultContent, setStoredAdultContent } from "../adult-content/model/store.ts";
+import { getLanguage, readStoredLanguage, setLanguage } from "../_shared/i18n.ts";
+import { LanguageProvider } from "../_shared/language.tsx";
+import { LanguageSync } from "./components/language-sync.tsx";
+import { getRemoteLanguage, saveRemoteLanguage } from "./api/language.api.ts";
 import { getSettings, saveSettings } from "./api/settings.api.ts";
 import { useAccountSettings } from "./hooks/use-settings.ts";
 import { settingsKeys } from "./keys.ts";
@@ -35,6 +39,7 @@ const ROW: SettingsRow = {
 
 afterEach(cleanup);
 beforeEach(() => {
+  setLanguage("vi", { persist: false });
   // jsdom lacks these; Radix Select calls them when it opens.
   Element.prototype.scrollIntoView = vi.fn();
   Element.prototype.hasPointerCapture = vi.fn(() => false);
@@ -194,7 +199,7 @@ describe("SettingsScreen", () => {
     );
   });
 
-  it("offers only the available language and keeps the unavailable one disabled", async () => {
+  it("offers both languages, and choosing one switches the page at once and remembers it on the device", async () => {
     renderScreen(fakeClient({ row: ROW }));
     const trigger = await screen.findByLabelText(t.language.label);
     fireEvent.keyDown(trigger, { key: "Enter" });
@@ -202,8 +207,25 @@ describe("SettingsScreen", () => {
     expect(
       within(listbox).getByRole("option", { name: t.language.options.vi }).getAttribute("aria-disabled"),
     ).toBeNull();
-    expect(within(listbox).getByRole("option", { name: t.language.options.en }).getAttribute("aria-disabled")).toBe(
-      "true",
+    expect(
+      within(listbox).getByRole("option", { name: t.language.options.en }).getAttribute("aria-disabled"),
+    ).toBeNull();
+    fireEvent.click(within(listbox).getByRole("option", { name: t.language.options.en }));
+    await waitFor(() => expect(getLanguage()).toBe("en"));
+    expect(readStoredLanguage()).toBe("en");
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeTruthy();
+  });
+
+  it("carries the language in force when it saves another setting", async () => {
+    const c = fakeClient({ row: { ...ROW, language_code: "vi" } });
+    renderScreen(c);
+    await screen.findByLabelText(t.notifications.chapterPublished.label);
+    act(() => setLanguage("en"));
+    fireEvent.click(await screen.findByLabelText("New chapters"));
+    await waitFor(() => expect(c.upsert).toHaveBeenCalledTimes(1));
+    expect(c.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ language_code: "en", notify_chapter_published: false }),
+      { onConflict: "user_id" },
     );
   });
 
@@ -263,5 +285,170 @@ describe("useAccountSettings", () => {
     const c = fakeClient({ row: ROW });
     const { result } = renderHook(() => useAccountSettings(), { wrapper: wrapper(withAuth(c, testSession())) });
     await waitFor(() => expect(result.current.data?.notifications.commentReplied).toBe(false));
+  });
+});
+
+describe("the account language", () => {
+  function syncClient(remote: { language_code: string } | null, selectError: unknown = null) {
+    const upsert = vi.fn(async (_row: unknown, _options?: unknown) => ({ data: null, error: null }));
+    const select = vi.fn(() => ({ maybeSingle: async () => ({ data: remote, error: selectError }) }));
+    return { from: vi.fn(() => ({ select, upsert })), select, upsert };
+  }
+  function renderSync(client: DataClient) {
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <DataProvider client={client}>
+          <AuthProvider>
+            <LanguageSync />
+          </AuthProvider>
+        </DataProvider>
+      </QueryClientProvider>,
+    );
+  }
+
+  it("reads null for no row or an unknown language, and the language for a saved one; saves only that column", async () => {
+    expect(await getRemoteLanguage(syncClient(null) as unknown as DataClient)).toBeNull();
+    expect(await getRemoteLanguage(syncClient({ language_code: "xx" }) as unknown as DataClient)).toBeNull();
+    const saved = syncClient({ language_code: "en" });
+    expect(await getRemoteLanguage(saved as unknown as DataClient)).toBe("en");
+    expect(saved.select).toHaveBeenCalledWith("language_code");
+    await saveRemoteLanguage(saved as unknown as DataClient, "u1", "en");
+    expect(saved.upsert).toHaveBeenCalledWith({ user_id: "u1", language_code: "en" }, { onConflict: "user_id" });
+  });
+
+  it("does nothing for a guest", async () => {
+    const c = syncClient({ language_code: "en" });
+    renderSync(withAuth(c, null));
+    await act(async () => {});
+    expect(c.from).not.toHaveBeenCalled();
+    expect(getLanguage()).toBe("vi");
+  });
+
+  it("adopts the account's language on a device that never chose, and on one that did", async () => {
+    renderSync(withAuth(syncClient({ language_code: "en" }), testSession()));
+    await waitFor(() => expect(getLanguage()).toBe("en"));
+    cleanup();
+    setLanguage("vi");
+    renderSync(withAuth(syncClient({ language_code: "en" }), testSession()));
+    await waitFor(() => expect(getLanguage()).toBe("en")); // the account decides when it has a row
+  });
+
+  it("lets the reader's own switch win when it happens before the account has been read", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let release: (value: { data: unknown; error: unknown }) => void = () => undefined;
+    const upsert = vi.fn(async (_row: unknown, _options?: unknown) => ({ data: null, error: null }));
+    const slow = {
+      from: vi.fn(() => ({
+        select: () => ({ maybeSingle: () => new Promise((resolve) => (release = resolve)) }),
+        upsert,
+      })),
+    };
+    renderSync(withAuth(slow, testSession()));
+    await waitFor(() => expect(slow.from).toHaveBeenCalled());
+    act(() => setLanguage("en")); // the reader taps the switch while the account is still loading
+    await act(async () => release({ data: { language_code: "vi" }, error: null }));
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(getLanguage()).toBe("en");
+    expect(upsert).toHaveBeenCalledWith(
+      { user_id: expect.any(String), language_code: "en" },
+      { onConflict: "user_id" },
+    );
+    vi.useRealTimers();
+  });
+
+  it("gives an account with no settings the language the reader chose on this device", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    setLanguage("en");
+    const c = syncClient(null);
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(c.upsert).toHaveBeenCalledWith(
+      { user_id: expect.any(String), language_code: "en" },
+      { onConflict: "user_id" },
+    );
+    vi.useRealTimers();
+  });
+
+  it("uploads nothing when the reader never chose and the account has nothing", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    window.localStorage.clear();
+    const c = syncClient(null);
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(c.upsert).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it("saves a change made on the device once, after a short pause, and not what the account already holds", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const c = syncClient({ language_code: "vi" });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => {});
+    act(() => setLanguage("en"));
+    act(() => setLanguage("vi"));
+    act(() => setLanguage("en"));
+    expect(c.upsert).not.toHaveBeenCalled();
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(c.upsert).toHaveBeenCalledTimes(1);
+    expect(c.upsert).toHaveBeenCalledWith(
+      { user_id: expect.any(String), language_code: "en" },
+      { onConflict: "user_id" },
+    );
+    vi.useRealTimers();
+  });
+
+  it("is not started again, and does not read the account's old value back, when a switch re-mounts the page", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const c = syncClient({ language_code: "vi" });
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <DataProvider client={withAuth(c, testSession())}>
+          <AuthProvider>
+            <LanguageSync />
+            <LanguageProvider>
+              <p>page</p>
+            </LanguageProvider>
+          </AuthProvider>
+        </DataProvider>
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => {});
+    const reads = c.select.mock.calls.length;
+    act(() => setLanguage("en"));
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(getLanguage()).toBe("en"); // the account still says "vi" until the save lands; that must not undo the choice
+    expect(c.select.mock.calls.length).toBe(reads); // no second read of the account
+    expect(c.upsert).toHaveBeenCalledWith(
+      { user_id: expect.any(String), language_code: "en" },
+      { onConflict: "user_id" },
+    );
+    vi.useRealTimers();
+  });
+
+  it("saves nothing when the reader ends up where the account already is", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const c = syncClient({ language_code: "en" });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(getLanguage()).toBe("en"));
+    await act(async () => {});
+    act(() => setLanguage("vi"));
+    act(() => setLanguage("en"));
+    await act(async () => void (await vi.advanceTimersByTimeAsync(800)));
+    expect(c.upsert).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it("keeps working on the device when the account cannot be read", async () => {
+    setLanguage("en");
+    const c = syncClient(null, { message: "x", code: "XX000" });
+    renderSync(withAuth(c, testSession()));
+    await waitFor(() => expect(c.from).toHaveBeenCalled());
+    await act(async () => {});
+    expect(getLanguage()).toBe("en");
+    expect(c.upsert).not.toHaveBeenCalled();
   });
 });

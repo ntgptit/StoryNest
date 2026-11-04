@@ -15,6 +15,7 @@ import { useCreateList, useMyLists } from "../hooks/use-lists.ts";
 import { listErrorMessage } from "../model/list.ts";
 import { listText } from "../strings.ts";
 import { ListFormDialog } from "./list-form-dialog.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = listText.myLists;
 
@@ -25,7 +26,7 @@ const VISIBILITY_ICON: Record<Visibility, ComponentType<{ className?: string; "a
 };
 
 /** The reader's lists with a button to make a new one; each opens its page. Shown as a tab of the library. */
-export function MyLists({ locale = "vi" }: { locale?: string }) {
+export function MyLists({ locale = currentLocale() }: { locale?: string }) {
   const lists = useMyLists();
   const create = useCreateList();
   const toast = useAppToast();

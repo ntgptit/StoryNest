@@ -21,11 +21,12 @@ import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
 import { chapterHref } from "../model/story-detail.ts";
 import { storyText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 /** Story page: cover, facts, synopsis, tags and the list of published chapters with a "start reading" button. */
 export function StoryScreen({
   storyId,
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   storyId: string;

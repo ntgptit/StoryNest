@@ -3,6 +3,7 @@ import { AdultContentButton } from "../../adult-content/index.ts";
 import { NotificationBell } from "../../notifications/index.ts";
 import { SearchBox } from "../../search/index.ts";
 import { shellText } from "../strings.ts";
+import { LanguageSwitcher } from "./language-switcher.tsx";
 import { UserMenu } from "./user-menu.tsx";
 
 /** Content of the AppShell header: brand on the left, account control on the right. */
@@ -15,6 +16,7 @@ export function SiteHeader() {
       <div className="ml-auto flex w-full max-w-sm items-center justify-end gap-2 sm:max-w-md">
         <SearchBox />
         <AdultContentButton />
+        <LanguageSwitcher />
         <NotificationBell />
         <UserMenu />
       </div>

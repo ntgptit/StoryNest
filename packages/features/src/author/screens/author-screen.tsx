@@ -15,6 +15,7 @@ import { FollowAuthorButton } from "../components/follow-author-button.tsx";
 import { useAuthorProfile } from "../hooks/use-author.ts";
 import type { AuthorProfile } from "../model/author.ts";
 import { authorText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = authorText;
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
@@ -22,7 +23,7 @@ const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 /** An author's page: who they are, how many follow them, a follow button and their public stories. */
 export function AuthorScreen({
   username,
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   username: string;

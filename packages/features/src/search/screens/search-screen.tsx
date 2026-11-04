@@ -28,6 +28,7 @@ import {
   type TagHit,
 } from "../model/search.ts";
 import { searchText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = searchText;
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
@@ -39,7 +40,7 @@ const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 export function SearchScreen({
   term: rawTerm,
   tab,
-  locale = "vi",
+  locale = currentLocale(),
   coverUrlFor,
 }: {
   term: string;

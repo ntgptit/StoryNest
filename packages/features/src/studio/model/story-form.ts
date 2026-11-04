@@ -80,7 +80,8 @@ export function categoryOptions(categories: readonly Category[]): CategoryOption
     ]);
 }
 
-const VALIDATION_TEXT: Record<string, string> = {
+// A function, not a constant: the text is read when it is needed, so it follows the language.
+const VALIDATION_TEXT = (): Record<string, string> => ({
   [STORY_ERROR.titleRequired]: studioText.validation.titleRequired,
   [STORY_ERROR.titleTooLong]: studioText.validation.titleTooLong,
   [STORY_ERROR.slugRequired]: studioText.validation.slugRequired,
@@ -88,11 +89,11 @@ const VALIDATION_TEXT: Record<string, string> = {
   [STORY_ERROR.slugInvalid]: studioText.validation.slugInvalid,
   [STORY_ERROR.synopsisTooLong]: studioText.validation.synopsisTooLong,
   [STORY_ERROR.languageInvalid]: studioText.validation.languageInvalid,
-};
+});
 
 export function validationMessage(code: string | undefined): string | undefined {
   if (code === undefined) return undefined;
-  return VALIDATION_TEXT[code] ?? studioText.errors.generic;
+  return VALIDATION_TEXT()[code] ?? studioText.errors.generic;
 }
 
 /** PostgreSQL unique_violation: the only unique key a story write can hit is (owner_id, slug). */

@@ -22,11 +22,12 @@ import {
   type RangeDays,
 } from "../model/stats.ts";
 import { analyticsText } from "../strings.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = analyticsText;
 
 /** Audience figures of one story for its owner and co-authors: totals, days, and chapter by chapter. */
-export function StoryStatsScreen({ storyId, locale = "vi" }: { storyId: string; locale?: string }) {
+export function StoryStatsScreen({ storyId, locale = currentLocale() }: { storyId: string; locale?: string }) {
   const auth = useAuth();
   if (auth.status === "loading") return <Skeleton className="h-96 w-full max-w-3xl rounded-xl" aria-busy />;
   if (auth.status === "unauthenticated") {

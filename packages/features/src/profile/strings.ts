@@ -1,5 +1,7 @@
 // Text of the profile screens. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const profileText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   edit: {
     title: "Chỉnh sửa hồ sơ",
     description: "Thông tin này hiển thị công khai trên trang của bạn.",
@@ -30,3 +32,5 @@ export const profileText = {
     generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
   },
 } as const;
+
+export const profileText = defineText("profile", vi);

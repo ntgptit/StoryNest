@@ -1,5 +1,7 @@
 // Text of the library page. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const libraryText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   title: "Thư viện",
   description: "Truyện bạn đang đọc, đã lưu và đang theo dõi.",
   tabsLabel: "Các phần của thư viện",
@@ -30,3 +32,5 @@ export const libraryText = {
     generic: "Không thực hiện được. Vui lòng thử lại.",
   },
 } as const;
+
+export const libraryText = defineText("library", vi);

@@ -1,5 +1,7 @@
 // Text of the recommendation lists. Single module so WBS WP 0.4 (i18n) can replace it in one change.
-export const recommendationText = {
+import { defineText } from "../_shared/i18n.ts";
+
+const vi = {
   similarTitle: "Có thể bạn cũng thích",
   forMeTitle: "Gợi ý cho bạn",
   listLabel: (title: string) => title,
@@ -11,3 +13,5 @@ export const recommendationText = {
     librarySimilar: (title: string) => `Vì bạn đã lưu hoặc theo dõi “${title}”`,
   },
 } as const;
+
+export const recommendationText = defineText("recommendations", vi);
