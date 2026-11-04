@@ -13,7 +13,7 @@
 -- account active, mature only when asked). Anyone, signed in or not, may search.
 -- Limits: query 3..100 characters after normalisation (trigrams need three, and a shorter one would scan everything),
 -- limit 1..50, offset 0..200. Relevance has no stable keyset, so paging is by offset with a hard cap.
--- Rollback: DROP the three RPCs and search_normalize; restore idx_stories_title_trgm ON stories USING gin (title gin_trgm_ops).
+-- Rollback: DROP the RPCs, search_prepare, search_normalize and the five idx_*_search indexes.
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA extensions;
@@ -25,7 +25,7 @@ LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT SET search_path = '' AS $$
 $$;
 GRANT EXECUTE ON FUNCTION public.search_normalize(text) TO anon, authenticated, service_role;
 
-DROP INDEX public.idx_stories_title_trgm;
+-- idx_stories_title_trgm (raw title) is now redundant with idx_stories_title_search; dropping it is a separate cleanup.
 CREATE INDEX idx_stories_title_search ON public.stories
     USING gin (public.search_normalize(title) extensions.gin_trgm_ops);
 CREATE INDEX idx_app_users_username_search ON public.app_users
