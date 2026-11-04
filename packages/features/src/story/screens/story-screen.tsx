@@ -14,6 +14,7 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { progressText, resolveContinueChapter, useStoryProgress } from "../../progress/index.ts";
 import { discoveryText, statusLabel } from "../../discovery/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
+import { StoryActions } from "../components/story-actions.tsx";
 import { chapterHref } from "../model/story-detail.ts";
 import { storyText } from "../strings.ts";
 
@@ -90,6 +91,8 @@ export function StoryScreen({
               {continueChapter ? progressText.continueReading(continueChapter.number) : storyText.startReading}
             </AppLink>
           ) : null}
+
+          <StoryActions storyId={data.id} />
         </div>
       </header>
 
