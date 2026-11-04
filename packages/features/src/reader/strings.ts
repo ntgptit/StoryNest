@@ -20,6 +20,17 @@ export const readerText = {
     themes: { site: "Theo giao diện", light: "Sáng", sepia: "Sepia", dark: "Tối" },
     sizeNames: { s: "Nhỏ", m: "Vừa", l: "Lớn", xl: "Rất lớn" },
   },
+  vote: {
+    add: "Bình chọn cho chương này",
+    remove: "Bỏ bình chọn",
+    count: (count: string) => `${count} lượt bình chọn`,
+    guest: "Đăng nhập để bình chọn",
+    errors: {
+      forbidden: "Bạn không thể bình chọn chương này.",
+      network: "Không có kết nối. Kiểm tra mạng và thử lại.",
+      generic: "Không bình chọn được. Vui lòng thử lại.",
+    },
+  },
   endOfChapter: "Hết chương",
   emptyChapter: "Chương này chưa có nội dung.",
   notFound: { title: "Không tìm thấy chương", description: "Chương không tồn tại, chưa được đăng hoặc đã bị gỡ." },

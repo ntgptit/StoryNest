@@ -1306,6 +1306,10 @@ export type Database = {
       publish_due_chapters: { Args: { p_limit?: number }; Returns: number }
       purge_outbox: { Args: { p_retention?: string }; Returns: number }
       purge_read_events: { Args: { p_retention?: string }; Returns: number }
+      reconcile_vote_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       record_chapter_read: {
         Args: { p_anon_id?: string; p_chapter_id: string }
         Returns: boolean
@@ -1333,6 +1337,10 @@ export type Database = {
           p_scheduled_for: string
         }
         Returns: undefined
+      }
+      set_chapter_vote: {
+        Args: { p_chapter_id: string; p_voted: boolean }
+        Returns: number
       }
       story_role: { Args: { p_story_id: string }; Returns: string }
       unarchive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
