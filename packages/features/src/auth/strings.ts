@@ -1,5 +1,6 @@
 // All user-facing text of the auth screens, in one place so WBS WP 0.4 (i18n) can replace it in a single change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   appName: "StoryNest",
@@ -80,4 +81,4 @@ const vi = {
   },
 } as const;
 
-export const authText = defineText("auth", vi);
+export const authText = defineText("auth", vi, en);

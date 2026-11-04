@@ -1,5 +1,6 @@
 // Text of the studio (author workspace). Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   title: "Studio",
@@ -215,4 +216,4 @@ const vi = {
   },
 } as const;
 
-export const studioText = defineText("studio", vi);
+export const studioText = defineText("studio", vi, en);

@@ -1,0 +1,34 @@
+// English text of the in-app notifications. Same keys as strings.ts (the completeness test compares them).
+export const en = {
+  title: "Notifications",
+  description: "New chapters, comment replies and collaboration invites.",
+  bell: {
+    label: "Notifications",
+    withUnread: (count: number) => `Notifications, ${count} unread`,
+  },
+  listLabel: "Notification list",
+  unread: "Unread",
+  markAll: "Mark all as read",
+  markedAll: "All notifications marked as read.",
+  loadMore: "Load more",
+  loadingMore: "Loading…",
+  empty: { title: "No notifications yet", description: "New chapters and invites will show up here." },
+  error: { title: "Couldn't load notifications", description: "Check your connection and try again.", retry: "Try again" },
+  someone: "Someone",
+  generic: "You have a new notification.",
+  text: {
+    chapterPublished: (storyTitle: string, chapterNumber: number, chapterTitle: string) =>
+      `"${storyTitle}" just published chapter ${chapterNumber}: ${chapterTitle}`,
+    commentReplied: (actor: string, excerpt: string) =>
+      excerpt === "" ? `${actor} replied to your comment` : `${actor} replied to your comment: "${excerpt}"`,
+    collaborationInvited: (actor: string, storyTitle: string) => `${actor} invited you to co-author "${storyTitle}"`,
+    collaborationAccepted: (actor: string, storyTitle: string) =>
+      `${actor} accepted your invitation to co-author "${storyTitle}"`,
+    collaborationDeclined: (actor: string, storyTitle: string) =>
+      `${actor} declined your invitation to co-author "${storyTitle}"`,
+  },
+  errors: {
+    network: "No connection. Check your network and try again.",
+    generic: "Couldn't complete that. Please try again.",
+  },
+};

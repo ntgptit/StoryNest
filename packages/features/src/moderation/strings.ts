@@ -1,5 +1,6 @@
 // Text of reporting and the moderation console. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   report: {
@@ -102,4 +103,4 @@ const vi = {
   },
 } as const;
 
-export const moderationText = defineText("moderation", vi);
+export const moderationText = defineText("moderation", vi, en);

@@ -1,5 +1,6 @@
 // Text of the version history and the preview. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   title: "Lịch sử phiên bản",
@@ -61,4 +62,4 @@ const vi = {
   links: { history: "Lịch sử phiên bản", preview: "Xem trước" },
 } as const;
 
-export const historyText = defineText("history", vi);
+export const historyText = defineText("history", vi, en);

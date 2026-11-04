@@ -1,5 +1,6 @@
 // Text of the author statistics. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 import { defineText } from "../_shared/i18n.ts";
+import { en } from "./strings.en.ts";
 
 const vi = {
   title: "Thống kê truyện",
@@ -47,4 +48,4 @@ const vi = {
   },
 } as const;
 
-export const analyticsText = defineText("analytics", vi);
+export const analyticsText = defineText("analytics", vi, en);
