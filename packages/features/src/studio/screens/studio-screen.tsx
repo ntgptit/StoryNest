@@ -1,7 +1,7 @@
 "use client";
 
-import { BookMarked, Eye, Globe, Link2, Lock } from "lucide-react";
-import type { ComponentType } from "react";
+import { BookMarked, Eye, Globe, Link2, Lock, PenLine, Plus } from "lucide-react";
+import { useState, type ComponentType } from "react";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
 import { Skeleton } from "@storynest/ui/components/skeleton";
@@ -12,8 +12,11 @@ import { StoryCover } from "@storynest/ui/widgets/story-cover";
 import { formatRelativeTime } from "@storynest/utils";
 import type { Visibility } from "@storynest/validation";
 import { AppLink } from "../../_shared/platform.tsx";
+import { useAppToast } from "../../_shared/toast.tsx";
 import { discoveryText, statusLabel, storyHref } from "../../discovery/index.ts";
 import { useMyStories } from "../hooks/use-my-stories.ts";
+import { useDeletedStories, useSetStoryDeleted } from "../hooks/use-story-editing.ts";
+import { storyErrorMessage } from "../model/story-form.ts";
 import type { StudioStory } from "../model/studio-story.ts";
 import { studioText } from "../strings.ts";
 
@@ -52,7 +55,15 @@ function StudioStoryRow({
           {studioText.chapterCount(story.chapterCount)} ·{" "}
           {studioText.updated(formatRelativeTime(story.updatedAt, locale))}
         </p>
-        <div className="flex gap-2 pt-1">
+        <div className="flex flex-wrap gap-2 pt-1">
+          {story.role !== "editor" ? (
+            <Button asChild size="sm">
+              <AppLink href={`/studio/story/${story.id}`}>
+                <PenLine aria-hidden className="size-4" />
+                {studioText.edit}
+              </AppLink>
+            </Button>
+          ) : null}
           <Button asChild variant="outline" size="sm">
             <AppLink href={storyHref(story)}>
               <Eye aria-hidden className="size-4" />
@@ -77,7 +88,18 @@ export function StudioScreen({
 
   return (
     <section aria-label={studioText.title} className="flex flex-col gap-6">
-      <PageHeader title={studioText.title} description={studioText.description} />
+      <PageHeader
+        title={studioText.title}
+        description={studioText.description}
+        actions={
+          <Button asChild size="sm">
+            <AppLink href="/studio/new">
+              <Plus aria-hidden className="size-4" />
+              {studioText.create}
+            </AppLink>
+          </Button>
+        }
+      />
       {stories.isError ? (
         <ErrorState
           title={studioText.error.title}
@@ -100,6 +122,63 @@ export function StudioScreen({
           ))}
         </ul>
       )}
+      <DeletedStories locale={locale} />
     </section>
+  );
+}
+
+/** Soft-deleted stories of the signed-in owner, hidden behind a toggle, each with a restore button. */
+function DeletedStories({ locale }: { locale: string }) {
+  const deleted = useDeletedStories();
+  const setDeleted = useSetStoryDeleted();
+  const toast = useAppToast();
+  const [open, setOpen] = useState(false);
+  const items = deleted.data ?? [];
+  if (items.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-3 border-t pt-4">
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="w-fit"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        {open ? studioText.deleted.toggleHide : studioText.deleted.toggleShow(items.length)}
+      </Button>
+      {open ? (
+        <ul aria-label={studioText.deleted.title} className="flex flex-col gap-2">
+          {items.map((story) => (
+            <li key={story.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{story.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  {studioText.deleted.deletedAt(formatRelativeTime(story.deletedAt, locale))}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={setDeleted.isPending}
+                onClick={() =>
+                  setDeleted.mutate(
+                    { storyId: story.id, deleted: false },
+                    {
+                      onSuccess: () => toast.success(studioText.deleted.restored),
+                      onError: (error) => toast.error(storyErrorMessage(error)),
+                    },
+                  )
+                }
+              >
+                {studioText.deleted.restore}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }
