@@ -89,6 +89,7 @@ export const studioText = {
     savedWithoutTags: (reason: string) => `Đã lưu truyện, nhưng chưa lưu được thẻ. ${reason}`,
   },
   teamLink: "Cộng tác viên",
+  statsLink: "Thống kê",
   invitations: {
     title: "Lời mời cộng tác",
     listLabel: "Lời mời cộng tác đang chờ",
