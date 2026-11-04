@@ -3,7 +3,9 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
+import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
+import { testSession, withAuth } from "../_shared/test-auth.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { getStory, listStoryChapters } from "./api/story.api.ts";
 import {
@@ -14,6 +16,7 @@ import {
   type ChapterRow,
   type StoryDetailRow,
 } from "./model/story-detail.ts";
+import { progressText } from "../progress/index.ts";
 import { StoryScreen } from "./index.ts";
 import { storyText } from "./strings.ts";
 
@@ -73,7 +76,7 @@ function clientFor(story: () => { data: unknown; error: unknown }, chapters: () 
   const stories = table(story);
   const chapterTable = table(chapters);
   const from = vi.fn((name: string) => (name === "stories" ? stories.builder : chapterTable.builder));
-  return { client: { from } as unknown as DataClient, stories: stories.calls, chapters: chapterTable.calls, from };
+  return { client: withAuth({ from }, null), stories: stories.calls, chapters: chapterTable.calls, from };
 }
 
 const args = (calls: Call[], method: string) => calls.filter(([m]) => m === method).map(([, a]) => a);
@@ -179,9 +182,11 @@ function renderScreen(client: DataClient) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <DataProvider client={client}>
-        <PlatformProvider adapter={adapter}>
-          <StoryScreen storyId={STORY_ID} />
-        </PlatformProvider>
+        <AuthProvider>
+          <PlatformProvider adapter={adapter}>
+            <StoryScreen storyId={STORY_ID} />
+          </PlatformProvider>
+        </AuthProvider>
       </DataProvider>
     </QueryClientProvider>,
   );
@@ -246,6 +251,48 @@ describe("StoryScreen", () => {
     renderScreen(chaptersFail.client);
     expect(await screen.findByRole("heading", { level: 1, name: "Rừng sương mù" })).toBeTruthy();
     await waitFor(() => expect(screen.getByText(storyText.chaptersError.title)).toBeTruthy());
+  });
+});
+
+describe("StoryScreen continue reading", () => {
+  /** Signed-in client: stories/chapters as usual, plus the two private progress tables. */
+  function signedIn(storyProgress: unknown, chapterProgress: unknown) {
+    const { client: base } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: [chapterRow(1), chapterRow(2), chapterRow(3)], error: null }),
+    );
+    const one = (data: unknown) => {
+      const b: Record<string, unknown> = {};
+      b.select = () => b;
+      b.eq = () => b;
+      b.maybeSingle = async () => ({ data, error: null });
+      return b;
+    };
+    const from = (table: string) =>
+      table === "user_story_progress"
+        ? one(storyProgress)
+        : table === "user_chapter_progress"
+          ? one(chapterProgress)
+          : (base as unknown as { from: (t: string) => unknown }).from(table);
+    return withAuth({ from }, testSession());
+  }
+
+  it("offers to continue in the chapter the reader was in", async () => {
+    renderScreen(signedIn({ current_chapter_id: chapterRow(2).id }, { completed_at: null }));
+    const link = await screen.findByRole("link", { name: progressText.continueReading(2) });
+    expect(link.getAttribute("href")).toBe(`/story/${STORY_ID}/rung-suong-mu/chuong-2`);
+    expect(screen.queryByRole("link", { name: storyText.startReading })).toBeNull();
+  });
+
+  it("offers the next chapter when the current one was finished", async () => {
+    renderScreen(signedIn({ current_chapter_id: chapterRow(2).id }, { completed_at: "2026-11-04T00:00:00Z" }));
+    const link = await screen.findByRole("link", { name: progressText.continueReading(3) });
+    expect(link.getAttribute("href")).toBe(`/story/${STORY_ID}/rung-suong-mu/chuong-3`);
+  });
+
+  it("keeps 'start reading' for a reader who has never opened the story", async () => {
+    renderScreen(signedIn(null, null));
+    expect(await screen.findByRole("link", { name: storyText.startReading })).toBeTruthy();
   });
 });
 

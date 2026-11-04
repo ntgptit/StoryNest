@@ -9,6 +9,7 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { storyHref, useStory, useStoryChapters } from "../../story/index.ts";
 import { BlockView } from "../components/block-view.tsx";
 import { ChapterNav } from "../components/chapter-nav.tsx";
+import { ReadingTracker } from "../components/reading-tracker.tsx";
 import { TocSheet } from "../components/toc-sheet.tsx";
 import { useChapter } from "../hooks/use-chapter.ts";
 import { readerText } from "../strings.ts";
@@ -54,6 +55,7 @@ export function ReaderScreen({
 
   return (
     <div className="flex flex-col">
+      <ReadingTracker key={data.id} chapterId={data.id} blockIds={data.blocks.map((b) => b.id)} />
       <div className="sticky top-0 z-10 -mx-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto flex h-12 max-w-3xl items-center justify-between gap-2 px-4">
           {storyData ? (
