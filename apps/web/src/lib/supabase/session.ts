@@ -7,6 +7,7 @@ import { getSupabaseEnv } from "@/lib/env";
 /**
  * Refreshes the Supabase session cookies for the incoming request (called from src/proxy.ts).
  * Uses getClaims(), which validates the JWT signature, instead of trusting the cookie contents.
+ * Returns the response carrying the refreshed cookies and whether the visitor holds a valid, non-anonymous session.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -25,6 +26,7 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getClaims();
-  return response;
+  const { data } = await supabase.auth.getClaims();
+  const isAuthenticated = Boolean(data?.claims) && data?.claims.is_anonymous !== true;
+  return { response, isAuthenticated };
 }

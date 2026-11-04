@@ -2,3 +2,4 @@
 // Each feature's own index.ts is its only public surface; do not import its internals from other features.
 export * from "./_shared/index.ts";
 export * from "./auth/index.ts";
+export * from "./shell/index.ts";
