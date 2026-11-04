@@ -3,7 +3,9 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
+import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
+import { withAuth } from "../_shared/test-auth.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import type { ChapterListItem } from "../story/index.ts";
 import { getChapterContent } from "./api/reader.api.ts";
@@ -250,16 +252,18 @@ function screenClient(chapter: () => { data: unknown; error: unknown }) {
       ? (originalThen as typeof resolve)(resolve)
       : resolve({ data: listRows, error: null });
   const from = (name: string) => (name === "stories" ? stories.builder : chapters.builder);
-  return { from } as unknown as DataClient;
+  return withAuth({ from }, null);
 }
 
 function renderReader(client: DataClient, imageUrlFor?: (key: string) => string) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <DataProvider client={client}>
-        <PlatformProvider adapter={adapter}>
-          <ReaderScreen storyId={STORY_ID} chapterSlug="chuong-2" imageUrlFor={imageUrlFor} />
-        </PlatformProvider>
+        <AuthProvider>
+          <PlatformProvider adapter={adapter}>
+            <ReaderScreen storyId={STORY_ID} chapterSlug="chuong-2" imageUrlFor={imageUrlFor} />
+          </PlatformProvider>
+        </AuthProvider>
       </DataProvider>
     </QueryClientProvider>,
   );

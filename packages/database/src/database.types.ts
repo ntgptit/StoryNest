@@ -1133,6 +1133,14 @@ export type Database = {
       }
       publish_due_chapters: { Args: { p_limit?: number }; Returns: number }
       purge_outbox: { Args: { p_retention?: string }; Returns: number }
+      save_reading_progress: {
+        Args: {
+          p_chapter_id: string
+          p_last_block_id?: string
+          p_percent: number
+        }
+        Returns: undefined
+      }
       schedule_chapter: {
         Args: {
           p_chapter_id: string

@@ -11,6 +11,7 @@ import { StoryCover } from "@storynest/ui/widgets/story-cover";
 import { cn } from "@storynest/ui/lib/utils";
 import { formatCount } from "@storynest/utils";
 import { AppLink } from "../../_shared/platform.tsx";
+import { progressText, resolveContinueChapter, useStoryProgress } from "../../progress/index.ts";
 import { discoveryText, statusLabel } from "../../discovery/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { chapterHref } from "../model/story-detail.ts";
@@ -29,6 +30,7 @@ export function StoryScreen({
 }) {
   const story = useStory(storyId);
   const chapters = useStoryChapters(storyId);
+  const progress = useStoryProgress(storyId);
 
   if (story.isPending) return <StorySkeleton />;
   if (story.isError) {
@@ -50,6 +52,8 @@ export function StoryScreen({
   const data = story.data;
   const chapterItems = chapters.data ?? [];
   const firstChapter = chapterItems[0];
+  const continueChapter = resolveContinueChapter(chapterItems, progress.data);
+  const readFrom = continueChapter ?? firstChapter;
   const coverUrl = data.coverStorageKey && coverUrlFor ? coverUrlFor(data.coverStorageKey) : null;
 
   return (
@@ -81,9 +85,9 @@ export function StoryScreen({
             <StatPill icon={Users} value={data.stats.followers} label={storyText.stats.followers} locale={locale} />
           </div>
 
-          {firstChapter ? (
-            <AppLink href={chapterHref(data, firstChapter)} className={cn(buttonVariants({ size: "lg" }), "w-fit")}>
-              {storyText.startReading}
+          {readFrom ? (
+            <AppLink href={chapterHref(data, readFrom)} className={cn(buttonVariants({ size: "lg" }), "w-fit")}>
+              {continueChapter ? progressText.continueReading(continueChapter.number) : storyText.startReading}
             </AppLink>
           ) : null}
         </div>
