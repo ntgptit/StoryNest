@@ -21,5 +21,7 @@ fi
   || { echo "FAIL: the refused seed left data behind" >&2; exit 1; }
 # Real concurrency (two sessions at once) needs committed data, so it runs last: it commits fixtures that the checks above must not see.
 check_chapter_concurrency
+check_tag_quota_concurrency
+echo "concurrency checks passed"
 echo "tables: $(run "$PG_BIN/psql -h $WORK -p $PORT -d $LOCAL_DB_NAME -Atc \"select count(*) from information_schema.tables where table_schema='public'\"")"
 echo "OK"
