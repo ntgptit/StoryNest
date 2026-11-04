@@ -53,11 +53,28 @@ type Result = { data: unknown; error: unknown };
 type Call = [string, unknown[]];
 
 /** Records every builder call per table and answers through `respond(table, calls)`. */
-function fakeClient(respond: (table: string, calls: Call[]) => Result) {
+function fakeClient(
+  respond: (table: string, calls: Call[]) => Result,
+  options: {
+    tags?: { slug: string; display_name: string }[];
+    rpc?: (name: string, args: Record<string, unknown>) => Result;
+  } = {},
+) {
   const all: { table: string; calls: Call[] }[] = [];
+  const rpcCalls: { name: string; args: Record<string, unknown> }[] = [];
+  const rpc = vi.fn((name: string, args: Record<string, unknown>) => {
+    rpcCalls.push({ name, args });
+    const result = Promise.resolve(options.rpc?.(name, args) ?? { data: [], error: null });
+    return Object.assign(result, { returns: () => result });
+  });
   const from = vi.fn((table: string) => {
     const entry = { table, calls: [] as Call[] };
     all.push(entry);
+    // The story's tags are a separate query; unless a test gives some, the story has none.
+    const answer = (calls: Call[]): Result =>
+      table === "story_tags"
+        ? { data: (options.tags ?? []).map((tag) => ({ tag })), error: null }
+        : respond(table, calls);
     const builder: Record<string, unknown> = {};
     for (const method of ["select", "insert", "update", "eq", "is", "not", "order", "returns"]) {
       builder[method] = (...args: unknown[]) => {
@@ -67,14 +84,14 @@ function fakeClient(respond: (table: string, calls: Call[]) => Result) {
     }
     builder.maybeSingle = () => {
       entry.calls.push(["maybeSingle", []]);
-      return Promise.resolve(respond(table, entry.calls));
+      return Promise.resolve(answer(entry.calls));
     };
-    builder.then = (resolve: (value: unknown) => unknown) => resolve(respond(table, entry.calls));
+    builder.then = (resolve: (value: unknown) => unknown) => resolve(answer(entry.calls));
     return builder;
   });
   const callsOf = (table: string, method: string) =>
     all.filter((e) => e.table === table).flatMap((e) => e.calls.filter(([m]) => m === method).map(([, a]) => a));
-  return { from, callsOf };
+  return { from, rpc, rpcCalls, callsOf };
 }
 
 describe("story form model", () => {

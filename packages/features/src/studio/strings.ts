@@ -68,6 +68,26 @@ export const studioText = {
       stale: "Danh sách chương đã thay đổi ở nơi khác. Đã tải lại, hãy thử lại.",
     },
   },
+  tags: {
+    label: "Thẻ",
+    hint: (max: number) => `Tối đa ${max} thẻ. Nhấn Enter hoặc dấu phẩy để thêm; có dấu hay không dấu đều được.`,
+    placeholder: "Ví dụ: Tình yêu, Phiêu lưu",
+    count: (n: number, max: number) => `${n}/${max} thẻ`,
+    listLabel: "Thẻ của truyện",
+    remove: (name: string) => `Bỏ thẻ ${name}`,
+    suggestionsLabel: "Gợi ý thẻ phổ biến",
+    problems: {
+      invalid: (max: number) => `Mỗi thẻ cần ít nhất 2 chữ cái hoặc chữ số và tối đa ${max} ký tự.`,
+      tooMany: (max: number) => `Mỗi truyện chỉ có tối đa ${max} thẻ.`,
+    },
+    errors: {
+      quota: "Bạn đã tạo đủ 10 thẻ mới trong 24 giờ qua. Hãy dùng thẻ có sẵn hoặc thử lại sau.",
+      invalid: "Có thẻ không hợp lệ. Mỗi thẻ cần ít nhất 2 chữ cái hoặc chữ số và tối đa 40 ký tự.",
+      forbidden: "Bạn không có quyền đổi thẻ của truyện này.",
+      generic: "Không lưu được thẻ. Hãy thử lại.",
+    },
+    savedWithoutTags: (reason: string) => `Đã lưu truyện, nhưng chưa lưu được thẻ. ${reason}`,
+  },
   teamLink: "Cộng tác viên",
   invitations: {
     title: "Lời mời cộng tác",
