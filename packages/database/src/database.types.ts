@@ -407,6 +407,35 @@ export type Database = {
           },
         ]
       }
+      comment_hides: {
+        Row: {
+          comment_id: string
+          created_at: string
+          hidden_by: string | null
+          source: string
+        }
+        ComputedFields: never
+        Insert: {
+          comment_id: string
+          created_at?: string
+          hidden_by?: string | null
+          source: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          hidden_by?: string | null
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_hides_comment_id_fkey"
+            columns: ["comment_id"]
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comment_likes: {
         Row: {
           comment_id: string
@@ -1313,6 +1342,10 @@ export type Database = {
         }[]
       }
       can_edit_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
+      can_moderate_comments: {
+        Args: { p_chapter_id: string }
+        Returns: boolean
+      }
       can_read_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_story: { Args: { p_story_id: string }; Returns: boolean }
       cancel_invitation: {
@@ -1593,6 +1626,10 @@ export type Database = {
       set_chapter_vote: {
         Args: { p_chapter_id: string; p_voted: boolean }
         Returns: number
+      }
+      set_comment_hidden: {
+        Args: { p_comment_id: string; p_hidden: boolean }
+        Returns: string
       }
       set_comment_like: {
         Args: { p_comment_id: string; p_liked: boolean }

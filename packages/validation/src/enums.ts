@@ -11,6 +11,7 @@ export const BLOCK_TYPES = ["paragraph", "heading", "image", "divider"] as const
 export const COLLABORATOR_ROLES = ["co_author", "editor"] as const;
 export const INVITATION_STATUSES = ["pending", "accepted", "declined", "cancelled"] as const;
 export const COMMENT_STATUSES = ["visible", "hidden", "deleted"] as const;
+export const HIDE_SOURCES = ["author", "moderator"] as const;
 export const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"] as const;
 
 export const accountStatusSchema = z.enum(ACCOUNT_STATUSES);
@@ -21,6 +22,7 @@ export const blockTypeSchema = z.enum(BLOCK_TYPES);
 export const collaboratorRoleSchema = z.enum(COLLABORATOR_ROLES);
 export const invitationStatusSchema = z.enum(INVITATION_STATUSES);
 export const commentStatusSchema = z.enum(COMMENT_STATUSES);
+export const hideSourceSchema = z.enum(HIDE_SOURCES);
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
 
 // Named constants for the values code compares or filters on, so no query or condition spells a literal like
@@ -61,6 +63,10 @@ export const COMMENT_STATUS = { VISIBLE: "visible", HIDDEN: "hidden", DELETED: "
   CommentStatus
 >;
 
+/** Who hid a comment: the story's author (can show it again) or a moderator (cannot be undone by the author). */
+export const HIDE_SOURCE = { AUTHOR: "author", MODERATOR: "moderator" } as const satisfies Record<string, HideSource>;
+
+export type HideSource = z.infer<typeof hideSourceSchema>;
 export type CommentStatus = z.infer<typeof commentStatusSchema>;
 export type InvitationStatus = z.infer<typeof invitationStatusSchema>;
 export type CollaboratorRole = z.infer<typeof collaboratorRoleSchema>;

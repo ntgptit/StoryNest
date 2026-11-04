@@ -12,12 +12,14 @@ import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
 import {
+  canModerateComments,
   deleteComment,
   editComment,
   getBlockCommentCounts,
   listComments,
   listReplies,
   postComment,
+  setCommentHidden,
   setCommentLike,
 } from "../api/comments.api.ts";
 import { commentKeys } from "../keys.ts";
@@ -171,5 +173,33 @@ export function useToggleCommentLike(chapterId: string) {
     },
     onSuccess: (likes, { commentId, liked }) =>
       mapComment(queryClient, chapterId, commentId, (comment) => ({ ...comment, likedByMe: liked, likes })),
+  });
+}
+
+/** Whether the viewer owns or co-authors this story, i.e. may hide comments. Guests never can: no request is made. */
+export function useCanModerateComments(chapterId: string) {
+  const getClient = useDataClientGetter();
+  const { userId } = useViewer();
+  return useQuery<boolean, AppError>({
+    queryKey: commentKeys.canModerate(chapterId, userId),
+    queryFn: () => canModerateComments(getClient(), chapterId).catch((e: unknown) => Promise.reject(toAppError(e))),
+    enabled: userId !== null,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/** Hides a comment on the viewer's story, or shows it again. The lists reload afterwards. */
+export function useSetCommentHidden(chapterId: string) {
+  const getClient = useDataClientGetter();
+  const refresh = useRefreshChapter(chapterId);
+  return useMutation<string, AppError, { commentId: string; hidden: boolean }>({
+    mutationFn: async ({ commentId, hidden }) => {
+      try {
+        return await setCommentHidden(getClient(), commentId, hidden);
+      } catch (error) {
+        throw toAppError(error);
+      }
+    },
+    onSettled: refresh,
   });
 }

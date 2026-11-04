@@ -8,4 +8,6 @@ export const commentKeys = {
   replies: (chapterId: string, parentId: string, userId: string | null) =>
     ["comments", chapterId, "replies", parentId, userId ?? "guest"] as const,
   counts: (chapterId: string) => ["comments", chapterId, "counts"] as const,
+  canModerate: (chapterId: string, userId: string | null) =>
+    ["comments", chapterId, "can-moderate", userId ?? "guest"] as const,
 };

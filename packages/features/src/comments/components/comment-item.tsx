@@ -3,7 +3,7 @@
 import { Heart, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { formatCount, formatRelativeTime } from "@storynest/utils";
-import { COMMENT_STATUS } from "@storynest/validation";
+import { COMMENT_STATUS, HIDE_SOURCE } from "@storynest/validation";
 import { Button } from "@storynest/ui/components/button";
 import {
   DropdownMenu,
@@ -16,10 +16,12 @@ import { useAuth } from "../../_shared/auth.tsx";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import {
+  useCanModerateComments,
   useDeleteComment,
   useEditComment,
   usePostComment,
   useReplyList,
+  useSetCommentHidden,
   useToggleCommentLike,
 } from "../hooks/use-comments.ts";
 import { commentErrorMessage, isPlaceholder, type Comment } from "../model/comment.ts";
@@ -48,6 +50,8 @@ export function CommentItem({
   const edit = useEditComment(chapterId);
   const remove = useDeleteComment(chapterId);
   const post = usePostComment(chapterId);
+  const canModerate = useCanModerateComments(chapterId).data === true;
+  const setHidden = useSetCommentHidden(chapterId);
   const [replying, setReplying] = useState(false);
   const [editing, setEditing] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
@@ -56,6 +60,9 @@ export function CommentItem({
   const placeholder = isPlaceholder(comment);
   const own = userId !== null && comment.authorId === userId;
   const canChange = own && comment.status === COMMENT_STATUS.VISIBLE;
+  const canHide = canModerate && comment.status === COMMENT_STATUS.VISIBLE;
+  const canShow = canModerate && comment.hiddenBy === HIDE_SOURCE.AUTHOR;
+  const hasMenu = canChange || canHide || canShow;
   const loginHref = `/login?next=${encodeURIComponent(navigation.pathname)}`;
 
   const toggleLike = () => {
@@ -67,6 +74,21 @@ export function CommentItem({
       { commentId: comment.id, liked: !comment.likedByMe },
       { onError: (error) => toast.error(commentErrorMessage(error)) },
     );
+  };
+
+  const changeHidden = (hidden: boolean) =>
+    setHidden.mutate(
+      { commentId: comment.id, hidden },
+      {
+        onSuccess: () => toast.success(hidden ? t.hidden : t.shown),
+        onError: (error) => toast.error(commentErrorMessage(error)),
+      },
+    );
+
+  const hiddenNotice = (): string => {
+    if (comment.hiddenBy === HIDE_SOURCE.AUTHOR)
+      return canModerate ? t.hiddenByAuthorForAuthor : t.hiddenByAuthorNotice;
+    return canModerate && !own ? t.hiddenByModeratorForAuthor : t.hiddenNotice;
   };
 
   const fail = (error: unknown): never => {
@@ -83,7 +105,7 @@ export function CommentItem({
             <span className="font-medium">{comment.authorName ?? t.anonymous}</span>
             <span className="text-xs text-muted-foreground">{formatRelativeTime(comment.createdAt, locale)}</span>
             {comment.edited ? <span className="text-xs text-muted-foreground">({t.edited})</span> : null}
-            {canChange ? (
+            {hasMenu ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button type="button" size="icon" variant="ghost" className="ml-auto size-7" aria-label={t.menu}>
@@ -91,10 +113,16 @@ export function CommentItem({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={() => setEditing(true)}>{t.edit}</DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive" onSelect={() => setConfirmingDelete(true)}>
-                    {t.delete}
-                  </DropdownMenuItem>
+                  {canChange ? (
+                    <>
+                      <DropdownMenuItem onSelect={() => setEditing(true)}>{t.edit}</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onSelect={() => setConfirmingDelete(true)}>
+                        {t.delete}
+                      </DropdownMenuItem>
+                    </>
+                  ) : null}
+                  {canHide ? <DropdownMenuItem onSelect={() => changeHidden(true)}>{t.hide}</DropdownMenuItem> : null}
+                  {canShow ? <DropdownMenuItem onSelect={() => changeHidden(false)}>{t.show}</DropdownMenuItem> : null}
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : null}
@@ -102,7 +130,7 @@ export function CommentItem({
 
           {comment.status === COMMENT_STATUS.HIDDEN ? (
             <p role="note" className="rounded-md border bg-muted p-2 text-xs text-muted-foreground">
-              {t.hiddenNotice}
+              {hiddenNotice()}
             </p>
           ) : null}
 
