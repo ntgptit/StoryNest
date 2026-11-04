@@ -366,6 +366,7 @@ describe("SearchScreen", () => {
     const list = within(await screen.findByRole("list", { name: t.tabs.authors }));
     expect(list.getByText("An Nhiên")).toBeTruthy();
     expect(list.getByText(`@demo_an · ${t.storiesCount(3)}`)).toBeTruthy();
+    expect(list.getByRole("link", { name: /An Nhiên/ }).getAttribute("href")).toBe("/author/demo_an");
     cleanup();
 
     const tags = fakeClient({

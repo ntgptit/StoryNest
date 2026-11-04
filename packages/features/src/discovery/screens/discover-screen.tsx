@@ -6,6 +6,7 @@ import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
+import { useAuth } from "../../_shared/auth.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useCategories, useLatestStories } from "../hooks/use-latest-stories.ts";
 import { rootCategories } from "../model/categories.ts";
@@ -31,6 +32,7 @@ export function DiscoverScreen({
   /** Resolves a cover storage key to a public URL (the app knows the Supabase project URL). */
   coverUrlFor?: ((key: string) => string) | undefined;
 }) {
+  const auth = useAuth();
   const categories = useCategories();
   const feed = useLatestStories({ categorySlug, tagSlug, pageSize }, categories.data);
 
@@ -48,9 +50,16 @@ export function DiscoverScreen({
         <h2 id="discover-title" className="text-xl font-semibold tracking-tight">
           {discoveryText.title}
         </h2>
-        <AppLink href="/ranking" className="text-sm font-medium text-primary underline-offset-4 hover:underline">
-          {discoveryText.seeRanking}
-        </AppLink>
+        <nav aria-label={discoveryText.shortcutsLabel} className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium">
+          {auth.status === "authenticated" ? (
+            <AppLink href="/following" className="text-primary underline-offset-4 hover:underline">
+              {discoveryText.seeFollowing}
+            </AppLink>
+          ) : null}
+          <AppLink href="/ranking" className="text-primary underline-offset-4 hover:underline">
+            {discoveryText.seeRanking}
+          </AppLink>
+        </nav>
       </div>
 
       {categories.data ? (

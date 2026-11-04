@@ -20,6 +20,8 @@ export const appText = {
     list: "Danh sách đọc",
     search: "Tìm kiếm",
     ranking: "Xếp hạng",
+    author: "Tác giả",
+    following: "Từ tác giả bạn theo dõi",
     notifications: "Thông báo",
     newStory: "Truyện mới",
     editStory: "Chỉnh sửa truyện",

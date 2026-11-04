@@ -12,7 +12,7 @@ export {
   type StoryListRow,
   type StorySummary,
 } from "./model/story-card.ts";
-export { useCategories } from "./hooks/use-latest-stories.ts";
+export { useCategories, useLatestStories } from "./hooks/use-latest-stories.ts";
 export { type Category } from "./model/categories.ts";
 export { discoveryKeys } from "./keys.ts";
 export { homeHref } from "./model/home-href.ts";

@@ -1,7 +1,7 @@
 import { safeRedirectPath } from "@storynest/utils";
 
 /** Paths (and everything below them) that need a signed-in user. One list, used by the proxy and by tests. */
-export const PROTECTED_PREFIXES = ["/me", "/studio", "/library", "/settings", "/notifications"] as const;
+export const PROTECTED_PREFIXES = ["/me", "/studio", "/library", "/settings", "/notifications", "/following"] as const;
 
 /** Credential pages a signed-in user has no reason to see (the reset page is excluded: recovery counts as signed in). */
 export const GUEST_ONLY_PATHS = ["/login", "/register"] as const;
