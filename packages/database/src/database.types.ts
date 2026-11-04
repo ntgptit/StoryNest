@@ -1295,6 +1295,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      counter_drift: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          actual: number
+          counter: string
+          scope: string
+          scope_id: string
+          stored: number
+        }[]
+      }
       create_chapter: {
         Args: {
           p_id?: string
@@ -1393,6 +1403,11 @@ export type Database = {
       publish_due_chapters: { Args: { p_limit?: number }; Returns: number }
       purge_outbox: { Args: { p_retention?: string }; Returns: number }
       purge_read_events: { Args: { p_retention?: string }; Returns: number }
+      reconcile_comment_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      reconcile_counters: { Args: Record<PropertyKey, never>; Returns: number }
       reconcile_library_counts: {
         Args: Record<PropertyKey, never>
         Returns: number
