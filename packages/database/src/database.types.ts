@@ -1121,6 +1121,32 @@ export type Database = {
           },
         ]
       }
+      user_reader_preferences: {
+        Row: {
+          preferences: NonNullable<Json>
+          updated_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          preferences?: NonNullable<Json>
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          preferences?: NonNullable<Json>
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reader_preferences_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_story_progress: {
         Row: {
           current_chapter_id: string

@@ -5,3 +5,4 @@ export * from "./rpc.ts";
 export * from "./inputs.ts";
 export * from "./auth.ts";
 export * from "./profile.ts";
+export * from "./reader-preferences.ts";

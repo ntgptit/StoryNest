@@ -9,9 +9,12 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { storyHref, useStory, useStoryChapters } from "../../story/index.ts";
 import { BlockView } from "../components/block-view.tsx";
 import { ChapterNav } from "../components/chapter-nav.tsx";
+import { ReaderSettingsSheet } from "../components/reader-settings-sheet.tsx";
 import { ReadingTracker } from "../components/reading-tracker.tsx";
 import { TocSheet } from "../components/toc-sheet.tsx";
 import { useChapter } from "../hooks/use-chapter.ts";
+import { useApplyReaderPreferences } from "../hooks/use-reader-preferences.ts";
+import { useReaderPreferencesSync } from "../hooks/use-reader-preferences-sync.ts";
 import { readerText } from "../strings.ts";
 
 /**
@@ -31,6 +34,8 @@ export function ReaderScreen({
   const chapter = useChapter(storyId, chapterSlug);
   const story = useStory(storyId);
   const chapters = useStoryChapters(storyId);
+  useApplyReaderPreferences();
+  useReaderPreferencesSync();
 
   if (chapter.isPending) return <ReaderSkeleton />;
   if (chapter.isError) {
@@ -70,12 +75,15 @@ export function ReaderScreen({
           ) : (
             <span />
           )}
-          {storyData ? <TocSheet story={storyData} chapters={chapterItems} currentSlug={data.slug} /> : null}
+          <div className="flex items-center gap-1">
+            <ReaderSettingsSheet />
+            {storyData ? <TocSheet story={storyData} chapters={chapterItems} currentSlug={data.slug} /> : null}
+          </div>
         </div>
         <ReadingProgress label={readerText.progress} />
       </div>
 
-      <article className="mx-auto flex w-full max-w-[66ch] flex-col gap-6 py-8">
+      <article className="reader-text mx-auto flex w-full max-w-[var(--reader-measure)] flex-col gap-6 py-8">
         <header className="flex flex-col gap-1">
           <p className="text-sm text-muted-foreground">{readerText.chapterLabel(data.number)}</p>
           <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{data.title}</h1>
@@ -84,7 +92,7 @@ export function ReaderScreen({
         {data.blocks.length === 0 ? (
           <p className="text-muted-foreground">{readerText.emptyChapter}</p>
         ) : (
-          <div className="flex flex-col gap-5 text-lg leading-8">
+          <div className="flex flex-col gap-[1em]">
             {data.blocks.map((block) => (
               <BlockView key={block.id} block={block} imageUrlFor={imageUrlFor} />
             ))}

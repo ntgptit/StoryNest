@@ -80,6 +80,72 @@
   color-scheme: dark;
 }
 
+/*
+ * Reader preferences (WBS WP 2.7). While a chapter is open the app sets data-reader-* attributes on <html> (a tiny
+ * inline script does it before first paint, then the reader keeps them in sync). They only change variables, so
+ * leaving the reader and removing the attributes restores the site look. Text size and spacing are applied by the
+ * .reader-text class; the theme re-skins the whole page, header and navigation included.
+ */
+:root {
+  --reader-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --reader-font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --reader-font-family: var(--reader-font-sans);
+  --reader-font-size: 1.125rem;
+}
+:root[data-reader-size="s"] {
+  --reader-font-size: 1rem;
+}
+:root[data-reader-size="m"] {
+  --reader-font-size: 1.125rem;
+}
+:root[data-reader-size="l"] {
+  --reader-font-size: 1.3125rem;
+}
+:root[data-reader-size="xl"] {
+  --reader-font-size: 1.5rem;
+}
+:root[data-reader-leading="compact"] {
+  --reader-line-height: 1.5;
+}
+:root[data-reader-leading="normal"] {
+  --reader-line-height: 1.75;
+}
+:root[data-reader-leading="relaxed"] {
+  --reader-line-height: 2;
+}
+:root[data-reader-font="sans"] {
+  --reader-font-family: var(--reader-font-sans);
+}
+:root[data-reader-font="serif"] {
+  --reader-font-family: var(--reader-font-serif);
+}
+:root[data-reader-theme="light"] {
+  color-scheme: light;
+}
+:root[data-reader-theme="dark"] {
+  color-scheme: dark;
+}
+:root[data-reader-theme="sepia"] {
+  color-scheme: light;
+  --background: oklch(0.95 0.035 85);
+  --foreground: oklch(0.27 0.03 60);
+  --card: oklch(0.97 0.03 85);
+  --card-foreground: oklch(0.27 0.03 60);
+  --popover: oklch(0.97 0.03 85);
+  --popover-foreground: oklch(0.27 0.03 60);
+  --secondary: oklch(0.92 0.04 82);
+  --muted: oklch(0.92 0.04 82);
+  --muted-foreground: oklch(0.43 0.03 65);
+  --accent: oklch(0.9 0.05 80);
+  --border: oklch(0.84 0.04 80);
+  --input: oklch(0.84 0.04 80);
+}
+.reader-text {
+  font-family: var(--reader-font-family);
+  font-size: var(--reader-font-size);
+  line-height: var(--reader-line-height);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

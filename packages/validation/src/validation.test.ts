@@ -9,6 +9,17 @@ import {
   DB_LIMITS,
   REPORT_STATUSES,
   STORY_STATUSES,
+  DEFAULT_READER_PREFERENCES,
+  READER_FONT,
+  READER_FONTS,
+  READER_FONT_SIZE,
+  READER_FONT_SIZES,
+  READER_LINE_HEIGHT,
+  READER_LINE_HEIGHTS,
+  READER_THEME,
+  READER_THEMES,
+  hasReaderPreferences,
+  parseReaderPreferences,
   STORY_STATUS,
   VISIBILITY,
   CHAPTER_STATUS,
@@ -297,5 +308,43 @@ describe("profileFormSchema", () => {
   it("rejects fields a user must not set through this form", () => {
     expect(profileFormSchema.safeParse({ ...base, account_status: "active" }).success).toBe(false);
     expect(profileFormSchema.safeParse({ ...base, avatar_storage_key: "x" }).success).toBe(false);
+  });
+});
+
+describe("reader preferences", () => {
+  it("fills every missing or invalid field with its default and drops unknown keys", () => {
+    expect(parseReaderPreferences(undefined)).toEqual(DEFAULT_READER_PREFERENCES);
+    expect(parseReaderPreferences("nope")).toEqual(DEFAULT_READER_PREFERENCES);
+    expect(parseReaderPreferences([])).toEqual(DEFAULT_READER_PREFERENCES);
+    expect(parseReaderPreferences({ theme: "sepia" })).toEqual({ ...DEFAULT_READER_PREFERENCES, theme: "sepia" });
+    expect(parseReaderPreferences({ theme: "neon", fontSize: "xl", extra: 1 })).toEqual({
+      ...DEFAULT_READER_PREFERENCES,
+      fontSize: "xl",
+    });
+  });
+
+  it("round-trips every allowed value", () => {
+    for (const fontSize of READER_FONT_SIZES)
+      for (const lineHeight of READER_LINE_HEIGHTS)
+        for (const font of READER_FONTS)
+          for (const theme of READER_THEMES) {
+            const value = { fontSize, lineHeight, font, theme };
+            expect(parseReaderPreferences(value)).toEqual(value);
+          }
+  });
+
+  it("tells a saved row from an empty one", () => {
+    expect(hasReaderPreferences({})).toBe(false);
+    expect(hasReaderPreferences(null)).toBe(false);
+    expect(hasReaderPreferences([])).toBe(false);
+    expect(hasReaderPreferences({ theme: "neon" })).toBe(false);
+    expect(hasReaderPreferences({ theme: "dark" })).toBe(true);
+  });
+
+  it("has a named constant per allowed value", () => {
+    expect(sorted(Object.values(READER_FONT_SIZE))).toEqual(sorted(READER_FONT_SIZES));
+    expect(sorted(Object.values(READER_LINE_HEIGHT))).toEqual(sorted(READER_LINE_HEIGHTS));
+    expect(sorted(Object.values(READER_FONT))).toEqual(sorted(READER_FONTS));
+    expect(sorted(Object.values(READER_THEME))).toEqual(sorted(READER_THEMES));
   });
 });
