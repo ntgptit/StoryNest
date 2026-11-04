@@ -5,11 +5,14 @@ import { buildReaderBootstrapScript } from "@storynest/features";
 import { CHAPTER_PATH_PATTERN } from "@/lib/routes";
 
 import "./globals.css";
+import { getSiteUrl } from "@/lib/site";
 import { appText } from "@/lib/strings";
 
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
+  // Makes every relative canonical and Open Graph URL absolute.
+  metadataBase: getSiteUrl(),
   title: { default: appText.siteName, template: appText.titleTemplate },
   description: appText.siteDescription,
 };

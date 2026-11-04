@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
-import { isIndexable } from "@storynest/features";
+import { authorHref, isIndexable } from "@storynest/features";
 import { excerpt } from "@storynest/utils";
 
+import { getCoverUrlResolver } from "@/lib/covers";
+import { chapterJsonLd } from "@/lib/seo/json-ld";
+import { absoluteUrl } from "@/lib/site";
 import { appText } from "@/lib/strings";
 import { loadChapter } from "@/lib/story/load-chapter";
 
+import { JsonLd } from "../../../../../_components/json-ld";
 import { ReaderView } from "./reader-view";
 
 type Params = Promise<{ id: string; slug: string; chapterSlug: string }>;
@@ -42,8 +46,19 @@ export default async function ChapterPage({ params }: { params: Params }) {
   if (story === null || chapter === null) notFound();
   if (story && story.slug !== slug) permanentRedirect(`/story/${story.id}/${story.slug}/${chapterSlug}`);
 
+  const coverUrl = story?.coverStorageKey ? getCoverUrlResolver()?.(story.coverStorageKey) : undefined;
   return (
     <div className="py-0">
+      {story && chapter && isIndexable(story) ? (
+        <JsonLd
+          data={chapterJsonLd(story, chapter, {
+            storyUrl: absoluteUrl(`/story/${story.id}/${story.slug}`),
+            chapterUrl: absoluteUrl(`/story/${story.id}/${story.slug}/${chapter.slug}`),
+            authorUrl: absoluteUrl(authorHref(story.author.username)),
+            coverUrl,
+          })}
+        />
+      ) : null}
       <HydrationBoundary state={dehydrate(queryClient)}>
         <ReaderView storyId={id} chapterSlug={chapterSlug} />
       </HydrationBoundary>

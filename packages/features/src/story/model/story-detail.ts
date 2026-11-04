@@ -17,9 +17,12 @@ export function toStoryDetail(row: StoryDetailRow): StoryDetail {
   return { ...toStorySummary(row), visibility, createdAt: row.created_at };
 }
 
-/** Only public stories belong in search engines; unlisted ones are reachable by link but must not be indexed. */
-export function isIndexable(story: Pick<StoryDetail, "visibility">): boolean {
-  return story.visibility === VISIBILITY.PUBLIC;
+/**
+ * Only public stories belong in search engines; unlisted ones are reachable by link but must not be indexed. Adult
+ * (18+) stories are not offered to search engines either: they open by link, behind the age gate (WP 5.6).
+ */
+export function isIndexable(story: Pick<StoryDetail, "visibility" | "isMature">): boolean {
+  return story.visibility === VISIBILITY.PUBLIC && !story.isMature;
 }
 
 /** Row of the published-chapter query. `version` is the currently published snapshot (title, size). */
