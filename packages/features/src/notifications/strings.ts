@@ -1,7 +1,7 @@
 // Text of the in-app notifications. Single module so WBS WP 0.4 (i18n) can replace it in one change.
 export const notificationText = {
   title: "Thông báo",
-  description: "Chương mới của truyện bạn theo dõi và lời mời cộng tác.",
+  description: "Chương mới, trả lời bình luận và lời mời cộng tác.",
   bell: {
     label: "Thông báo",
     withUnread: (count: number) => `Thông báo, ${count} chưa đọc`,
@@ -19,6 +19,8 @@ export const notificationText = {
   text: {
     chapterPublished: (storyTitle: string, chapterNumber: number, chapterTitle: string) =>
       `"${storyTitle}" vừa đăng chương ${chapterNumber}: ${chapterTitle}`,
+    commentReplied: (actor: string, excerpt: string) =>
+      excerpt === "" ? `${actor} đã trả lời bình luận của bạn` : `${actor} đã trả lời bình luận của bạn: "${excerpt}"`,
     collaborationInvited: (actor: string, storyTitle: string) => `${actor} mời bạn cộng tác truyện "${storyTitle}"`,
     collaborationAccepted: (actor: string, storyTitle: string) =>
       `${actor} đã chấp nhận lời mời cộng tác truyện "${storyTitle}"`,

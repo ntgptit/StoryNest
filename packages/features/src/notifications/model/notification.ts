@@ -1,9 +1,11 @@
 import type { AppError } from "../../_shared/errors.ts";
+import { blockAnchor, COMMENTS_ANCHOR } from "../../reader/index.ts";
 import { notificationText } from "../strings.ts";
 
 /** The event types the server writes today (outbox worker and the collaboration functions). */
 export const NOTIFICATION_TYPE = {
   CHAPTER_PUBLISHED: "chapter_published",
+  COMMENT_REPLIED: "comment_replied",
   COLLABORATION_INVITED: "collaboration_invited",
   COLLABORATION_ACCEPTED: "collaboration_accepted",
   COLLABORATION_DECLINED: "collaboration_declined",
@@ -83,6 +85,18 @@ export function describeNotification(n: AppNotification): NotificationView {
           text(n.payload, "chapter_title") ?? "",
         ),
         href: n.storyId && storySlug && chapterSlug ? `/story/${n.storyId}/${storySlug}/${chapterSlug}` : null,
+      };
+    }
+    case NOTIFICATION_TYPE.COMMENT_REPLIED: {
+      const storySlug = text(n.payload, "story_slug");
+      const chapterSlug = text(n.payload, "chapter_slug");
+      const blockId = text(n.payload, "block_id");
+      // A paragraph's thread opens from the paragraph; a chapter's comments are at the end of the chapter.
+      const target = blockId ? blockAnchor(blockId) : COMMENTS_ANCHOR;
+      return {
+        text: t.commentReplied(actor, text(n.payload, "excerpt") ?? ""),
+        href:
+          n.storyId && storySlug && chapterSlug ? `/story/${n.storyId}/${storySlug}/${chapterSlug}#${target}` : null,
       };
     }
     case NOTIFICATION_TYPE.COLLABORATION_INVITED:

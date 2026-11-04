@@ -79,6 +79,32 @@ describe("notification model", () => {
     });
   });
 
+  it("says who replied and what, and links to the paragraph's thread or to the chapter's comments", () => {
+    const base = {
+      event_type: "comment_replied",
+      payload: {
+        story_title: "Rừng sương mù",
+        story_slug: "rung",
+        chapter_slug: "mo-dau",
+        excerpt: "Mình đồng ý",
+        block_id: null,
+      },
+    };
+    const chapterLevel = describeNotification(toNotification(row(1, base)));
+    expect(chapterLevel.text).toBe(t.text.commentReplied("Tác Giả", "Mình đồng ý"));
+    expect(chapterLevel.href).toBe(`/story/${STORY}/rung/mo-dau#comments`);
+    const block = "b0000000-0000-4000-8000-0000000000b1";
+    const inline = describeNotification(
+      toNotification(row(1, { ...base, payload: { ...base.payload, block_id: block } })),
+    );
+    expect(inline.href).toBe(`/story/${STORY}/rung/mo-dau#b-${block}`);
+    const blank = describeNotification(toNotification(row(1, { ...base, payload: { ...base.payload, excerpt: "" } })));
+    expect(blank.text).toContain("Tác Giả");
+    expect(blank.text).not.toContain('"'); // no empty pair of quotes after a colon
+    expect(blank.text).not.toContain(":");
+    expect(describeNotification(toNotification(row(1, { ...base, payload: { story_title: "X" } }))).href).toBeNull();
+  });
+
   it("keeps the text but drops the link when the data for it is missing, and shows a neutral line for an unknown type", () => {
     expect(describeNotification(toNotification(row(1, { payload: { story_title: "X" } }))).href).toBeNull();
     expect(describeNotification(toNotification(row(1, { story_id: null }))).href).toBeNull();

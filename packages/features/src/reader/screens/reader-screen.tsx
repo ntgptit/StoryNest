@@ -15,6 +15,7 @@ import { ReaderSettingsSheet } from "../components/reader-settings-sheet.tsx";
 import { ReadingTracker } from "../components/reading-tracker.tsx";
 import { TocSheet } from "../components/toc-sheet.tsx";
 import { useChapter } from "../hooks/use-chapter.ts";
+import { COMMENTS_ANCHOR } from "../model/chapter.ts";
 import { useApplyReaderPreferences } from "../hooks/use-reader-preferences.ts";
 import { useReaderPreferencesSync } from "../hooks/use-reader-preferences-sync.ts";
 import { readerText } from "../strings.ts";
@@ -103,7 +104,11 @@ export function ReaderScreen({
           — {readerText.endOfChapter} —
         </p>
         <VoteButton chapterId={data.id} />
-        <section aria-label={commentText.title} className="flex flex-col gap-4 border-t pt-6">
+        <section
+          id={COMMENTS_ANCHOR}
+          aria-label={commentText.title}
+          className="flex scroll-mt-20 flex-col gap-4 border-t pt-6"
+        >
           <h2 className="text-lg font-semibold">{commentText.title}</h2>
           <CommentThread chapterId={data.id} />
         </section>
