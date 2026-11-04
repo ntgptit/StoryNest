@@ -1,9 +1,17 @@
 "use client";
 
-import { DiscoverScreen } from "@storynest/features";
+import { DiscoverScreen, ForYouStories } from "@storynest/features";
 
 import { getCoverUrlResolver } from "@/lib/covers";
 
 export function DiscoverHome({ categorySlug, tagSlug }: { categorySlug?: string; tagSlug?: string }) {
-  return <DiscoverScreen categorySlug={categorySlug} tagSlug={tagSlug} coverUrlFor={getCoverUrlResolver()} />;
+  const coverUrlFor = getCoverUrlResolver();
+  // Personal suggestions sit above the feed, but only on the unfiltered home page: a filtered view is a search for something.
+  const filtered = categorySlug !== undefined || tagSlug !== undefined;
+  return (
+    <div className="flex flex-col gap-8">
+      {filtered ? null : <ForYouStories coverUrlFor={coverUrlFor} />}
+      <DiscoverScreen categorySlug={categorySlug} tagSlug={tagSlug} coverUrlFor={coverUrlFor} />
+    </div>
+  );
 }

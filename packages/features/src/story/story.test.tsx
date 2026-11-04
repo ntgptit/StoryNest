@@ -19,6 +19,7 @@ import {
 } from "./model/story-detail.ts";
 import { progressText } from "../progress/index.ts";
 import { StoryScreen } from "./index.ts";
+import { recommendationText } from "../recommendations/index.ts";
 import { storyText } from "./strings.ts";
 
 afterEach(cleanup);
@@ -194,6 +195,34 @@ function renderScreen(client: DataClient) {
     </QueryClientProvider>,
   );
 }
+
+describe("StoryScreen: suggestions", () => {
+  it("ends with 'you may also like', each story with the reason", async () => {
+    const stories = table(() => ({ data: storyRow(), error: null }));
+    const chapterTable = table(() => ({ data: [chapterRow(1)], error: null }));
+    // the suggested stories come from the same table through an `in` query: answer that one with a list
+    const listed = {
+      data: [{ ...storyRow(), id: "5eed0000-0000-4000-8000-000000000099", title: "Truyện gợi ý", slug: "goi-y" }],
+      error: null,
+    };
+    (stories.builder as Record<string, unknown>).in = () => ({ returns: () => Promise.resolve(listed) });
+    const from = vi.fn((name: string) => (name === "stories" ? stories.builder : chapterTable.builder));
+    const rpc = vi.fn(() => {
+      const promise = Promise.resolve({
+        data: [
+          { story_id: "5eed0000-0000-4000-8000-000000000099", reason: "shared_tags", detail: "Phiêu lưu", score: 3 },
+        ],
+        error: null,
+      });
+      return Object.assign(promise, { returns: () => promise });
+    });
+    renderScreen(withAuth({ from, rpc }, null));
+    expect(await screen.findByRole("heading", { name: recommendationText.similarTitle })).toBeTruthy();
+    expect(await screen.findByText("Truyện gợi ý")).toBeTruthy();
+    expect(screen.getByText(recommendationText.reasons.sharedTags("Phiêu lưu"))).toBeTruthy();
+    expect(rpc).toHaveBeenCalledWith("similar_stories", expect.objectContaining({ p_story_id: STORY_ID }));
+  });
+});
 
 describe("StoryScreen", () => {
   it("shows the facts, tags, the chapter list and a start button that opens the first chapter", async () => {

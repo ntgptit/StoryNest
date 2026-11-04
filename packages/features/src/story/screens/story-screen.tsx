@@ -13,6 +13,7 @@ import { formatCount } from "@storynest/utils";
 import { AppLink } from "../../_shared/platform.tsx";
 import { progressText, resolveContinueChapter, useStoryProgress } from "../../progress/index.ts";
 import { authorHref } from "../../author/index.ts";
+import { SimilarStories } from "../../recommendations/index.ts";
 import { discoveryText, homeHref, statusLabel } from "../../discovery/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
@@ -174,6 +175,8 @@ export function StoryScreen({
           </ol>
         )}
       </section>
+
+      <SimilarStories storyId={storyId} locale={locale} coverUrlFor={coverUrlFor} />
     </article>
   );
 }
