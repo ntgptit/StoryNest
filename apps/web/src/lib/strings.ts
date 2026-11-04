@@ -15,6 +15,7 @@ export const appText = {
     resetPassword: "Đặt mật khẩu mới",
     profile: "Hồ sơ",
     editProfile: "Chỉnh sửa hồ sơ",
+    studio: "Studio",
     storyFallback: "Truyện",
     chapterFallback: "Chương",
   },

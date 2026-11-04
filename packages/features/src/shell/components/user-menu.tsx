@@ -58,6 +58,9 @@ export function UserMenu() {
         <DropdownMenuLabel className="truncate">{name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
+          <AppLink href="/studio">{shellText.studio}</AppLink>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <AppLink href="/me">{shellText.profile}</AppLink>
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={signOut}>{shellText.signOut}</DropdownMenuItem>
