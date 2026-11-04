@@ -1,4 +1,5 @@
 import { AppLink } from "../../_shared/platform.tsx";
+import { AdultContentButton } from "../../adult-content/index.ts";
 import { NotificationBell } from "../../notifications/index.ts";
 import { SearchBox } from "../../search/index.ts";
 import { shellText } from "../strings.ts";
@@ -13,6 +14,7 @@ export function SiteHeader() {
       </AppLink>
       <div className="ml-auto flex w-full max-w-sm items-center justify-end gap-2 sm:max-w-md">
         <SearchBox />
+        <AdultContentButton />
         <NotificationBell />
         <UserMenu />
       </div>

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
@@ -17,6 +17,8 @@ import {
   type ChapterRow,
   type StoryDetailRow,
 } from "./model/story-detail.ts";
+import { adultContentText } from "../adult-content/index.ts";
+import { NO_ADULT_CONTENT, setStoredAdultContent } from "../adult-content/model/store.ts";
 import { progressText } from "../progress/index.ts";
 import { StoryScreen } from "./index.ts";
 import { recommendationText } from "../recommendations/index.ts";
@@ -195,6 +197,35 @@ function renderScreen(client: DataClient) {
     </QueryClientProvider>,
   );
 }
+
+describe("StoryScreen: adult stories", () => {
+  it("shows an adult story's page only after the reader confirms they are 18 or older", async () => {
+    setStoredAdultContent(NO_ADULT_CONTENT);
+    const { client } = clientFor(
+      () => ({ data: storyRow({ is_mature: true }), error: null }),
+      () => ({ data: [chapterRow(1)], error: null }),
+    );
+    renderScreen(client);
+    expect(await screen.findByText(adultContentText.gate.title)).toBeTruthy();
+    expect(screen.queryByRole("heading", { level: 1, name: "Rừng sương mù" })).toBeNull();
+    expect(screen.queryByRole("link", { name: storyText.startReading })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: adultContentText.gate.confirm }));
+    expect(await screen.findByRole("heading", { level: 1, name: "Rừng sương mù" })).toBeTruthy();
+    setStoredAdultContent(NO_ADULT_CONTENT);
+  });
+
+  it("an ordinary story's page needs no confirmation", async () => {
+    setStoredAdultContent(NO_ADULT_CONTENT);
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: [chapterRow(1)], error: null }),
+    );
+    renderScreen(client);
+    expect(await screen.findByRole("heading", { level: 1, name: "Rừng sương mù" })).toBeTruthy();
+    expect(screen.queryByText(adultContentText.gate.title)).toBeNull();
+  });
+});
 
 describe("StoryScreen: suggestions", () => {
   it("ends with 'you may also like', each story with the reason", async () => {

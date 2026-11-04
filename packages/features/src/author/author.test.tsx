@@ -142,7 +142,9 @@ describe("query keys", () => {
   });
 
   it("the feed of followed authors' stories belongs to one reader", () => {
-    expect(authorKeys.followed("u1")).not.toEqual(authorKeys.followed("u2"));
+    expect(authorKeys.followed("u1", false)).not.toEqual(authorKeys.followed("u2", false));
+    expect(authorKeys.followed("u1", false)).not.toEqual(authorKeys.followed("u1", true));
+    expect(authorKeys.followed("u1", true)).toEqual(authorKeys.followedAll("u1").concat([true] as never));
   });
 
   it("the feed of stories differs by author, so one author's stories are never another's", () => {

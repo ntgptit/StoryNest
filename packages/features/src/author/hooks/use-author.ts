@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
+import { useShowMature } from "../../adult-content/index.ts";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
 import { discoveryKeys } from "../../discovery/index.ts";
 import { getAuthorProfile, listFollowedStories, setUserFollow, type FollowedPage } from "../api/author.api.ts";
@@ -39,7 +40,7 @@ export function useFollowAuthor(profile: AuthorProfile) {
         current ? withFollowing(current, followed, followers) : current,
       );
       // the feed of followed authors changes with the follow
-      if (viewerId) void queryClient.invalidateQueries({ queryKey: authorKeys.followed(viewerId) });
+      if (viewerId) void queryClient.invalidateQueries({ queryKey: authorKeys.followedAll(viewerId) });
       void queryClient.invalidateQueries({ queryKey: discoveryKeys.all });
     },
   });
@@ -48,6 +49,7 @@ export function useFollowAuthor(profile: AuthorProfile) {
 export function useFollowedStories() {
   const getClient = useDataClientGetter();
   const viewerId = useViewerId();
+  const includeMature = useShowMature();
   return useInfiniteQuery<
     FollowedPage,
     AppError,
@@ -55,10 +57,12 @@ export function useFollowedStories() {
     readonly unknown[],
     FollowedCursor | null
   >({
-    queryKey: authorKeys.followed(viewerId ?? "none"),
+    queryKey: authorKeys.followed(viewerId ?? "none", includeMature),
     initialPageParam: null,
     queryFn: ({ pageParam }) =>
-      listFollowedStories(getClient(), { cursor: pageParam }).catch((e: unknown) => Promise.reject(toAppError(e))),
+      listFollowedStories(getClient(), { cursor: pageParam, includeMature }).catch((e: unknown) =>
+        Promise.reject(toAppError(e)),
+      ),
     getNextPageParam: (last) => last.nextCursor,
     enabled: viewerId !== null,
     staleTime: 0,

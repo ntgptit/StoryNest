@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
@@ -8,6 +8,7 @@ import type { DataClient } from "../_shared/client.ts";
 import { DataProvider } from "../_shared/data.tsx";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { ToastProvider } from "../_shared/toast.tsx";
+import { adultContentText } from "../adult-content/index.ts";
 import { MainShell } from "./components/main-shell.tsx";
 import { UserMenu } from "./components/user-menu.tsx";
 import { initials } from "./model/initials.ts";
@@ -153,5 +154,18 @@ describe("MainShell", () => {
     const nav = screen.getByRole("navigation", { name: "Điều hướng chính" });
     expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe("Tôi");
     expect(await screen.findByText("Đăng nhập")).toBeTruthy();
+  });
+
+  it("has the adult-content control in the header, off by default", () => {
+    const { client } = fakeClient({ session: null });
+    setup(
+      <MainShell>
+        <p>page content</p>
+      </MainShell>,
+      client,
+      "/",
+    );
+    const control = within(screen.getByRole("banner")).getByRole("button", { name: adultContentText.button });
+    expect(control.getAttribute("aria-pressed")).toBe("false");
   });
 });
