@@ -1,5 +1,6 @@
 import { PROFILE_ERROR } from "@storynest/validation";
-import type { AppError } from "../../_shared/errors.ts";
+import { AppError } from "../../_shared/errors.ts";
+import { AvatarError } from "./avatar-image.ts";
 import { profileText } from "../strings.ts";
 
 // A function, not a constant: the text is read when it is needed, so it follows the language.
@@ -32,4 +33,23 @@ export function profileErrorMessage(error: AppError): string {
     default:
       return profileText.errors.generic;
   }
+}
+
+/** Text for a failed picture change: a file the browser could not use, or the server's answer. */
+export function avatarErrorMessage(error: Error): string {
+  if (error instanceof AvatarError) {
+    switch (error.problem) {
+      case "type":
+        return profileText.avatar.errors.type;
+      case "tooLarge":
+        return profileText.avatar.errors.tooLarge;
+      case "unreadable":
+        return profileText.avatar.errors.unreadable;
+    }
+  }
+  if (error instanceof AppError) {
+    if (error.kind === "invalid") return profileText.avatar.errors.rejected;
+    return profileErrorMessage(error);
+  }
+  return profileText.errors.generic;
 }

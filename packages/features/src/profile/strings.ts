@@ -19,6 +19,22 @@ const vi = {
     signIn: "Đăng nhập",
     missingProfile: "Chưa tìm thấy hồ sơ cho tài khoản này.",
   },
+  avatar: {
+    add: "Thêm ảnh đại diện",
+    change: "Đổi ảnh",
+    remove: "Gỡ ảnh",
+    uploading: "Đang tải lên…",
+    inputLabel: "Chọn ảnh đại diện",
+    hint: "JPG, PNG hoặc WebP, tối đa 10 MB. Ảnh được cắt vuông ở giữa.",
+    saved: "Đã cập nhật ảnh đại diện.",
+    removed: "Đã gỡ ảnh đại diện.",
+    errors: {
+      type: "Chỉ dùng được ảnh JPG, PNG hoặc WebP.",
+      tooLarge: "Ảnh quá lớn (tối đa 10 MB).",
+      unreadable: "Không đọc được ảnh này. Hãy thử ảnh khác.",
+      rejected: "Máy chủ không nhận ảnh này. Hãy thử ảnh khác.",
+    },
+  },
   validation: {
     usernameInvalid: "Tên người dùng chỉ gồm chữ, số, dấu gạch dưới (3-30 ký tự).",
     displayNameRequired: "Vui lòng nhập tên hiển thị.",

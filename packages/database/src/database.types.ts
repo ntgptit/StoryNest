@@ -1470,6 +1470,7 @@ export type Database = {
       }
       can_read_chapter: { Args: { p_chapter_id: string }; Returns: boolean }
       can_read_story: { Args: { p_story_id: string }; Returns: boolean }
+      can_write_avatar: { Args: { p_name: string }; Returns: boolean }
       cancel_invitation: {
         Args: { p_invitation_id: string }
         Returns: undefined

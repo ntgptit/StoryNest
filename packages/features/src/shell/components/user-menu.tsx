@@ -1,6 +1,5 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@storynest/ui/components/avatar";
 import { Button } from "@storynest/ui/components/button";
 import {
   DropdownMenu,
@@ -12,6 +11,7 @@ import {
 } from "@storynest/ui/components/dropdown-menu";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { useAuth } from "../../_shared/auth.tsx";
+import { UserAvatar } from "../../_shared/avatar.tsx";
 import { useIsModerator } from "../../moderation/index.ts";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
@@ -51,9 +51,7 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={shellText.accountMenu} className="rounded-full">
-          <Avatar>
-            <AvatarFallback>{initials(name)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar storageKey={auth.profile?.avatar_storage_key} fallback={initials(name)} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-48">

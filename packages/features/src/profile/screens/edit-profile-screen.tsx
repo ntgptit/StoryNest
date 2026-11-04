@@ -22,6 +22,7 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useUpdateProfile } from "../hooks/use-update-profile.ts";
 import { isUsernameTaken, profileErrorMessage, validationMessage } from "../model/messages.ts";
+import { AvatarEditor } from "../components/avatar-editor.tsx";
 import { profileText } from "../strings.ts";
 
 const t = profileText.edit;
@@ -91,6 +92,7 @@ function EditProfileForm({
         <h1 className="text-2xl font-semibold tracking-tight">{t.title}</h1>
         <p className="text-sm text-muted-foreground">{t.description}</p>
       </div>
+      <AvatarEditor profile={profile} />
       <Form {...form}>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={update.isPending}>
           {bannerError ? (
