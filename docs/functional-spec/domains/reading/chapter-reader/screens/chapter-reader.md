@@ -12,7 +12,7 @@
 | Screen component | `packages/features/src/reader/screens/reader-screen.tsx` (`ReaderScreen`) |
 | Pre-paint script | `buildReaderBootstrapScript(CHAPTER_PATH_PATTERN)` in `apps/web/src/app/layout.tsx:37` |
 | Roles | Guest, Member, Story team, Moderator, Crawler |
-| Business rules | [BR-READ-001…018](../business-rules.md), [BR-PROG-*](../../reading-progress/business-rules.md), [BR-VOTE-*](../../../community/vote/business-rules.md), `BR-CMT-*`, `BR-MOD-*`, `BR-MAT-*` |
+| Business rules | [BR-READ-001…018](../business-rules.md), [BR-PROG-*](../../reading-progress/business-rules.md), [BR-VOTE-*](../../../community/vote/business-rules.md), `BR-CMT-*`, `BR-MOD-004…006`, `BR-MAT-009` |
 | Workflows | [WF-READ-01…06](../workflows.md), [WF-PROG-01, 02, 04](../../reading-progress/workflows.md), [WF-VOTE-01, 02](../../../community/vote/workflows.md) |
 | Entry points | SCR-STORY-01 (CTA, chapter list), TOC / prev / next, library "Continue with chapter N" (SCR-LIB-01), notifications, external links |
 | Layout | Main shell. A sticky top toolbar (h-12, translucent) with a 2px progress bar, and a centred article column `max-width: 66ch` with the reader font, size and line height |
@@ -21,7 +21,7 @@
 
 | ID | Component | Description | Source |
 | --- | --- | --- | --- |
-| SCR-READ-01-C01 | Adult gate | Wraps everything when the story is mature (`BR-MAT-*`) | `reader-screen.tsx:71` |
+| SCR-READ-01-C01 | Adult gate (SCR-MAT-01) | Wraps everything when the story is mature (`BR-MAT-009`) | `reader-screen.tsx:71` |
 | SCR-READ-01-C02 | Reading tracker | Invisible. Restores and saves position (members) and records the read (everyone) | `reader/components/reading-tracker.tsx`, `reader-screen.tsx:73` |
 | SCR-READ-01-C03 | Back to story link | "←" + story title (truncated). Screen-reader text "Back to story" | `reader-screen.tsx:76-87` |
 | SCR-READ-01-C04 | Display button + Reading options sheet | Right sheet: Font size (−/+, current size name in `<output aria-live>`), Line spacing, Font, Background as `aria-pressed` toggle groups | `reader/components/reader-settings-sheet.tsx` |
@@ -32,7 +32,7 @@
 | SCR-READ-01-C09 | Inline comment buttons | Small speech-bubble button + count at the end of each paragraph or heading. Opens a bottom sheet with that block's `CommentThread` (owned by OBJ-CMT, SCR-CMT-01) | `reader-blocks.tsx:40-77` |
 | SCR-READ-01-C10 | End marker | "— End of chapter —" (`aria-hidden`) | `reader-screen.tsx:110-112` |
 | SCR-READ-01-C11 | Vote button | Toggle + "N votes" (`aria-live`) ([BR-VOTE-*](../../../community/vote/business-rules.md)) | `reader/components/vote-button.tsx` |
-| SCR-READ-01-C12 | Report button | `ReportButton kind="chapter"` (`BR-MOD-*`) | `reader-screen.tsx:114-116` |
+| SCR-READ-01-C12 | Report button | `ReportButton kind="chapter"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `reader-screen.tsx:114-116` |
 | SCR-READ-01-C13 | Comments section | `section#comments`, h2 + chapter-level `CommentThread` (SCR-CMT-01) | `reader-screen.tsx:117-124` |
 | SCR-READ-01-C14 | Chapter nav | "Previous chapter" / "Next chapter" links with `rel`, or disabled placeholders | `reader/components/chapter-nav.tsx` |
 | SCR-READ-01-C15 | Skeleton | Title + 6 lines, `aria-busy` | `reader-screen.tsx:132-142` |
@@ -151,11 +151,11 @@
 | Field | Value |
 | --- | --- |
 | Trigger | C12 |
-| Preconditions | `BR-MOD-*` |
-| Expected behavior | Report dialog (`BR-MOD-*`) |
+| Preconditions | `BR-MOD-004…006` |
+| Expected behavior | Report dialog (`BR-MOD-004…006`) |
 | State change | `content_reports` |
 | Validation | Server refuses self-reports (also shown to the author: F-STORY-01) |
-| Error behavior | `BR-MOD-*` |
+| Error behavior | `BR-MOD-004…006` |
 | Navigation | — |
 | Evidence | `reader-screen.tsx:115` |
 
@@ -176,7 +176,7 @@
 | --- | --- |
 | Trigger | Gate buttons |
 | Preconditions | Mature story, not opted in |
-| Expected behavior | As SCR-STORY-01-A10 (`BR-MAT-*`) |
+| Expected behavior | As SCR-STORY-01-A10 (`BR-MAT-009`) |
 | State change | Device adult-content choice |
 | Validation | — |
 | Error behavior | — |

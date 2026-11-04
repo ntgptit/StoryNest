@@ -89,7 +89,7 @@
 | Description | Every save sets `user_story_progress.current_chapter_id` to the saved chapter and updates `last_read_at`. |
 | Preconditions | — |
 | Conditions | The tracker saves immediately when a chapter opens ("opening a chapter already makes it the current one"). |
-| Expected behavior | The pointer is the **most recently opened** chapter, not the furthest one. Re-opening an earlier chapter moves it back (Q-PROG-01). Library "Reading" sorts by `last_read_at` (`BR-LIB-*`). |
+| Expected behavior | The pointer is the **most recently opened** chapter, not the furthest one. Re-opening an earlier chapter moves it back (Q-PROG-01). Library "Reading" sorts by `last_read_at` (`BR-LIB-007`). |
 | Exceptions | — |
 | Related screens | SCR-READ-01, SCR-STORY-01, SCR-LIB-01 |
 | Evidence | `supabase/migrations/20261104000000_save_reading_progress.sql:63-66`, `packages/features/src/progress/hooks/use-reading-tracker.ts:88`, `supabase/tests/60_progress.test.sql:91`, `packages/features/src/library/api/library.api.ts:19-34` |
@@ -137,7 +137,7 @@
 | Description | Progress rows are strictly private: each user reads and writes only their own rows. |
 | Preconditions | — |
 | Conditions | RLS `FOR ALL USING (user_id = auth.uid())`. Inserts also need `can_read_story` / `can_read_chapter`. |
-| Expected behavior | Other users (and anon) see nothing. A user may delete their own rows. The library's "remove from Reading" deletes `user_story_progress` only (`BR-LIB-*`). |
+| Expected behavior | Other users (and anon) see nothing. A user may delete their own rows. The library's "remove from Reading" deletes `user_story_progress` only (`BR-LIB-011`). |
 | Exceptions | — |
 | Related screens | SCR-LIB-01 |
 | Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:330-341`, `supabase/tests/60_progress.test.sql:112-116`, `packages/features/src/library/api/library.api.ts:64-66`, `packages/features/src/progress/keys.ts:1` (never prefetched on the server) |

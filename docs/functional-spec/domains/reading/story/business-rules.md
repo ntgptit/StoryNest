@@ -10,7 +10,7 @@
 | User goals | Decide whether to read a story; start or continue reading; follow / save / list / report it; share a canonical link. |
 | Actors / roles | Guest (anon), Member (authenticated, active), Story team (owner, `co_author`, `editor` via `story_role`), Moderator (`app_metadata.role = 'moderator'`), Search-engine / social crawler. |
 | Related entities | Tables `stories`, `story_tags`, `tags`, `categories`, `app_users`, `story_stats`, `chapters`, `chapter_versions`. Helpers `can_read_story()`, `can_read_chapter()`, `story_role()`, `is_moderator()`. Policy `stories_read`. |
-| Dependencies | `OBJ-READ` (chapter URL), `OBJ-PROG` (continue reading), `OBJ-LIB` (follow/save, `BR-LIB-*`), `OBJ-LIST` (add to list, `BR-LIST-*`), `OBJ-MOD` (report, `BR-MOD-*`), `OBJ-MAT` (adult gate, `BR-MAT-*`), `OBJ-REC` (similar stories), `OBJ-AUTHOR` (author link), `OBJ-TAX` (tag links), `OBJ-SEO` (metadata, JSON-LD, OG image), `OBJ-STM` (where visibility/status/slug are edited). |
+| Dependencies | `OBJ-READ` (chapter URL), `OBJ-PROG` (continue reading), `OBJ-LIB` (follow/save, `BR-LIB-*`), `OBJ-LIST` (add to list, `BR-LIST-*`), `OBJ-MOD` (report, `BR-MOD-004…006`), `OBJ-MAT` (adult gate, `BR-MAT-009`), `OBJ-REC` (similar stories), `OBJ-AUTHOR` (author link), `OBJ-TAX` (tag links), `OBJ-SEO` (metadata, JSON-LD, OG image), `OBJ-STM` (where visibility/status/slug are edited). |
 
 ### Rule index
 
@@ -137,7 +137,7 @@
 | Description | `stories.is_mature = true` marks 18+ content. |
 | Preconditions | — |
 | Conditions | `isMature`. |
-| Expected behavior | The story page and every chapter are wrapped in the adult gate. Content is shown only after the reader confirms they are 18+ (rules owned by `BR-MAT-*`, see [trust-safety](../../trust-safety/overview.md)). A red "18+" badge is shown. Never indexed (BR-STORY-008). Excluded from rankings unless asked for (`BR-RANK-*`). |
+| Expected behavior | The story page and every chapter are wrapped in the adult gate. Content is shown only after the reader confirms they are 18+ (rules owned by `BR-MAT-009`, see [trust-safety](../../trust-safety/overview.md)). A red "18+" badge is shown. Never indexed (BR-STORY-008). Excluded from rankings unless asked for (`BR-RANK-*`). |
 | Exceptions | — |
 | Related screens | SCR-STORY-01, SCR-READ-01 |
 | Evidence | `packages/features/src/story/screens/story-screen.tsx:66,90`, `packages/features/src/adult-content/components/adult-gate.tsx:13-34`, `packages/features/src/story/story.test.tsx:206-233` |
@@ -209,7 +209,7 @@
 | Description | Follow, Save to library, Add to list and Report are member-only actions placed on the story page. |
 | Preconditions | — |
 | Conditions | Guest presses Follow/Save → `navigation.push('/login?next=<current path>')`. Guest presses Add to list / Report → sign-in flow owned by those components. |
-| Expected behavior | Follow / Save semantics, optimistic UI and errors: `BR-LIB-*` ([library](../../library/overview.md)). Add to list: `BR-LIST-*`. Report: `BR-MOD-*` ([trust-safety](../../trust-safety/overview.md)). The server allows follow/save only when `can_read_story` is true. |
+| Expected behavior | Follow / Save semantics, optimistic UI and errors: `BR-LIB-001…005` ([library](../../library/library/business-rules.md)). Add to list: `BR-LIST-*`. Report: `BR-MOD-004…006` ([trust-safety](../../trust-safety/overview.md)). The server allows follow/save only when `can_read_story` is true. |
 | Exceptions | The Report button is shown to the author on their own story, and the server refuses it (F-STORY-01). |
 | Related screens | SCR-STORY-01 |
 | Evidence | `packages/features/src/story/components/story-actions.tsx:15-60`, `packages/features/src/story/screens/story-screen.tsx:111-114`, `supabase/migrations/20261103000100_auth_and_rls.sql:290-297`, `packages/features/src/story/library.test.tsx:145` |

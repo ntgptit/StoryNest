@@ -61,4 +61,4 @@ own story, `set_comment_hidden`, `comment_hides`, "hidden by author" notices) is
 - **Q-MAT-01** — Should the age confirmation be asked again after the reader hides 18+ content?
 - **Q-ABU-01** — Who changes `abuse_limits` thresholds in production, and how (there is no UI)?
 
-Full list: the "Open questions" sections of each object file and the findings draft.
+Full list: the "Open questions" sections of each object file.

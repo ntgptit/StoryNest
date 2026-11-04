@@ -178,7 +178,7 @@
 - **SCR-MOD-01-AC16** `[Proposed]` Given a target, when the moderator opens its history, then the audit rows for that target are listed with actor, action, reason and time (F-MOD-07).
 
 ## F. Findings referenced
-F-MOD-03, F-MOD-04, F-MOD-07, U-MOD-01, U-MOD-02 (draft: scratchpad `findings-trust-safety.md`).
+F-MOD-03, F-MOD-04, F-MOD-07, U-MOD-01, U-MOD-02.
 
 ## G. Open questions
 Q-MOD-02 (role latency), Q-MOD-03 (chapter-level removal), Q-MOD-04 (taking over an author-hidden comment).

@@ -20,7 +20,7 @@
 
 | ID | Component | Description | Source |
 | --- | --- | --- | --- |
-| SCR-STORY-01-C01 | Adult gate | Wraps the whole page when `isMature`: "Mature story" + "Go back" / "I'm 18 or older, continue" (`BR-MAT-*`) | `story-screen.tsx:66`, `adult-content/components/adult-gate.tsx` |
+| SCR-STORY-01-C01 | Adult gate (SCR-MAT-01) | Wraps the whole page when `isMature`: "Mature story" + "Go back" / "I'm 18 or older, continue" (`BR-MAT-009`) | `story-screen.tsx:66`, `adult-content/components/adult-gate.tsx` |
 | SCR-STORY-01-C02 | Cover | `StoryCover`, eager-loaded, placeholder when there is no cover | `story-screen.tsx:69` |
 | SCR-STORY-01-C03 | Title (h1) | Story title | `story-screen.tsx:72` |
 | SCR-STORY-01-C04 | Author line | "Author" + display name linking to `/author/{username}`, or plain "Anonymous author" | `story-screen.tsx:73-85` |
@@ -28,7 +28,7 @@
 | SCR-STORY-01-C06 | Stats row | Reads / Votes / Comments / Followers (`StatPill`, locale-formatted) | `story-screen.tsx:93-103` |
 | SCR-STORY-01-C07 | Primary CTA | "Start reading" or "Continue reading · Chapter N" (large button-styled link) | `story-screen.tsx:105-109` |
 | SCR-STORY-01-C08 | Library actions | `StoryActions`: Follow / Following, Save to library / Saved (toggle buttons with `aria-pressed`), plus `AddToListButton`. Group label = "Sign in to follow or save stories" | `story/components/story-actions.tsx` (rules `BR-LIB-*`, `BR-LIST-*`) |
-| SCR-STORY-01-C09 | Report button | `ReportButton kind="story"` (`BR-MOD-*`) | `story-screen.tsx:112-114` |
+| SCR-STORY-01-C09 | Report button | `ReportButton kind="story"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `story-screen.tsx:112-114` |
 | SCR-STORY-01-C10 | Synopsis | h2 "Synopsis". Text keeps line breaks; empty → "The author hasn't written a synopsis yet." | `story-screen.tsx:118-124` |
 | SCR-STORY-01-C11 | Tag list | `#tag` badges linking to the home feed filtered by tag; aria-label "View stories tagged {name}" (`BR-TAX-*`) | `story-screen.tsx:125-135` |
 | SCR-STORY-01-C12 | Chapter list | h2 "Chapters" + "N chapters". Ordered list of rows: "Chapter N", title (truncated), "N words" | `story-screen.tsx:138-184` |
@@ -80,7 +80,7 @@
 | Trigger | Click Follow / Following (C08) |
 | Preconditions | Signed in (otherwise → `/login?next=…`) |
 | Expected behavior | Optimistic toggle. The follower count in C06 moves ±1, then takes the server's count. The button is disabled while pending. Toast "Followed. You'll be notified when there are new chapters." / "Unfollowed." |
-| State change | `story_follows` row via `set_story_follow` (`BR-LIB-*`) |
+| State change | `story_follows` row via `set_story_follow` (`BR-LIB-002`, `BR-LIB-005`) |
 | Validation | Server: `can_read_story` |
 | Error behavior | Rollback + toast "You can't follow or save this story." (forbidden) / "No connection. Check your network and try again." / "Couldn't complete that. Please try again." |
 | Navigation | Guest → `/login?next=<path>` |
@@ -92,7 +92,7 @@
 | Trigger | Click Save to library / Saved (C08) |
 | Preconditions | Signed in |
 | Expected behavior | Optimistic toggle; toast "Saved to your library." / "Removed from your library." The follower count does not move |
-| State change | `story_saves` via `set_story_save` (`BR-LIB-*`) |
+| State change | `story_saves` via `set_story_save` (`BR-LIB-003`, `BR-LIB-005`) |
 | Validation | Server: `can_read_story` |
 | Error behavior | Rollback + toast by kind (as A04) |
 | Navigation | Guest → `/login?next=<path>` |
@@ -115,9 +115,9 @@
 | --- | --- |
 | Trigger | `ReportButton` (C09) |
 | Preconditions | Owned by OBJ-MOD |
-| Expected behavior | Report dialog (`BR-MOD-*`) |
+| Expected behavior | Report dialog (`BR-MOD-004…006`) |
 | State change | `content_reports` via `submit_report` |
-| Validation | `BR-MOD-*`. Server refuses self-reports (22023) |
+| Validation | `BR-MOD-004…006`. Server refuses self-reports (22023) |
 | Error behavior | Shown to the author too, who then gets "You can't report your own content, or the information isn't valid." (F-STORY-01) |
 | Navigation | — |
 | Evidence | `story-screen.tsx:113`, `moderation/components/report-button.tsx:40-56`, `supabase/migrations/20261104002200_abuse_limits.sql:164` |
@@ -151,7 +151,7 @@
 | --- | --- |
 | Trigger | "I'm 18 or older, continue" / "Go back" in C01 |
 | Preconditions | `isMature` and the reader has not chosen to show adult content |
-| Expected behavior | Confirm → the page renders (the choice is stored per device, `BR-MAT-*`). Go back → `navigation.back()` |
+| Expected behavior | Confirm → the page renders (the choice is stored per device, `BR-MAT-009`). Go back → `navigation.back()` |
 | State change | Device-local adult-content preference |
 | Validation | — |
 | Error behavior | — |

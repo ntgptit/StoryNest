@@ -11,7 +11,7 @@ Everything a reader does between finding a story and finishing it: the public st
 | Guest | Not signed in (`anon`) | Read public and unlisted stories and chapters, use reader preferences on the device, counted as reads via an anonymous id. Sent to `/login?next=` for follow, save, vote and report |
 | Member | Signed in, `account_status = 'active'` | Everything a guest can, plus saved progress and "Continue reading", account-synced preferences, follow/save/list/vote/comment/report |
 | Story team | Owner, `co_author`, `editor` of a story (`story_role()`) | Can open their private or draft story on the public page (noindex). In the public reader they still see only published chapters |
-| Moderator | `app_metadata.role = 'moderator'` | Reads any story or chapter (RLS). Can remove stories (`BR-MOD-*`) |
+| Moderator | `app_metadata.role = 'moderator'` | Reads any story or chapter (RLS). Can remove stories (`BR-MOD-012`) |
 | Crawler / link preview | Anonymous bot | Gets metadata, JSON-LD and OG images only for public, non-mature stories |
 | System jobs | pg_cron | `aggregate_reads` (every minute), `purge_read_events` (daily) |
 
@@ -42,9 +42,9 @@ Sources: `supabase/migrations/20261103000100_auth_and_rls.sql:93-112,198-202`, `
 
 | Depends on / used by | Object | What | Rule IDs |
 | --- | --- | --- | --- |
-| D-TRUST-SAFETY | OBJ-MAT | Adult gate on the story page and reader | `BR-MAT-*` |
-| D-TRUST-SAFETY | OBJ-MOD | Report button (story, chapter). Moderator removal = soft delete | `BR-MOD-*` |
-| D-LIBRARY | OBJ-LIB | Follow and Save buttons on the story page. Library "Reading" tab reads `user_story_progress` | `BR-LIB-*` |
+| D-TRUST-SAFETY | OBJ-MAT | Adult gate on the story page and reader | `BR-MAT-009` |
+| D-TRUST-SAFETY | OBJ-MOD | Report button (story, chapter). Moderator removal = soft delete | `BR-MOD-004…006`, `BR-MOD-012` |
+| D-LIBRARY | OBJ-LIB | Follow and Save buttons on the story page. Library "Reading" tab reads `user_story_progress` | `BR-LIB-001…005`, `BR-LIB-007`, `BR-LIB-011` |
 | D-LIBRARY | OBJ-LIST | Add-to-list button | `BR-LIST-*` |
 | D-COMMUNITY | OBJ-VOTE | Vote button in the reader | [BR-VOTE-*](../community/vote/business-rules.md) |
 | D-COMMUNITY | OBJ-CMT | Chapter thread and inline paragraph comments in the reader (SCR-CMT-01), anchored on block ids | `BR-CMT-*` |

@@ -151,7 +151,7 @@
 | Description | Whether a story is adult comes from the story, so no chapter text may show before the story is known. |
 | Preconditions | — |
 | Conditions | `chapter.isPending || story.isPending` → skeleton. `story.isMature` → `AdultGate`. |
-| Expected behavior | Skeleton until both are loaded. Mature + not opted in → gate only (`BR-MAT-*`). Also never indexed (BR-STORY-008). |
+| Expected behavior | Skeleton until both are loaded. Mature + not opted in → gate only (`BR-MAT-009`). Also never indexed (BR-STORY-008). |
 | Exceptions | If the story resolves to `null` while the chapter exists, the gate defaults to not mature (Inferred edge; the server 404s first). |
 | Related screens | SCR-READ-01 |
 | Evidence | `packages/features/src/reader/screens/reader-screen.tsx:45-46,67,71`, `packages/features/src/reader/reader.test.tsx:280-325` |

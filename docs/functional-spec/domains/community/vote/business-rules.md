@@ -136,7 +136,7 @@
 | Conditions | — |
 | Expected behavior | Click → `/login?next=<current chapter path>`, with no request made. After sign-in the reader returns to the chapter and must press again. `aria-pressed` is omitted for guests. |
 | Exceptions | — |
-| Related screens | SCR-READ-01, login (D-ACCOUNT) |
+| Related screens | SCR-READ-01, SCR-AUTH-01 Sign in (D-ACCOUNT) |
 | Evidence | `packages/features/src/reader/components/vote-button.tsx:15-27,36,41`, `packages/features/src/reader/vote.test.tsx:148` |
 | Status | Verified |
 
