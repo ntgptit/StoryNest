@@ -5,8 +5,8 @@ export const IMAGE_ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"] as
 export const IMAGE_MAX_INPUT_BYTES = 10 * 1024 * 1024;
 
 export interface ImageSpec {
-  /** Width / height of the result (1 = square, 2/3 = a cover). */
-  aspect: number;
+  /** Width / height of the result (1 = square, 2/3 = a cover); null keeps the picture's own shape (shrink only). */
+  aspect: number | null;
   /** Width of the result; smaller pictures are never enlarged. */
   maxWidth: number;
 }
@@ -54,7 +54,10 @@ export function createBrowserRenderer(spec: ImageSpec): ImageRenderer {
   return async (file) => {
     const bitmap = await createImageBitmap(file);
     try {
-      const { sx, sy, sw, sh } = cropBox(bitmap.width, bitmap.height, spec.aspect);
+      const { sx, sy, sw, sh } =
+        spec.aspect === null
+          ? { sx: 0, sy: 0, sw: bitmap.width, sh: bitmap.height }
+          : cropBox(bitmap.width, bitmap.height, spec.aspect);
       const { width, height } = outputSize(sw, sh, spec.maxWidth);
       const canvas = document.createElement("canvas");
       canvas.width = width;

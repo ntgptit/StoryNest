@@ -11,14 +11,18 @@ import { Label } from "@storynest/ui/components/label";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { useDataClientGetter } from "../../_shared/data.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import type { ChapterDraft } from "../api/draft.api.ts";
+import { chapterImageUrl } from "../api/images.api.ts";
 import { EditorToolbar } from "../components/editor-toolbar.tsx";
 import { PublishPanel } from "../components/publish-panel.tsx";
 import { useChapterDraft, useSaveChapterDraft } from "../hooks/use-chapter-draft.ts";
+import { useUploadChapterImage } from "../hooks/use-chapter-image.ts";
 import { createAutosaver, type Autosaver, type AutosaveStatus, type SaveOutcome } from "../model/autosaver.ts";
-import { bodyToDoc, type EditorNode } from "../model/body-converter.ts";
+import { NODE, STORAGE_KEY_ATTRIBUTE, bodyToDoc, type EditorNode } from "../model/body-converter.ts";
+import { imageErrorMessage } from "../model/image-messages.ts";
 import { checkDraft, isDraftConflict, wordCountOf } from "../model/draft-form.ts";
 import { editorExtensions } from "../model/extensions.ts";
 import { clearBackup, differsFromServer, readBackup, writeBackup, type DraftBackup } from "../model/local-backup.ts";
@@ -187,8 +191,22 @@ function DraftEditor({
     backupTimer.current = setTimeout(writeLocalBackup, 500);
   }, [writeLocalBackup]);
 
+  // Pictures show from their public address, which the client builds (no request). No client: an empty frame.
+  const getClient = useDataClientGetter();
+  const imageUrl = useCallback(
+    (key: string) => {
+      try {
+        return chapterImageUrl(getClient(), key);
+      } catch {
+        return null;
+      }
+    },
+    [getClient],
+  );
+  const imageUpload = useUploadChapterImage(storyId);
+
   const editor = useEditor({
-    extensions: editorExtensions(),
+    extensions: editorExtensions({ imageUrl }),
     content: bodyToDoc(draft.body),
     immediatelyRender: false,
     editorProps: { attributes: { "aria-label": t.bodyLabel, role: "textbox", "aria-multiline": "true" } },
@@ -205,6 +223,17 @@ function DraftEditor({
       onEditor?.(null);
     },
   });
+
+  const insertImage = (file: File) =>
+    imageUpload.mutate(file, {
+      onSuccess: (key) =>
+        editor
+          ?.chain()
+          .focus()
+          .insertContent({ type: NODE.image, attrs: { [STORAGE_KEY_ATTRIBUTE]: key } })
+          .run(),
+      onError: (error) => toast.error(imageErrorMessage(error)),
+    });
 
   // Never lose a typed change silently: warn on leaving, save when the tab is hidden, retry when the network returns.
   useEffect(() => {
@@ -336,11 +365,15 @@ function DraftEditor({
         ) : null}
       </div>
 
-      {editor ? <EditorToolbar editor={editor} /> : <Skeleton className="h-11 w-full rounded-lg" aria-hidden />}
+      {editor ? (
+        <EditorToolbar editor={editor} onImage={insertImage} imageBusy={imageUpload.isPending} />
+      ) : (
+        <Skeleton className="h-11 w-full rounded-lg" aria-hidden />
+      )}
 
       <EditorContent
         editor={editor}
-        className="reader-text min-h-[50vh] rounded-lg border bg-card p-4 text-card-foreground [&_.ProseMirror]:min-h-[45vh] [&_.ProseMirror]:outline-none [&_.ProseMirror>*+*]:mt-[1em] [&_h2]:text-xl [&_h2]:font-semibold [&_hr]:my-6 [&_hr]:border-border [&_figure]:rounded-md [&_figure]:border [&_figure]:border-dashed [&_figure]:p-6"
+        className="reader-text min-h-[50vh] rounded-lg border bg-card p-4 text-card-foreground [&_.ProseMirror]:min-h-[45vh] [&_.ProseMirror]:outline-none [&_.ProseMirror>*+*]:mt-[1em] [&_h2]:text-xl [&_h2]:font-semibold [&_hr]:my-6 [&_hr]:border-border [&_figure]:min-h-16 [&_figure]:rounded-md [&_figure]:border [&_figure]:border-dashed [&_figure]:p-2 [&_figure_img]:mx-auto [&_figure_img]:max-h-[60vh] [&_figure_img]:rounded-sm [&_.ProseMirror-selectednode]:ring-2 [&_.ProseMirror-selectednode]:ring-ring"
       />
 
       <PublishPanel chapterId={draft.chapterId} locale={locale} ensureSaved={ensureSaved} />

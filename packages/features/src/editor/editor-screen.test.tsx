@@ -192,7 +192,7 @@ describe("ChapterEditorScreen", () => {
     expect(screen.getByText(new RegExp(t.words("5")))).toBeTruthy(); // "Mở đầu" (2 words) + "Một hai ba" (3)
   });
 
-  it("offers formatting for bold, italic, underline, strike, heading, divider, undo and redo only", async () => {
+  it("offers formatting for bold, italic, underline, strike, heading, divider, a picture, undo and redo only", async () => {
     setup(fakeClient({}));
     const toolbar = await screen.findByRole("toolbar", { name: t.toolbar.label });
     const labels = Array.from(toolbar.querySelectorAll("button")).map((b) => b.getAttribute("aria-label"));
@@ -203,6 +203,7 @@ describe("ChapterEditorScreen", () => {
       t.toolbar.underline,
       t.toolbar.strike,
       t.toolbar.divider,
+      t.toolbar.image,
       t.toolbar.undo,
       t.toolbar.redo,
     ]);
