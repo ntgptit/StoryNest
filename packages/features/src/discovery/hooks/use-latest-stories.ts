@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import type { AppError } from "../../_shared/errors.ts";
 import { useShowMature } from "../../adult-content/index.ts";
@@ -16,7 +16,10 @@ export function useCategories() {
   return useQuery<Category[], AppError>(categoriesQueryOptions(getClient));
 }
 
-/** Infinite feed of the latest stories. Waits for `categories` only when a category filter is active. */
+/**
+ * Infinite feed of the latest stories. Waits for `categories` only when a category filter is active. While another
+ * filter loads, the previous list stays on screen (`isPlaceholderData`) instead of falling back to skeletons.
+ */
 export function useLatestStories(filterWanted: LatestStoriesFilter, categories: readonly Category[] | undefined) {
   const getClient = useDataClientGetter();
   // Adult stories are in the feed only when the reader chose to see them: the choice is not the caller's to make.
@@ -32,6 +35,7 @@ export function useLatestStories(filterWanted: LatestStoriesFilter, categories: 
   >({
     ...latestStoriesQueryOptions(getClient, filter, categories ?? []),
     enabled: !needsCategories || categories !== undefined,
+    placeholderData: keepPreviousData,
   });
 }
 

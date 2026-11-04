@@ -263,8 +263,8 @@ describe("story mapping", () => {
 const adapter: PlatformAdapter = {
   platform: "web",
   isNative: false,
-  Link: ({ href, replace: _r, children, ...rest }) => (
-    <a href={href} {...rest}>
+  Link: ({ href, replace: _r, shallow, children, ...rest }) => (
+    <a href={href} data-shallow={shallow ? "true" : undefined} {...rest}>
       {children}
     </a>
   ),
@@ -303,6 +303,43 @@ describe("DiscoverScreen", () => {
     const nav = screen.getByRole("navigation", { name: discoveryText.categoriesLabel });
     expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe(discoveryText.allCategories);
     expect(screen.getByText("Giả tưởng").closest("a")?.getAttribute("href")).toBe("/?category=gia-tuong");
+    // Switching category only changes the URL: the screen re-renders from it, no server render.
+    expect(screen.getByText("Giả tưởng").closest("a")?.getAttribute("data-shallow")).toBe("true");
+  });
+
+  it("keeps the previous list on screen, marked busy, while another category loads", async () => {
+    let releaseFiltered: () => void = () => {};
+    const filteredGate = new Promise<void>((resolve) => (releaseFiltered = resolve));
+    const { client } = storiesClient((calls) =>
+      calls.some(([m]) => m === "in")
+        ? (filteredGate.then(() => ({ data: [row(5)], error: null })) as never)
+        : { data: [row(1)], error: null },
+    );
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const tree = (categorySlug?: string) => (
+      <QueryClientProvider client={queryClient}>
+        <DataProvider client={withAuth(client, null)}>
+          <AuthProvider>
+            <PlatformProvider adapter={adapter}>
+              <DiscoverScreen categorySlug={categorySlug} />
+            </PlatformProvider>
+          </AuthProvider>
+        </DataProvider>
+      </QueryClientProvider>
+    );
+    const { rerender, container } = render(tree());
+    await screen.findByText("Truyện 1");
+
+    rerender(tree("gia-tuong"));
+    // No skeleton flash: the old cards stay, dimmed, until the new ones arrive.
+    await waitFor(() => expect(container.querySelector('[aria-busy="true"]')).not.toBeNull());
+    expect(screen.getByText("Truyện 1")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: discoveryText.loadMore })).toBeNull();
+
+    releaseFiltered();
+    expect(await screen.findByText("Truyện 5")).toBeTruthy();
+    expect(screen.queryByText("Truyện 1")).toBeNull();
+    expect(container.querySelector('[aria-busy="true"]')).toBeNull();
   });
 
   it("marks the active category and filters the query by it and its children", async () => {
