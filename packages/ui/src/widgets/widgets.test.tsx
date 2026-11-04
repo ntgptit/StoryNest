@@ -10,6 +10,7 @@ import { EmptyState } from "./empty-state.tsx";
 import { ErrorState } from "./error-state.tsx";
 import { InfiniteList } from "./infinite-list.tsx";
 import { PageHeader } from "./page-header.tsx";
+import { PageSkeleton } from "./page-skeleton.tsx";
 import { StatPill } from "./stat-pill.tsx";
 import { StoryCard, type StoryCardData } from "./story-card.tsx";
 
@@ -86,6 +87,16 @@ describe("AppShell / PageHeader / EmptyState / ErrorState / StatPill", () => {
     render(<StatPill icon={Eye} value={1234} label="Reads" locale="en" />);
     expect(screen.getByText("Reads: 1.2K")).toBeTruthy(); // screen-reader text
     expect(screen.getByTitle("Reads: 1,234")).toBeTruthy();
+  });
+});
+
+describe("PageSkeleton", () => {
+  it("announces the loading page and hides the placeholder shapes from assistive tech", () => {
+    const { container } = render(<PageSkeleton label="Loading page…" />);
+    const status = screen.getByRole("status");
+    expect(status.getAttribute("aria-busy")).toBe("true");
+    expect(status.textContent).toBe("Loading page…");
+    expect(container.querySelectorAll('[aria-hidden="true"] [data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
 });
 
