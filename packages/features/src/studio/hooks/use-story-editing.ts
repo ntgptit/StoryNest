@@ -4,11 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { StoryForm } from "@storynest/validation";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
+import { prepareImage, type ImageRenderer } from "../../_shared/image-prepare.ts";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
 import { discoveryKeys } from "../../discovery/index.ts";
 import { storyKeys } from "../../story/index.ts";
 import {
   createStory,
+  removeCover,
+  uploadCover,
   setStoryDeleted,
   setStoryTags,
   updateStory,
@@ -116,6 +119,38 @@ export function useSetStoryTags() {
     mutationFn: async ({ storyId, names }) => {
       try {
         return await setStoryTags(getClient(), storyId, names);
+      } catch (error) {
+        throw toAppError(error);
+      }
+    },
+    onSuccess: invalidate,
+  });
+}
+
+/** Prepares (2:3 crop), uploads and saves a cover. ImageError passes through for the screen to explain. */
+export function useUploadCover(story: { id: string; coverStorageKey: string | null }, render: ImageRenderer) {
+  const getClient = useDataClientGetter();
+  const invalidate = useInvalidateStoryViews();
+  return useMutation<string, Error, File>({
+    mutationFn: async (file) => {
+      const cover = await prepareImage(file, render);
+      try {
+        return await uploadCover(getClient(), story, cover);
+      } catch (error) {
+        throw toAppError(error);
+      }
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useRemoveCover(story: { id: string; coverStorageKey: string | null }) {
+  const getClient = useDataClientGetter();
+  const invalidate = useInvalidateStoryViews();
+  return useMutation<void, AppError, void>({
+    mutationFn: async () => {
+      try {
+        await removeCover(getClient(), story);
       } catch (error) {
         throw toAppError(error);
       }
