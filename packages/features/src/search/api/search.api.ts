@@ -1,11 +1,16 @@
 import type { DataClient } from "../../_shared/client.ts";
 import { unwrap } from "../../_shared/errors.ts";
-import { STORY_COLUMNS, toStorySummary, type StoryListRow, type StorySummary } from "../../discovery/index.ts";
+import {
+  STORY_COLUMNS,
+  orderByIds,
+  toStorySummary,
+  type StoryListRow,
+  type StorySummary,
+} from "../../discovery/index.ts";
 import {
   SEARCH_PAGE_SIZE,
   TAG_RESULT_LIMIT,
   nextOffset,
-  orderByIds,
   toAuthorHit,
   toTagHit,
   type AuthorHit,

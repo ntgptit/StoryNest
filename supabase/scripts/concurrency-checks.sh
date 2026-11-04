@@ -98,3 +98,25 @@ SQL
   [ "$result" = "6 6" ] \
     || { echo "FAIL: the daily tag quota was exceeded or not used under concurrency (per author max/min: $result)" >&2; exit 1; }
 }
+
+# The ranking refresh must not wait for readers (and so never block them): a plain REFRESH takes an exclusive lock and
+# would sit behind a reader's open transaction until the statement timeout; REFRESH ... CONCURRENTLY does not.
+check_ranking_refresh_nonblocking() {
+  echo "concurrency: the ranking refresh does not wait for a reader that holds the view open"
+  cat > "$WORK/conc-reader.sql" <<'SQL'
+BEGIN;
+SELECT count(*) FROM public.story_rankings;
+SELECT pg_sleep(4);
+COMMIT;
+SQL
+  cat > "$WORK/conc-refresh.sql" <<'SQL'
+SET statement_timeout = '3s';
+SELECT public.refresh_rankings();
+SQL
+  [ "$(id -u)" = 0 ] && chmod a+r "$WORK"/conc-reader.sql "$WORK"/conc-refresh.sql
+  lpsql "-f '$WORK/conc-reader.sql' -o /dev/null" & local pid_reader=$!
+  sleep 1
+  lpsql "-f '$WORK/conc-refresh.sql' -o /dev/null" \
+    || { echo "FAIL: refresh_rankings waited on a reader (is it still REFRESH ... CONCURRENTLY?)" >&2; wait "$pid_reader" || true; exit 1; }
+  wait "$pid_reader" || { echo "FAIL: the reader failed" >&2; exit 1; }
+}
