@@ -30,7 +30,7 @@ INSERT INTO chapter_drafts (chapter_id, title, body, updated_by) VALUES
 
 -- 1. cron registration ---------------------------------------------------------------------------------
 DO $$ BEGIN
-  PERFORM tests.ok('three jobs scheduled', (SELECT count(*) = 3 FROM cron.job WHERE jobname LIKE 'storynest-%'));
+  PERFORM tests.ok('the three outbox jobs are scheduled', (SELECT count(*) = 3 FROM cron.job WHERE jobname IN ('storynest-publish-due-chapters', 'storynest-process-outbox', 'storynest-purge-outbox')));
   PERFORM tests.ok('every-minute jobs call the worker functions',
     (SELECT count(*) = 2 FROM cron.job WHERE schedule = '* * * * *'
         AND command IN ('SELECT public.publish_due_chapters()', 'SELECT public.process_outbox()')));

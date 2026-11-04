@@ -4,6 +4,9 @@ export const READING_COMPLETED_PERCENT = 95;
 /** Minimum time between two writes while the reader keeps scrolling. */
 export const PROGRESS_WRITE_INTERVAL_MS = 5000;
 
+/** A chapter counts as read after this long on screen (tab visible): bounces and accidental opens do not count. */
+export const READ_DWELL_MS = 10_000;
+
 export interface ChapterProgress {
   lastBlockId: string | null;
   /** The published version the position refers to. A different current version means the chapter was republished. */

@@ -51,3 +51,21 @@ export async function getStoryProgress(client: DataClient, storyId: string): Pro
   );
   return { currentChapterId: story.current_chapter_id, currentChapterCompleted: chapter?.completed_at != null };
 }
+
+/**
+ * Counts a read for the signed-in user, or for the anonymous id when `anonymousId` is given. The server dedupes
+ * (one read per reader, chapter and day), so calling it twice is harmless. Resolves to whether this call counted.
+ */
+export async function recordChapterRead(
+  client: DataClient,
+  chapterId: string,
+  anonymousId: string | null,
+): Promise<boolean> {
+  const counted = unwrap(
+    await client.rpc("record_chapter_read", {
+      p_chapter_id: chapterId,
+      ...(anonymousId ? { p_anon_id: anonymousId } : {}),
+    }),
+  );
+  return counted === true;
+}
