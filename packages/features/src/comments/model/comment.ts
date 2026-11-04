@@ -1,4 +1,4 @@
-import { COMMENT_STATUS, DB_LIMITS, type CommentStatus } from "@storynest/validation";
+import { COMMENT_STATUS, DB_LIMITS, HIDE_SOURCE, type CommentStatus, type HideSource } from "@storynest/validation";
 import type { AppError } from "../../_shared/errors.ts";
 import { commentText } from "../strings.ts";
 
@@ -32,6 +32,8 @@ export interface Comment {
   body: string | null;
   /** `deleted` also stands for a placeholder: the thread keeps its place, the text and the person are gone. */
   status: CommentStatus;
+  /** Who hid a `hidden` comment: the story's author (can show it again) or a moderator (cannot be undone here). */
+  hiddenBy: HideSource | null;
   /** Kept as the server's text: it is the paging cursor and must not lose its microseconds. */
   createdAt: string;
   edited: boolean;
@@ -40,12 +42,23 @@ export interface Comment {
   replyCount: number;
 }
 
+/** The card status for a comment the story's author hid. The table only knows `hidden`; the card says who did it. */
+export const AUTHOR_HIDDEN_CARD_STATUS = "author_hidden";
+
 const STATUSES: readonly string[] = Object.values(COMMENT_STATUS);
 const isStatus = (value: string): value is CommentStatus => STATUSES.includes(value);
 
+function readStatus(value: string): { status: CommentStatus; hiddenBy: HideSource | null } | null {
+  if (value === AUTHOR_HIDDEN_CARD_STATUS) return { status: COMMENT_STATUS.HIDDEN, hiddenBy: HIDE_SOURCE.AUTHOR };
+  if (!isStatus(value)) return null;
+  return { status: value, hiddenBy: value === COMMENT_STATUS.HIDDEN ? HIDE_SOURCE.MODERATOR : null };
+}
+
 /** A row without the fields a card needs is dropped rather than drawn half-empty. */
 export function toComment(row: CommentCardRow): Comment | null {
-  if (!row.id || !row.chapter_id || !row.created_at || !row.status || !isStatus(row.status)) return null;
+  if (!row.id || !row.chapter_id || !row.created_at || !row.status) return null;
+  const state = readStatus(row.status);
+  if (!state) return null;
   const username = row.author_username;
   const display = row.author_display_name?.trim();
   return {
@@ -57,7 +70,8 @@ export function toComment(row: CommentCardRow): Comment | null {
     authorName: display ? display : username,
     authorUsername: username,
     body: row.body,
-    status: row.status,
+    status: state.status,
+    hiddenBy: state.hiddenBy,
     createdAt: row.created_at,
     edited: row.edited === true,
     likes: Number(row.like_count ?? 0),

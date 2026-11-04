@@ -84,3 +84,13 @@ export async function deleteComment(client: DataClient, commentId: string): Prom
 export async function setCommentLike(client: DataClient, commentId: string, liked: boolean): Promise<number> {
   return Number(unwrap(await client.rpc("set_comment_like", { p_comment_id: commentId, p_liked: liked })) ?? 0);
 }
+
+/** Hides a comment on my story (or shows it again). Returns the card status afterwards. */
+export async function setCommentHidden(client: DataClient, commentId: string, hidden: boolean): Promise<string> {
+  return unwrap(await client.rpc("set_comment_hidden", { p_comment_id: commentId, p_hidden: hidden })) ?? "";
+}
+
+/** True when I own or co-author the story the chapter belongs to. */
+export async function canModerateComments(client: DataClient, chapterId: string): Promise<boolean> {
+  return unwrap(await client.rpc("can_moderate_comments", { p_chapter_id: chapterId })) === true;
+}

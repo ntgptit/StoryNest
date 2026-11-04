@@ -11,16 +11,19 @@ import { ToastProvider } from "../_shared/toast.tsx";
 import { ReaderBlocks } from "../reader/components/reader-blocks.tsx";
 import type { ReaderBlock } from "../reader/index.ts";
 import {
+  canModerateComments,
   deleteComment,
   editComment,
   getBlockCommentCounts,
   listComments,
   listReplies,
   postComment,
+  setCommentHidden,
   setCommentLike,
 } from "./api/comments.api.ts";
 import { CommentThread, useBlockCommentCounts } from "./index.ts";
 import {
+  AUTHOR_HIDDEN_CARD_STATUS,
   COMMENTS_PAGE_SIZE,
   checkBody,
   commentErrorMessage,
@@ -544,5 +547,116 @@ describe("ReaderBlocks", () => {
     expect(await within(dialog).findByText("Bình luận đoạn")).toBeTruthy();
     expect(within(dialog).getByText("Đoạn một có bình luận")).toBeTruthy();
     expect(c.of("list_comments")[0]!.args.p_block_id).toBe(BLOCK);
+  });
+});
+
+describe("moderation by the story's author", () => {
+  const AUTHOR_HIDDEN = AUTHOR_HIDDEN_CARD_STATUS;
+  const asManager = { can_moderate_comments: () => ({ data: true, error: null }) };
+
+  it("reads who hid a comment from the card status", () => {
+    expect(toComment(row(1, { status: "hidden" }))).toMatchObject({ status: "hidden", hiddenBy: "moderator" });
+    expect(toComment(row(1, { status: AUTHOR_HIDDEN }))).toMatchObject({ status: "hidden", hiddenBy: "author" });
+    expect(toComment(row(1, { status: "visible" }))?.hiddenBy).toBeNull();
+    expect(toComment(row(1, { status: "deleted" }))?.hiddenBy).toBeNull();
+  });
+
+  it("calls the two RPCs with their arguments and reads the answers", async () => {
+    const c = fakeClient({
+      set_comment_hidden: () => ({ data: AUTHOR_HIDDEN, error: null }),
+      can_moderate_comments: () => ({ data: true, error: null }),
+    });
+    const client = c as unknown as DataClient;
+    expect(await setCommentHidden(client, cid(1), true)).toBe(AUTHOR_HIDDEN);
+    expect(c.of("set_comment_hidden")[0]?.args).toEqual({ p_comment_id: cid(1), p_hidden: true });
+    expect(await canModerateComments(client, CHAPTER)).toBe(true);
+    expect(c.of("can_moderate_comments")[0]?.args).toEqual({ p_chapter_id: CHAPTER });
+    const no = fakeClient({ can_moderate_comments: () => ({ data: false, error: null }) });
+    expect(await canModerateComments(no as unknown as DataClient, CHAPTER)).toBe(false);
+  });
+
+  it("offers a manager 'hide' on a visible comment of someone else and sends the hide", async () => {
+    const c = fakeClient({
+      ...asManager,
+      list_comments: () => ({ data: [row(1)], error: null }),
+      set_comment_hidden: () => ({ data: AUTHOR_HIDDEN, error: null }),
+    });
+    renderUi(c, thread());
+    const list = await listOf();
+    fireEvent.keyDown(await list.findByRole("button", { name: commentText.item.menu }), { key: "Enter" });
+    expect(screen.queryByRole("menuitem", { name: commentText.item.edit })).toBeNull(); // someone else's text
+    expect(screen.queryByRole("menuitem", { name: commentText.item.show })).toBeNull();
+    fireEvent.click(await screen.findByRole("menuitem", { name: commentText.item.hide }));
+    await waitFor(() => expect(c.of("set_comment_hidden")[0]?.args).toEqual({ p_comment_id: cid(1), p_hidden: true }));
+    await waitFor(() => expect(c.of("list_comments").length).toBeGreaterThan(1)); // the list reloads
+  });
+
+  it("offers 'show again' only for a comment the author hid, and says so", async () => {
+    const c = fakeClient({
+      ...asManager,
+      list_comments: () => ({ data: [row(1, { status: AUTHOR_HIDDEN })], error: null }),
+      set_comment_hidden: () => ({ data: "visible", error: null }),
+    });
+    renderUi(c, thread());
+    const list = await listOf();
+    expect((await list.findByRole("note")).textContent).toBe(commentText.item.hiddenByAuthorForAuthor);
+    fireEvent.keyDown(list.getByRole("button", { name: commentText.item.menu }), { key: "Enter" });
+    expect(screen.queryByRole("menuitem", { name: commentText.item.hide })).toBeNull();
+    fireEvent.click(await screen.findByRole("menuitem", { name: commentText.item.show }));
+    await waitFor(() => expect(c.of("set_comment_hidden")[0]?.args).toEqual({ p_comment_id: cid(1), p_hidden: false }));
+  });
+
+  it("gives no way back for a comment a moderator hid, and says it was a moderator", async () => {
+    const c = fakeClient({
+      ...asManager,
+      list_comments: () => ({ data: [row(1, { status: "hidden" })], error: null }),
+    });
+    renderUi(c, thread());
+    const list = await listOf();
+    expect((await list.findByRole("note")).textContent).toBe(commentText.item.hiddenByModeratorForAuthor);
+    expect(list.queryByRole("button", { name: commentText.item.menu })).toBeNull();
+  });
+
+  it("tells the commenter who hid their comment", async () => {
+    const c = fakeClient({
+      list_comments: () => ({
+        data: [row(1, { status: AUTHOR_HIDDEN, author_id: TEST_USER_ID, body: "Của tôi" })],
+        error: null,
+      }),
+    });
+    renderUi(c, thread());
+    const list = await listOf();
+    expect((await list.findByRole("note")).textContent).toBe(commentText.item.hiddenByAuthorNotice);
+    expect(list.getByText("Của tôi")).toBeTruthy();
+    expect(list.queryByRole("button", { name: commentText.item.menu })).toBeNull();
+  });
+
+  it("shows an error when the server refuses", async () => {
+    const c = fakeClient({
+      ...asManager,
+      list_comments: () => ({ data: [row(1)], error: null }),
+      set_comment_hidden: () => ({ data: null, error: { code: "PT409", message: "x" } }),
+    });
+    renderUi(c, thread());
+    const list = await listOf();
+    fireEvent.keyDown(await list.findByRole("button", { name: commentText.item.menu }), { key: "Enter" });
+    fireEvent.click(await screen.findByRole("menuitem", { name: commentText.item.hide }));
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("error", commentText.errors.conflict));
+  });
+
+  it("asks nothing for a guest and gives no menu to a plain reader", async () => {
+    const guest = fakeClient({ list_comments: () => ({ data: [row(1)], error: null }) });
+    renderUi(guest, thread(), false);
+    await listOf();
+    expect(guest.of("can_moderate_comments")).toHaveLength(0);
+    cleanup();
+    const reader = fakeClient({
+      list_comments: () => ({ data: [row(1)], error: null }),
+      can_moderate_comments: () => ({ data: false, error: null }),
+    });
+    renderUi(reader, thread());
+    const list = await listOf();
+    await waitFor(() => expect(reader.of("can_moderate_comments")).toHaveLength(1));
+    expect(list.queryByRole("button", { name: commentText.item.menu })).toBeNull();
   });
 });

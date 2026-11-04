@@ -22,6 +22,10 @@
             "public",
             "unlisted"
         ],
+        "comment_hides.source": [
+            "author",
+            "moderator"
+        ],
         "content_reports.status": [
             "dismissed",
             "pending",

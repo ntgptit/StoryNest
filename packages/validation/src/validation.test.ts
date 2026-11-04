@@ -6,6 +6,7 @@ import {
   CHAPTER_STATUSES,
   COLLABORATOR_ROLES,
   COMMENT_STATUSES,
+  HIDE_SOURCES,
   INVITATION_STATUSES,
   DB_LIMITS,
   REPORT_STATUSES,
@@ -67,6 +68,7 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["story_invitations.status", INVITATION_STATUSES],
     ["story_invitations.collaborator_role", COLLABORATOR_ROLES],
     ["comments.status", COMMENT_STATUSES],
+    ["comment_hides.source", HIDE_SOURCES],
     ["content_reports.status", REPORT_STATUSES],
   ];
   it.each(cases)("%s", (column, values) => {
