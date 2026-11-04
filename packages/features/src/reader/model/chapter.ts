@@ -131,6 +131,9 @@ export function adjacentChapters(chapters: readonly ChapterListItem[], chapterSl
 }
 
 /** Stable DOM id of a block: the anchor for deep links and, later, paragraph comments (WBS M2). */
+/** `id` of the comments section at the end of the reader page: notifications about a reply link to it. */
+export const COMMENTS_ANCHOR = "comments";
+
 export function blockAnchor(blockId: string): string {
   return `b-${blockId}`;
 }
