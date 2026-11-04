@@ -10,14 +10,17 @@ import { useForm } from "react-hook-form";
 import { AuthCard, FormError } from "../components/auth-card.tsx";
 import { TextLink } from "../components/auth-links.tsx";
 import { useRequestPasswordReset } from "../hooks/use-auth-actions.ts";
-import { authErrorMessage } from "../model/messages.ts";
-import { translateErrors } from "../model/translated-resolver.ts";
+import { translateErrors } from "../../_shared/form-resolver.ts";
+import { authErrorMessage, validationMessage } from "../model/messages.ts";
 import { authText } from "../strings.ts";
 
 const t = authText.forgot;
 
 export function ForgotPasswordScreen() {
-  const form = useForm({ resolver: translateErrors(zodResolver(forgotPasswordSchema)), defaultValues: { email: "" } });
+  const form = useForm({
+    resolver: translateErrors(zodResolver(forgotPasswordSchema), validationMessage),
+    defaultValues: { email: "" },
+  });
   const request = useRequestPasswordReset();
   const [sent, setSent] = useState(false);
   const submit = form.handleSubmit((values: ForgotPassword) =>

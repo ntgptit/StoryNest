@@ -3,3 +3,4 @@
 export * from "./_shared/index.ts";
 export * from "./auth/index.ts";
 export * from "./shell/index.ts";
+export * from "./profile/index.ts";

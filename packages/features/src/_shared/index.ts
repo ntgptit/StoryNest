@@ -14,6 +14,7 @@ export {
 } from "./platform.tsx";
 export { ToastProvider, useAppToast, type AppToast, type ToastKind, type ToastPort } from "./toast.tsx";
 export { ErrorBoundary } from "./error-boundary.tsx";
+export { translateErrors } from "./form-resolver.ts";
 export {
   AuthProvider,
   authKeys,

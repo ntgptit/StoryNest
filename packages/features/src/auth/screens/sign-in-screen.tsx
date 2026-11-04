@@ -11,8 +11,8 @@ import { AuthCard, FormError } from "../components/auth-card.tsx";
 import { TextLink } from "../components/auth-links.tsx";
 import { useSignIn } from "../hooks/use-auth-actions.ts";
 import { withNext } from "../model/auth-urls.ts";
-import { authErrorMessage } from "../model/messages.ts";
-import { translateErrors } from "../model/translated-resolver.ts";
+import { translateErrors } from "../../_shared/form-resolver.ts";
+import { authErrorMessage, validationMessage } from "../model/messages.ts";
 import { authText } from "../strings.ts";
 
 const t = authText.signIn;
@@ -29,7 +29,7 @@ export function SignInScreen({
   onSignedIn: () => void;
 }) {
   const form = useForm({
-    resolver: translateErrors(zodResolver(signInSchema)),
+    resolver: translateErrors(zodResolver(signInSchema), validationMessage),
     defaultValues: { email: "", password: "" },
   });
   const signIn = useSignIn();

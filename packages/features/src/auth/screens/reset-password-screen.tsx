@@ -12,8 +12,8 @@ import { useAppToast } from "../../_shared/toast.tsx";
 import { AuthCard, FormError } from "../components/auth-card.tsx";
 import { TextLink } from "../components/auth-links.tsx";
 import { useUpdatePassword } from "../hooks/use-auth-actions.ts";
-import { authErrorMessage } from "../model/messages.ts";
-import { translateErrors } from "../model/translated-resolver.ts";
+import { translateErrors } from "../../_shared/form-resolver.ts";
+import { authErrorMessage, validationMessage } from "../model/messages.ts";
 import { authText } from "../strings.ts";
 
 const t = authText.reset;
@@ -26,7 +26,7 @@ export function ResetPasswordScreen({ onDone }: { onDone: () => void }) {
   const auth = useAuth();
   const toast = useAppToast();
   const form = useForm({
-    resolver: translateErrors(zodResolver(resetPasswordSchema)),
+    resolver: translateErrors(zodResolver(resetPasswordSchema), validationMessage),
     defaultValues: { password: "", confirmPassword: "" },
   });
   const update = useUpdatePassword();

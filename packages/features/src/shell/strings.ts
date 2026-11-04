@@ -10,6 +10,7 @@ export const shellText = {
   nav: { home: "Trang chủ", me: "Tôi" },
   me: {
     title: "Hồ sơ của bạn",
+    edit: "Chỉnh sửa hồ sơ",
     description: "Thông tin tài khoản.",
     email: "Email",
     username: "Tên người dùng",

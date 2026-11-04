@@ -20,8 +20,8 @@ import { AuthCard, FormError } from "../components/auth-card.tsx";
 import { TextLink } from "../components/auth-links.tsx";
 import { useSignUp } from "../hooks/use-auth-actions.ts";
 import { withNext } from "../model/auth-urls.ts";
-import { authErrorMessage } from "../model/messages.ts";
-import { translateErrors } from "../model/translated-resolver.ts";
+import { translateErrors } from "../../_shared/form-resolver.ts";
+import { authErrorMessage, validationMessage } from "../model/messages.ts";
 import { authText } from "../strings.ts";
 
 const t = authText.signUp;
@@ -36,7 +36,7 @@ export function SignUpScreen({
   onSignedUp: () => void;
 }) {
   const form = useForm({
-    resolver: translateErrors(zodResolver(signUpSchema)),
+    resolver: translateErrors(zodResolver(signUpSchema), validationMessage),
     defaultValues: { email: "", password: "", username: "", display_name: "" },
   });
   const signUp = useSignUp(next);

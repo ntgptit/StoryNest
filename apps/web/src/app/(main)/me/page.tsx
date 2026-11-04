@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { shellText } from "@storynest/features";
+import { AppLink, shellText } from "@storynest/features";
+import { Button } from "@storynest/ui/components/button";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 
 import { requireUser } from "@/lib/auth/require-user";
@@ -9,7 +10,7 @@ export const metadata: Metadata = { title: "Hồ sơ", robots: { index: false } 
 
 const t = shellText.me;
 
-/** Minimal profile view; editing arrives with WBS WP 1.4. Protected twice: proxy redirect + requireUser here. */
+/** Profile view with a link to the editor. Protected twice: proxy redirect + requireUser here. */
 export default async function MePage() {
   const user = await requireUser("/me");
   const supabase = await createSupabaseServerClient();
@@ -21,7 +22,15 @@ export default async function MePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t.title} description={t.description} />
+      <PageHeader
+        title={t.title}
+        description={t.description}
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <AppLink href="/me/edit">{t.edit}</AppLink>
+          </Button>
+        }
+      />
       {profile ? (
         <dl className="grid gap-4 rounded-xl border bg-card p-5 text-card-foreground sm:grid-cols-[10rem_1fr]">
           <dt className="text-sm text-muted-foreground">{t.displayName}</dt>
