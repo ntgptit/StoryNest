@@ -31,6 +31,7 @@ export const studioText = {
     deletedBadge: "Đã xóa",
     moveUp: "Chuyển lên",
     moveDown: "Chuyển xuống",
+    write: "Soạn nội dung",
     rename: "Đổi đường dẫn",
     renameTitle: "Đổi đường dẫn chương",
     renameDescription:
