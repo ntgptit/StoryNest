@@ -21,6 +21,32 @@ export const collaboratorRoleSchema = z.enum(COLLABORATOR_ROLES);
 export const commentStatusSchema = z.enum(COMMENT_STATUSES);
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
 
+// Named constants for the values code compares or filters on, so no query or condition spells a literal like
+// "published". `satisfies` makes the compiler reject a value that is not in the enum; validation.test.ts checks
+// that every enum value has a constant. Add one here when code needs a new value.
+export const STORY_STATUS = {
+  DRAFT: "draft",
+  ONGOING: "ongoing",
+  COMPLETED: "completed",
+  HIATUS: "hiatus",
+} as const satisfies Record<string, StoryStatus>;
+export const VISIBILITY = { PRIVATE: "private", UNLISTED: "unlisted", PUBLIC: "public" } as const satisfies Record<
+  string,
+  Visibility
+>;
+export const CHAPTER_STATUS = {
+  DRAFT: "draft",
+  SCHEDULED: "scheduled",
+  PUBLISHED: "published",
+  ARCHIVED: "archived",
+} as const satisfies Record<string, ChapterStatus>;
+export const BLOCK_TYPE = {
+  PARAGRAPH: "paragraph",
+  HEADING: "heading",
+  IMAGE: "image",
+  DIVIDER: "divider",
+} as const satisfies Record<string, BlockType>;
+
 export type StoryStatus = z.infer<typeof storyStatusSchema>;
 export type Visibility = z.infer<typeof visibilitySchema>;
 export type ChapterStatus = z.infer<typeof chapterStatusSchema>;

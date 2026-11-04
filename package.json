@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "gen:feature": "node scripts/gen-feature.mjs",
-    "check:tokens": "node scripts/check-tokens.mjs"
+    "check:tokens": "node scripts/check-tokens.mjs",
+    "check:hardcode": "node scripts/check-hardcode.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

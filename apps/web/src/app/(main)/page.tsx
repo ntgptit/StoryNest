@@ -2,6 +2,7 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { createQueryClient, prefetchDiscovery } from "@storynest/features";
 
 import { isSupabaseConfigured } from "@/lib/env";
+import { appText } from "@/lib/strings";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { DiscoverHome } from "./discover-home";
@@ -30,11 +31,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <div className="flex flex-col gap-8 py-2 sm:py-6">
       <header className="flex flex-col gap-2">
         <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-          Nơi những câu chuyện được viết và được đọc.
+          {appText.home.heading}
         </h1>
-        <p className="max-w-xl text-base text-muted-foreground">
-          Khám phá truyện mới cập nhật và theo dõi tác giả yêu thích của bạn.
-        </p>
+        <p className="max-w-xl text-base text-muted-foreground">{appText.home.intro}</p>
       </header>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <DiscoverHome categorySlug={categorySlug} />

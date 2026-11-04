@@ -8,8 +8,8 @@ export function slugify(input: string, options: { maxLength?: number; fallback?:
   const slug = input
     .normalize("NFD")
     .replace(/\p{M}+/gu, "") // strip combining marks (Vietnamese tones, circumflex, horn...)
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
+    .replace(/đ/g, "d") // hardcode-check-ignore: diacritics are the point of slugify
+    .replace(/Đ/g, "D") // hardcode-check-ignore: diacritics are the point of slugify
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")

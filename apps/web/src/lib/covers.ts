@@ -11,3 +11,12 @@ export function getCoverUrlResolver(): ((key: string) => string) | undefined {
   const { url } = getSupabaseEnv();
   return (key) => buildPublicStorageUrl(url, COVERS_BUCKET, key);
 }
+
+/** Public bucket holding images used inside chapters (created with the Storage setup, WBS WP 3.3). */
+const CHAPTER_IMAGES_BUCKET = "chapter-images";
+
+export function getImageUrlResolver(): ((key: string) => string) | undefined {
+  if (!isSupabaseConfigured()) return undefined;
+  const { url } = getSupabaseEnv();
+  return (key) => buildPublicStorageUrl(url, CHAPTER_IMAGES_BUCKET, key);
+}

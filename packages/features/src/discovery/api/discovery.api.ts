@@ -1,3 +1,4 @@
+import { STORY_STATUS, VISIBILITY } from "@storynest/validation";
 import { decodeCursor, encodeCursor, isUuid } from "@storynest/utils";
 import type { DataClient } from "../../_shared/client.ts";
 import { AppError, unwrap } from "../../_shared/errors.ts";
@@ -56,9 +57,9 @@ export async function listLatestStories(
   let query = client
     .from("stories")
     .select(STORY_COLUMNS)
-    .eq("visibility", "public")
+    .eq("visibility", VISIBILITY.PUBLIC)
     .is("deleted_at", null)
-    .neq("status", "draft");
+    .neq("status", STORY_STATUS.DRAFT);
 
   if (!options.includeMature) query = query.eq("is_mature", false);
   if (options.language) query = query.eq("language_code", options.language);

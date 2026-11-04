@@ -5,8 +5,9 @@ import { PageHeader } from "@storynest/ui/widgets/page-header";
 
 import { requireUser } from "@/lib/auth/require-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { appText } from "@/lib/strings";
 
-export const metadata: Metadata = { title: "Hồ sơ", robots: { index: false } };
+export const metadata: Metadata = { title: appText.pageTitle.profile, robots: { index: false } };
 
 const t = shellText.me;
 

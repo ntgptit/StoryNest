@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
+import { appText } from "@/lib/strings";
+
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: { default: "StoryNest", template: "%s · StoryNest" },
-  description: "Đọc và đăng truyện trực tuyến.",
+  title: { default: appText.siteName, template: appText.titleTemplate },
+  description: appText.siteDescription,
 };
 
 export const viewport: Viewport = {

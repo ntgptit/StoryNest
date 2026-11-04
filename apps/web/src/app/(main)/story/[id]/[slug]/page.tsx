@@ -5,6 +5,7 @@ import { isIndexable } from "@storynest/features";
 import { excerpt } from "@storynest/utils";
 
 import { getCoverUrlResolver } from "@/lib/covers";
+import { appText } from "@/lib/strings";
 import { loadStory } from "@/lib/story/load-story";
 
 import { StoryView } from "./story-view";
@@ -14,7 +15,7 @@ type Params = Promise<{ id: string; slug: string }>;
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
   const { story } = await loadStory(id);
-  if (!story) return { title: "Truyện", robots: { index: false } };
+  if (!story) return { title: appText.pageTitle.storyFallback, robots: { index: false } };
 
   const coverUrl = story.coverStorageKey ? getCoverUrlResolver()?.(story.coverStorageKey) : undefined;
   const description = excerpt(story.synopsis, 160);
