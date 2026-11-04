@@ -15,6 +15,22 @@ export const en = {
     signIn: "Sign in",
     missingProfile: "No profile found for this account.",
   },
+  avatar: {
+    add: "Add a profile picture",
+    change: "Change picture",
+    remove: "Remove picture",
+    uploading: "Uploading…",
+    inputLabel: "Choose a profile picture",
+    hint: "JPG, PNG or WebP, up to 10 MB. The picture is cropped to a square from the centre.",
+    saved: "Profile picture updated.",
+    removed: "Profile picture removed.",
+    errors: {
+      type: "Only JPG, PNG or WebP pictures can be used.",
+      tooLarge: "That picture is too large (10 MB at most).",
+      unreadable: "This picture could not be read. Try another one.",
+      rejected: "The server did not accept this picture. Try another one.",
+    },
+  },
   validation: {
     usernameInvalid: "Username can only contain letters, numbers and underscores (3-30 characters).",
     displayNameRequired: "Please enter a display name.",
