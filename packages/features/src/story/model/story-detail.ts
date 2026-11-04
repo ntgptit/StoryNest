@@ -1,3 +1,4 @@
+import { VISIBILITIES, VISIBILITY, type Visibility } from "@storynest/validation";
 import { storyHref, toStorySummary, type StoryListRow, type StorySummary } from "../../discovery/index.ts";
 
 /** One row of the story-page query: the discovery row plus the fields only the detail page needs. */
@@ -7,20 +8,18 @@ export interface StoryDetailRow extends StoryListRow {
 }
 
 export interface StoryDetail extends StorySummary {
-  visibility: "private" | "unlisted" | "public";
+  visibility: Visibility;
   createdAt: string;
 }
 
-const VISIBILITIES = ["private", "unlisted", "public"] as const;
-
 export function toStoryDetail(row: StoryDetailRow): StoryDetail {
-  const visibility = VISIBILITIES.find((v) => v === row.visibility) ?? "private";
+  const visibility = VISIBILITIES.find((v) => v === row.visibility) ?? VISIBILITY.PRIVATE;
   return { ...toStorySummary(row), visibility, createdAt: row.created_at };
 }
 
 /** Only public stories belong in search engines; unlisted ones are reachable by link but must not be indexed. */
 export function isIndexable(story: Pick<StoryDetail, "visibility">): boolean {
-  return story.visibility === "public";
+  return story.visibility === VISIBILITY.PUBLIC;
 }
 
 /** Row of the published-chapter query. `version` is the currently published snapshot (title, size). */

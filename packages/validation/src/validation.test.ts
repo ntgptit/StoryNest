@@ -9,6 +9,10 @@ import {
   DB_LIMITS,
   REPORT_STATUSES,
   STORY_STATUSES,
+  STORY_STATUS,
+  VISIBILITY,
+  CHAPTER_STATUS,
+  BLOCK_TYPE,
   VISIBILITIES,
   chapterBodySchema,
   chapterDraftSaveSchema,
@@ -52,6 +56,17 @@ describe("enums match the CHECK constraints of the real schema", () => {
   });
   it("every CHECK enum in the schema is covered here", () => {
     expect(Object.keys(contract.enums).sort()).toEqual(cases.map(([c]) => c).sort());
+  });
+});
+
+describe("named enum constants", () => {
+  it.each([
+    ["STORY_STATUS", STORY_STATUS, STORY_STATUSES],
+    ["VISIBILITY", VISIBILITY, VISIBILITIES],
+    ["CHAPTER_STATUS", CHAPTER_STATUS, CHAPTER_STATUSES],
+    ["BLOCK_TYPE", BLOCK_TYPE, BLOCK_TYPES],
+  ] as const)("%s has exactly one constant per enum value", (_name, constants, values) => {
+    expect(sorted(Object.values(constants))).toEqual(sorted(values));
   });
 });
 

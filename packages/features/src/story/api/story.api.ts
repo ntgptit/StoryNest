@@ -1,4 +1,5 @@
 import { isUuid } from "@storynest/utils";
+import { CHAPTER_STATUS } from "@storynest/validation";
 import type { DataClient } from "../../_shared/client.ts";
 import { unwrap } from "../../_shared/errors.ts";
 import { STORY_COLUMNS } from "../../discovery/index.ts";
@@ -45,7 +46,7 @@ export async function listStoryChapters(client: DataClient, storyId: string): Pr
         .from("chapters")
         .select(CHAPTER_COLUMNS)
         .eq("story_id", storyId)
-        .eq("status", "published")
+        .eq("status", CHAPTER_STATUS.PUBLISHED)
         .is("deleted_at", null)
         .order("sort_order", { ascending: true })
         .returns<ChapterRow[]>(),

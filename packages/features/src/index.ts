@@ -6,3 +6,4 @@ export * from "./shell/index.ts";
 export * from "./profile/index.ts";
 export * from "./discovery/index.ts";
 export * from "./story/index.ts";
+export * from "./reader/index.ts";

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 import { SignInPage } from "../auth-pages";
+import { appText } from "@/lib/strings";
 
-export const metadata: Metadata = { title: "Đăng nhập", robots: { index: false } };
+export const metadata: Metadata = { title: appText.pageTitle.login, robots: { index: false } };
 
 export default async function LoginPage({
   searchParams,
