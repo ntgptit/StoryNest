@@ -510,6 +510,23 @@ describe("CommentItem actions", () => {
     expect(list.queryByRole("button", { name: commentText.item.menu })).toBeNull(); // a hidden comment cannot be edited
   });
 
+  it("offers a report button on other people's comments only, never on your own or a hidden one", async () => {
+    const c = fakeClient({
+      list_comments: () => ({
+        data: [
+          row(1, { author_id: OTHER_USER }),
+          row(2, { author_id: TEST_USER_ID, body: "Của tôi" }),
+          row(3, { author_id: OTHER_USER, status: "hidden", body: "Bị ẩn" }),
+        ],
+        error: null,
+      }),
+    });
+    renderUi(c, thread());
+    const list = await listOf();
+    await list.findByText("Nội dung 1");
+    expect(list.getAllByRole("button", { name: "Báo cáo bình luận" })).toHaveLength(1);
+  });
+
   it("shows an edited mark", async () => {
     renderUi(fakeClient({ list_comments: () => ({ data: [row(1, { edited: true })], error: null }) }), thread());
     expect((await listOf()).getByText(`(${commentText.item.edited})`)).toBeTruthy();

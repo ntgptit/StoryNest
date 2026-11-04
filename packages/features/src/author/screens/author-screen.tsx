@@ -10,6 +10,7 @@ import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
 import { AppLink } from "../../_shared/platform.tsx";
 import { discoveryText, toStoryCardData, useLatestStories } from "../../discovery/index.ts";
+import { ReportButton } from "../../moderation/index.ts";
 import { FollowAuthorButton } from "../components/follow-author-button.tsx";
 import { useAuthorProfile } from "../hooks/use-author.ts";
 import type { AuthorProfile } from "../model/author.ts";
@@ -82,7 +83,10 @@ function AuthorPage({
             {profile.bio.trim() === "" ? t.noBio : profile.bio}
           </p>
         </div>
-        <FollowAuthorButton profile={profile} />
+        <div className="flex flex-col items-start gap-2">
+          <FollowAuthorButton profile={profile} />
+          <ReportButton kind="user" targetId={profile.userId} ownerId={profile.userId} />
+        </div>
       </header>
 
       <section aria-label={t.storiesTitle} className="flex flex-col gap-3">

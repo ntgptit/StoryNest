@@ -29,6 +29,7 @@ export const commentText = {
     reply: "Trả lời",
     showReplies: (count: number) => `Xem ${count} trả lời`,
     hideReplies: "Ẩn trả lời",
+    report: "Báo cáo",
     edit: "Sửa",
     delete: "Xóa",
     saveEdit: "Lưu",

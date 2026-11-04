@@ -146,7 +146,7 @@ BEGIN
 
   -- 8. moderation: hidden for others, visible to its author ---------------------------------------------------------------------------------
   RESET ROLE; PERFORM tests.act_as(m, 'authenticated', 'moderator');
-  PERFORM tests.rows('moderator hides a comment', format('UPDATE comments SET status = ''hidden'' WHERE id = %L', k1), 1);
+  PERFORM tests.ok('moderator hides a comment', public.moderate('hide_comment', k1, 'test reason') = 'hidden');
   RESET ROLE; PERFORM tests.act_as(o);
   PERFORM tests.count_is('others no longer see it', format('SELECT 1 FROM public.list_comments(%L, NULL)', ch1), 0);
   RESET ROLE; PERFORM tests.act_as(r);
@@ -156,7 +156,7 @@ BEGIN
   PERFORM tests.fails_with('nor edit it', format('SELECT public.edit_comment(%L, ''x'')', k1), 'PT404');
   RESET ROLE; PERFORM tests.act_as(m, 'authenticated', 'moderator');
   PERFORM tests.ok('a moderator sees it', (SELECT count(*) = 1 AND min(body) = 'Sửa lại' FROM public.list_comments(ch1, NULL)));
-  PERFORM tests.rows('moderator restores it', format('UPDATE comments SET status = ''visible'' WHERE id = %L', k1), 1);
+  PERFORM tests.ok('moderator restores it', public.moderate('restore_comment', k1, 'test reason') = 'visible');
 
   -- 9. likes ------------------------------------------------------------------------------------------------------------------------------------
   RESET ROLE; PERFORM tests.act_as(NULL, 'anon');

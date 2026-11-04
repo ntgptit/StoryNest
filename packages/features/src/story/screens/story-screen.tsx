@@ -15,6 +15,7 @@ import { progressText, resolveContinueChapter, useStoryProgress } from "../../pr
 import { AdultGate } from "../../adult-content/index.ts";
 import { authorHref } from "../../author/index.ts";
 import { SimilarStories } from "../../recommendations/index.ts";
+import { ReportButton } from "../../moderation/index.ts";
 import { discoveryText, homeHref, statusLabel } from "../../discovery/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
@@ -107,6 +108,9 @@ export function StoryScreen({
             ) : null}
 
             <StoryActions storyId={data.id} />
+            <div>
+              <ReportButton kind="story" targetId={data.id} />
+            </div>
           </div>
         </header>
 

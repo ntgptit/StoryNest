@@ -355,6 +355,7 @@ describe("ReaderScreen", () => {
     expect(prev.getAttribute("href")).toBe(`/story/${STORY_ID}/rung-suong-mu/chuong-1`);
     expect(next.getAttribute("href")).toBe(`/story/${STORY_ID}/rung-suong-mu/chuong-3`);
     expect(screen.getByRole("progressbar", { name: readerText.progress })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Báo cáo chương" })).toBeTruthy();
   });
 
   it("does not turn database text into HTML", async () => {

@@ -117,7 +117,7 @@ BEGIN
 
   -- 5. a moderator's hide is out of the author's reach ---------------------------------------------------------------------
   RESET ROLE; PERFORM tests.act_as(m, 'authenticated', 'moderator');
-  UPDATE comments SET status = 'hidden' WHERE id = k2;
+  PERFORM public.moderate('hide_comment', k2, 'test reason');
   RESET ROLE;
   PERFORM tests.ok('recorded as the moderator''s', (SELECT source = 'moderator' AND hidden_by = m FROM comment_hides WHERE comment_id = k2));
   PERFORM tests.act_as(o);
@@ -134,15 +134,15 @@ BEGIN
   RESET ROLE;
   -- the moderator shows it, then the author hides it: now it is the author's and the author can show it again
   PERFORM tests.act_as(m, 'authenticated', 'moderator');
-  UPDATE comments SET status = 'visible' WHERE id = k2;
+  PERFORM public.moderate('restore_comment', k2, 'test reason');
   RESET ROLE;
   PERFORM tests.ok('showing it removes the record', NOT EXISTS (SELECT 1 FROM comment_hides WHERE comment_id = k2));
   PERFORM tests.act_as(o);
   PERFORM public.set_comment_hidden(k2, true);
   RESET ROLE;
   PERFORM tests.act_as(m, 'authenticated', 'moderator');
-  UPDATE comments SET status = 'visible' WHERE id = k2;
-  UPDATE comments SET status = 'hidden' WHERE id = k2;      -- the moderator hides what the author had shown again
+  PERFORM public.moderate('restore_comment', k2, 'test reason');
+  PERFORM public.moderate('hide_comment', k2, 'test reason');      -- the moderator hides what the author had shown again
   RESET ROLE;
   PERFORM tests.ok('a later moderator hide overwrites the author''s record', (SELECT source = 'moderator' FROM comment_hides WHERE comment_id = k2));
   PERFORM tests.act_as(o);

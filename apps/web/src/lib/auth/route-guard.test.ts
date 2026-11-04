@@ -11,6 +11,8 @@ describe("isProtectedPath", () => {
     "/settings/account",
     "/notifications",
     "/following",
+    "/moderation",
+    "/moderation/reports",
   ])("%s is protected", (path) => expect(isProtectedPath(path)).toBe(true));
   it.each(["/", "/login", "/story/1/a", "/members", "/menu", "/studio-fans", "/library-of-congress", "/dev/gallery"])(
     "%s is public (prefix matching is by path segment, not by string)",
