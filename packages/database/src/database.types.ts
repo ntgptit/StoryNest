@@ -1071,6 +1071,7 @@ export type Database = {
       tags: {
         Row: {
           created_at: string
+          created_by: string | null
           display_name: string
           id: number
           slug: string
@@ -1078,17 +1079,26 @@ export type Database = {
         ComputedFields: never
         Insert: {
           created_at?: string
+          created_by?: string | null
           display_name: string
           id?: never
           slug: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           display_name?: string
           id?: never
           slug?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tags_created_by_fkey"
+            columns: ["created_by"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_chapter_progress: {
         Row: {
@@ -1385,6 +1395,15 @@ export type Database = {
           status: string
         }[]
       }
+      popular_tags: {
+        Args: { p_limit?: number }
+        Returns: {
+          display_name: string
+          slug: string
+          stories_count: number
+          tag_id: number
+        }[]
+      }
       post_comment: {
         Args: {
           p_block_id: string
@@ -1510,7 +1529,16 @@ export type Database = {
         Args: { p_saved: boolean; p_story_id: string }
         Returns: number
       }
+      set_story_tags: {
+        Args: { p_names: string[]; p_story_id: string }
+        Returns: {
+          display_name: string
+          slug: string
+          tag_id: number
+        }[]
+      }
       story_role: { Args: { p_story_id: string }; Returns: string }
+      tag_slug: { Args: { p_name: string }; Returns: string }
       unarchive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       unpublish_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
     }

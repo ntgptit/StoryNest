@@ -12,24 +12,27 @@ import { rootCategories } from "../model/categories.ts";
 import { toStoryCardData } from "../model/story-card.ts";
 import { discoveryText } from "../strings.ts";
 import { CategoryChips } from "./category-chips.tsx";
+import { TagFilters } from "./tag-filters.tsx";
 
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
 /** Home feed: latest updated public stories, filterable by category (the filter lives in the URL as a link). */
 export function DiscoverScreen({
   categorySlug,
+  tagSlug,
   pageSize,
   locale = "vi",
   coverUrlFor,
 }: {
   categorySlug?: string | undefined;
+  tagSlug?: string | undefined;
   pageSize?: number | undefined;
   locale?: string;
   /** Resolves a cover storage key to a public URL (the app knows the Supabase project URL). */
   coverUrlFor?: ((key: string) => string) | undefined;
 }) {
   const categories = useCategories();
-  const feed = useLatestStories({ categorySlug, pageSize }, categories.data);
+  const feed = useLatestStories({ categorySlug, tagSlug, pageSize }, categories.data);
 
   const stories = feed.data?.pages.flatMap((page) => page.items) ?? [];
   const labels = {
@@ -46,10 +49,12 @@ export function DiscoverScreen({
       </h2>
 
       {categories.data ? (
-        <CategoryChips categories={rootCategories(categories.data)} activeSlug={categorySlug} />
+        <CategoryChips categories={rootCategories(categories.data)} activeSlug={categorySlug} tagSlug={tagSlug} />
       ) : (
         <Skeleton className="h-9 w-full max-w-md rounded-full" aria-hidden />
       )}
+
+      <TagFilters categorySlug={categorySlug} tagSlug={tagSlug} />
 
       {failed && stories.length === 0 ? (
         <ErrorState
@@ -68,7 +73,11 @@ export function DiscoverScreen({
           ))}
         </div>
       ) : stories.length === 0 ? (
-        <EmptyState icon={Library} title={discoveryText.empty.title} description={discoveryText.empty.description} />
+        <EmptyState
+          icon={Library}
+          title={tagSlug ? discoveryText.emptyTag.title : discoveryText.empty.title}
+          description={tagSlug ? discoveryText.emptyTag.description : discoveryText.empty.description}
+        />
       ) : (
         <>
           <InfiniteList

@@ -377,7 +377,7 @@ describe("SearchScreen", () => {
     });
     renderUi(tags.client, <SearchScreen term="lang man" tab="tags" />);
     const tagList = within(await screen.findByRole("list", { name: t.tabs.tags }));
-    expect(tagList.getByText("Lãng mạn")).toBeTruthy();
+    expect(tagList.getByRole("link", { name: /Lãng mạn/ }).getAttribute("href")).toBe("/?tag=lang-man");
     expect(tagList.getByText(t.tagStoriesCount(5))).toBeTruthy();
   });
 });

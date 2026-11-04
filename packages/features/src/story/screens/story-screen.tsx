@@ -12,7 +12,7 @@ import { cn } from "@storynest/ui/lib/utils";
 import { formatCount } from "@storynest/utils";
 import { AppLink } from "../../_shared/platform.tsx";
 import { progressText, resolveContinueChapter, useStoryProgress } from "../../progress/index.ts";
-import { discoveryText, statusLabel } from "../../discovery/index.ts";
+import { discoveryText, homeHref, statusLabel } from "../../discovery/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
 import { chapterHref } from "../model/story-detail.ts";
@@ -107,7 +107,9 @@ export function StoryScreen({
           <ul aria-label={storyText.tagsLabel} className="flex flex-wrap gap-1.5 pt-1">
             {data.tags.map((tag) => (
               <li key={tag.slug}>
-                <Badge variant="outline">#{tag.name}</Badge>
+                <AppLink href={homeHref({ tagSlug: tag.slug })} aria-label={storyText.tagLink(tag.name)}>
+                  <Badge variant="outline">#{tag.name}</Badge>
+                </AppLink>
               </li>
             ))}
           </ul>

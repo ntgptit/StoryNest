@@ -10,6 +10,7 @@ export const storyText = {
   noSynopsis: "Tác giả chưa viết phần giới thiệu.",
   byAuthor: "Tác giả",
   tagsLabel: "Thẻ",
+  tagLink: (name: string) => `Xem truyện có thẻ ${name}`,
   library: {
     follow: "Theo dõi",
     following: "Đang theo dõi",

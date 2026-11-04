@@ -5,6 +5,7 @@ import { AppError, unwrap } from "../../_shared/errors.ts";
 import { DEFAULT_PAGE_SIZE, type LatestStoriesFilter } from "../keys.ts";
 import { categoryIdsFor, type Category } from "../model/categories.ts";
 import { toStorySummary, type StoryListRow, type StorySummary } from "../model/story-card.ts";
+import { toPopularTag, type PopularTag, type PopularTagRow } from "../model/popular-tags.ts";
 
 // One request returns the story with its author, category, counters and tags: no per-card follow-up queries.
 // The explicit relationship name is required: stories and app_users are linked several ways (owner, collaborators,
@@ -16,6 +17,11 @@ export const STORY_COLUMNS = [
   "stats:story_stats(reads, votes, comments, followers)",
   "story_tags(tag:tags(slug, display_name))",
 ].join(", ");
+
+// Filtering by tag needs an inner join, which must not disturb the `story_tags` embed that feeds the card: it gets its
+// own alias. Rows come back with an extra `tagFilter` field that the mapper ignores.
+const TAG_FILTER_COLUMN = "tagFilter:story_tags!inner(tag:tags!inner(slug))";
+const TAG_FILTER_PATH = "tagFilter.tag.slug";
 
 export interface StoryPage {
   items: StorySummary[];
@@ -54,9 +60,10 @@ export async function listLatestStories(
 ): Promise<StoryPage> {
   const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
 
+  const columns = options.tagSlug ? `${STORY_COLUMNS}, ${TAG_FILTER_COLUMN}` : STORY_COLUMNS;
   let query = client
     .from("stories")
-    .select(STORY_COLUMNS)
+    .select(columns)
     .eq("visibility", VISIBILITY.PUBLIC)
     .is("deleted_at", null)
     .neq("status", STORY_STATUS.DRAFT);
@@ -70,6 +77,8 @@ export async function listLatestStories(
     if (ids.length === 0) return { items: [], nextCursor: null };
     query = query.in("category_id", ids);
   }
+
+  if (options.tagSlug) query = query.eq(TAG_FILTER_PATH, options.tagSlug);
 
   if (options.cursor) {
     const { updatedAt, id } = readCursor(options.cursor);
@@ -91,4 +100,10 @@ export async function listLatestStories(
   const items = pageRows.map(toStorySummary);
   const last = items[items.length - 1];
   return { items, nextCursor: hasMore && last ? encodeCursor({ u: last.updatedAt, i: last.id }) : null };
+}
+
+/** The tags most used by public stories (never mature, never of a suspended author): the home page's quick filters. */
+export async function listPopularTags(client: DataClient, limit: number): Promise<PopularTag[]> {
+  const rows = unwrap(await client.rpc("popular_tags", { p_limit: limit }).returns<PopularTagRow[]>()) ?? [];
+  return rows.map(toPopularTag);
 }
