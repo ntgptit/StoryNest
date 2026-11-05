@@ -5,6 +5,10 @@ dependencies, migration, rollback, tests, quality gates)? This page does **not**
 would be needed. Entry point: [README](../README.md). Decisions: [product-decisions.md](product-decisions.md).
 Evidence: [runtime verification](../verification/README.md) (2026-11-05).
 
+> **WBS mapping:** every Ready / Pending Decision item below has a work package in
+> [`docs/WBS.md` Phase 9](../../WBS.md#phase-9-hoàn-thiện-sau-product-discovery-lập-2026-11-05--92-ngày) (⬜ = Ready,
+> ⚠️ = Pending Decision, ⛔ = Blocked), or is mapped to an existing WP (0.7, 1.1, 6.4, 6.7, 6.8, 6.9, 8.2, 8.3, 8.5).
+
 ## 1. Status definitions
 
 | Status | Meaning | What unblocks it |

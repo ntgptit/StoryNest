@@ -20,6 +20,16 @@ Rules:
 **No feature proposal is approved as of 2026-11-05.** Phase 1 and Phase 2 proposals (`FP-001…FP-066`) are all
 Proposed; ten recommendations await approval in [product-decisions.md §3](product-decisions.md#3-recommended-decisions-pending-approval).
 
+## Planned in the WBS (not approved)
+
+On 2026-11-05 the Product Owner asked for the development tasks to be planned:
+[`docs/WBS.md` Phase 9](../../WBS.md#phase-9-hoàn-thiện-sau-product-discovery-lập-2026-11-05--92-ngày) (WP 9.1–9.46,
+~92 days) now holds them. Planning is not approval:
+
+- WPs marked ⬜ (Ready) may be scheduled; WPs marked ⚠️ start only after their PD/Q is approved in
+  [product-decisions.md](product-decisions.md); ⛔ WPs wait for external input.
+- A feature is listed in the table above only when its PD/Q (if any) is approved **and** its WP is started.
+
 ## For reference: proposals that would implement already-planned WBS work
 
 These work packages are in the WBS plan (not delivered). The listed proposal is a candidate specification for them;
