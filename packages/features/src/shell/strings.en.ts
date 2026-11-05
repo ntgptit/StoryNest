@@ -27,6 +27,23 @@ export const en = {
     popularTags: "Popular tags",
     periods: "Time period",
   },
+  mobileMenu: {
+    open: "Open menu",
+    close: "Close menu",
+    title: "Menu",
+    browse: "Categories",
+  },
+  connection: {
+    offlineTitle: "You are offline",
+    offlineBody: "New content will load again once you are back online.",
+    backTitle: "Back online",
+    backBody: "Reloading what failed.",
+  },
+  pullRefresh: {
+    pull: "Pull down to refresh",
+    release: "Release to refresh",
+    refreshing: "Refreshing…",
+  },
   me: {
     title: "Your profile",
     edit: "Edit profile",

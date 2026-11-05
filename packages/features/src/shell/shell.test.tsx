@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
@@ -11,9 +11,11 @@ import { ToastProvider } from "../_shared/toast.tsx";
 import { adultContentText } from "../adult-content/index.ts";
 import { getLanguage, setLanguage } from "../_shared/i18n.ts";
 import { LanguageProvider } from "../_shared/language.tsx";
+import { BACK_ONLINE_MS } from "./components/connection-status.tsx";
 import { MainShell } from "./components/main-shell.tsx";
 import { UserMenu } from "./components/user-menu.tsx";
 import { initials } from "./model/initials.ts";
+import { canOfferPullToRefresh, isPullRefreshPage } from "./model/pull-refresh.ts";
 
 afterEach(() => {
   cleanup();
@@ -394,5 +396,108 @@ describe("DesktopNav", () => {
     const browse = desktopNav().getByRole("button", { name: "Khám phá" });
     fireEvent.pointerEnter(browse, { pointerType: "touch" });
     expect(browse.getAttribute("aria-expanded")).toBe("false");
+  });
+});
+
+describe("mobile full-screen menu", () => {
+  it("opens from the header with what the bottom nav lacks, and closes with Escape", async () => {
+    // A member's header also has the bell, which listens for new notifications.
+    const channel = { on: () => channel, subscribe: () => channel };
+    const client = {
+      ...fakeClient({ session, profile }).client,
+      channel: () => channel,
+      removeChannel: vi.fn(async () => "ok"),
+    } as unknown as DataClient;
+    setup(
+      <MainShell>
+        <p>page content</p>
+      </MainShell>,
+      client,
+      "/ranking",
+    );
+    const open = within(screen.getByRole("banner")).getByRole("button", { name: "Mở menu" });
+    fireEvent.click(open);
+    const dialog = await screen.findByRole("dialog", { name: "Menu" });
+    const nav = within(dialog).getByRole("navigation", { name: "Điều hướng chính" });
+    const ranking = within(nav).getByRole("link", { name: /Xếp hạng/ });
+    expect(ranking.getAttribute("href")).toBe("/ranking");
+    expect(ranking.getAttribute("aria-current")).toBe("page");
+    expect((await within(nav).findByRole("link", { name: /Theo dõi/ })).getAttribute("href")).toBe("/following");
+    expect(within(dialog).getByRole("link", { name: "Tất cả truyện" }).getAttribute("href")).toBe("/");
+    expect(within(dialog).getByRole("switch", { name: "Giao diện tối" })).toBeTruthy();
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("leaves Following out for guests and closes when a link is followed", async () => {
+    const { client } = fakeClient({ session: null });
+    setup(
+      <MainShell>
+        <p>page content</p>
+      </MainShell>,
+      client,
+    );
+    fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Mở menu" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).queryByRole("link", { name: /Theo dõi/ })).toBeNull();
+    fireEvent.click(within(dialog).getByRole("link", { name: /Xếp hạng/ }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+});
+
+describe("theme switch in the account menu", () => {
+  afterEach(() => {
+    document.documentElement.classList.remove("light", "dark");
+    window.localStorage.clear();
+  });
+
+  it("flips the site to dark and back without closing the menu", async () => {
+    const { client } = fakeClient({ session, profile });
+    setup(<UserMenu />, client);
+    const trigger = await screen.findByRole("button", { name: "Menu tài khoản" });
+    fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: "mouse" });
+    const item = await screen.findByRole("menuitemcheckbox", { name: "Giao diện tối" });
+    expect(item.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(item);
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(window.localStorage.getItem("storynest.siteTheme")).toBe("dark");
+    const again = await screen.findByRole("menuitemcheckbox", { name: "Giao diện tối" });
+    expect(again.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(again);
+    expect(document.documentElement.classList.contains("light")).toBe(true);
+  });
+});
+
+describe("offline strip", () => {
+  it("says so when the connection drops, refetches failed queries when it returns, then folds away", async () => {
+    const onLine = vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+    const { client } = fakeClient({ session: null });
+    setup(
+      <MainShell>
+        <p>page content</p>
+      </MainShell>,
+      client,
+    );
+    const status = () => screen.getAllByRole("status").find((node) => node.closest("header"));
+    expect(status()?.textContent).toBe("");
+    onLine.mockReturnValue(false);
+    act(() => window.dispatchEvent(new Event("offline")));
+    expect(status()?.textContent).toContain("Bạn đang ngoại tuyến");
+    onLine.mockReturnValue(true);
+    act(() => window.dispatchEvent(new Event("online")));
+    expect(status()?.textContent).toBe("Đã có mạng trở lại");
+    await waitFor(() => expect(status()?.textContent).toBe(""), { timeout: BACK_ONLINE_MS + 1000 });
+    onLine.mockRestore();
+  });
+});
+
+describe("pull to refresh rules", () => {
+  it("is offered only in the installed app on a touch screen, and only on the feeds", () => {
+    expect(canOfferPullToRefresh({ isNative: false, standalone: false, coarsePointer: true })).toBe(false);
+    expect(canOfferPullToRefresh({ isNative: true, standalone: false, coarsePointer: false })).toBe(false);
+    expect(canOfferPullToRefresh({ isNative: true, standalone: false, coarsePointer: true })).toBe(true);
+    expect(canOfferPullToRefresh({ isNative: false, standalone: true, coarsePointer: true })).toBe(true);
+    expect(["/", "/notifications", "/library", "/library/lists", "/following"].every(isPullRefreshPage)).toBe(true);
+    expect(["/story/a", "/ranking", "/me", "/libraryx"].some(isPullRefreshPage)).toBe(false);
   });
 });

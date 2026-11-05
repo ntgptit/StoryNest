@@ -22,6 +22,8 @@
 | SCR-AUTH-03-C04 | Submit | "Send link" / "Sending…" |
 | SCR-AUTH-03-C05 | Footer link | "Back to sign in" → `/login` |
 | SCR-AUTH-03-C06 | Sent card (`role="status"`) | "Instructions sent" / "If this email has an account, you'll get a password reset link within a few minutes." |
+| SCR-AUTH-03-C07 | Email typo suggestion (Lucian 264) | As SCR-AUTH-01-C10 (BR-AUTH-001) |
+| SCR-AUTH-03-C08 | Sent card extras (Lucian 064) | Envelope animation, the address, spam hint, "Resend email" (locked "Resend in {n} s" with a ring for 60 s, `aria-disabled`; after a resend "Email sent again." and the envelope replays; errors in the alert banner), "Use a different email" → form (BR-AUTH-014) |
 
 ## C. User actions & system responses
 

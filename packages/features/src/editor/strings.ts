@@ -43,6 +43,7 @@ const vi = {
     image: "Chèn ảnh",
     imageUploading: "Đang tải ảnh lên…",
     imageInput: "Chọn ảnh để chèn",
+    imageDrop: "Thả ảnh để chèn vào chương",
     imageErrors: {
       type: "Chỉ chèn được ảnh JPG, PNG hoặc WebP.",
       tooLarge: "Ảnh quá lớn (tối đa 10 MB).",

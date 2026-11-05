@@ -35,6 +35,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | SCR-EDT-01-C10 | Unpublish confirm dialog | "Unpublish this chapter?", destructive "Unpublish chapter", Cancel | `publish-panel.tsx:201-213` |
 | SCR-EDT-01-C11 | Footer status | `aria-live="polite"`: "{n} words · {status}" | `chapter-editor-screen.tsx:381-385` |
 | SCR-EDT-01-C12 | Save button | "Save draft" / "Saving…" | `chapter-editor-screen.tsx:386-388` |
+| SCR-EDT-01-C13 | Drop and paste a picture (Lucian 032) | A file dragged over the text highlights it ("Drop the picture to insert it"); dropped, it is inserted where it lands; a pasted picture (screenshot, copied image, no text) is inserted at the cursor. Same upload, checks and error toasts as "Insert picture" (A05). A paste with text is left to the editor | `chapter-editor-screen.tsx` (`handleDrop`, `handlePaste`), `model/pasted-image.ts` |
 
 ## C. User actions & system responses
 

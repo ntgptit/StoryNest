@@ -27,7 +27,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Preconditions | Email field submitted (sign-in, sign-up, forgot password) |
 | Conditions | Value is trimmed and lower-cased, max 254 chars, must be a valid email |
 | Expected behavior | Invalid → field message "Invalid email address." (`email_invalid`); no request is sent |
-| Exceptions | — |
+| Exceptions | Typo suggestion (2026-11-05, Lucian 264): when the domain is one edit (two for 9+ characters, a swap of neighbours counts as one) from a popular mail domain and is not a known one, "Did you mean you@gmail.com?" appears under the field after a 400 ms pause, the changed letters marked. Pressing it puts that address in the field; nothing changes without the press, validation and submission are unaffected (`auth/model/email-typo.ts`, `auth/components/email-typo-fix.tsx`) |
 | Related screens | SCR-AUTH-01, SCR-AUTH-02, SCR-AUTH-03 |
 | Evidence | `packages/validation/src/auth.ts:22-27`, `packages/features/src/auth/model/messages.ts:6-20`, `packages/features/src/auth/auth-screens.test.tsx:77-95` |
 | Status | Verified |
@@ -39,7 +39,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Preconditions | Password field submitted |
 | Conditions | `newPasswordSchema` for sign-up/reset; `signInSchema.password` for sign-in |
 | Expected behavior | "Password must be at least 8 characters." / "Password is too long (72 bytes max)." / "Please enter a password." |
-| Exceptions | Supabase may additionally refuse a weak or breached password (`weak_password` → "This password is too weak or has been exposed in a breach. Choose a different one."). Leaked-password protection is **disabled** in the dev project (`docs/WBS.md:120`) |
+| Exceptions | Supabase may additionally refuse a weak or breached password (`weak_password` → "This password is too weak or has been exposed in a breach. Choose a different one."). Leaked-password protection is **disabled** in the dev project (`docs/WBS.md:120`). Strength meter (2026-11-05, Lucian 036): sign-up and reset show an **advisory** meter under the new password (length, letter case, digits, symbols; hints for common passwords, runs like 1234, repeated characters, < 12 characters). It never blocks submission and adds no rule: the only client rule stays `newPasswordSchema` (≥ `PASSWORD_MIN_LENGTH`, ≤ 72 bytes) (`auth/model/password-strength.ts`) |
 | Related screens | SCR-AUTH-01, SCR-AUTH-02, SCR-AUTH-04 |
 | Evidence | `packages/validation/src/auth.ts:6-7,32-35,40-46`, `packages/features/src/auth/model/messages.ts:23-33` |
 | Status | Verified (client); Supabase strength policy: Unknown |
@@ -75,7 +75,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Preconditions | `signUp` succeeded |
 | Conditions | `data.session === null` ⇒ confirmation needed |
 | Expected behavior | Needs confirmation → "Check your email" card showing the address; otherwise `onSignedUp` → `replace(next)` + `refresh()` |
-| Exceptions | Sign-in before confirming → "Your email isn't confirmed yet. Open the link in your sign-up email." (`email_not_confirmed`). No "resend" action exists (F-AUTH-03) |
+| Exceptions | Sign-in before confirming → "Your email isn't confirmed yet. Open the link in your sign-up email." (`email_not_confirmed`). No "resend" action exists (F-AUTH-03): the app has no resend-confirmation call, so the "Check your email" card (envelope animation, Lucian 064) only adds a spam-folder hint and "Use a different email", which returns to the filled form |
 | Related screens | SCR-AUTH-02, SCR-AUTH-01 |
 | Evidence | `packages/features/src/auth/api/auth.api.ts:34`, `packages/features/src/auth/screens/sign-up-screen.tsx:45-60`, `apps/web/src/app/(auth)/auth-pages.tsx:32-44` |
 | Status | Verified (code); whether confirmation is enabled in each Supabase project: Unknown (no `supabase/config.toml` in repo) |
@@ -183,7 +183,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Preconditions | Forgot-password form submitted with a valid email |
 | Conditions | Request accepted by Supabase |
 | Expected behavior | "Instructions sent" / "If this email has an account, you'll get a password reset link within a few minutes." Link target: `/auth/callback?next=%2Freset-password` |
-| Exceptions | Rate limit / network errors are shown (BR-AUTH-013) |
+| Exceptions | Rate limit / network errors are shown (BR-AUTH-013). Resend (2026-11-05, Lucian 064): the "Instructions sent" card offers "Resend email", locked for 60 s (`RESEND_COOLDOWN_SECONDS`, Supabase's default gap between two emails) behind a filling ring; it sends the same `resetPasswordForEmail` request again, then locks again. "Use a different email" returns to the form |
 | Related screens | SCR-AUTH-03 |
 | Evidence | `packages/features/src/auth/screens/forgot-password-screen.tsx:24-40`, `packages/features/src/auth/strings.en.ts:31-41`, `packages/features/src/auth/hooks/use-auth-actions.ts:40-52`, `packages/features/src/auth/auth-screens.test.tsx:222-252` |
 | Status | Verified |

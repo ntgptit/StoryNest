@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, createEvent, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isValidStorageKey } from "@storynest/utils";
 import type { Profile } from "../_shared/auth.tsx";
@@ -244,6 +244,32 @@ describe("AvatarEditor", () => {
     expect(renderer).toHaveBeenCalledWith(expect.any(File), { x: 312, y: 0, width: 600, height: 600 });
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(revoke).toHaveBeenCalledWith("blob:picked");
+  });
+
+  /** Drops `file` onto the avatar row the way a browser does (a drag that carries files). */
+  const drop = (file: File) => {
+    const target = screen.getByRole("button", { name: profileText.avatar.add });
+    for (const type of ["dragEnter", "drop"] as const) {
+      const event = createEvent[type](target);
+      Object.defineProperty(event, "dataTransfer", { value: { types: ["Files"], files: [file] } });
+      fireEvent(target, event);
+    }
+  };
+
+  it("a dropped picture goes through the same crop editor as a picked one", async () => {
+    const { client, calls } = fakeClient();
+    setup(profileOf(null), async () => prepared, client);
+    drop(new File(["x"], "me.png", { type: "image/png" }));
+    expect(await screen.findByRole("application", { name: c.frame })).toBeTruthy();
+    expect(calls).toEqual([]);
+  });
+
+  it("a dropped wrong file gets the same refusal as a picked one", async () => {
+    const { client } = fakeClient();
+    setup(profileOf(null), async () => prepared, client);
+    drop(new File(["x"], "me.gif", { type: "image/gif" }));
+    expect((await screen.findByRole("alert")).textContent).toBe(profileText.avatar.errors.type);
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("uploads nothing when the crop is cancelled, and frees the picture", async () => {

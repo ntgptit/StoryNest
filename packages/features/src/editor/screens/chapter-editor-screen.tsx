@@ -1,6 +1,7 @@
 "use client";
 
 import type { Editor } from "@tiptap/core";
+import { TextSelection } from "@tiptap/pm/state";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { FileQuestion } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -10,6 +11,7 @@ import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { AutosaveIcon, type AutosaveIconState } from "@storynest/ui/widgets/autosave-icon";
+import { DropZone } from "@storynest/ui/widgets/drop-zone";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { useDataClientGetter } from "../../_shared/data.tsx";
@@ -26,6 +28,7 @@ import { useUploadChapterImage } from "../hooks/use-chapter-image.ts";
 import { createAutosaver, type Autosaver, type AutosaveStatus, type SaveOutcome } from "../model/autosaver.ts";
 import { NODE, STORAGE_KEY_ATTRIBUTE, bodyToDoc, type EditorNode } from "../model/body-converter.ts";
 import { imageErrorMessage } from "../model/image-messages.ts";
+import { pastedImage } from "../model/pasted-image.ts";
 import { checkDraft, isDraftConflict, wordCountOf } from "../model/draft-form.ts";
 import { editorExtensions } from "../model/extensions.ts";
 import { clearBackup, differsFromServer, readBackup, writeBackup, type DraftBackup } from "../model/local-backup.ts";
@@ -226,12 +229,31 @@ function DraftEditor({
     [getClient],
   );
   const imageUpload = useUploadChapterImage(storyId);
+  /** The latest insertImage, for the editor's drop/paste handlers (set once, when the editor is created). */
+  const insertImageRef = useRef<(file: File) => void>(() => undefined);
 
   const editor = useEditor({
     extensions: editorExtensions({ imageUrl }),
     content: bodyToDoc(draft.body),
     immediatelyRender: false,
-    editorProps: { attributes: { "aria-label": t.bodyLabel, role: "textbox", "aria-multiline": "true" } },
+    editorProps: {
+      attributes: { "aria-label": t.bodyLabel, role: "textbox", "aria-multiline": "true" },
+      // A picture dropped or pasted into the text goes through the same upload as the toolbar button (Lucian 032).
+      handleDrop: (view, event, _slice, moved) => {
+        const file = moved ? undefined : event.dataTransfer?.files[0];
+        if (!file) return false;
+        const at = view.posAtCoords({ left: event.clientX, top: event.clientY });
+        if (at) view.dispatch(view.state.tr.setSelection(TextSelection.near(view.state.doc.resolve(at.pos))));
+        insertImageRef.current(file);
+        return true;
+      },
+      handlePaste: (_view, event) => {
+        const file = pastedImage(event);
+        if (!file) return false;
+        insertImageRef.current(file);
+        return true;
+      },
+    },
     onCreate: ({ editor: created }) => {
       editorRef.current = created;
       onEditor?.(created);
@@ -256,6 +278,8 @@ function DraftEditor({
           .run(),
       onError: (error) => toast.error(imageErrorMessage(error)),
     });
+
+  insertImageRef.current = insertImage;
 
   // Never lose a typed change silently: warn on leaving, save when the tab is hidden, retry when the network returns.
   useEffect(() => {
@@ -416,10 +440,17 @@ function DraftEditor({
         <Skeleton className="h-11 w-full rounded-lg" aria-hidden />
       )}
 
-      <EditorContent
-        editor={editor}
-        className="reader-text min-h-[50vh] rounded-lg border bg-card p-4 text-card-foreground [&_.ProseMirror]:min-h-[45vh] [&_.ProseMirror]:outline-none [&_.ProseMirror>*+*]:mt-[1em] [&_h2]:text-xl [&_h2]:font-semibold [&_hr]:my-6 [&_hr]:border-border [&_figure]:min-h-16 [&_figure]:rounded-md [&_figure]:border [&_figure]:border-dashed [&_figure]:p-2 [&_figure_img]:mx-auto [&_figure_img]:max-h-[60vh] [&_figure_img]:rounded-sm [&_.ProseMirror-selectednode]:ring-2 [&_.ProseMirror-selectednode]:ring-ring [&_.find-match]:rounded-xs [&_.find-match]:bg-primary/15 [&_.find-match-current]:bg-primary/35 [&_.find-match-current]:ring-1 [&_.find-match-current]:ring-primary [&_.find-replaced]:animate-replace-flash"
-      />
+      {/* Highlights while a file is dragged over the text; the editor's handleDrop inserts it where it lands. */}
+      <DropZone
+        label={t.toolbar.imageDrop}
+        disabled={imageUpload.isPending}
+        onFiles={(files) => insertImage(files[0]!)}
+      >
+        <EditorContent
+          editor={editor}
+          className="reader-text min-h-[50vh] rounded-lg border bg-card p-4 text-card-foreground [&_.ProseMirror]:min-h-[45vh] [&_.ProseMirror]:outline-none [&_.ProseMirror>*+*]:mt-[1em] [&_h2]:text-xl [&_h2]:font-semibold [&_hr]:my-6 [&_hr]:border-border [&_figure]:min-h-16 [&_figure]:rounded-md [&_figure]:border [&_figure]:border-dashed [&_figure]:p-2 [&_figure_img]:mx-auto [&_figure_img]:max-h-[60vh] [&_figure_img]:rounded-sm [&_.ProseMirror-selectednode]:ring-2 [&_.ProseMirror-selectednode]:ring-ring [&_.find-match]:rounded-xs [&_.find-match]:bg-primary/15 [&_.find-match-current]:bg-primary/35 [&_.find-match-current]:ring-1 [&_.find-match-current]:ring-primary [&_.find-replaced]:animate-replace-flash"
+        />
+      </DropZone>
 
       <PublishPanel chapterId={draft.chapterId} locale={locale} ensureSaved={ensureSaved} />
 

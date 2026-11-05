@@ -29,6 +29,9 @@
 | SCR-SHELL-01-C12 | AdultContentSync (invisible) | BR-SHELL-012 |
 | SCR-SHELL-01-C13 | Desktop navigation row (≥ md only, second header row; Lucian #354 morphing menu) | `aria-label` "Main navigation" (same landmark name as C09; only one is displayed at a time). Items: "Home", "Browse" ▾, "Rankings" ▾, "Following" (members), "Library", "Write", "Me". Home/Library/Write/Me come from the same `navItems()` as C09; the current page link is `aria-current="page"`, the Rankings trigger is highlighted on `/ranking`. Browse panel: "Categories" ("All stories" + root categories → `/?category=<slug>`) and "Popular tags" (8, `#name` → `/?tag=<slug>`; column left out when there are none or they fail). Rankings panel: "Time period" → Today / This week / This month / All time (`rankingHref`) |
 | SCR-SHELL-01-C14 | Hide-on-scroll header (Lucian #212) | Off by default; a page turns it on with `useAutoHideHeader()` (only the chapter reader does). Scroll down > 8 px → header slides up (0.38 s, `ease-soft`), keeping the safe-area strip; scroll up > 8 px → back; always shown within 60 px of the top and when focus moves into it. Reduced motion: same behaviour without the slide |
+| SCR-SHELL-01-C15 | Mobile menu (< md, Lucian 045) | Header button "Open menu" (last in the row) → full-screen dialog "Menu" that spreads as a circle from the button: numbered "Rankings", "Following" (members) (`aria-label` "Main navigation", current page `aria-current`), "Categories" ("All stories" + root categories as chips, same data as C13 Browse), footer day/night switch "Dark theme" (BR-SET-010). Focus trapped, Escape or "Close menu" (×, over the button) closes and returns focus; a link or any navigation closes it. Answers Q-SHELL-01 for phones |
+| SCR-SHELL-01-C16 | Offline strip (Lucian 091) | Under the header row(s): "You are offline" / "New content will load again once you are back online." while `navigator.onLine` is false; on reconnect "Back online" / "Reloading what failed." for 3 s, and the active queries that failed are refetched. Announced via a status region. Unfolds only on a change seen while the page is open. No write queue: React Query already holds offline mutations and refetches stale queries; the editor autosave retries on `online` |
+| SCR-SHELL-01-C17 | Pull to refresh (Lucian 085) | Only when `isNative` (Capacitor) or display-mode standalone / iOS standalone, on a coarse pointer, on `/`, `/notifications`, `/library/**`, `/following`: pull down at the top → arrow circle under the header; past 70 px "Release to refresh" → refetches the active queries, spinner until done. Off in a normal browser tab (the browser has its own) |
 
 ### Navigation discoverability matrix
 Legend: ✓ reachable, — not reachable. "Other" = only from content inside some page.
@@ -43,8 +46,8 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | `/settings` | — | — | Settings | — | Menu only; not on `/me` (U-PRF-01) |
 | `/notifications` | Bell (members) | — | — | — | OK for members |
 | `/search` | Search box / icon | — | — | — | OK |
-| `/ranking` | Desktop nav "Rankings" ▾ (≥ md) | — | — | Home "see ranking" link (`discover-screen.tsx:60`), sitemap | OK on desktop; mobile still via Home only |
-| `/following` | Desktop nav "Following" (≥ md, members) | — | — | Home "see following" link for members (`discover-screen.tsx:55-58`) | OK on desktop; mobile still via Home only |
+| `/ranking` | Desktop nav "Rankings" ▾ (≥ md); mobile menu (C15) | — | — | Home "see ranking" link (`discover-screen.tsx:60`), sitemap | OK |
+| `/following` | Desktop nav "Following" (≥ md, members); mobile menu (C15, members) | — | — | Home "see following" link for members (`discover-screen.tsx:55-58`) | OK |
 | `/author/<me>` (own public page) | — | — | — | Own story pages only | Missing from `/me` and menu (U-PRF-01) |
 | `/lists/<id>` | — | — | — | Library "my lists" (`lists/components/my-lists.tsx:64`) | OK |
 | `/moderation` | — | — | Moderation (moderators) | — | OK |
@@ -136,7 +139,7 @@ Search, 18+ button and bell actions are specified by OBJ-SRCH, OBJ-MAT and OBJ-N
 | Success | Not applicable | |
 | Disabled | Not applicable | |
 | Unauthorized | Implemented | Guest variant of C07; protected targets redirect |
-| Offline | Missing | No offline indicator; query errors surface per screen (Recommended for mobile, WBS 7.4) |
+| Offline | Implemented | Offline strip C16; query errors still surface per screen |
 | Unsaved changes | Missing | Language switch and navigation discard page state without a prompt (U-I18N-02) |
 
 ## E. Acceptance criteria
@@ -158,4 +161,4 @@ Search, 18+ button and bell actions are specified by OBJ-SRCH, OBJ-MAT and OBJ-N
 F-SHELL-01, F-SHELL-02, U-SHELL-01, U-SHELL-02, U-SHELL-03, U-SHELL-04, U-I18N-02.
 
 ## G. Open questions
-Q-SHELL-01 — Desktop part answered (2026-11-05): a header navigation row with Browse and Rankings panels and Following for members, not a sidebar. Open: should Rankings and Following also get a place in the mobile bottom nav?
+Q-SHELL-01 — Answered (2026-11-05). Desktop: a header navigation row with Browse and Rankings panels and Following for members, not a sidebar. Mobile: the bottom nav keeps its four items; Rankings, Following and the categories are in the full-screen menu behind the header's menu button (C15).

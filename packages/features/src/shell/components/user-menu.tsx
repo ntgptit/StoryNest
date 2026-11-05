@@ -10,9 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@storynest/ui/components/dropdown-menu";
 import { Skeleton } from "@storynest/ui/components/skeleton";
+import { SkyArt } from "@storynest/ui/widgets/sky-switch";
 import { useAuth } from "../../_shared/auth.tsx";
 import { UserAvatar } from "../../_shared/avatar.tsx";
 import { useIsModerator } from "../../moderation/index.ts";
+import { settingsText, toggledTheme, useSiteTheme } from "../../settings/index.ts";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { initials } from "../model/initials.ts";
@@ -74,8 +76,32 @@ export function UserMenu() {
         <DropdownMenuItem asChild>
           <AppLink href="/settings">{shellText.settings}</AppLink>
         </DropdownMenuItem>
+        <ThemeMenuItem />
         <DropdownMenuItem onSelect={signOut}>{shellText.signOut}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/**
+ * Day/night switch as a menu row (role menuitemcheckbox, checked = dark). Choosing it flips the theme and keeps the
+ * menu open so the sky can be seen turning; the full three-way choice (with "follow device") is in Settings.
+ */
+function ThemeMenuItem() {
+  const { scheme, setTheme } = useSiteTheme();
+  const dark = scheme === "dark";
+  return (
+    <DropdownMenuItem
+      role="menuitemcheckbox"
+      aria-checked={dark}
+      className="justify-between gap-3"
+      onSelect={(event) => {
+        event.preventDefault();
+        setTheme(toggledTheme(scheme));
+      }}
+    >
+      {settingsText.theme.darkSwitch}
+      <SkyArt night={dark} />
+    </DropdownMenuItem>
   );
 }

@@ -121,13 +121,18 @@ function fakeClient(options: FakeOptions = {}) {
       );
     return builder;
   });
-  const rpc = vi.fn(async (name: string, args: Record<string, unknown> = {}) => {
+  const answer = async (name: string, args: Record<string, unknown>) => {
     rpcCalls.push({ name, args });
     const custom = options.rpc?.(name, args);
     if (custom) return custom;
     if (name === "list_my_invitations") return { data: mine.current, error: null };
     if (name === "list_story_invitations") return { data: sent.current, error: null };
     return { data: name === "invite_collaborator" ? INV_ID : null, error: null };
+  };
+  // Like the real builder: awaitable, and `.returns<T>()` (used by the author search) hands back the same result.
+  const rpc = vi.fn((name: string, args: Record<string, unknown> = {}) => {
+    const result = answer(name, args);
+    return Object.assign(result, { returns: () => result });
   });
   return { from, rpc, rpcCalls, deletes, members, sent, mine };
 }
@@ -297,6 +302,52 @@ describe("TeamScreen", () => {
     expect(toasts.show).toHaveBeenCalledWith("success", t.invite.sent);
     await waitFor(() =>
       expect(c.rpcCalls.filter((call) => call.name === "list_story_invitations").length).toBeGreaterThan(1),
+    );
+  });
+
+  it("suggests authors while typing (a leading @ is ignored) and invites the chosen username", async () => {
+    const author = {
+      user_id: USER_B,
+      username: "binh_writer",
+      display_name: "Bình",
+      avatar_storage_key: null,
+      stories_count: 2,
+      score: 1,
+    };
+    const c = fakeClient({
+      rpc: (name) => (name === "search_authors" ? { data: [author], error: null } : (undefined as never)),
+    });
+    renderWith(c, <TeamScreen storyId={STORY_ID} />);
+    const input = (await screen.findByRole("combobox", { name: t.invite.username })) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "@bin" } });
+    const option = await screen.findByRole("option", { name: /Bình/ });
+    expect(option.textContent).toContain("@binh_writer");
+    expect(c.rpcCalls.find((call) => call.name === "search_authors")?.args).toMatchObject({ p_query: "bin" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(input.value).toBe("binh_writer");
+    fireEvent.click(screen.getByRole("button", { name: t.invite.submit }));
+    await waitFor(() =>
+      expect(c.rpcCalls.find((call) => call.name === "invite_collaborator")?.args).toMatchObject({
+        p_username: "binh_writer",
+      }),
+    );
+  });
+
+  it("says when no author matches and still invites the exact username typed", async () => {
+    const c = fakeClient({
+      rpc: (name) => (name === "search_authors" ? { data: [], error: null } : (undefined as never)),
+    });
+    renderWith(c, <TeamScreen storyId={STORY_ID} />);
+    const input = await screen.findByRole("combobox", { name: t.invite.username });
+    fireEvent.change(input, { target: { value: "newcomer" } });
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe(t.invite.noSuggestions));
+    fireEvent.keyDown(input, { key: "Enter" }); // nothing highlighted: Enter does not pick anything
+    fireEvent.click(screen.getByRole("button", { name: t.invite.submit }));
+    await waitFor(() =>
+      expect(c.rpcCalls.find((call) => call.name === "invite_collaborator")?.args).toMatchObject({
+        p_username: "newcomer",
+      }),
     );
   });
 

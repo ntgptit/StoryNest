@@ -25,6 +25,8 @@ const vi = {
     remove: "Gỡ ảnh",
     uploading: "Đang tải lên…",
     inputLabel: "Chọn ảnh đại diện",
+    drop: "Thả ảnh vào đây",
+    dropHint: "Có thể kéo thả ảnh vào đây.",
     hint: "JPG, PNG hoặc WebP, tối đa 10 MB. Bạn chọn phần ảnh vuông muốn giữ trước khi tải lên.",
     saved: "Đã cập nhật ảnh đại diện.",
     removed: "Đã gỡ ảnh đại diện.",

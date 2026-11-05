@@ -56,7 +56,7 @@ Evidence: `apps/web/src/lib/env.ts`, `apps/web/src/lib/site.ts`, `apps/web/.env.
 | D-STUDIO (OBJ-EDT) | Scheduled publishing job |
 
 ## Domain-level open questions
-- Q-SHELL-01 — Desktop primary navigation: sidebar (WBS 0.5) or header links? Which sections (Ranking, Following, Notifications)?
+- Q-SHELL-01 — Answered 2026-11-05: desktop header navigation row; on mobile a full-screen menu from the header (SCR-SHELL-01-C13, C15).
 - Q-SEO-01 — Should share images of 18+ stories show the cover/title, given 18+ is hidden from guests by default?
 - Q-SEO-02 — Should public reading lists (`/lists/<id>`) be indexable? Today they are `noindex` and disallowed.
 - Q-JOB-01 — Scheduled publishing is attributed to the last draft saver (possibly an editor) and has no failure limit: who should be notified when it fails?

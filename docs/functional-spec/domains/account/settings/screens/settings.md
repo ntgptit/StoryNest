@@ -25,6 +25,7 @@
 | SCR-SET-01-C06 | Adult content section + switch | "Adult content (18+)" / "Show 18+ stories" / "Hidden by default. Turning it on means you confirm you are 18 or older." (OBJ-MAT) |
 | SCR-SET-01-C07 | Age confirmation dialog | "Show adult stories?" / "Only turn this on if you are 18 or older. 18+ stories will appear in the lists." / "I am 18 or older, show 18+ stories" / "Keep hidden" |
 | SCR-SET-01-C08 | Guest fallback | "Sign in to change your settings." + "Sign in" (`/login?next=%2Fsettings`) — only if the session disappears client-side |
+| SCR-SET-01-C09 | Appearance section (this device) | "Appearance" / "Saved on this device. While a chapter is open, the background chosen in the reading settings wins." / select "Theme": "Follow device", "Light", "Dark". Shown whatever the account settings query does (BR-SET-010) |
 
 Each section is a `<section aria-label>` with an `h2`; switches have `<Label htmlFor>`.
 Not present: account section (email, password, sign-out, deactivate/delete, export) — F-AUTH-07; email/push channels — F-SET-01.

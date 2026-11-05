@@ -27,6 +27,7 @@ Note: `MyInvitations` (invitee side) is **not** on this screen; it is mounted on
 | SCR-TEAM-01-C05 | Form "Invite a collaborator": "Username" input + hint/error (same element), "Role" select + role hint, "Send invitation" | `team-screen.tsx:231-278` |
 | SCR-TEAM-01-C06 | Confirm dialog "Remove this collaborator?" | `team-screen.tsx:180-200` |
 | SCR-TEAM-01-C07 | Skeletons, error state with retry, "Story not found", "Only the owner can manage this" | `team-screen.tsx:42-64,76-91` |
+| SCR-TEAM-01-C08 | Username combobox (Lucian 034) | From 3 characters (a leading @ ignored, 250 ms pause) up to 5 authors from the existing author search (`search_authors`: people with a public story) with avatar, name and @username, typed part marked. Arrow keys move, Enter/press picks, Tab accepts the faint completion, Escape closes; "Searching…" / "No author matches. You can still invite by the exact username." Enter without a highlighted row submits what was typed, so any exact username still works | `team-screen.tsx` (`useAuthorSuggestions`), `packages/ui/src/widgets/autocomplete-input.tsx` |
 
 ## C. User actions & system responses
 

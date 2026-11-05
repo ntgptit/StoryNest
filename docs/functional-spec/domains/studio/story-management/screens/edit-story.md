@@ -28,6 +28,7 @@
 | SCR-STM-03-C15 | Owner only: "Delete story" (destructive outline) or "Restore story" when deleted | `story-form-screen.tsx:404-433` |
 | SCR-STM-03-C16 | Confirm dialog "Delete this story?" | `story-form-screen.tsx:437-450` |
 | SCR-STM-03-C17 | Skeleton; error state (retry); empty state "Story not found" | `story-form-screen.tsx:76-89` |
+| SCR-STM-03-C18 | Cover drop zone (Lucian 032) | As SCR-PRF-02-C14 for the cover row: same checks, crop dialog (2:3) and errors as the picker | `components/cover-editor.tsx`, `packages/ui/src/widgets/drop-zone.tsx` |
 
 ## C. User actions & system responses
 

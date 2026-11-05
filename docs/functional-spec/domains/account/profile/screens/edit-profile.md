@@ -30,6 +30,7 @@
 | SCR-PRF-02-C11 | Save button | "Save changes" / "Saving…", disabled until dirty |
 | SCR-PRF-02-C12 | Cancel link → `/me` | "Cancel" |
 | SCR-PRF-02-C13 | Guard texts | Skeleton while loading; "You need to sign in to edit your profile." + "Sign in" (`/login?next=%2Fme%2Fedit`); "No profile found for this account." |
+| SCR-PRF-02-C14 | Avatar drop zone (Lucian 032) | A picture dragged onto the avatar row highlights it ("Drop the picture here", marching dashed frame) and, dropped, goes through the same checks and crop dialog as a picked one. Hint gains "You can also drag a picture here." on fine pointers |
 
 ## C. User actions & system responses
 

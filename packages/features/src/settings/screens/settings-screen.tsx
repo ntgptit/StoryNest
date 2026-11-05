@@ -15,6 +15,8 @@ import { useAppToast } from "../../_shared/toast.tsx";
 import { useAdultContent } from "../../adult-content/index.ts";
 import { ReaderSettingsSheet, useReaderPreferencesSync } from "../../reader/index.ts";
 import { useAccountSettings, useSaveSettings } from "../hooks/use-settings.ts";
+import { useSiteTheme } from "../hooks/use-site-theme.ts";
+import { isSiteTheme, SITE_THEMES } from "../model/site-theme.ts";
 import { withLanguage, withNotification, type AccountSettings, type NotificationKey } from "../model/settings.ts";
 import { settingsText } from "../strings.ts";
 
@@ -64,7 +66,31 @@ function SwitchRow({
   );
 }
 
-/** Account settings: language, reading, adult content and which in-app notifications to receive. */
+/** Site theme of this device (not saved in the account, so it is shown whatever the account settings query does). */
+function ThemeSection() {
+  const { theme, setTheme } = useSiteTheme();
+  return (
+    <Section title={t.theme.title} description={t.theme.description}>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="settings-theme">{t.theme.label}</Label>
+        <Select value={theme} onValueChange={(value) => isSiteTheme(value) && setTheme(value)}>
+          <SelectTrigger id="settings-theme" className="w-56">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SITE_THEMES.map((value) => (
+              <SelectItem key={value} value={value}>
+                {t.theme.options[value]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </Section>
+  );
+}
+
+/** Account settings: language, theme (this device), reading, adult content and which in-app notifications to receive. */
 export function SettingsScreen() {
   const auth = useAuth();
   if (auth.status === "loading") return <Skeleton className="h-96 w-full max-w-xl rounded-xl" aria-busy />;
@@ -142,6 +168,8 @@ function SettingsForm() {
           </Section>
         </>
       )}
+
+      <ThemeSection />
 
       <Section title={t.reading.title} description={t.reading.description}>
         <div>

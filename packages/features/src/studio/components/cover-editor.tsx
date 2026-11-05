@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@storynest/ui/components/button";
+import { DropZone } from "@storynest/ui/widgets/drop-zone";
 import { ImageCropDialog } from "@storynest/ui/widgets/image-crop-dialog";
 import { StoryCover } from "@storynest/ui/widgets/story-cover";
 import { useRef } from "react";
@@ -36,8 +37,9 @@ function coverErrorMessage(error: Error): string {
 }
 
 /**
- * The story's cover with "change" and "remove". A new picture opens the crop editor (2:3 frame); "Use photo" uploads
- * the chosen part, "Cancel" uploads nothing. Authors decide how their cover looks.
+ * The story's cover with "change" and "remove". A new picture, picked or dropped onto the cover row (Lucian 032),
+ * opens the crop editor (2:3 frame); "Use photo" uploads the chosen part, "Cancel" uploads nothing. Authors decide
+ * how their cover looks.
  */
 export function CoverEditor({
   story,
@@ -67,42 +69,46 @@ export function CoverEditor({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm leading-none font-medium">{t.label}</p>
-      <div className="flex items-end gap-4" aria-busy={busy}>
-        <StoryCover title={title} coverUrl={url} className="w-24 shrink-0" />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
-            {upload.isPending ? t.uploading : story.coverStorageKey === null ? t.add : t.change}
-          </Button>
-          {story.coverStorageKey === null ? null : (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={busy}
-              onClick={() => {
-                upload.reset();
-                crop.clearError();
-                remove.mutate(undefined, { onSuccess: () => toast.success(t.removed) });
-              }}
-            >
-              {t.remove}
+      <DropZone label={t.drop} disabled={busy} onFiles={(files) => pick(files[0])} className="self-start pr-2">
+        <div className="flex items-end gap-4" aria-busy={busy}>
+          <StoryCover title={title} coverUrl={url} className="w-24 shrink-0" />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
+              {upload.isPending ? t.uploading : story.coverStorageKey === null ? t.add : t.change}
             </Button>
-          )}
-          <input
-            ref={input}
-            type="file"
-            accept={IMAGE_ACCEPTED_TYPES.join(",")}
-            aria-label={t.inputLabel}
-            className="sr-only"
-            tabIndex={-1}
-            onChange={(event) => {
-              pick(event.target.files?.[0]);
-              event.target.value = ""; // picking the same file again must still fire
-            }}
-          />
+            {story.coverStorageKey === null ? null : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  upload.reset();
+                  crop.clearError();
+                  remove.mutate(undefined, { onSuccess: () => toast.success(t.removed) });
+                }}
+              >
+                {t.remove}
+              </Button>
+            )}
+            <input
+              ref={input}
+              type="file"
+              accept={IMAGE_ACCEPTED_TYPES.join(",")}
+              aria-label={t.inputLabel}
+              className="sr-only"
+              tabIndex={-1}
+              onChange={(event) => {
+                pick(event.target.files?.[0]);
+                event.target.value = ""; // picking the same file again must still fire
+              }}
+            />
+          </div>
         </div>
-      </div>
-      <p className="text-xs text-muted-foreground">{t.hint}</p>
+      </DropZone>
+      <p className="text-xs text-muted-foreground">
+        {t.hint} <span className="pointer-coarse:hidden">{t.dropHint}</span>
+      </p>
       {error === null ? null : (
         <p role="alert" className="text-sm text-destructive">
           {coverErrorMessage(error)}

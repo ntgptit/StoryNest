@@ -125,3 +125,15 @@ Screen: [SCR-SET-01 Settings](screens/settings.md).
 | Related screens | SCR-SET-01 |
 | Evidence | `packages/features/src/settings/screens/settings-screen.tsx:88-91,146-172` |
 | Status | Verified |
+
+### BR-SET-010 — Site theme is a device preference
+| Field | Value |
+| --- | --- |
+| Description | Light / dark / follow the device, chosen in Settings (SCR-SET-01-C09), the account menu and the mobile menu (day/night switch, Lucian 021) |
+| Preconditions | — (guests can use the mobile menu switch) |
+| Conditions | Stored in `localStorage["storynest.siteTheme"]` ("light"/"dark"; "system" removes it). Not an account setting: `user_settings` has no theme column and none was added |
+| Expected behavior | Applied as class `light`/`dark` on `<html>` (the design tokens already honour it); an inline script in the root layout applies it before first paint, so there is no flash. The switch sets the opposite of the scheme shown, explicitly. Other tabs follow through the `storage` event |
+| Exceptions | While a chapter is open the reader theme (`data-reader-theme`, BR-SET-009) wins. The browser UI colour (`<meta name="theme-color">`) still follows the device scheme |
+| Related screens | SCR-SET-01, SCR-SHELL-01 |
+| Evidence | `packages/features/src/settings/model/site-theme.ts`, `site-theme-store.ts`, `hooks/use-site-theme.ts`, `apps/web/src/app/layout.tsx`, `settings/site-theme.test.tsx` |
+| Status | Verified (unit) |

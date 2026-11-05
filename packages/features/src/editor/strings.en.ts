@@ -39,6 +39,7 @@ export const en = {
     image: "Insert picture",
     imageUploading: "Uploading picture…",
     imageInput: "Choose a picture to insert",
+    imageDrop: "Drop the picture to insert it",
     imageErrors: {
       type: "Only JPG, PNG or WebP pictures can be inserted.",
       tooLarge: "That picture is too large (10 MB at most).",

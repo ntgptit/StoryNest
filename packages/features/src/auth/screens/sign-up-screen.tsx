@@ -16,8 +16,11 @@ import { FormErrorSummary } from "@storynest/ui/components/form-error-summary";
 import { Input } from "@storynest/ui/components/input";
 import { PasswordInput } from "@storynest/ui/components/password-input";
 import { useState } from "react";
+import { EnvelopeSent } from "@storynest/ui/widgets/envelope-sent";
 import { useForm } from "react-hook-form";
 import { AuthCard, FormError } from "../components/auth-card.tsx";
+import { EmailTypoFix } from "../components/email-typo-fix.tsx";
+import { PasswordStrength } from "../components/password-strength.tsx";
 import { TextLink } from "../components/auth-links.tsx";
 import { useSignUp } from "../hooks/use-auth-actions.ts";
 import { withNext } from "../model/auth-urls.ts";
@@ -50,12 +53,20 @@ export function SignUpScreen({
   );
 
   if (confirmationSentTo) {
+    // No resend here: the app has no "resend confirmation" call. The hint and "use a different email" cover a typo.
     return (
       <AuthCard title={t.checkEmailTitle} footer={<TextLink href={withNext("/login", next)}>{t.toSignIn}</TextLink>}>
-        <p role="status" className="text-sm text-muted-foreground">
-          {t.checkEmailBody}
-          <span className="mt-2 block font-medium text-foreground">{confirmationSentTo}</span>
-        </p>
+        <div className="flex flex-col gap-3 text-center">
+          <EnvelopeSent />
+          <p role="status" className="text-sm text-muted-foreground">
+            {t.checkEmailBody}
+            <span className="mt-2 block font-medium break-all text-foreground">{confirmationSentTo}</span>
+          </p>
+          <p className="text-xs text-muted-foreground">{t.checkEmailHint}</p>
+          <Button type="button" variant="ghost" className="self-center" onClick={() => setConfirmationSentTo(null)}>
+            {t.differentEmail}
+          </Button>
+        </div>
       </AuthCard>
     );
   }
@@ -80,16 +91,24 @@ export function SignUpScreen({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t.email}</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    {...field}
-                  />
-                </FormControl>
+                <EmailTypoFix
+                  value={field.value}
+                  onFix={(address) => {
+                    field.onChange(address);
+                    form.setFocus("email");
+                  }}
+                >
+                  <FormControl>
+                    <Input
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      {...field}
+                    />
+                  </FormControl>
+                </EmailTypoFix>
                 <FormMessage />
               </FormItem>
             )}
@@ -109,6 +128,7 @@ export function SignUpScreen({
                   />
                 </FormControl>
                 <FormDescription>{t.passwordHint}</FormDescription>
+                <PasswordStrength value={field.value} />
                 <FormMessage />
               </FormItem>
             )}

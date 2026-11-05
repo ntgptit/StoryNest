@@ -8,6 +8,7 @@ import { Input } from "@storynest/ui/components/input";
 import { PasswordInput } from "@storynest/ui/components/password-input";
 import { useForm } from "react-hook-form";
 import { AuthCard, FormError } from "../components/auth-card.tsx";
+import { EmailTypoFix } from "../components/email-typo-fix.tsx";
 import { TextLink } from "../components/auth-links.tsx";
 import { useSignIn } from "../hooks/use-auth-actions.ts";
 import { withNext } from "../model/auth-urls.ts";
@@ -59,16 +60,24 @@ export function SignInScreen({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t.email}</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    {...field}
-                  />
-                </FormControl>
+                <EmailTypoFix
+                  value={field.value}
+                  onFix={(address) => {
+                    field.onChange(address);
+                    form.setFocus("email");
+                  }}
+                >
+                  <FormControl>
+                    <Input
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      {...field}
+                    />
+                  </FormControl>
+                </EmailTypoFix>
                 <FormMessage />
               </FormItem>
             )}

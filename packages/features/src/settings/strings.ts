@@ -15,6 +15,13 @@ const vi = {
     description: "Chọn ngôn ngữ giao diện. Phần chưa dịch hiển thị bằng tiếng Việt.",
     options: { vi: "Tiếng Việt", en: "English" },
   },
+  theme: {
+    title: "Giao diện",
+    description: "Lưu trên thiết bị này. Khi đọc chương, màu nền trong cài đặt đọc được ưu tiên.",
+    label: "Chủ đề",
+    options: { system: "Theo thiết bị", light: "Sáng", dark: "Tối" },
+    darkSwitch: "Giao diện tối",
+  },
   reading: {
     title: "Đọc truyện",
     description: "Cỡ chữ, giãn dòng, phông và màu nền của trang đọc.",

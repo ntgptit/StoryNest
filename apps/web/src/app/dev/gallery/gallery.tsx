@@ -82,6 +82,20 @@ import { DetailPanel } from "@storynest/ui/widgets/detail-panel";
 import { ChangeStepper, FoldRow, FoldToggle } from "@storynest/ui/widgets/diff-folds";
 import { RowActionsButton, RowActionsMenu, type RowAction } from "@storynest/ui/widgets/row-actions-menu";
 import { DragHandle, SortableItem, useSortableList } from "@storynest/ui/widgets/sortable-list";
+import { useCountdown } from "@storynest/ui/lib/use-countdown";
+import { AutocompleteInput, type AutocompleteOption } from "@storynest/ui/widgets/autocomplete-input";
+import { ConnectionBanner, type ConnectionState } from "@storynest/ui/widgets/connection-banner";
+import { DropZone } from "@storynest/ui/widgets/drop-zone";
+import { EmailTypoHint } from "@storynest/ui/widgets/email-typo-hint";
+import { EnvelopeSent, ResendButton } from "@storynest/ui/widgets/envelope-sent";
+import {
+  FullScreenMenu,
+  fullScreenMenuItemStyle,
+  fullScreenMenuLinkClass,
+} from "@storynest/ui/widgets/full-screen-menu";
+import { PasswordStrengthMeter, type StrengthScore } from "@storynest/ui/widgets/password-strength-meter";
+import { PullToRefresh } from "@storynest/ui/widgets/pull-to-refresh";
+import { SkySwitch } from "@storynest/ui/widgets/sky-switch";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -1467,6 +1481,215 @@ function DetailPanelExample() {
   );
 }
 
+const ACCOUNT_PEOPLE: AutocompleteOption[] = [
+  { id: "1", value: "annguyen", primary: "An Nguyễn", secondary: "@annguyen" },
+  { id: "2", value: "anhtran", primary: "Anh Trần", secondary: "@anhtran" },
+  { id: "3", value: "binhle", primary: "Bình Lê", secondary: "@binhle" },
+  { id: "4", value: "chi_writes", primary: "Chi Phạm", secondary: "@chi_writes" },
+].map((person) => ({
+  ...person,
+  leading: (
+    <Avatar className="size-8">
+      <AvatarFallback>{person.primary.slice(0, 1)}</AvatarFallback>
+    </Avatar>
+  ),
+}));
+
+/** Rough demo scoring only; the real rules live in features/auth (passwordStrength). */
+function demoStrength(value: string): StrengthScore {
+  if (value === "") return 0;
+  const variety = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((re) => re.test(value)).length;
+  if (value.length < 8) return 1;
+  return Math.min(4, Math.max(1, variety + (value.length >= 12 ? 1 : 0) - 1)) as StrengthScore;
+}
+
+function AccountBatchExample() {
+  const [night, setNight] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dropped, setDropped] = useState<string | null>(null);
+  const [who, setWho] = useState("");
+  const [password, setPassword] = useState("");
+  const [sends, setSends] = useState(0);
+  const cooldown = useCountdown(10);
+  const [email, setEmail] = useState("an@gmial.com");
+  const [connection, setConnection] = useState<ConnectionState>("online");
+  const [connectionChanged, setConnectionChanged] = useState(false);
+  const matches = who.trim() === "" ? [] : ACCOUNT_PEOPLE.filter((p) => p.value.includes(who.trim().toLowerCase()));
+  const score = demoStrength(password);
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-wrap items-center gap-4">
+        <SkySwitch night={night} onNightChange={setNight} label="Night sky (demo)" />
+        <span className="text-sm text-muted-foreground">
+          {night ? "Night" : "Day"} · demo only, the site theme stays
+        </span>
+        <FullScreenMenu
+          open={menuOpen}
+          onOpenChange={setMenuOpen}
+          title="Menu"
+          openLabel="Open menu"
+          closeLabel="Close menu"
+          footer={<span className="text-sm text-muted-foreground">Footer row</span>}
+        >
+          <ul className="flex flex-col">
+            {["Rankings", "Following"].map((label, index) => (
+              <li key={label}>
+                <a
+                  href="#batch2-account"
+                  className={fullScreenMenuLinkClass()}
+                  style={fullScreenMenuItemStyle(index)}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <span aria-hidden className="text-xs text-muted-foreground">
+                    0{index + 1}
+                  </span>
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </FullScreenMenu>
+      </div>
+
+      <DropZone
+        label="Drop the picture here"
+        onFiles={(files) => setDropped(files[0]?.name ?? null)}
+        className="max-w-sm"
+      >
+        <div className="flex items-center gap-3 rounded-xl border p-3">
+          <StoryCover title="Drop target" coverUrl={null} className="w-14 shrink-0" />
+          <p className="text-sm text-muted-foreground">
+            {dropped ? `Dropped: ${dropped}` : "Drag a file onto this row."}
+          </p>
+        </div>
+      </DropZone>
+
+      <div className="flex max-w-sm flex-col gap-1.5">
+        <label htmlFor="gallery-invite" className="text-sm font-medium">
+          Invite by username
+        </label>
+        <AutocompleteInput
+          id="gallery-invite"
+          value={who}
+          onValueChange={setWho}
+          options={matches}
+          listLabel="Suggested authors"
+          emptyText="No author matches. You can still invite by the exact username."
+        />
+      </div>
+
+      <div className="flex max-w-sm flex-col gap-2">
+        <label htmlFor="gallery-password" className="text-sm font-medium">
+          New password
+        </label>
+        <Input id="gallery-password" value={password} onChange={(event) => setPassword(event.target.value)} />
+        {password ? (
+          <PasswordStrengthMeter
+            score={score}
+            title="Strength"
+            note="advice only"
+            levelLabel={["", "Weak", "Fair", "Good", "Strong"][score] ?? ""}
+            metLabel="done"
+            checks={[
+              { id: "length", label: "At least 8 characters", met: password.length >= 8 },
+              {
+                id: "case",
+                label: "Upper and lower case letters",
+                met: /[a-z]/.test(password) && /[A-Z]/.test(password),
+              },
+              { id: "number", label: "A number", met: /\d/.test(password) },
+              { id: "symbol", label: "A symbol", met: /[^A-Za-z0-9]/.test(password) },
+            ]}
+            hints={/1234|abcd/i.test(password) ? ["Avoid runs like 1234 or abcd."] : []}
+          />
+        ) : null}
+      </div>
+
+      <div className="flex max-w-sm flex-col gap-3 rounded-xl border p-4 text-center">
+        {sends > 0 ? <EnvelopeSent key={sends} /> : <p className="text-sm text-muted-foreground">Nothing sent yet.</p>}
+        <Button
+          type="button"
+          onClick={() => {
+            setSends((count) => count + 1);
+            cooldown.restart();
+          }}
+        >
+          Send the email
+        </Button>
+        <ResendButton
+          secondsLeft={cooldown.left}
+          total={10}
+          label="Resend email"
+          waitingLabel={(seconds) => `Resend in ${seconds} s`}
+          onResend={() => {
+            setSends((count) => count + 1);
+            cooldown.restart();
+          }}
+        />
+      </div>
+
+      <div className="flex max-w-sm flex-col gap-1.5">
+        <label htmlFor="gallery-email" className="text-sm font-medium">
+          Email
+        </label>
+        <Input id="gallery-email" value={email} onChange={(event) => setEmail(event.target.value)} />
+        <div aria-live="polite">
+          {email.endsWith("@gmial.com") ? (
+            <EmailTypoHint
+              className="mt-1"
+              suggestion={{ head: `${email.slice(0, email.indexOf("@"))}@gm`, changed: "ai", tail: "l.com" }}
+              before="Did you mean"
+              after="?"
+              onAccept={() => setEmail(email.replace("@gmial.com", "@gmail.com"))}
+            />
+          ) : null}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-xl border pt-2">
+        <ConnectionBanner
+          state={connection}
+          animate={connectionChanged}
+          labels={{
+            offlineTitle: "You are offline",
+            offlineBody: "New content will load again once you are back online.",
+            backTitle: "Back online",
+            backBody: "Reloading what failed.",
+          }}
+        />
+        <div className="flex flex-wrap gap-2 px-4 pb-3">
+          {(["offline", "back", "online"] as const).map((state) => (
+            <Button
+              key={state}
+              type="button"
+              size="sm"
+              variant={connection === state ? "secondary" : "outline"}
+              onClick={() => {
+                setConnectionChanged(true);
+                setConnection(state);
+              }}
+            >
+              {state}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <PullToRefresh
+        enabled
+        onRefresh={() => new Promise((resolve) => setTimeout(resolve, 1200))}
+        labels={{ pull: "Pull down to refresh", release: "Release to refresh", refreshing: "Refreshing…" }}
+      >
+        <p className="rounded-xl border p-3 text-sm text-muted-foreground">
+          Pull to refresh: on a touch screen, at the top of the page, drag down (enabled here for the demo; the app only
+          turns it on in the installed app).
+        </p>
+      </PullToRefresh>
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -1683,6 +1906,12 @@ export function Gallery() {
         <ManageGridExample />
         <DiffFoldsExample />
         <DetailPanelExample />
+      </Section>
+
+      <Section title="Batch 2 · account">
+        <div id="batch2-account">
+          <AccountBatchExample />
+        </div>
       </Section>
     </AppShell>
   );

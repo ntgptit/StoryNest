@@ -626,6 +626,184 @@
   }
 }
 
+/*
+ * Batch 2 · account (auth, settings, shell, uploads, team, connectivity), adapted from Lucian UX/UI Prompt #021, #032,
+ * #034, #036, #045, #064, #085, #091 and #264 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their
+ * durations and curves (their --ux-ease / --ux-spring are our ease-soft / ease-spring). Every movement answers
+ * something the person did (a toggle, a drag, typing, sending, a pull, the network dropping); none plays on load.
+ * - SkySwitch (#021): the day/night illustration is drawn on its own small sky, so its colours stay the same in both
+ *   schemes, like the crop guides.
+ * - DropZone (#032): the dashed frame marches while a file is dragged over it.
+ * - AutocompleteInput (#034): suggestions rise in one after the other.
+ * - PasswordStrengthMeter (#036): the four bars fill one after the other (transitions only).
+ * - FullScreenMenu (#045): the menu spreads as a circle from its button (--menu-x / --menu-y); the links rise in.
+ * - EnvelopeSent (#064): the letter tucks into the envelope, the flap closes and a check pops on it.
+ * - PullToRefresh (#085): the arrow circle spins while the page reloads its data.
+ * - ConnectionBanner (#091): the Wi-Fi arcs blink in turn while offline.
+ * - EmailTypoHint (#264): the suggestion drops down; the field flashes once when it is accepted.
+ */
+:root {
+  --sky-day: oklch(0.75 0.12 240);
+  --sky-day-2: oklch(0.86 0.07 230);
+  --sky-night: oklch(0.24 0.06 275);
+  --sky-night-2: oklch(0.31 0.08 275);
+  --sky-sun: oklch(0.87 0.16 90);
+  --sky-sun-glow: oklch(0.96 0.09 100);
+  --sky-sun-edge: oklch(0.79 0.16 70);
+  --sky-moon: oklch(0.85 0.02 265);
+  --sky-moon-glow: oklch(0.97 0.01 265);
+  --sky-crater: oklch(0.74 0.03 265);
+  --sky-cloud: oklch(1 0 0);
+  --sky-cloud-2: oklch(0.95 0.03 240);
+}
+@theme inline {
+  --color-sky-day: var(--sky-day);
+  --color-sky-day-2: var(--sky-day-2);
+  --color-sky-night: var(--sky-night);
+  --color-sky-night-2: var(--sky-night-2);
+  --color-sky-sun: var(--sky-sun);
+  --color-sky-sun-glow: var(--sky-sun-glow);
+  --color-sky-sun-edge: var(--sky-sun-edge);
+  --color-sky-moon: var(--sky-moon);
+  --color-sky-moon-glow: var(--sky-moon-glow);
+  --color-sky-crater: var(--sky-crater);
+  --color-sky-cloud: var(--sky-cloud);
+  --color-sky-cloud-2: var(--sky-cloud-2);
+}
+@theme {
+  --ease-launch: cubic-bezier(0.5, -0.3, 0.6, 1);
+  --ease-drop: cubic-bezier(0.3, 1.4, 0.5, 1);
+
+  --animate-twinkle: twinkle 2.4s ease-in-out infinite;
+  @keyframes twinkle {
+    50% {
+      opacity: 0.3;
+      transform: scale(0.6);
+    }
+  }
+
+  --animate-dash-march: dash-march 0.9s linear infinite;
+  @keyframes dash-march {
+    to {
+      stroke-dashoffset: -30;
+    }
+  }
+
+  --animate-option-rise: option-rise 0.35s var(--ease-spring) backwards;
+  @keyframes option-rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  --animate-menu-reveal: menu-reveal 0.8s var(--ease-soft);
+  --animate-menu-conceal: menu-conceal 0.7s var(--ease-soft) forwards;
+  --animate-menu-link-rise: menu-link-rise 0.7s var(--ease-spring) backwards;
+  --animate-menu-fade-up: menu-fade-up 0.6s var(--ease-spring) 0.5s backwards;
+  --animate-burger-top: burger-top 0.55s var(--ease-spring);
+  --animate-burger-bottom: burger-bottom 0.55s var(--ease-spring);
+  @keyframes menu-reveal {
+    from {
+      clip-path: circle(0 at var(--menu-x, 100%) var(--menu-y, 0));
+    }
+    to {
+      clip-path: circle(150vmax at var(--menu-x, 100%) var(--menu-y, 0));
+    }
+  }
+  @keyframes menu-conceal {
+    from {
+      clip-path: circle(150vmax at var(--menu-x, 100%) var(--menu-y, 0));
+    }
+    to {
+      clip-path: circle(0 at var(--menu-x, 100%) var(--menu-y, 0));
+    }
+  }
+  /* Each link sets --i; the element's 0.22s + 60ms per line. */
+  @keyframes menu-link-rise {
+    from {
+      opacity: 0;
+      transform: translateY(26px);
+    }
+  }
+  @keyframes menu-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  /* The lines of the open menu's × start where the burger's outer lines were (rotate/translate, like Tailwind's). */
+  @keyframes burger-top {
+    from {
+      translate: 0 -6px;
+      rotate: 0deg;
+    }
+  }
+  @keyframes burger-bottom {
+    from {
+      translate: 0 6px;
+      rotate: 0deg;
+    }
+  }
+
+  --animate-letter-tuck: letter-tuck 0.6s var(--ease-soft) both;
+  --animate-flap-close: flap-close 0.5s var(--ease-soft) 0.45s both;
+  --animate-envelope-hop: envelope-hop 0.7s var(--ease-spring) 0.95s both;
+  --animate-check-badge: check-badge 0.5s var(--ease-spring) 1.25s both;
+  @keyframes letter-tuck {
+    from {
+      transform: translateY(-3.5rem);
+    }
+  }
+  @keyframes flap-close {
+    from {
+      transform: rotateX(180deg);
+    }
+  }
+  @keyframes envelope-hop {
+    40% {
+      transform: translateY(-0.5rem) rotate(-4deg);
+    }
+  }
+  @keyframes check-badge {
+    from {
+      transform: scale(0);
+    }
+  }
+
+  --animate-ptr-spin: ptr-spin 0.8s linear infinite;
+  @keyframes ptr-spin {
+    to {
+      transform: rotate(270deg);
+    }
+  }
+
+  --animate-wifi-scan: wifi-scan 1.8s ease-in-out infinite;
+  @keyframes wifi-scan {
+    30% {
+      opacity: 1;
+    }
+    70%,
+    100% {
+      opacity: 0.25;
+    }
+  }
+
+  --animate-hint-drop: hint-drop 0.35s var(--ease-drop);
+  --animate-fix-flash: fix-flash 0.5s ease;
+  @keyframes hint-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scaleY(0.6);
+    }
+  }
+  @keyframes fix-flash {
+    30% {
+      background-color: color-mix(in oklab, var(--chart-2) 16%, transparent);
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

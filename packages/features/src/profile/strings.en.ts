@@ -21,6 +21,8 @@ export const en = {
     remove: "Remove picture",
     uploading: "Uploading…",
     inputLabel: "Choose a profile picture",
+    drop: "Drop the picture here",
+    dropHint: "You can also drag a picture here.",
     hint: "JPG, PNG or WebP, up to 10 MB. You choose the square to keep before it is uploaded.",
     saved: "Profile picture updated.",
     removed: "Profile picture removed.",

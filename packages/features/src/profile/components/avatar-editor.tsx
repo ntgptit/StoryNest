@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@storynest/ui/components/button";
+import { DropZone } from "@storynest/ui/widgets/drop-zone";
 import { ImageCropDialog } from "@storynest/ui/widgets/image-crop-dialog";
 import { useRef } from "react";
 import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
@@ -15,8 +16,9 @@ import { profileText } from "../strings.ts";
 const t = profileText.avatar;
 
 /**
- * Shows the current picture with "change" and "remove". A new file opens the crop editor (round mask, square result);
- * "Use photo" uploads the chosen square, "Cancel" uploads nothing.
+ * Shows the current picture with "change" and "remove". A new file, picked or dropped onto the picture row
+ * (Lucian 032), opens the crop editor (round mask, square result); "Use photo" uploads the chosen square, "Cancel"
+ * uploads nothing.
  */
 export function AvatarEditor({ profile, render }: { profile: Profile; render?: AvatarRenderer }) {
   const toast = useAppToast();
@@ -36,46 +38,50 @@ export function AvatarEditor({ profile, render }: { profile: Profile; render?: A
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-4" aria-busy={busy}>
-        <UserAvatar
-          storageKey={profile.avatar_storage_key}
-          fallback={firstLetter(profile.display_name)}
-          className="size-20"
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
-            {upload.isPending ? t.uploading : profile.avatar_storage_key === null ? t.add : t.change}
-          </Button>
-          {profile.avatar_storage_key === null ? null : (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={busy}
-              onClick={() => {
-                upload.reset();
-                crop.clearError();
-                remove.mutate(undefined, { onSuccess: () => toast.success(t.removed) });
-              }}
-            >
-              {t.remove}
-            </Button>
-          )}
-          <input
-            ref={input}
-            type="file"
-            accept={AVATAR_ACCEPTED_TYPES.join(",")}
-            aria-label={t.inputLabel}
-            className="sr-only"
-            tabIndex={-1}
-            onChange={(event) => {
-              pick(event.target.files?.[0]);
-              event.target.value = ""; // picking the same file again must still fire
-            }}
+      <DropZone label={t.drop} disabled={busy} onFiles={(files) => pick(files[0])} className="self-start pr-2">
+        <div className="flex items-center gap-4" aria-busy={busy}>
+          <UserAvatar
+            storageKey={profile.avatar_storage_key}
+            fallback={firstLetter(profile.display_name)}
+            className="size-20"
           />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
+              {upload.isPending ? t.uploading : profile.avatar_storage_key === null ? t.add : t.change}
+            </Button>
+            {profile.avatar_storage_key === null ? null : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  upload.reset();
+                  crop.clearError();
+                  remove.mutate(undefined, { onSuccess: () => toast.success(t.removed) });
+                }}
+              >
+                {t.remove}
+              </Button>
+            )}
+            <input
+              ref={input}
+              type="file"
+              accept={AVATAR_ACCEPTED_TYPES.join(",")}
+              aria-label={t.inputLabel}
+              className="sr-only"
+              tabIndex={-1}
+              onChange={(event) => {
+                pick(event.target.files?.[0]);
+                event.target.value = ""; // picking the same file again must still fire
+              }}
+            />
+          </div>
         </div>
-      </div>
-      <p className="text-xs text-muted-foreground">{t.hint}</p>
+      </DropZone>
+      <p className="text-xs text-muted-foreground">
+        {t.hint} <span className="pointer-coarse:hidden">{t.dropHint}</span>
+      </p>
       {error === null ? null : (
         <p role="alert" className="text-sm text-destructive">
           {avatarErrorMessage(error)}
