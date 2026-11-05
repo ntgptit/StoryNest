@@ -1,5 +1,3 @@
-import { chapterBodySchema, type ChapterBlock, type ChapterBody, type Mark } from "@storynest/validation";
-import type { ReaderBlock, TextMark } from "../../reader/index.ts";
 import type { AppError } from "../../_shared/errors.ts";
 import { historyText } from "../strings.ts";
 
