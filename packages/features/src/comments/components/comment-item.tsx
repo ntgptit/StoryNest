@@ -13,6 +13,7 @@ import {
 } from "@storynest/ui/components/dropdown-menu";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { SpoilerText } from "@storynest/ui/widgets/spoiler-text";
+import { SwipeToReply } from "@storynest/ui/widgets/swipe-to-reply";
 import { ReportButton } from "../../moderation/index.ts";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useNavigation } from "../../_shared/platform.tsx";
@@ -66,6 +67,7 @@ export function CommentItem({
   const canHide = canModerate && comment.status === COMMENT_STATUS.VISIBLE;
   const canShow = canModerate && comment.hiddenBy === HIDE_SOURCE.AUTHOR;
   const hasMenu = canChange || canHide || canShow;
+  const canReply = !isReply && userId !== null && comment.status === COMMENT_STATUS.VISIBLE;
   const loginHref = `/login?next=${encodeURIComponent(navigation.pathname)}`;
 
   const toggleLike = () => {
@@ -103,91 +105,96 @@ export function CommentItem({
       {placeholder ? (
         <p className="text-sm italic text-muted-foreground">{t.deletedPlaceholder}</p>
       ) : (
-        <>
-          <header className="flex flex-wrap items-center gap-x-2 text-sm">
-            <span className="font-medium">{comment.authorName ?? t.anonymous}</span>
-            <span className="text-xs text-muted-foreground">{formatRelativeTime(comment.createdAt, locale)}</span>
-            {comment.edited ? <span className="text-xs text-muted-foreground">({t.edited})</span> : null}
-            {hasMenu ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button type="button" size="icon" variant="ghost" className="ml-auto size-7" aria-label={t.menu}>
-                    <MoreHorizontal aria-hidden className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {canChange ? (
-                    <>
-                      <DropdownMenuItem onSelect={() => setEditing(true)}>{t.edit}</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onSelect={() => setConfirmingDelete(true)}>
-                        {t.delete}
-                      </DropdownMenuItem>
-                    </>
-                  ) : null}
-                  {canHide ? <DropdownMenuItem onSelect={() => changeHidden(true)}>{t.hide}</DropdownMenuItem> : null}
-                  {canShow ? <DropdownMenuItem onSelect={() => changeHidden(false)}>{t.show}</DropdownMenuItem> : null}
-                </DropdownMenuContent>
-              </DropdownMenu>
+        // On touch, swiping a top-level comment right opens its reply box, like the Reply button (Lucian 078).
+        <SwipeToReply disabled={!canReply || editing} onReply={() => setReplying(true)}>
+          <div className="flex flex-col gap-2">
+            <header className="flex flex-wrap items-center gap-x-2 text-sm">
+              <span className="font-medium">{comment.authorName ?? t.anonymous}</span>
+              <span className="text-xs text-muted-foreground">{formatRelativeTime(comment.createdAt, locale)}</span>
+              {comment.edited ? <span className="text-xs text-muted-foreground">({t.edited})</span> : null}
+              {hasMenu ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button type="button" size="icon" variant="ghost" className="ml-auto size-7" aria-label={t.menu}>
+                      <MoreHorizontal aria-hidden className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {canChange ? (
+                      <>
+                        <DropdownMenuItem onSelect={() => setEditing(true)}>{t.edit}</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onSelect={() => setConfirmingDelete(true)}>
+                          {t.delete}
+                        </DropdownMenuItem>
+                      </>
+                    ) : null}
+                    {canHide ? <DropdownMenuItem onSelect={() => changeHidden(true)}>{t.hide}</DropdownMenuItem> : null}
+                    {canShow ? (
+                      <DropdownMenuItem onSelect={() => changeHidden(false)}>{t.show}</DropdownMenuItem>
+                    ) : null}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
+            </header>
+
+            {comment.status === COMMENT_STATUS.HIDDEN ? (
+              <p role="note" className="rounded-md border bg-muted p-2 text-xs text-muted-foreground">
+                {hiddenNotice()}
+              </p>
             ) : null}
-          </header>
 
-          {comment.status === COMMENT_STATUS.HIDDEN ? (
-            <p role="note" className="rounded-md border bg-muted p-2 text-xs text-muted-foreground">
-              {hiddenNotice()}
-            </p>
-          ) : null}
+            {editing ? (
+              <CommentComposer
+                label={commentText.composer.label}
+                initial={comment.body ?? ""}
+                submitLabel={t.saveEdit}
+                submittingLabel={t.saving}
+                autoFocus
+                onCancel={() => setEditing(false)}
+                onSubmit={async (body) => {
+                  await edit.mutateAsync({ commentId: comment.id, body }).catch(fail);
+                  setEditing(false);
+                  toast.success(t.saved);
+                }}
+              />
+            ) : (
+              <p className="whitespace-pre-line break-words text-sm">
+                <CommentBody body={comment.body ?? ""} />
+              </p>
+            )}
 
-          {editing ? (
-            <CommentComposer
-              label={commentText.composer.label}
-              initial={comment.body ?? ""}
-              submitLabel={t.saveEdit}
-              submittingLabel={t.saving}
-              autoFocus
-              onCancel={() => setEditing(false)}
-              onSubmit={async (body) => {
-                await edit.mutateAsync({ commentId: comment.id, body }).catch(fail);
-                setEditing(false);
-                toast.success(t.saved);
-              }}
-            />
-          ) : (
-            <p className="whitespace-pre-line break-words text-sm">
-              <CommentBody body={comment.body ?? ""} />
-            </p>
-          )}
-
-          <div className="flex flex-wrap items-center gap-1">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="h-7 gap-1 px-2"
-              aria-pressed={userId === null ? undefined : comment.likedByMe}
-              aria-label={userId === null ? t.guestLike : comment.likedByMe ? t.unlike : t.like}
-              disabled={like.isPending}
-              onClick={toggleLike}
-            >
-              <Heart aria-hidden className={comment.likedByMe ? "size-3.5 fill-current" : "size-3.5"} />
-              <span className="text-xs">{t.likes(formatCount(comment.likes, locale))}</span>
-            </Button>
-            {!isReply && userId !== null && comment.status === COMMENT_STATUS.VISIBLE ? (
+            <div className="flex flex-wrap items-center gap-1">
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="h-7 px-2 text-xs"
-                aria-expanded={replying}
-                onClick={() => setReplying((open) => !open)}
+                className="h-7 gap-1 px-2"
+                aria-pressed={userId === null ? undefined : comment.likedByMe}
+                aria-label={userId === null ? t.guestLike : comment.likedByMe ? t.unlike : t.like}
+                disabled={like.isPending}
+                onClick={toggleLike}
               >
-                {t.reply}
+                <Heart aria-hidden className={comment.likedByMe ? "size-3.5 fill-current" : "size-3.5"} />
+                <span className="text-xs">{t.likes(formatCount(comment.likes, locale))}</span>
               </Button>
-            ) : null}
-            {!own && comment.status === COMMENT_STATUS.VISIBLE ? (
-              <ReportButton kind="comment" targetId={comment.id} label={t.report} />
-            ) : null}
+              {canReply ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs"
+                  aria-expanded={replying}
+                  onClick={() => setReplying((open) => !open)}
+                >
+                  {t.reply}
+                </Button>
+              ) : null}
+              {!own && comment.status === COMMENT_STATUS.VISIBLE ? (
+                <ReportButton kind="comment" targetId={comment.id} label={t.report} />
+              ) : null}
+            </div>
           </div>
-        </>
+        </SwipeToReply>
       )}
 
       {replying ? (

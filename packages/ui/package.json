@@ -12,6 +12,7 @@
     "./lib/use-countdown": "./src/lib/use-countdown.ts",
     "./lib/use-flip": "./src/lib/use-flip.ts",
     "./lib/view-transition": "./src/lib/view-transition.ts",
+    "./lib/use-arrivals": "./src/lib/use-arrivals.ts",
     "./components/*": "./src/components/*.tsx",
     "./widgets/*": "./src/widgets/*.tsx"
   },

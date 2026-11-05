@@ -270,6 +270,15 @@ const vi = {
       drop: "Thả ảnh vào đây",
       dropHint: "Có thể kéo thả ảnh vào đây.",
       hint: "JPG, PNG hoặc WebP, tối đa 10 MB. Bạn chọn phần ảnh tỉ lệ 2:3 muốn giữ trước khi tải lên.",
+      size: {
+        original: "Ảnh gốc",
+        result: "Đã tải lên",
+        saved: (percent: number) => `Nhẹ hơn ${percent}%`,
+        summary: (original: string, result: string, percent: number) =>
+          percent > 0
+            ? `Ảnh gốc ${original}, đã tải lên ${result}, nhẹ hơn ${percent}%`
+            : `Ảnh gốc ${original}, đã tải lên ${result}`,
+      },
       saveFirst: "Lưu truyện trước, rồi bạn có thể thêm ảnh bìa.",
       saved: "Đã cập nhật ảnh bìa.",
       removed: "Đã gỡ ảnh bìa.",

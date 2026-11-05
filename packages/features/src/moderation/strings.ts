@@ -8,9 +8,40 @@ const vi = {
     title: "Báo cáo nội dung",
     description: "Cho chúng tôi biết vì sao nội dung này không phù hợp. Người điều hành sẽ xem xét.",
     reasonLabel: "Lý do",
-    reasonPlaceholder: "Chọn lý do",
     detailsLabel: "Chi tiết (không bắt buộc)",
     detailsPlaceholder: "Mô tả ngắn điều bạn thấy…",
+    detailsCount: (length: number, max: number) => `${length}/${max} ký tự`,
+    /** What helps a moderator for each reason: a hint under the details box and an example inside it. */
+    reasonHelp: {
+      spam: {
+        hint: "Cho biết nội dung quảng cáo hoặc bị lặp lại là gì, nếu chưa rõ.",
+        placeholder: "Ví dụ: cùng một đường link được đăng dưới mọi chương",
+      },
+      harassment: {
+        hint: "Cho biết ai bị nhắm đến và bằng cách nào. Trích lại lời lẽ sẽ giúp ích.",
+        placeholder: "Ví dụ: bình luận xúc phạm một độc giả khác bằng tên",
+      },
+      hate: {
+        hint: "Cho biết nhóm người nào bị công kích và bằng cách nào.",
+        placeholder: "Ví dụ: chương truyện chế giễu người khác vì tôn giáo",
+      },
+      sexual: {
+        hint: "Cho biết nội dung nằm ở đâu: chương, đoạn văn hay hình ảnh.",
+        placeholder: "Ví dụ: ảnh bìa có hình ảnh khiêu dâm",
+      },
+      violence: {
+        hint: "Cho biết nội dung nằm ở đâu và có đe dọa người thật không.",
+        placeholder: "Ví dụ: lời đe dọa nhắm vào một độc giả khác",
+      },
+      copyright: {
+        hint: "Nêu tác phẩm gốc và nơi tác phẩm được đăng lần đầu.",
+        placeholder: "Ví dụ: chép từ tiểu thuyết … đăng tại …",
+      },
+      other: {
+        hint: "Cho biết điều gì không ổn. Càng cụ thể, người điều hành càng xử lý nhanh.",
+        placeholder: "Mô tả ngắn điều bạn thấy…",
+      },
+    },
     submit: "Gửi báo cáo",
     submitting: "Đang gửi…",
     cancel: "Hủy",

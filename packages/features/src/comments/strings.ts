@@ -18,6 +18,7 @@ const vi = {
     placeholder: "Chia sẻ cảm nghĩ của bạn…",
     submit: "Đăng",
     submitting: "Đang đăng…",
+    done: "Đã đăng",
     cancel: "Hủy",
     posted: "Đã đăng bình luận.",
     count: (used: string, max: string) => `${used}/${max}`,

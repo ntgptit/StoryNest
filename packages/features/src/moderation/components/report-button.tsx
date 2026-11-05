@@ -12,21 +12,24 @@ import {
   DialogTitle,
 } from "@storynest/ui/components/dialog";
 import { Label } from "@storynest/ui/components/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@storynest/ui/components/select";
 import { Textarea } from "@storynest/ui/components/textarea";
+import { CharacterRing } from "@storynest/ui/widgets/character-ring";
+import { ChoicePills } from "@storynest/ui/widgets/choice-pills";
 import { REPORT_REASONS, type ReportReason } from "@storynest/validation";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useSubmitReport } from "../hooks/use-moderation.ts";
-import { isReportReason, REPORT_DETAILS_MAX_LENGTH, reportErrorMessage, type ReportTarget } from "../model/report.ts";
+import { REPORT_DETAILS_MAX_LENGTH, reportErrorMessage, type ReportTarget } from "../model/report.ts";
 import { moderationText } from "../strings.ts";
 
 const t = moderationText.report;
+const REASON_OPTIONS = REPORT_REASONS.map((value) => ({ value, label: t.reasons[value] }));
 
 /**
  * "Report" for a story, chapter, comment or person. A guest is sent to sign in first. The dialog asks for a reason
- * (required) and details (optional); sending the same report twice is harmless.
+ * (required, one of the reason pills) and details (optional); the details hint and example change with the reason
+ * (Lucian 295) and a ring fills towards the length limit. Sending the same report twice is harmless.
  */
 export function ReportButton({
   kind,
@@ -98,29 +101,42 @@ export function ReportButton({
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="report-reason">{t.reasonLabel}</Label>
-              <Select value={reason} onValueChange={(value) => isReportReason(value) && setReason(value)}>
-                <SelectTrigger id="report-reason">
-                  <SelectValue placeholder={t.reasonPlaceholder} />
-                </SelectTrigger>
-                <SelectContent>
-                  {REPORT_REASONS.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {t.reasons[value]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <p id="report-reason-label" className="text-sm leading-none font-medium">
+                {t.reasonLabel}
+              </p>
+              <ChoicePills
+                aria-labelledby="report-reason-label"
+                aria-required
+                value={reason}
+                onValueChange={setReason}
+                options={REASON_OPTIONS}
+              />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="report-details">{t.detailsLabel}</Label>
-              <Textarea
-                id="report-details"
-                value={details}
-                maxLength={REPORT_DETAILS_MAX_LENGTH}
-                placeholder={t.detailsPlaceholder}
-                onChange={(event) => setDetails(event.target.value)}
-              />
+              <div className="relative">
+                <Textarea
+                  id="report-details"
+                  value={details}
+                  maxLength={REPORT_DETAILS_MAX_LENGTH}
+                  placeholder={reason === "" ? t.detailsPlaceholder : t.reasonHelp[reason].placeholder}
+                  aria-describedby={reason === "" ? "report-details-count" : "report-details-hint report-details-count"}
+                  className="pr-10"
+                  onChange={(event) => setDetails(event.target.value)}
+                />
+                <CharacterRing
+                  id="report-details-count"
+                  length={details.length}
+                  max={REPORT_DETAILS_MAX_LENGTH}
+                  label={t.detailsCount(details.length, REPORT_DETAILS_MAX_LENGTH)}
+                  className="pointer-events-none absolute right-2.5 bottom-2.5"
+                />
+              </div>
+              {reason === "" ? null : (
+                <p key={reason} id="report-details-hint" className="animate-hint-swap text-xs text-muted-foreground">
+                  {t.reasonHelp[reason].hint}
+                </p>
+              )}
             </div>
             {submit.error ? (
               <p role="alert" className="text-sm text-destructive">

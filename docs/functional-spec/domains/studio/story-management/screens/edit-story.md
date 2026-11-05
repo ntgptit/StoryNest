@@ -29,6 +29,7 @@
 | SCR-STM-03-C16 | Confirm dialog "Delete this story?" | `story-form-screen.tsx:437-450` |
 | SCR-STM-03-C17 | Skeleton; error state (retry); empty state "Story not found" | `story-form-screen.tsx:76-89` |
 | SCR-STM-03-C18 | Cover drop zone (Lucian 032) | As SCR-PRF-02-C14 for the cover row: same checks, crop dialog (2:3) and errors as the picker | `components/cover-editor.tsx`, `packages/ui/src/widgets/drop-zone.tsx` |
+| SCR-STM-03-C19 | Upload veil and size bars (Lucian 082, 301) | As SCR-PRF-02-C15 for the cover preview: veil with a turning ring while uploading, a hop when done, then original vs uploaded size with the saving | `components/cover-editor.tsx`, `_shared/use-image-sizes.ts` |
 | SCR-STM-03-C19 | Unsaved changes bar (Lucian 250): rises from the bottom while the form is dirty or the tags changed, "N unsaved changes", "Discard" (resets fields and tags) / "Save" (the same submit as C14). While dirty, closing the tab asks the browser's leave question and a click on an in-app link outside the form is stopped: the bar shakes, turns red, says "Save or discard your changes before leaving" and focuses Save. The form's own Cancel link is not stopped. Not shown when creating | `story-form-screen.tsx`, `packages/ui/src/widgets/unsaved-changes-bar.tsx` |
 
 ## C. User actions & system responses

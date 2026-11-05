@@ -4,9 +4,39 @@ export const en = {
     title: "Report content",
     description: "Tell us why this content isn't appropriate. A moderator will review it.",
     reasonLabel: "Reason",
-    reasonPlaceholder: "Choose a reason",
     detailsLabel: "Details (optional)",
     detailsPlaceholder: "Briefly describe what you saw…",
+    detailsCount: (length: number, max: number) => `${length} of ${max} characters`,
+    reasonHelp: {
+      spam: {
+        hint: "Say what is being advertised or repeated, if it isn't obvious.",
+        placeholder: "e.g. The same link is posted under every chapter",
+      },
+      harassment: {
+        hint: "Say who is targeted and how. Quoting the words helps.",
+        placeholder: "e.g. The comment insults another reader by name",
+      },
+      hate: {
+        hint: "Say which group is attacked and how.",
+        placeholder: "e.g. The chapter mocks people for their religion",
+      },
+      sexual: {
+        hint: "Say where it appears: a chapter, a paragraph or a picture.",
+        placeholder: "e.g. The cover shows an explicit picture",
+      },
+      violence: {
+        hint: "Say where it appears and whether it threatens a real person.",
+        placeholder: "e.g. A threat against another reader",
+      },
+      copyright: {
+        hint: "Name the original work and where it was first published.",
+        placeholder: "e.g. Copied from the novel … published at …",
+      },
+      other: {
+        hint: "Tell us what is wrong. The more specific, the faster a moderator can act.",
+        placeholder: "Briefly describe what you saw…",
+      },
+    },
     submit: "Submit report",
     submitting: "Sending…",
     cancel: "Cancel",

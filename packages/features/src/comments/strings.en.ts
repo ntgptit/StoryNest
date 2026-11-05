@@ -15,6 +15,7 @@ export const en = {
     placeholder: "Share your thoughts…",
     submit: "Post",
     submitting: "Posting…",
+    done: "Posted",
     cancel: "Cancel",
     posted: "Comment posted.",
     count: (used: string, max: string) => `${used}/${max}`,

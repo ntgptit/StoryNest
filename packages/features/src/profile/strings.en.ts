@@ -37,6 +37,15 @@ export const en = {
     drop: "Drop the picture here",
     dropHint: "You can also drag a picture here.",
     hint: "JPG, PNG or WebP, up to 10 MB. You choose the square to keep before it is uploaded.",
+    size: {
+      original: "Original",
+      result: "Uploaded",
+      saved: (percent: number) => `${percent}% smaller`,
+      summary: (original: string, result: string, percent: number) =>
+        percent > 0
+          ? `Original ${original}, uploaded ${result}, ${percent}% smaller`
+          : `Original ${original}, uploaded ${result}`,
+    },
     saved: "Profile picture updated.",
     removed: "Profile picture removed.",
     crop: {

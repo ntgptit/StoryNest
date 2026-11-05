@@ -147,6 +147,13 @@ import { AvailabilityHint, type AvailabilityStatus } from "@storynest/ui/widgets
 import { CommandPalette } from "@storynest/ui/widgets/command-palette";
 import { LockoutCountdown } from "@storynest/ui/widgets/lockout-countdown";
 import { WaveIntro } from "@storynest/ui/widgets/wave-intro";
+import { useArrivals } from "@storynest/ui/lib/use-arrivals";
+import { cn } from "@storynest/ui/lib/utils";
+import { CharacterRing } from "@storynest/ui/widgets/character-ring";
+import { ChoicePills } from "@storynest/ui/widgets/choice-pills";
+import { SizeShrink } from "@storynest/ui/widgets/size-shrink";
+import { SwipeToReply } from "@storynest/ui/widgets/swipe-to-reply";
+import { UploadVeil } from "@storynest/ui/widgets/upload-veil";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -2954,6 +2961,210 @@ function Shell3PaletteExample() {
   );
 }
 
+type Community3Kind = "all" | "chapters" | "replies" | "team";
+type Community3Row = { id: string; kind: Exclude<Community3Kind, "all">; text: string; read: boolean };
+
+function Community3NotificationsExample() {
+  const [rows, setRows] = useState<Community3Row[]>([
+    { id: "n3", kind: "chapters", text: "“Salt and paper” just published chapter 12", read: false },
+    { id: "n2", kind: "replies", text: "Mai replied to your comment: “Same here!”", read: true },
+    { id: "n1", kind: "team", text: "Lan invited you to co-author “Night market”", read: false },
+  ]);
+  const [kind, setKind] = useState<Community3Kind>("all");
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const arrivals = useArrivals(rows, (row) => row.id);
+  const scoped = rows.filter((row) => !unreadOnly || !row.read);
+  const shown = scoped.filter((row) => kind === "all" || row.kind === kind);
+  const count = (value: Community3Kind) => scoped.filter((row) => value === "all" || row.kind === value).length;
+  const labels: Record<Community3Kind, string> = {
+    all: "All",
+    chapters: "New chapters",
+    replies: "Replies",
+    team: "Team",
+  };
+  return (
+    <div id="community3-notifications" className="flex max-w-2xl flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <ChoicePills
+          aria-label="Filter by type"
+          value={kind}
+          onValueChange={setKind}
+          options={(Object.keys(labels) as Community3Kind[]).map((value) => ({
+            value,
+            label: labels[value],
+            count: count(value),
+          }))}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          aria-pressed={unreadOnly}
+          className="aria-pressed:border-primary aria-pressed:bg-primary/10"
+          onClick={() => setUnreadOnly((on) => !on)}
+        >
+          Unread only
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() =>
+            setRows((current) => [
+              {
+                id: `n${current.length + 1}`,
+                kind: "replies",
+                text: `Reader ${current.length + 1} replied to your comment`,
+                read: false,
+              },
+              ...current,
+            ])
+          }
+        >
+          Simulate a new one
+        </Button>
+      </div>
+      <p aria-live="polite" className="min-h-4 text-xs text-muted-foreground">
+        {kind !== "all" || unreadOnly ? `Showing ${shown.length} of ${rows.length} loaded notifications` : ""}
+      </p>
+      <ul className="flex flex-col gap-2">
+        {shown.map((row) => (
+          <li
+            key={row.id}
+            className={cn(
+              "rounded-xl border bg-card p-3 text-sm",
+              !row.read && "font-medium",
+              arrivals.has(row.id) && "animate-row-arrive",
+            )}
+          >
+            {row.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const COMMUNITY3_REASONS = {
+  spam: { label: "Spam or advertising", hint: "Say what is being advertised or repeated, if it isn't obvious." },
+  harassment: { label: "Harassment or abuse", hint: "Say who is targeted and how. Quoting the words helps." },
+  copyright: { label: "Copyright infringement", hint: "Name the original work and where it was first published." },
+  other: { label: "Other reason", hint: "Tell us what is wrong. The more specific, the faster a moderator can act." },
+} as const;
+type Community3Reason = keyof typeof COMMUNITY3_REASONS;
+
+function Community3ReportExample() {
+  const [reason, setReason] = useState<Community3Reason | "">("");
+  const [details, setDetails] = useState("");
+  const max = 200;
+  return (
+    <div id="community3-report" className="flex max-w-md flex-col gap-3">
+      <p id="community3-reason" className="text-sm font-medium">
+        Reason
+      </p>
+      <ChoicePills
+        aria-labelledby="community3-reason"
+        value={reason}
+        onValueChange={setReason}
+        options={(Object.keys(COMMUNITY3_REASONS) as Community3Reason[]).map((value) => ({
+          value,
+          label: COMMUNITY3_REASONS[value].label,
+        }))}
+      />
+      <div className="relative">
+        <Textarea
+          aria-label="Details (optional)"
+          aria-describedby="community3-count"
+          maxLength={max}
+          value={details}
+          className="pr-10"
+          onChange={(event) => setDetails(event.target.value)}
+        />
+        <CharacterRing
+          id="community3-count"
+          length={details.length}
+          max={max}
+          label={`${details.length} of ${max} characters`}
+          className="pointer-events-none absolute right-2.5 bottom-2.5"
+        />
+      </div>
+      {reason === "" ? null : (
+        <p key={reason} className="animate-hint-swap text-xs text-muted-foreground">
+          {COMMUNITY3_REASONS[reason].hint}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Community3UploadExample() {
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(0);
+  return (
+    <div id="community3-upload" className="flex flex-col gap-3">
+      <div className="flex items-end gap-4">
+        <UploadVeil busy={busy} done={done} className="w-24 rounded-lg">
+          <StoryCover title="Salt and paper" coverUrl={null} />
+        </UploadVeil>
+        <UploadVeil busy={busy} done={done} className="rounded-full">
+          <span className="grid size-20 place-items-center rounded-full bg-secondary text-2xl font-semibold">M</span>
+        </UploadVeil>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            setTimeout(() => {
+              setBusy(false);
+              setDone((count) => count + 1);
+            }, 1500);
+          }}
+        >
+          {busy ? "Uploading…" : "Change cover"}
+        </Button>
+      </div>
+      {done > 0 && !busy ? (
+        <SizeShrink
+          original={3_240_000}
+          result={86_000}
+          formatSize={(bytes) =>
+            bytes >= 1_000_000 ? `${(bytes / 1_000_000).toFixed(1)} MB` : `${Math.round(bytes / 1000)} kB`
+          }
+          labels={{
+            original: "Original",
+            result: "Uploaded",
+            saved: (percent) => `${percent}% smaller`,
+            summary: (original, result, percent) => `Original ${original}, uploaded ${result}, ${percent}% smaller`,
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function Community3SwipeExample() {
+  const [replying, setReplying] = useState(false);
+  return (
+    <div id="community3-swipe" className="flex max-w-md flex-col gap-2">
+      <SwipeToReply onReply={() => setReplying(true)}>
+        <article className="flex flex-col gap-1 rounded-lg border bg-card p-3 text-sm">
+          <span className="font-medium">Mai</span>
+          <p>That last chapter broke my heart. (Swipe me right on a touch screen.)</p>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-fit px-2 text-xs"
+            aria-expanded={replying}
+            onClick={() => setReplying((open) => !open)}
+          >
+            Reply
+          </Button>
+        </article>
+      </SwipeToReply>
+      {replying ? <Textarea aria-label="Write a reply" autoFocus placeholder="Write a reply…" /> : null}
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -3232,6 +3443,13 @@ export function Gallery() {
         <Shell3RetryExample />
         <Shell3IntroExample />
         <Shell3PaletteExample />
+      </Section>
+
+      <Section title="Batch 3 · community3">
+        <Community3NotificationsExample />
+        <Community3ReportExample />
+        <Community3UploadExample />
+        <Community3SwipeExample />
       </Section>
     </AppShell>
   );

@@ -36,8 +36,8 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | --- | --- | --- | --- |
 | SCR-MOD-02-C01 | Report button | Ghost/outline small button, Flag icon (`aria-hidden`), visible text "Report" (or caller's `label`), accessible name "Report story/chapter/comment/user" (`report.button` + `report.kinds.*`). Not rendered while auth is loading | `report-button.tsx:54-92` |
 | SCR-MOD-02-C02 | Dialog header | Title "Report content: <kind>"; description "Tell us why this content isn't appropriate. A moderator will review it." | `report-button.tsx:95-98`, `strings.en.ts:4-5` |
-| SCR-MOD-02-C03 | Reason select | Label "Reason"; placeholder "Choose a reason"; 7 options (BR-MOD-003) | `report-button.tsx:100-114` |
-| SCR-MOD-02-C04 | Details textarea | Label "Details (optional)"; placeholder "Briefly describe what you saw…"; `maxLength=2000`, no counter | `report-button.tsx:115-124` |
+| SCR-MOD-02-C03 | Reason pills (Lucian 295) | Label "Reason"; the 7 reasons (BR-MOD-003) as a radio group of pills that wrap on narrow screens, none chosen at first (still required); a pill slides to the chosen one; Tab enters the group, arrow keys move and choose | `report-button.tsx`, `ui/widgets/choice-pills.tsx` |
+| SCR-MOD-02-C04 | Details textarea | Label "Details (optional)"; placeholder "Briefly describe what you saw…" until a reason is chosen, then an example for that reason (e.g. copyright: "e.g. Copied from the novel … published at …") and a hint line under the box ("Name the original work and where it was first published."), both from `report.reasonHelp`; still optional, `maxLength=2000`. A ring in the corner fills towards 2000 and turns red from 90%; the count is read out as "N of 2000 characters" (`aria-describedby`) | `report-button.tsx`, `ui/widgets/character-ring.tsx` |
 | SCR-MOD-02-C05 | Error message | `role="alert"`, text by error kind | `report-button.tsx:125-129`, `model/report.ts:164-183` |
 | SCR-MOD-02-C06 | Footer | "Cancel" (outline), "Submit report" / "Sending…" (disabled until a reason is chosen and while sending) | `report-button.tsx:131-138` |
 

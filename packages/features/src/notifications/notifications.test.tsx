@@ -13,7 +13,10 @@ import { NotificationBell, NotificationsScreen } from "./index.ts";
 import {
   NOTIFICATIONS_PAGE_SIZE,
   badgeText,
+  countByFilter,
   cursorAfter,
+  filterNotifications,
+  notificationGroup,
   describeNotification,
   notificationErrorMessage,
   toNotification,
@@ -219,6 +222,35 @@ function fakeClient(options: {
   };
 }
 const callOf = (op: { calls: Call[] }, method: string) => op.calls.find(([m]) => m === method)?.[1];
+
+describe("notification filters", () => {
+  const items = [
+    toNotification(row(1)),
+    toNotification(row(2, { event_type: "comment_replied", read_at: "2026-11-04T11:00:00Z" })),
+    toNotification(row(3, { event_type: "collaboration_invited" })),
+    toNotification(row(4, { event_type: "collaboration_declined", read_at: "2026-11-04T11:00:00Z" })),
+    toNotification(row(5, { event_type: "something_new" })),
+  ];
+
+  it("puts each known type under one chip, and an unknown one under none", () => {
+    expect(notificationGroup("chapter_published")).toBe("chapters");
+    expect(notificationGroup("comment_replied")).toBe("replies");
+    expect(notificationGroup("collaboration_accepted")).toBe("team");
+    expect(notificationGroup("something_new")).toBeNull();
+  });
+
+  it("narrows the loaded rows by kind and unread state, keeping their order", () => {
+    expect(filterNotifications(items, "all", false)).toHaveLength(5);
+    expect(filterNotifications(items, "team", false).map((n) => n.id)).toEqual([nid(3), nid(4)]);
+    expect(filterNotifications(items, "team", true).map((n) => n.id)).toEqual([nid(3)]);
+    expect(filterNotifications(items, "all", true).map((n) => n.id)).toEqual([nid(1), nid(3), nid(5)]);
+  });
+
+  it("counts what each chip would keep, with the unread toggle as it stands", () => {
+    expect(countByFilter(items, false)).toEqual({ all: 5, chapters: 1, replies: 1, team: 2 });
+    expect(countByFilter(items, true)).toEqual({ all: 3, chapters: 1, replies: 0, team: 1 });
+  });
+});
 
 describe("notifications api", () => {
   it("lists the reader's notifications newest first, one row more than a page, and pages after the cursor", async () => {
@@ -528,6 +560,57 @@ describe("NotificationsScreen", () => {
       `id.lt.${nid(NOTIFICATIONS_PAGE_SIZE)}`,
     );
     expect(screen.queryByRole("button", { name: t.loadMore })).toBeNull();
+  });
+
+  it("filters the loaded notifications by kind and to the unread ones, and says how many are shown", async () => {
+    const c = fakeClient({ pages: () => rows() });
+    renderUi(c, <NotificationsScreen />);
+    const list = within(await screen.findByRole("list", { name: t.listLabel }));
+    expect(list.getAllByRole("listitem")).toHaveLength(3);
+    const chips = screen.getByRole("radiogroup", { name: t.filter.label });
+    expect(
+      within(chips)
+        .getByRole("radio", { name: `${t.filter.all} 3` })
+        .getAttribute("aria-checked"),
+    ).toBe("true");
+    fireEvent.click(within(chips).getByRole("radio", { name: `${t.filter.team} 1` }));
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(screen.getByText(t.filter.showing(1, 3))).toBeTruthy();
+
+    fireEvent.click(within(chips).getByRole("radio", { name: `${t.filter.chapters} 1` }));
+    const unreadOnly = screen.getByRole("button", { name: t.filter.unreadOnly });
+    fireEvent.click(unreadOnly);
+    expect(unreadOnly.getAttribute("aria-pressed")).toBe("true");
+    // The only new-chapter row is read: nothing left, and no more pages to look in.
+    expect(screen.queryByRole("list", { name: t.listLabel })).toBeNull();
+    expect(screen.getByText(t.filter.noMatch)).toBeTruthy();
+    expect(within(chips).getByRole("radio", { name: `${t.filter.chapters} 0` })).toBeTruthy();
+
+    fireEvent.click(within(chips).getByRole("radio", { name: `${t.filter.all} 2` }));
+    fireEvent.click(unreadOnly);
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    expect(c.selects().filter((o) => !o.head)).toHaveLength(1); // filtering never asked the server again
+  });
+
+  it("slides in a notification that arrives while the page is open, but not the first ones", async () => {
+    let current = rows();
+    const c = fakeClient({ pages: () => current });
+    renderUi(
+      c,
+      <>
+        <NotificationBell />
+        <NotificationsScreen />
+      </>,
+    );
+    const list = within(await screen.findByRole("list", { name: t.listLabel }));
+    expect(document.querySelector(".animate-row-arrive")).toBeNull();
+    current = [row(4, { created_at: "2026-11-04T12:00:00.000000+00:00" }), ...rows()];
+    await waitFor(() => expect(c.channels).toHaveLength(1));
+    act(() => c.channels[0]!.onInsert());
+    await waitFor(() => expect(list.getAllByRole("listitem")).toHaveLength(4));
+    const arrived = document.querySelectorAll(".animate-row-arrive");
+    expect(arrived).toHaveLength(1);
+    expect(list.getAllByRole("listitem")[0]!.contains(arrived[0]!)).toBe(true);
   });
 
   it("shows an empty note", async () => {

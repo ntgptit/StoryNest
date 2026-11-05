@@ -23,13 +23,13 @@
 | SCR-CMT-01-C01 | Section heading | "Comments" `h2`, section `aria-label` "Comments", anchor `#comments`, `scroll-mt-20` | `reader-screen.tsx:117-124` |
 | SCR-CMT-01-C02 | Paragraph comment button | Trailing icon button on paragraph/heading, count when > 0, name "Comment on this paragraph (N)"; 50% opacity until hover/focus | `reader-blocks.tsx:42-59` |
 | SCR-CMT-01-C03 | Paragraph sheet | Bottom sheet with three heights (peek / half / full, opens at half, drag the top or use the grabber button, pulled down closes), title "Comment on this paragraph", description = excerpt; also opened from the reader's quote tools | `reader-blocks.tsx`, `packages/ui/src/widgets/detent-sheet.tsx` |
-| SCR-CMT-01-C04 | Composer | Textarea (sr-only label "Write a comment"/"Write a reply"), placeholder "Share your thoughts…", counter from 8,000 chars, inline error `role="alert"`, "Post"/"Posting…", optional "Cancel" | `comment-composer.tsx:21-102` |
+| SCR-CMT-01-C04 | Composer | Textarea (sr-only label "Write a comment"/"Write a reply"), placeholder "Share your thoughts…", counter from 8,000 chars, inline error `role="alert"`, "Post"/"Posting…" (spinner) and, once the comment is in, a drawn check with "Posted" for 2 s (SubmitButton; it never delays the comment, which is already in the list; announced politely), optional "Cancel" | `comment-composer.tsx` |
 | SCR-CMT-01-C05 | Guest sign-in link | Outline button "Sign in to comment" → `/login?next=` | `comment-thread.tsx:57-61` |
 | SCR-CMT-01-C06 | Comment list | `ul` "Comment list"; skeleton ×2 while loading; empty text; ErrorState | `comment-thread.tsx:63-86` |
 | SCR-CMT-01-C07 | Comment item | `article` named by author; header (name, relative time, "(edited)", ⋯ menu); hidden note; body (`whitespace-pre-line`); action row | `comment-item.tsx:99-238` |
 | SCR-CMT-01-C08 | Item menu | ⋯ "Comment options": Edit, Delete (own visible); Hide comment / Unhide comment (manager) | `comment-item.tsx:109-129` |
 | SCR-CMT-01-C09 | Like button | Heart + "N likes", `aria-pressed` | `comment-item.tsx:157-169` |
-| SCR-CMT-01-C10 | Reply button & reply composer | "Reply" (`aria-expanded`), indented composer | `comment-item.tsx:170-202` |
+| SCR-CMT-01-C10 | Reply button & reply composer | "Reply" (`aria-expanded`), indented composer. On touch, swiping a top-level comment right by 60 px (a reply arrow fills behind it) opens the same composer (Lucian 078); replies, a guest and hidden comments get no swipe, and the Reply button stays the way for mouse, keyboard and screen readers | `comment-item.tsx`, `ui/widgets/swipe-to-reply.tsx` |
 | SCR-CMT-01-C11 | Report button | `ReportButton kind="comment"` label "Report" (OBJ-MOD) | `comment-item.tsx:182-184` |
 | SCR-CMT-01-C12 | Replies toggle & list | "View N replies"/"Hide replies", `ul` "Replies", "Load more replies" | `comment-item.tsx:204-270` |
 | SCR-CMT-01-C13 | Placeholder | "This comment was deleted." | `comment-item.tsx:101-102` |

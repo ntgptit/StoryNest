@@ -116,6 +116,57 @@ export function describeNotification(n: AppNotification): NotificationView {
   }
 }
 
+/** The kinds the notifications page can be narrowed to; "all" keeps every row, unknown types included. */
+export const NOTIFICATION_FILTER = { ALL: "all", CHAPTERS: "chapters", REPLIES: "replies", TEAM: "team" } as const;
+export type NotificationFilter = (typeof NOTIFICATION_FILTER)[keyof typeof NOTIFICATION_FILTER];
+export const NOTIFICATION_FILTERS: readonly NotificationFilter[] = Object.values(NOTIFICATION_FILTER);
+
+/** Which filter chip a type belongs to; null for a type this version does not know (it shows under "all" only). */
+export function notificationGroup(type: string): Exclude<NotificationFilter, "all"> | null {
+  switch (type) {
+    case NOTIFICATION_TYPE.CHAPTER_PUBLISHED:
+      return NOTIFICATION_FILTER.CHAPTERS;
+    case NOTIFICATION_TYPE.COMMENT_REPLIED:
+      return NOTIFICATION_FILTER.REPLIES;
+    case NOTIFICATION_TYPE.COLLABORATION_INVITED:
+    case NOTIFICATION_TYPE.COLLABORATION_ACCEPTED:
+    case NOTIFICATION_TYPE.COLLABORATION_DECLINED:
+      return NOTIFICATION_FILTER.TEAM;
+    default:
+      return null;
+  }
+}
+
+const matches = (n: AppNotification, filter: NotificationFilter, unreadOnly: boolean) =>
+  (!unreadOnly || !n.read) && (filter === NOTIFICATION_FILTER.ALL || notificationGroup(n.type) === filter);
+
+/**
+ * The loaded notifications narrowed to one kind and, if asked, to the unread ones. It works on the pages already
+ * loaded (newest first, order kept): "load more" still pages through every notification.
+ */
+export function filterNotifications(
+  items: readonly AppNotification[],
+  filter: NotificationFilter,
+  unreadOnly: boolean,
+): AppNotification[] {
+  return items.filter((n) => matches(n, filter, unreadOnly));
+}
+
+/** How many loaded notifications each chip would keep, with the unread toggle as it stands. */
+export function countByFilter(
+  items: readonly AppNotification[],
+  unreadOnly: boolean,
+): Record<NotificationFilter, number> {
+  const counts = { all: 0, chapters: 0, replies: 0, team: 0 } satisfies Record<NotificationFilter, number>;
+  for (const n of items) {
+    if (unreadOnly && n.read) continue;
+    counts.all += 1;
+    const group = notificationGroup(n.type);
+    if (group !== null) counts[group] += 1;
+  }
+  return counts;
+}
+
 export const NOTIFICATIONS_PAGE_SIZE = 20;
 
 export interface NotificationPage {
