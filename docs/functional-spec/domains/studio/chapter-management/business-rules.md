@@ -126,7 +126,7 @@
 | Expected behavior | No confirmation; toast "Unarchived. The chapter is back to draft." |
 | Exceptions | Not archived → PT409; editor → 42501 |
 | Related screens | SCR-CHM-01 |
-| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:126-147`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:205-219`; `supabase/tests/100_chapter_management.test.sql:121` |
+| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:126-147`; `packages/features/src/studio/components/chapter-row.tsx:186-202`, `packages/features/src/studio/screens/chapter-manager-screen.tsx:194-200`; `supabase/tests/100_chapter_management.test.sql:121` |
 | Status | Verified |
 
 ### BR-CHM-009 — An archived chapter cannot be published or scheduled
@@ -162,7 +162,7 @@
 | Expected behavior | Same numbers are used by the stats table (BR-STAT-002) |
 | Exceptions | — |
 | Related screens | SCR-CHM-01, SCR-STAT-01 |
-| Evidence | `packages/features/src/studio/strings.en.ts:62`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:143,248`; `docs/WBS.md` WP 3.4 |
+| Evidence | `packages/features/src/studio/strings.en.ts:62`; `packages/features/src/studio/components/chapter-row.tsx:132`, `packages/features/src/studio/screens/chapter-manager-screen.tsx:265`; `docs/WBS.md` WP 3.4 |
 | Status | Verified |
 
 ### BR-CHM-012 — Reader effect of chapter states

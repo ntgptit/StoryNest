@@ -14,7 +14,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/page.tsx` → `chapter-editor-view.tsx` |
 | Screen component | `packages/features/src/editor/screens/chapter-editor-screen.tsx` (`ChapterEditorScreen` → `DraftEditor`), with `components/editor-toolbar.tsx`, `components/find-replace-panel.tsx`, `components/draft-merge-view.tsx`, `components/publish-panel.tsx` |
 | Roles | owner, co_author, editor (`BR-TEAM-*`); unpublish / cancel schedule: owner, co_author only |
-| Entry points | Chapter manager "Write" link (`packages/features/src/studio/screens/chapter-manager-screen.tsx:198`), "Back to editor" on SCR-HIST-01/02, "Open editor" after restore |
+| Entry points | Chapter manager "Write" link (`packages/features/src/studio/components/chapter-row.tsx:181`), "Back to editor" on SCR-HIST-01/02, "Open editor" after restore |
 | Workflows | WF-EDT-01 … WF-EDT-10, WF-HIST-03 (target) |
 
 ## B. Components

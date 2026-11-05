@@ -56,7 +56,7 @@ Notification "collaboration_invited" ──► /studio ; "collaboration_accepted
 Evidence: `packages/features/src/shell/components/main-shell.tsx:16`, `packages/features/src/shell/components/user-menu.tsx:66`,
 `packages/features/src/studio/screens/studio-screen.tsx:61-97,120,127,150`,
 `packages/features/src/studio/screens/story-form-screen.tsx:102-107`,
-`packages/features/src/studio/screens/chapter-manager-screen.tsx:123-128,197-199`,
+`packages/features/src/studio/screens/chapter-manager-screen.tsx:231-236`, `packages/features/src/studio/components/chapter-row.tsx:180-182`,
 `packages/features/src/analytics/screens/story-stats-screen.tsx:84-90`,
 `packages/features/src/notifications/model/notification.ts:102-112`.
 

@@ -24,12 +24,12 @@
 | ID | Component | Description | Source |
 | --- | --- | --- | --- |
 | SCR-READ-01-C01 | Adult gate (SCR-MAT-01) | Wraps everything when the story is mature (`BR-MAT-009`) | `reader-screen.tsx:101` |
-| SCR-READ-01-C02 | Reading tracker | Invisible. Restores and saves position (members) and records the read (everyone) | `reader/components/reading-tracker.tsx`, `reader-screen.tsx:73` |
+| SCR-READ-01-C02 | Reading tracker | Invisible. Restores and saves position (members) and records the read (everyone) | `reader/components/reading-tracker.tsx`, `reader-screen.tsx:103` |
 | SCR-READ-01-C03 | Back to story link | "←" + story title (truncated). Screen-reader text "Back to story" | `reader-screen.tsx:106-117` |
 | SCR-READ-01-C04 | Display button + Reading options sheet | Right sheet: Font size (−/+, current size name in `<output aria-live>`), Line spacing, Font, Background as `aria-pressed` toggle groups | `reader/components/reader-settings-sheet.tsx` |
 | SCR-READ-01-C05 | Contents button + TOC sheet | Right sheet listing published chapters, current one `aria-current="page"` | `reader/components/toc-sheet.tsx` |
 | SCR-READ-01-C06 | Progress bar | `role="progressbar"` "Chapter reading progress", 0–100 of the **page** scroll | `packages/ui/src/widgets/reading-progress.tsx`, `reader-screen.tsx:124` |
-| SCR-READ-01-C07 | Chapter header | "Chapter N" + h1 title | `reader-screen.tsx:97-100` |
+| SCR-READ-01-C07 | Chapter header | "Chapter N" + h1 title | `reader-screen.tsx:128-137` |
 | SCR-READ-01-C08 | Chapter blocks | Paragraph / heading (h2) / image / divider with anchors `b-{id}` and inline marks | `reader/components/reader-blocks.tsx`, `block-view.tsx`, `rich-text.tsx` |
 | SCR-READ-01-C09 | Inline comment buttons | Small speech-bubble button + count at the end of each paragraph or heading. Opens a bottom sheet with that block's `CommentThread` (owned by OBJ-CMT, SCR-CMT-01); the sheet has three heights (peek 30 %, half 55 %, full 92 % of the viewport), opens at half, follows a drag of its top, closes when pulled well below the lowest; its grabber button steps through the heights (↑/↓) | `reader-blocks.tsx`, `packages/ui/src/widgets/detent-sheet.tsx` |
 | SCR-READ-01-C10 | End marker | "— End of chapter —" (`aria-hidden`) | `reader-screen.tsx:154-156` |
@@ -153,7 +153,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `reader-blocks.tsx:12-77`, `reader-screen.tsx:161-168` |
+| Evidence | `reader-blocks.tsx:20-182`, `reader-screen.tsx:161-168` |
 
 #### SCR-READ-01-A10 — Report the chapter
 | Field | Value |

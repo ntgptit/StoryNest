@@ -152,10 +152,10 @@ O = owner, CA = co-author, E = editor. ✓ allowed, ✗ refused, — not offered
 | Soft-delete story | ✓ | ✓ | ✗ | O | `…auth_and_rls.sql:205-211` (deleted_at in grant, CA in policy) | `story-form-screen.tsx:433` | **No — CA allowed by DB, documented owner-only (F-STM-01)** |
 | Restore story | ✓* | ✓* | ✗ | O (*not after moderator removal) | same + `20261104002000_moderation.sql:103-116` | `story-write.api.ts:116-127`; `story-form-screen.tsx:433-451` | **No — CA allowed by DB; UI offers restore of moderator-removed story (F-STM-02)** |
 | Create chapter | ✓ | ✓ | ✓ | O, CA, E | `20261104000400_chapter_management.sql:49-52` | `chapter-manager-screen.tsx:307` | Yes |
-| Reorder chapters | ✓ | ✓ | ✓ | O, CA, E | `…chapter_management.sql:72-75` | `chapter-manager-screen.tsx:177-196` | Yes |
-| Rename chapter slug | ✓ | ✓ | ✓ | O, CA, E | `…auth_and_rls.sql:236-240` | `chapter-manager-screen.tsx:200-202` | Yes |
-| Archive / unarchive chapter | ✓ | ✓ | ✗ (42501) | O, CA | `…chapter_management.sql:115-117,140-142`; `supabase/tests/100_chapter_management.test.sql:103,121` | `chapter-manager-screen.tsx:203-229` | Yes |
-| Soft-delete / restore chapter | ✓ | ✓ | ✓ | O, CA | `…auth_and_rls.sql:236-240` | `chapter-manager-screen.tsx:158-175,230-238` | **No — E allowed by DB, documented not allowed (F-CHM-01)** |
+| Reorder chapters | ✓ | ✓ | ✓ | O, CA, E | `…chapter_management.sql:72-75` | `components/chapter-row.tsx:160-179` | Yes |
+| Rename chapter slug | ✓ | ✓ | ✓ | O, CA, E | `…auth_and_rls.sql:236-240` | `components/chapter-row.tsx:183-185` | Yes |
+| Archive / unarchive chapter | ✓ | ✓ | ✗ (42501) | O, CA | `…chapter_management.sql:115-117,140-142`; `supabase/tests/100_chapter_management.test.sql:103,121` | `components/chapter-row.tsx:186-202` | Yes |
+| Soft-delete / restore chapter | ✓ | ✓ | ✓ | O, CA | `…auth_and_rls.sql:236-240` | `components/chapter-row.tsx:146-157,186-202` | **No — E allowed by DB, documented not allowed (F-CHM-01)** |
 | Write / autosave chapter draft, insert chapter images | ✓ | ✓ | ✓ | O, CA, E | `…auth_and_rls.sql:114-120,247-252`; `…story_image_buckets.sql:51` | OBJ-EDT | Yes (OBJ-EDT) |
 | Publish now / schedule chapter | ✓ | ✓ | ✓ | O, CA, E | `20261103000200_publish_chapter_rpc.sql:11,217-232,235-251`; `supabase/tests/20_publish.test.sql:84-96` | `editor/model/publishing.ts:11-13` | DB = editor UI; **invitation copy says editors cannot publish (F-TEAM-01)** |
 | Unpublish / cancel schedule | ✓ | ✓ | ✗ (42501) | O, CA | `…publish_chapter_rpc.sql:278-297`; `supabase/tests/20_publish.test.sql:151` | `editor/model/publishing.ts:7-9,15-19` | Yes |

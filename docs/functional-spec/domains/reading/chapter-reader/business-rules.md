@@ -145,7 +145,7 @@
 | Expected behavior | Choosing a chapter navigates to it. The sheet is a Radix dialog (Esc / overlay closes it, focus is trapped). |
 | Exceptions | Unbounded list (F-STORY-02). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/components/toc-sheet.tsx:18-64`, `packages/features/src/reader/strings.en.ts:4` |
+| Evidence | `packages/features/src/reader/components/toc-sheet.tsx:19-85`, `packages/features/src/reader/strings.en.ts:4` |
 | Status | Verified |
 
 ### BR-READ-010 — Adult gate before any text

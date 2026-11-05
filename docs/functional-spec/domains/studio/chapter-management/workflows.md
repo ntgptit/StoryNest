@@ -97,4 +97,4 @@
 | Postconditions | — |
 | Affected objects | OBJ-CHM → OBJ-EDT |
 | Related screens | SCR-CHM-01 → SCR-EDT-01 |
-| Status | Verified — `chapter-manager-screen.tsx:197-199` |
+| Status | Verified — `components/chapter-row.tsx:180-182` |
