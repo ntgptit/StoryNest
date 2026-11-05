@@ -24,6 +24,9 @@ proposal: [implementation-readiness.md](implementation-readiness.md). Approved f
 
 Until step 1 happens for an item, agents must treat it as **Proposed** and must not implement it.
 
+> **Note (2026-11-05):** the development tasks are now planned in `docs/WBS.md` Phase 9. WPs that depend on a PD below are
+> marked ⚠️ there and start only after the PD is approved here. Planning them did not approve any PD.
+
 ## 1. Previously approved decisions (WBS §4, 2026-11-03)
 
 | ID | Decision | Status | Consequence for Phase 2 |
