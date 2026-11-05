@@ -152,7 +152,8 @@ describe("Scheduled outbox in the chapter manager", () => {
   });
 
   it("lists scheduled chapters in time order with the relative and the exact local time", async () => {
-    const soon = scheduled(3, 2);
+    // 2.5h, not 2h: relative time truncates, so a whole-hour offset flips to "1 hour" a few ms after render.
+    const soon = scheduled(3, 2.5);
     renderManager(fakeClient({ chapters: [row(1), scheduled(2, 30), soon] }));
     const items = within(await outbox()).getAllByRole("listitem");
     expect(items.map((li) => li.querySelector(".truncate.text-base")?.textContent)).toEqual(["Chương 3", "Chương 2"]);
