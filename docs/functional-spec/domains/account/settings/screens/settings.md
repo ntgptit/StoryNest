@@ -25,6 +25,7 @@
 | SCR-SET-01-C06 | Adult content section + switch | "Adult content (18+)" / "Show 18+ stories" / "Hidden by default. Turning it on means you confirm you are 18 or older." (OBJ-MAT) |
 | SCR-SET-01-C07 | Age confirmation dialog | "Show adult stories?" / "Only turn this on if you are 18 or older. 18+ stories will appear in the lists." / "I am 18 or older, show 18+ stories" / "Keep hidden" |
 | SCR-SET-01-C08 | Guest fallback | "Sign in to change your settings." + "Sign in" (`/login?next=%2Fsettings`) — only if the session disappears client-side |
+| SCR-SET-01-C10 | Reading goal section (batch 4 habits4) | "Reading goal" / "How many chapters you want to read a day. Only you can see it." / `RollingStepper` "Chapters a day" 1–20, value "N chapters a day", "Lower the goal" / "Raise the goal"; saved on each step, refused save → previous value + toast "Couldn't save your goal" (BR-HAB-003) |
 | SCR-SET-01-C09 | Appearance section (this device) | "Appearance" / "Saved on this device. While a chapter is open, the background chosen in the reading settings wins." / select "Theme": "Follow device", "Light", "Dark". Shown whatever the account settings query does (BR-SET-010) |
 
 Each section is a `<section aria-label>` with an `h2`; switches have `<Label htmlFor>`.
@@ -123,6 +124,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 - SCR-SET-01-AC07 Given a guest, when opening `/settings`, then they are redirected to `/login?next=%2Fsettings`.
 - SCR-SET-01-AC08 [Proposed] Given the language could not be saved to the account, then the member is told the choice applies to this device only (U-SET-01).
 - SCR-SET-01-AC09 [Proposed] Given a switch save is pending, then that switch is disabled until it settles (U-SET-02).
+- SCR-SET-01-AC11 Given a member with no settings row, when opening `/settings`, then the reading goal shows "3 chapters a day"; pressing "Raise the goal" saves 4 (only `daily_chapter_goal` is sent) and the profile rings use 4; at 20 the raise button shakes instead (BR-HAB-003).
 - SCR-SET-01-AC10 [Proposed] Given an "Account" section, then the member can change email/password, sign out and start deactivation/deletion (F-AUTH-07, WBS 6.4).
 
 ## F. Findings referenced

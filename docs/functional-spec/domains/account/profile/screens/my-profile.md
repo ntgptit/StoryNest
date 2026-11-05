@@ -23,8 +23,13 @@ Note: unlike other screens this one is not a router-agnostic `packages/features`
 | SCR-PRF-01-C02 | "Edit profile" button → `/me/edit` | Always shown, even when the profile is missing |
 | SCR-PRF-01-C03 | Definition list | "Display name", "Username" (`@username`), "Email" ("—" if none), "About" (bio with line breaks, or "No bio yet.") |
 | SCR-PRF-01-C04 | Missing-profile message | "No profile was found for this account." |
+| SCR-PRF-01-C05 | Reading habits panel (batch 4 habits4, `ReadingHabitsPanel` via `me-habits.tsx`) | "Reading habits" / "Only you can see this."; skeleton while loading, error state with "Retry" (OBJ-HAB) |
+| SCR-PRF-01-C06 | Streak flame (Lucian 379, `StreakFlame`) | Streak number + "day streak", Mon–Sun slots with a check per reading day, today ringed, "Full week!" badge, hint "Read a chapter today to keep it going." / "You've read today…" + "Longest: N days" (BR-HAB-002) |
+| SCR-PRF-01-C07 | Daily rings (Lucian 099, `ActivityRings`) | "Daily goal": rings "Chapters read" and "Chapters finished" against the goal, last 7 days as mini rings (one tab stop, ←/→ Home/End), "Days the goal was met in the last 7: N", link "Change goal" → `/settings` (BR-HAB-003) |
+| SCR-PRF-01-C08 | Reading level (Lucian 372, `XpBar`) | Display name, "N chapters · N reading days", LEVEL number, progress bar "Experience" "into / needed XP", "N XP to the next level", rule chips +10 / +20 / +100 XP (BR-HAB-004) |
+| SCR-PRF-01-C09 | Badges (Lucian 386, `AchievementBadges`) | "Badges" "n/6 earned"; locked: grey medal, padlock, progress "x/y"; earned: colour, press to flip to what earned it and "Earned <date>" (BR-HAB-005) |
 
-Not present: avatar, link to the public author page, link to Settings / sign-out, reading or writing stats (U-PRF-01).
+Not present: avatar, link to the public author page, link to Settings / sign-out, writing stats (U-PRF-01). Reading stats arrived with C05–C09.
 
 ## C. User actions & system responses
 
@@ -58,6 +63,10 @@ Not present: avatar, link to the public author page, link to Settings / sign-out
 - SCR-PRF-01-AC02 Given an empty bio, then "No bio yet." is shown.
 - SCR-PRF-01-AC03 Given a guest, when opening `/me`, then they are redirected to `/login?next=%2Fme`.
 - SCR-PRF-01-AC04 Given the user saved WF-PRF-02, when `/me` re-renders, then the new values are shown (router refresh).
+- SCR-PRF-01-AC05 Given I read chapters on 4 consecutive UTC days up to today, when opening `/me`, then the flame shows 4 with this week's read days checked; nothing animates on load (BR-HAB-002).
+- SCR-PRF-01-AC06 Given another member, when they query my habits tables, then they get no rows; my habits never appear on my public author page (BR-HAB-007).
+- SCR-PRF-01-AC07 Given a badge I have not earned, then it shows locked with my progress; given an earned one, pressing it flips to its description and earned date (BR-HAB-005).
+- SCR-PRF-01-AC08 Given 30 chapters read, 12 finished and 2 finished stories, then the level card shows level 5 with 40 / 300 XP (BR-HAB-004).
 - SCR-PRF-01-AC05 [Proposed] Given the profile query fails, then an error state with "Try again" is shown instead of "No profile was found" (F-PRF-01).
 - SCR-PRF-01-AC06 [Proposed] Given a member, then `/me` shows their avatar and links to their public page `/author/<username>`, Settings and Sign out (U-PRF-01).
 

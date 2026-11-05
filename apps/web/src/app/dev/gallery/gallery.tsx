@@ -154,6 +154,8 @@ import { ChoicePills } from "@storynest/ui/widgets/choice-pills";
 import { SizeShrink } from "@storynest/ui/widgets/size-shrink";
 import { SwipeToReply } from "@storynest/ui/widgets/swipe-to-reply";
 import { UploadVeil } from "@storynest/ui/widgets/upload-veil";
+// Batch 4 · habits4
+import { ReadingHabitsView, toReadingHabits, type DayRow, type StatsRow } from "@storynest/features";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -3165,6 +3167,90 @@ function Community3SwipeExample() {
   );
 }
 
+const habits4Day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+
+function habits4Start(): { stats: StatsRow; days: DayRow[]; earned: { code: string; earned_at: string }[] } {
+  const days = [-6, -5, -4, -3, -2, -1].map((offset) => ({
+    read_day: habits4Day(offset),
+    chapters_read: 1 + ((offset + 7) % 3),
+    chapters_finished: (offset + 7) % 2,
+  }));
+  return {
+    stats: {
+      current_streak: 6,
+      longest_streak: 6,
+      last_read_day: habits4Day(-1),
+      reading_days: 6,
+      chapters_read: 14,
+      chapters_finished: 9,
+      stories_finished: 0,
+    },
+    days,
+    earned: [{ code: "first_chapter", earned_at: new Date(Date.now() - 6 * 86_400_000).toISOString() }],
+  };
+}
+
+/** Reading habits with local data: the buttons stand in for reading (in the app the server records it). */
+function Habits4Example() {
+  const [state, setState] = useState(habits4Start);
+  const goal = 3;
+  const today = habits4Day(0);
+  const earn = (earned: { code: string; earned_at: string }[], code: string, when: boolean) =>
+    when && !earned.some((e) => e.code === code) ? [...earned, { code, earned_at: new Date().toISOString() }] : earned;
+  const act = (kind: "read" | "finish" | "story") =>
+    setState((s) => {
+      const row = s.days.find((d) => d.read_day === today) ?? {
+        read_day: today,
+        chapters_read: 0,
+        chapters_finished: 0,
+      };
+      const firstToday = kind === "read" && row.chapters_read === 0;
+      const nextRow = {
+        ...row,
+        chapters_read: row.chapters_read + (kind === "read" ? 1 : 0),
+        chapters_finished: row.chapters_finished + (kind === "finish" ? 1 : 0),
+      };
+      const streak = s.stats.current_streak + (firstToday ? 1 : 0);
+      const stats: StatsRow = {
+        ...s.stats,
+        current_streak: streak,
+        longest_streak: Math.max(s.stats.longest_streak, streak),
+        last_read_day: firstToday ? today : s.stats.last_read_day,
+        reading_days: s.stats.reading_days + (firstToday ? 1 : 0),
+        chapters_read: s.stats.chapters_read + (kind === "read" ? 1 : 0),
+        chapters_finished: s.stats.chapters_finished + (kind === "finish" ? 1 : 0),
+        stories_finished: s.stats.stories_finished + (kind === "story" ? 1 : 0),
+      };
+      let earned = earn(s.earned, "daily_goal", nextRow.chapters_read >= goal);
+      earned = earn(earned, "streak_7", stats.longest_streak >= 7);
+      earned = earn(earned, "first_story", stats.stories_finished >= 1);
+      return { stats, days: [...s.days.filter((d) => d.read_day !== today), nextRow], earned };
+    });
+  const habits = toReadingHabits(
+    { stats: state.stats, days: state.days, achievements: state.earned, goal },
+    new Date(),
+  );
+  return (
+    <div id="habits4" className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => act("read")}>
+          Read a chapter
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => act("finish")}>
+          Finish a chapter
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => act("story")}>
+          Finish a story
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setState(habits4Start())}>
+          Reset
+        </Button>
+      </div>
+      <ReadingHabitsView habits={habits} locale="vi" name="Demo An" settingsHref="/settings" />
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -3450,6 +3536,10 @@ export function Gallery() {
         <Community3ReportExample />
         <Community3UploadExample />
         <Community3SwipeExample />
+      </Section>
+
+      <Section title="Batch 4 · habits4">
+        <Habits4Example />
       </Section>
     </AppShell>
   );

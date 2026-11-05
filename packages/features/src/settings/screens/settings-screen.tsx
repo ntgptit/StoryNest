@@ -14,6 +14,7 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useAdultContent } from "../../adult-content/index.ts";
 import { ReaderSettingsSheet, useReaderPreferencesSync } from "../../reader/index.ts";
+import { DailyGoalSetting, readingHabitsText } from "../../reading-habits/index.ts";
 import { useAccountSettings, useSaveSettings } from "../hooks/use-settings.ts";
 import { useSiteTheme } from "../hooks/use-site-theme.ts";
 import { isSiteTheme, SITE_THEMES } from "../model/site-theme.ts";
@@ -175,6 +176,10 @@ function SettingsForm() {
         <div>
           <ReaderSettingsSheet />
         </div>
+      </Section>
+
+      <Section title={readingHabitsText.goal.title} description={readingHabitsText.goal.description}>
+        <DailyGoalSetting />
       </Section>
 
       <Section title={t.adult.title}>

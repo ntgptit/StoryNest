@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_STATUSES,
+  ACHIEVEMENT_CODE,
+  ACHIEVEMENT_CODES,
+  ACHIEVEMENT_THRESHOLDS,
+  DAILY_GOAL,
   BLOCK_TYPES,
   CHAPTER_STATUSES,
   COLLABORATOR_ROLES,
@@ -81,6 +85,7 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["moderation_actions.action", MODERATION_ACTIONS],
     ["moderation_actions.target_kind", MODERATION_TARGET_KINDS],
     ["content_reports.status", REPORT_STATUSES],
+    ["user_achievements.code", ACHIEVEMENT_CODES],
   ];
   it.each(cases)("%s", (column, values) => {
     expect(contract.enums[column], `${column} missing from contract`).toBeDefined();
@@ -101,6 +106,7 @@ describe("named enum constants", () => {
     ["REPORT_REASON", REPORT_REASON, REPORT_REASONS],
     ["MODERATION_ACTION", MODERATION_ACTION, MODERATION_ACTIONS],
     ["MODERATION_TARGET_KIND", MODERATION_TARGET_KIND, MODERATION_TARGET_KINDS],
+    ["ACHIEVEMENT_CODE", ACHIEVEMENT_CODE, ACHIEVEMENT_CODES],
   ] as const)("%s has exactly one constant per enum value", (_name, constants, values) => {
     expect(sorted(Object.values(constants))).toEqual(sorted(values));
   });
@@ -440,5 +446,25 @@ describe("chapter form schemas", () => {
 
   it("rejects unknown fields", () => {
     expect(chapterFormSchema.safeParse({ title: "a", slug: "a", sort_order: 1 }).success).toBe(false);
+  });
+});
+
+describe("reading habits match the migration", () => {
+  const sql = readFileSync(
+    new URL("../../../supabase/migrations/20261106020000_reading_habits.sql", import.meta.url),
+    "utf8",
+  );
+  it("daily goal bounds and default", () => {
+    expect(sql).toContain(
+      `daily_chapter_goal smallint NOT NULL DEFAULT ${DAILY_GOAL.default} CHECK (daily_chapter_goal BETWEEN ${DAILY_GOAL.min} AND ${DAILY_GOAL.max})`,
+    );
+    expect(sql).toContain(`c_default_goal constant integer := ${DAILY_GOAL.default};`);
+  });
+  it("badge thresholds", () => {
+    expect(sql).toContain(`c_streak_7 constant integer := ${ACHIEVEMENT_THRESHOLDS.streak_7.target};`);
+    expect(sql).toContain(`c_streak_30 constant integer := ${ACHIEVEMENT_THRESHOLDS.streak_30.target};`);
+    expect(sql).toContain(`c_stories_10 constant integer := ${ACHIEVEMENT_THRESHOLDS.stories_10.target};`);
+    expect(sql).toContain(`('first_chapter', v_finished >= ${ACHIEVEMENT_THRESHOLDS.first_chapter.target})`);
+    expect(sql).toContain(`('first_story', v_stories >= ${ACHIEVEMENT_THRESHOLDS.first_story.target})`);
   });
 });

@@ -24,3 +24,4 @@ export * from "./settings/index.ts";
 export * from "./moderation/index.ts";
 export * from "./analytics/index.ts";
 export * from "./share/index.ts";
+export * from "./reading-habits/index.ts";

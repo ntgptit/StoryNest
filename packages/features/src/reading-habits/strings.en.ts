@@ -1,0 +1,75 @@
+export const en = {
+  title: "Reading habits",
+  description: "Only you can see this.",
+  error: {
+    title: "Couldn't load your reading habits",
+    description: "Check your connection and try again.",
+    retry: "Retry",
+  },
+  streak: {
+    title: "Reading streak",
+    unit: (_days: number) => "day streak",
+    fullWeek: "Full week!",
+    week: "This week",
+    day: (weekday: string, read: boolean, today: boolean) =>
+      `${weekday}${today ? " (today)" : ""}: ${read ? "read" : "not read"}`,
+    keepGoing: "Read a chapter today to keep it going.",
+    doneToday: "You've read today. See you tomorrow!",
+    longest: (days: number) => `Longest: ${days} ${days === 1 ? "day" : "days"}`,
+  },
+  rings: {
+    title: "Daily goal",
+    group: "Rings of the picked day",
+    days: "Pick a day",
+    read: "Chapters read",
+    finished: "Chapters finished",
+    value: (value: number, goal: number) => `${value} / ${goal} ${goal === 1 ? "chapter" : "chapters"}`,
+    today: "Today",
+    dayLabel: (date: string, read: number, finished: number, goal: number) =>
+      `${date}: read ${read} of ${goal}, finished ${finished} of ${goal}`,
+    summary: (days: number) => `Days the goal was met in the last 7: ${days}`,
+    changeGoal: "Change goal",
+  },
+  level: {
+    name: "Reading level",
+    subtitle: (chapters: number, days: number) =>
+      `${chapters} ${chapters === 1 ? "chapter" : "chapters"} · ${days} reading ${days === 1 ? "day" : "days"}`,
+    level: "LEVEL",
+    bar: "Experience",
+    progress: (into: number, needed: number) => `${into} / ${needed} XP`,
+    toNext: (left: number) => `${left} XP to the next level`,
+    levelUp: "Level up!",
+    rules: { chapterRead: "Read a chapter", chapterFinished: "Finish a chapter", storyFinished: "Finish a story" },
+    xp: (xp: number) => `+${xp} XP`,
+  },
+  badges: {
+    title: "Badges",
+    count: (earned: number, total: number) => `${earned}/${total} earned`,
+    locked: (name: string, progress: number, target: number) => `${name}: locked, ${progress} of ${target}`,
+    flip: (name: string, earned: string, description: string) => `${name}. ${earned}. ${description}`,
+    earnedOn: (date: string) => `Earned ${date}`,
+    items: {
+      first_chapter: { name: "First chapter", description: "Finish your first chapter" },
+      daily_goal: { name: "Goal met", description: "Reach your reading goal in a day" },
+      streak_7: { name: "Steady", description: "Read 7 days in a row" },
+      streak_30: { name: "Unstoppable", description: "Read 30 days in a row" },
+      first_story: { name: "The end", description: "Finish a completed story" },
+      stories_10: { name: "Bookworm", description: "Finish 10 completed stories" },
+    },
+  },
+  chip: {
+    label: (streak: number, read: number, goal: number) =>
+      `${streak}-day streak, ${read} of ${goal} chapters today. See your reading habits`,
+    days: (streak: number) => `${streak} ${streak === 1 ? "day" : "days"}`,
+    today: (read: number, goal: number) => `${read}/${goal} today`,
+  },
+  goal: {
+    title: "Reading goal",
+    description: "How many chapters you want to read a day. Only you can see it.",
+    label: "Chapters a day",
+    value: (goal: number) => `${goal} ${goal === 1 ? "chapter" : "chapters"} a day`,
+    decrease: "Lower the goal",
+    increase: "Raise the goal",
+    saveFailed: "Couldn't save your goal. Please try again.",
+  },
+};

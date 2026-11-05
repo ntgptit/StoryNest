@@ -23,6 +23,7 @@ const TRANSLATED = [
   "progress",
   "ranking",
   "reader",
+  "reading-habits",
   "recommendations",
   "search",
   "settings",

@@ -32,6 +32,14 @@
             "resolved",
             "reviewing"
         ],
+        "user_achievements.code": [
+            "daily_goal",
+            "first_chapter",
+            "first_story",
+            "stories_10",
+            "streak_30",
+            "streak_7"
+        ],
         "app_users.account_status": [
             "active",
             "deactivated",
