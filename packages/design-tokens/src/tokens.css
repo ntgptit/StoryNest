@@ -374,6 +374,19 @@
     }
   }
 
+  /* Invalid field after a submit (FormControl, Lucian #244): a short side-to-side shake. */
+  --animate-field-shake: field-shake 0.4s;
+  @keyframes field-shake {
+    20%,
+    60% {
+      transform: translateX(-5px);
+    }
+    40%,
+    80% {
+      transform: translateX(5px);
+    }
+  }
+
   /* Loading skeleton (Lucian #079): one streak of light sweeps across every block at once (see .skeleton-shine). */
   --animate-skeleton-shine: skeleton-shine 1.6s linear infinite;
   @keyframes skeleton-shine {

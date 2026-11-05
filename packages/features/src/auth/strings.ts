@@ -17,6 +17,7 @@ const vi = {
   },
   signUp: {
     title: "Tạo tài khoản",
+    errorSummary: (count: number) => `${count} mục cần sửa`,
     description: "Đọc, viết và chia sẻ truyện của bạn.",
     email: "Email",
     password: "Mật khẩu",

@@ -337,7 +337,11 @@ describe("StoryFormScreen: create", () => {
     fireEvent.change(await screen.findByLabelText(studioText.form.storyTitle), { target: { value: "Trùng" } });
     fireEvent.click(screen.getByRole("button", { name: studioText.form.submitCreate }));
     expect(await screen.findByText(studioText.errors.slugTaken)).toBeTruthy();
-    expect(screen.queryByRole("alert")).toBeNull();
+    // No generic failure banner: the only alert is the field summary, and it points at the slug field.
+    const alerts = screen.getAllByRole("alert");
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]?.getAttribute("data-slot")).toBe("form-error-summary");
+    expect(within(alerts[0]!).getByRole("button", { name: studioText.form.slug })).toBeTruthy();
     expect(t.callsOf("stories", "insert")).toHaveLength(1);
   });
 

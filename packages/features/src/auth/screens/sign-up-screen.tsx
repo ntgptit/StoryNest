@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@storynest/ui/components/form";
+import { FormErrorSummary } from "@storynest/ui/components/form-error-summary";
 import { Input } from "@storynest/ui/components/input";
 import { PasswordInput } from "@storynest/ui/components/password-input";
 import { useState } from "react";
@@ -72,6 +73,7 @@ export function SignUpScreen({
       <Form {...form}>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={signUp.isPending}>
           <FormError message={signUp.error ? authErrorMessage(signUp.error) : null} />
+          <FormErrorSummary title={t.errorSummary} />
           <FormField
             control={form.control}
             name="email"

@@ -163,6 +163,7 @@ export const en = {
     deletedAt: (relative: string) => `Deleted ${relative}`,
   },
   form: {
+    errorSummary: (count: number) => `${count} field${count === 1 ? " needs" : "s need"} attention before saving`,
     createTitle: "New story",
     createDescription: "Fill in the basics. You can change them any time, then add chapters later.",
     editTitle: "Edit story",

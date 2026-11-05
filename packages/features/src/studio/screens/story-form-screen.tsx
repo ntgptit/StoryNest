@@ -16,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@storynest/ui/components/form";
+import { FormErrorSummary } from "@storynest/ui/components/form-error-summary";
 import { Input } from "@storynest/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@storynest/ui/components/select";
 import { Skeleton } from "@storynest/ui/components/skeleton";
@@ -202,6 +203,8 @@ function StoryFields({
             {bannerError}
           </p>
         ) : null}
+
+        <FormErrorSummary title={t.errorSummary} />
 
         {edit ? (
           <CoverEditor story={{ id: storyId, coverStorageKey: edit.coverStorageKey }} title={form.watch("title")} />

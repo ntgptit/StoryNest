@@ -6,6 +6,8 @@ const vi = {
   similarTitle: "Có thể bạn cũng thích",
   forMeTitle: "Gợi ý cho bạn",
   listLabel: (title: string) => title,
+  previous: "Truyện trước",
+  next: "Truyện tiếp",
   reasons: {
     sharedTags: (tags: string) => `Cùng thẻ ${tags}`,
     sameCategory: (category: string) => `Cùng thể loại ${category}`,

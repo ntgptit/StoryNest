@@ -159,6 +159,7 @@ const vi = {
   },
   form: {
     createTitle: "Truyện mới",
+    errorSummary: (count: number) => `${count} mục cần sửa trước khi lưu`,
     createDescription: "Điền thông tin cơ bản. Bạn có thể sửa lại bất cứ lúc nào, rồi thêm chương sau.",
     editTitle: "Chỉnh sửa truyện",
     editDescription: "Thay đổi thông tin hiển thị của truyện.",

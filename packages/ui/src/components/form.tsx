@@ -93,12 +93,41 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPri
   );
 }
 
+/** Class that plays the invalid-field shake (keyframes in design-tokens, clamped under reduced motion). */
+const SHAKE_CLASS = "animate-field-shake";
+
+/**
+ * Shakes the control once per submit that leaves it invalid (adapted from Lucian UX/UI Prompt 244, MIT (c) 2026
+ * Seokwoooo). Keyed on submitCount, so typing that makes a field invalid again does not shake it.
+ */
+function useShakeOnInvalidSubmit(formItemId: string, invalid: boolean) {
+  const { submitCount } = useFormState();
+  React.useEffect(() => {
+    if (submitCount === 0 || !invalid) return;
+    const element = document.getElementById(formItemId);
+    if (!element) return;
+    element.classList.remove(SHAKE_CLASS);
+    void element.offsetWidth; // restart the animation if it is still running
+    element.classList.add(SHAKE_CLASS);
+    const done = () => element.classList.remove(SHAKE_CLASS);
+    element.addEventListener("animationend", done, { once: true });
+    return () => {
+      element.removeEventListener("animationend", done);
+      element.classList.remove(SHAKE_CLASS);
+    };
+    // Only a new submit replays it; `invalid` is read at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitCount, formItemId]);
+}
+
 function FormControl({ ...props }: React.ComponentProps<typeof Slot.Root>) {
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+  const { error, name, formItemId, formDescriptionId, formMessageId } = useFormField();
+  useShakeOnInvalidSubmit(formItemId, !!error);
 
   return (
     <Slot.Root
       data-slot="form-control"
+      data-field={name}
       id={formItemId}
       aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
       aria-invalid={!!error}

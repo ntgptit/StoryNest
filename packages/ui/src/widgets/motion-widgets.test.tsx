@@ -1,9 +1,10 @@
-import { act, cleanup, fireEvent, render, renderHook, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, renderHook, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/tabs.tsx";
 import { increased, turnedOn, useTriggerCount } from "../lib/use-trigger-count.ts";
 import { AutosaveIcon } from "./autosave-icon.tsx";
+import { CardCarousel } from "./card-carousel.tsx";
 import { HeartBurstIcon } from "./heart-burst-icon.tsx";
 import { RingingBellIcon } from "./ringing-bell-icon.tsx";
 
@@ -151,5 +152,76 @@ describe("TabsList sliding indicator", () => {
       if (widths) Object.defineProperty(HTMLElement.prototype, "offsetWidth", widths);
       if (lefts) Object.defineProperty(HTMLElement.prototype, "offsetLeft", lefts);
     }
+  });
+});
+
+describe("CardCarousel", () => {
+  function renderCarousel() {
+    return render(
+      <CardCarousel title="Popular" previousLabel="Previous" nextLabel="Next">
+        {["a", "b", "c", "d"].map((id) => (
+          <a key={id} href={`/story/${id}`}>
+            Story {id}
+          </a>
+        ))}
+      </CardCarousel>,
+    );
+  }
+
+  it("renders one list item per card under a named list, without arrows when nothing overflows", () => {
+    renderCarousel();
+    const list = screen.getByRole("list", { name: "Popular" });
+    expect(within(list).getAllByRole("listitem")).toHaveLength(4);
+    expect(screen.queryByRole("button", { name: "Next" })).toBeNull();
+  });
+
+  it("shows the arrows once the row overflows and disables the one at the current end", () => {
+    const sizes = {
+      scrollWidth: Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollWidth"),
+      clientWidth: Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientWidth"),
+    };
+    Object.defineProperty(HTMLElement.prototype, "scrollWidth", { configurable: true, get: () => 800 });
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 300 });
+    try {
+      renderCarousel();
+      const previous = screen.getByRole("button", { name: "Previous" }) as HTMLButtonElement;
+      const next = screen.getByRole("button", { name: "Next" }) as HTMLButtonElement;
+      expect(previous.disabled).toBe(true);
+      expect(next.disabled).toBe(false);
+      const list = screen.getByRole("list", { name: "Popular" });
+      list.scrollLeft = 500;
+      act(() => {
+        fireEvent.scroll(list);
+      });
+      expect(previous.disabled).toBe(false);
+      expect(next.disabled).toBe(true);
+    } finally {
+      for (const [key, descriptor] of Object.entries(sizes)) {
+        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
+      }
+    }
+  });
+
+  it("cancels the card click after a mouse drag, but not after a plain click", () => {
+    renderCarousel();
+    const list = screen.getByRole("list", { name: "Popular" });
+    const link = screen.getByRole("link", { name: "Story a" });
+    const clicks: boolean[] = [];
+    link.addEventListener("click", (event) => {
+      clicks.push(event.defaultPrevented);
+      event.preventDefault();
+    });
+
+    fireEvent.pointerDown(list, { pointerType: "mouse", button: 0, clientX: 100 });
+    fireEvent.pointerUp(list, { pointerType: "mouse", clientX: 100 });
+    fireEvent.click(link);
+
+    fireEvent.pointerDown(list, { pointerType: "mouse", button: 0, clientX: 100 });
+    fireEvent.pointerMove(list, { pointerType: "mouse", clientX: 40 });
+    fireEvent.pointerUp(list, { pointerType: "mouse", clientX: 40 });
+    fireEvent.click(link);
+
+    // First click reached the link; the one after the drag was stopped in the capture phase.
+    expect(clicks).toEqual([false]);
   });
 });

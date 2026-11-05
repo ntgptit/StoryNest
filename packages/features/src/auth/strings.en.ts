@@ -14,6 +14,7 @@ export const en = {
   },
   signUp: {
     title: "Create an account",
+    errorSummary: (count: number) => `${count} field${count === 1 ? " needs" : "s need"} attention`,
     description: "Read, write and share your stories.",
     email: "Email",
     password: "Password",

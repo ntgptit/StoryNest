@@ -2,6 +2,8 @@ export const en = {
   similarTitle: "You might also like",
   forMeTitle: "Recommended for you",
   listLabel: (title: string) => title,
+  previous: "Previous stories",
+  next: "More stories",
   reasons: {
     sharedTags: (tags: string) => `Shared tags: ${tags}`,
     sameCategory: (category: string) => `Same category: ${category}`,
