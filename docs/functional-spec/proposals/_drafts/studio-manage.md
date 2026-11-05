@@ -2,7 +2,7 @@
 
 Scope: author experience outside the chapter editor — Studio home, story setup and lifecycle, chapter organisation,
 collaboration, statistics and reader interaction from the author side. Writing/editor/history/publishing (SCR-EDT-01,
-SCR-HIST-01/02) belong to the `studio-editor` agent and are only referenced. Baseline commit `204a1ea`, analysed
+SCR-HIST-01/02) belong to the `studio-write` agent and are only referenced. Baseline commit `204a1ea`, analysed
 2026-11-05.
 
 **Evidence limitation.** Every Studio screen requires a signed-in session. No runtime screenshots exist for
@@ -168,7 +168,7 @@ end; the story's state (visibility, status, removed/deleted) is visible only on 
 offers no way back into the Studio. WBS §1.2 planned a separate `(studio)/studio/` area (`docs/WBS.md:64`) that was
 not built (`Documented`). Recommendation: **FP-053 story workspace** (shared header + role-aware tabs), applied to
 SE-STM-03, SE-CHM-01, SE-TEAM-01, SE-STAT-01. The chapter editor and history stay outside the workspace frame (focused
-writing surface, `studio-editor` scope) but link back to it.
+writing surface, `studio-write` scope) but link back to it.
 
 ### SE-STM-01 — Studio home (SCR-STM-01)
 
@@ -457,7 +457,7 @@ BRC-STAT-01, BR-STAT-004 extension (followers series). Other screens: SCR-STM-01
 | Business rules to add/modify | New BR-STM-026 (Proposed): "Every story-level Studio page shows the story title and the role-filtered tool tabs; a tool a role cannot use is not shown." No approved rule changed. |
 | UI behaviour & validation | Mobile 390: header 56 px (thumb 32 px, title truncate, chip below title), tabs as horizontally scrollable segmented control (≥ 44 px), sticky under the app header. Tablet 768: same, tabs not scrolling. Desktop 1280: left sidebar 240 px (cover 2:3, title, chips, vertical tabs), content column `max-w-3xl`. Active tab `aria-current="page"`; tabs are links (not `role=tablist`) because they change URL. |
 | Technical impact | Frontend: new component + 4 screens drop their own header/back link. Shared components: `Tabs` styling reused for links, `StoryCover`, `Badge`. API/RPC: none (reuse `useStoryForEdit`). Database: none. RLS: none. Jobs: none. Web: route group + layout + `generateMetadata`. |
-| Dependencies · Risks | FP-054 (chip), FP-004 (not-found). Risk: Next layouts persist across tab navigation — fine; mobile Vite app must mount `StoryWorkspace` in its own router (DEC-001 keeps it router-agnostic). Coordinate with `studio-editor` agent for the editor's back link label. |
+| Dependencies · Risks | FP-054 (chip), FP-004 (not-found). Risk: Next layouts persist across tab navigation — fine; mobile Vite app must mount `StoryWorkspace` in its own router (DEC-001 keeps it router-agnostic). Coordinate with `studio-write` agent for the editor's back link label. |
 | Priority · Complexity · Class | P2 · M · Maturity |
 | Decision required | none |
 
@@ -624,6 +624,9 @@ Acceptance criteria [Proposed]:
   `features/studio/model` that the editor imports. The workspace (FP-053) deliberately excludes SCR-EDT-01/HIST-01/02;
   their back links should target the workspace Chapters tab (URL unchanged). "Edited since publish" in SE-CHM-01 uses
   the same comparison the editor's publish panel would need — share it.
+  Naming: their FP-058 "writing workspace" (editor frame) and this FP-053 "story workspace" (story tools frame) are
+  different surfaces — keep both names distinct in the merged backlog. Their request for a "Version history" entry in
+  the chapter row menu fits the SE-CHM-01 overflow menu (add it there; all roles).
 - **account/platform agent**: FP-019 amended (studio bullet moved to FP-053; "Write" label on desktop). Shell route
   groups: if the `(reader)` shell-less group is proposed, the workspace route group `(workspace)` under
   `studio/story/[id]` is compatible (different subtree).
