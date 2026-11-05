@@ -327,7 +327,7 @@
 | Expected behavior | The Studio list, story page and home feed show the new state on next view |
 | Exceptions | Image CDN caches of a replaced cover are not purged (WBS 3.3) |
 | Related screens | SCR-STM-01..03 |
-| Evidence | `packages/features/src/studio/hooks/use-story-editing.ts:50-58,66-160` |
+| Evidence | `packages/features/src/studio/hooks/use-story-editing.ts:50-58,66-160` (cover upload now takes an optional chosen crop, PR #60; behavior otherwise unchanged) |
 | Status | Verified |
 
 ### BR-STM-025 — Account status on direct story writes

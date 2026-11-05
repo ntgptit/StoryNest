@@ -81,7 +81,7 @@
 | Preconditions | Owner/co-author; not archived |
 | Expected behavior | `archive_chapter`; toast "Chapter archived."; badge "Archived"; button becomes "Unarchive" |
 | Error behavior | Toast; dialog stays open |
-| Evidence | `chapter-manager-screen.tsx:220-229,277-282`; `chapter-management.test.tsx:452` |
+| Evidence | `chapter-manager-screen.tsx:225-226,322-345` (shared confirm dialog, PR #60); `chapter-management.test.tsx:452` |
 
 | Field | SCR-CHM-01-A06 Unarchive |
 | --- | --- |
@@ -95,7 +95,7 @@
 | Preconditions | Owner/co-author |
 | Expected behavior | `deleted_at` set; toast "Chapter deleted."; row moves last, struck through |
 | Error behavior | Toast; dialog stays open |
-| Evidence | `chapter-manager-screen.tsx:230-238,277-281`; `chapter-management.test.tsx:466` |
+| Evidence | `chapter-manager-screen.tsx:225-226,322-345` (shared confirm dialog, PR #60); `chapter-management.test.tsx:466` |
 
 | Field | SCR-CHM-01-A08 Restore |
 | --- | --- |
