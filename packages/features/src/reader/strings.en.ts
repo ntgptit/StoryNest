@@ -4,6 +4,27 @@ export const en = {
   toc: { open: "Contents", title: "Contents", description: "Choose a chapter to read." },
   nav: { label: "Chapter navigation", previous: "Previous chapter", next: "Next chapter", none: "End" },
   progress: "Chapter reading progress",
+  timeLeft: {
+    long: (minutes: number) => `${minutes} min left`,
+    short: (minutes: number) => `${minutes} min`,
+    done: "Finished",
+  },
+  backToTop: "Back to top",
+  image: {
+    open: "View image full screen",
+    title: "Image in the chapter",
+    hint: "Pinch, double-tap or press + and − to zoom. Drag down or press Esc to close.",
+    close: "Close image",
+  },
+  quote: {
+    toolbar: "Quote tools",
+    copy: "Copy quote",
+    copied: "Copied",
+    copyFailed: "Couldn't copy the quote.",
+    comment: "Comment on paragraph",
+    text: (quote: string, source: string, url: string) => `“${quote}”\n— ${source}\n${url}`,
+    source: (story: string, chapter: string) => `${story}, ${chapter}`,
+  },
   settings: {
     open: "Display",
     title: "Reading options",
@@ -18,6 +39,9 @@ export const en = {
     fonts: { sans: "Sans-serif", serif: "Serif" },
     themes: { site: "Match app theme", light: "Light", sepia: "Sepia", dark: "Dark" },
     sizeNames: { s: "Small", m: "Medium", l: "Large", xl: "Extra large" },
+    focus: "Focus mode",
+    focusHint:
+      "Dims the other paragraphs and keeps the one you are reading sharp. Use ↑/↓ to move. Saved on this device only.",
   },
   vote: {
     add: "Vote for this chapter",

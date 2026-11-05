@@ -34,6 +34,9 @@
 | [BR-READ-016](#br-read-016--account-copy-and-sync) | Account copy and sync | Verified |
 | [BR-READ-017](#br-read-017--account-copy-storage-constraints) | Account copy storage constraints | Verified |
 | [BR-READ-018](#br-read-018--reading-measure) | Reading measure | Verified |
+| [BR-READ-019](#br-read-019--reading-time-left) | Reading time left | Verified (unit + component tests) |
+| [BR-READ-020](#br-read-020--focus-mode-is-a-device-only-setting) | Focus mode is a device-only setting | Verified (unit + component tests) |
+| [BR-READ-021](#br-read-021--quote-link-and-landing-highlight) | Quote link and landing highlight | Verified (component tests) |
 
 ---
 
@@ -252,3 +255,39 @@
 | Related screens | SCR-READ-01 |
 | Evidence | `packages/design-tokens/src/tokens.css:69-71`, `packages/features/src/reader/screens/reader-screen.tsx:96` |
 | Status | Verified |
+
+### BR-READ-019 — Reading time left
+| Field | Value |
+| --- | --- |
+| Description | The reader toolbar shows how long the rest of the chapter takes to read ("N phút còn lại" / "N min left"; "N phút" on phones), with a ring that fills and turns into a check at the end. |
+| Preconditions | — |
+| Conditions | Reading speed `READING_WORDS_PER_MINUTE` = **200 words per minute**, words counted like the chapter's `word_count` (whitespace-separated, so a Vietnamese syllable is one word). |
+| Expected behavior | Minutes left = ceil(`word_count` × (1 − share read) / 200), at least 1 until finished. The share read is the page scroll measured up to the **end of the chapter text** (not the comments after it): 0 at the top, 1 once the end of the text is in view; ≥ 98.5 % counts as finished ("Đã đọc hết" / "Finished"). A chapter with 0 words shows finished. Not a live region (it changes while scrolling). |
+| Exceptions | It is an estimate for display only; nothing is stored. |
+| Related screens | SCR-READ-01 |
+| Evidence | `packages/features/src/reader/model/reading-time.ts`, `packages/features/src/reader/screens/reader-screen.tsx` (`TimeLeft`), `packages/ui/src/widgets/reading-time-left.tsx`, `packages/ui/src/widgets/reading-progress.tsx` (`useScrollProgress`), `packages/features/src/reader/reader.test.tsx` ("timeLeft", "reading tools") |
+| Status | Verified (unit + component tests) |
+
+### BR-READ-020 — Focus mode is a device-only setting
+| Field | Value |
+| --- | --- |
+| Description | Optional "Focus mode" in the Reading options sheet dims every block except the one at the reading line (40 % of the viewport height). Off by default. |
+| Preconditions | — |
+| Conditions | localStorage key `storynest.readerFocus` = `"1"` means on; missing or anything else means off. |
+| Expected behavior | It is **not** one of the four reader preferences: it is never written to `user_reader_preferences` (BR-READ-016/017, fixed keys) and does not follow the account to other devices. While on, the focused block follows the page scroll (touch included) and ↑/↓ move one block and glide it to the reading line (not while typing, with a modifier key, or while a dialog has focus). Dividers are skipped. Blocked storage keeps the choice for the page only. |
+| Exceptions | — |
+| Related screens | SCR-READ-01 (settings sheet), and wherever the sheet is reused (preview, settings) |
+| Evidence | `packages/features/src/reader/model/focus-mode.ts`, `packages/features/src/reader/hooks/use-reader-focus.ts`, `packages/features/src/reader/components/reader-settings-sheet.tsx`, `packages/features/src/reader/reader.test.tsx` ("focus mode") |
+| Status | Verified (unit + component tests) |
+
+### BR-READ-021 — Quote link and landing highlight
+| Field | Value |
+| --- | --- |
+| Description | Selecting text inside one paragraph or heading shows quote tools: "Copy quote" puts `“quote”`, `— story, Chapter N` and the absolute link to that block (`chapterHref` + `#b-{id}` on the platform's share origin, as the Share dialog) on the clipboard; "Comment on paragraph" opens that block's comment sheet. A selection across blocks shows nothing. No highlight is stored. |
+| Preconditions | The story is known (the link needs its slug). |
+| Conditions | — |
+| Expected behavior | When the reader lands on a block, by a `#b-{id}` deep link (the block is scrolled into view if it is not) or by the restored reading position (BR-PROG), its text gets a one-time highlighter sweep (2.8 s; a static tint under reduced motion). |
+| Exceptions | — |
+| Related screens | SCR-READ-01 |
+| Evidence | `packages/features/src/reader/components/reader-blocks.tsx`, `packages/features/src/reader/screens/reader-screen.tsx` (`quoteText`), `packages/features/src/progress/hooks/use-reading-tracker.ts` (`onRestored`), `packages/ui/src/widgets/selection-toolbar.tsx`, `packages/ui/src/widgets/highlight-sweep.tsx`, `packages/features/src/reader/reader.test.tsx` |
+| Status | Verified (component tests) |

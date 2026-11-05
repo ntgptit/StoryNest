@@ -10,6 +10,8 @@ import {
   type ReaderTheme,
 } from "@storynest/validation";
 import { Button } from "@storynest/ui/components/button";
+import { Label } from "@storynest/ui/components/label";
+import { Switch } from "@storynest/ui/components/switch";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +22,7 @@ import {
 } from "@storynest/ui/components/sheet";
 import { cn } from "@storynest/ui/lib/utils";
 import { useReaderPreferences } from "../hooks/use-reader-preferences.ts";
+import { useReaderFocusMode } from "../hooks/use-reader-focus.ts";
 import { canStepFontSize, stepFontSize } from "../model/preferences.ts";
 import { readerText } from "../strings.ts";
 
@@ -59,9 +62,13 @@ function Choice<T extends string>({
   );
 }
 
-/** Reading options in a side sheet: size, line spacing, font and background. Every change is applied at once. */
+/**
+ * Reading options in a side sheet: size, line spacing, font and background, and focus mode. Every change is applied at
+ * once. Focus mode is kept on this device only (it is not part of the preferences synced to the account).
+ */
 export function ReaderSettingsSheet() {
   const { preferences, update } = useReaderPreferences();
+  const focus = useReaderFocusMode();
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -125,6 +132,20 @@ export function ReaderSettingsSheet() {
             labelOf={(value) => text.themes[value]}
             onSelect={(theme) => update({ theme })}
           />
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="reader-focus-mode">{text.focus}</Label>
+              <p id="reader-focus-mode-hint" className="text-xs text-muted-foreground">
+                {text.focusHint}
+              </p>
+            </div>
+            <Switch
+              id="reader-focus-mode"
+              aria-describedby="reader-focus-mode-hint"
+              checked={focus.on}
+              onCheckedChange={focus.setOn}
+            />
+          </div>
         </div>
       </SheetContent>
     </Sheet>

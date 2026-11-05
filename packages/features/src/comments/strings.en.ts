@@ -19,6 +19,7 @@ export const en = {
     posted: "Comment posted.",
     count: (used: string, max: string) => `${used}/${max}`,
     guest: "Sign in to comment",
+    spoilerHint: "Write ||text|| to hide a spoiler.",
   },
   item: {
     anonymous: "User",
@@ -50,11 +51,14 @@ export const en = {
     confirmDeleteDescription: "The comment will disappear from the page. Its replies will be kept.",
     cancel: "Cancel",
     menu: "Comment options",
+    spoiler: "Spoiler, tap to show",
   },
   inline: {
     open: (count: number) => (count > 0 ? `Comment on this paragraph (${count})` : "Comment on this paragraph"),
     title: "Comment on this paragraph",
     description: "Other readers will see this comment right next to the paragraph.",
+    sheetHeight: (height: "peek" | "half" | "full") =>
+      `Change sheet height, now ${{ peek: "collapsed", half: "half", full: "full screen" }[height]}`,
   },
   validation: { empty: "Please enter some text.", tooLong: "The comment is too long (10,000 characters max)." },
   errors: {

@@ -7,8 +7,9 @@ import { DB_LIMITS } from "@storynest/validation";
 import { Button } from "@storynest/ui/components/button";
 import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@storynest/ui/components/sheet";
+import { Sheet, SheetDescription, SheetHeader, SheetTitle } from "@storynest/ui/components/sheet";
 import { Skeleton } from "@storynest/ui/components/skeleton";
+import { DetentSheetContent } from "@storynest/ui/widgets/detent-sheet";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
@@ -43,13 +44,18 @@ export function AddToListButton({ storyId }: { storyId: string }) {
       </Button>
       {auth.status === "authenticated" ? (
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>{t.title}</SheetTitle>
-              <SheetDescription>{t.description}</SheetDescription>
-            </SheetHeader>
+          <DetentSheetContent
+            handleLabel={t.sheetHeight}
+            onDismiss={() => setOpen(false)}
+            header={
+              <SheetHeader className="pt-1">
+                <SheetTitle>{t.title}</SheetTitle>
+                <SheetDescription>{t.description}</SheetDescription>
+              </SheetHeader>
+            }
+          >
             <ListPicker storyId={storyId} />
-          </SheetContent>
+          </DetentSheetContent>
         </Sheet>
       ) : null}
     </>

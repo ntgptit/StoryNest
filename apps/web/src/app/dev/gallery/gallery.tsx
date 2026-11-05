@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BookOpen, Eye, Globe, Heart, Home, Library, Link2, Lock, Search, User } from "lucide-react";
+import { BookOpen, Eye, Globe, Heart, Home, Library, Link2, Lock, MessageSquare, Search, User } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -107,6 +107,13 @@ import { StoryPeekSheet } from "@storynest/ui/widgets/story-peek-sheet";
 import { StoryViewToggle, useStoredView } from "@storynest/ui/widgets/story-view-toggle";
 import { SwipeToRemove } from "@storynest/ui/widgets/swipe-to-remove";
 import { useSwipeTabs } from "@storynest/ui/widgets/swipe-tabs";
+import { BackToTopButton } from "@storynest/ui/widgets/back-to-top-button";
+import { DetentSheetContent } from "@storynest/ui/widgets/detent-sheet";
+import { HighlightSweep } from "@storynest/ui/widgets/highlight-sweep";
+import { ImageLightbox } from "@storynest/ui/widgets/image-lightbox";
+import { ReadingTimeLeft } from "@storynest/ui/widgets/reading-time-left";
+import { SelectionToolbar, useBlockSelection } from "@storynest/ui/widgets/selection-toolbar";
+import { SpoilerText } from "@storynest/ui/widgets/spoiler-text";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -1849,6 +1856,144 @@ function AccountBatchExample() {
   );
 }
 
+const QUOTE_PARAGRAPHS = [
+  "The fog came in before dawn, the way it always did in the last week of autumn, and by the time Mara reached the top of the stairs the lamp room was an island in a white sea.",
+  "She lit the wick, wound the clockwork and stood at the glass until the beam found its rhythm. Somewhere below, a bell answered that no one had rung in forty years.",
+];
+
+function ReaderToolsExample() {
+  const [ratio, setRatio] = useState(0.35);
+  const [sweeps, setSweeps] = useState(0);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const container = useRef<HTMLDivElement>(null);
+  const toolbar = useRef<HTMLDivElement>(null);
+  const { selection, clear } = useBlockSelection(container, toolbar);
+  const words = 2400;
+  const minutes = Math.max(1, Math.ceil((words * (1 - ratio)) / 200));
+  const done = ratio >= 0.985;
+
+  return (
+    <div className="flex flex-col gap-6" data-slot="reader-tools-demo">
+      <div className="flex flex-wrap items-center gap-4">
+        <ReadingTimeLeft
+          ratio={ratio}
+          done={done}
+          label={done ? "Finished" : `${minutes} min left`}
+          shortLabel={done ? "Finished" : `${minutes} min`}
+        />
+        <label className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+          Read
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(ratio * 100)}
+            onChange={(event) => setRatio(Number(event.target.value) / 100)}
+            className="min-w-0 flex-1 accent-primary"
+            aria-label="Share of the chapter read"
+          />
+        </label>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <p className="text-xs text-muted-foreground">
+          Select words inside one paragraph for the quote tools. The second paragraph is the deep-link target.
+        </p>
+        <div ref={container} className="reader-text flex max-w-[var(--reader-measure)] flex-col gap-[1em]">
+          {QUOTE_PARAGRAPHS.map((text, index) => (
+            <p key={text} data-block-id={`demo-${index}`}>
+              <HighlightSweep play={index === 1 ? sweeps : 0}>{text}</HighlightSweep>
+            </p>
+          ))}
+        </div>
+        <SelectionToolbar rect={selection?.rect ?? null} label="Quote tools" onDismiss={clear} toolbarRef={toolbar}>
+          {selection ? (
+            <>
+              <CopyLinkButton
+                value={() =>
+                  `“${selection.text}”\n— The Lighthouse Keeper, Chapter 2\nhttps://storynest.example/s/1#b-${selection.blockId}`
+                }
+                label="Copy quote"
+                copiedLabel="Copied"
+                variant="ghost"
+                size="sm"
+                onCopied={() => setTimeout(clear, 700)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  clear();
+                  setSheetOpen(true);
+                }}
+              >
+                <MessageSquare aria-hidden />
+                Comment on paragraph
+              </Button>
+            </>
+          ) : null}
+        </SelectionToolbar>
+        <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => setSweeps((n) => n + 1)}>
+          Land on the second paragraph
+        </Button>
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <p className="text-xs text-muted-foreground">Image in a chapter: press to open, pinch or + to zoom</p>
+          <figure className="w-40">
+            <ImageLightbox
+              src={demoCoverUrl(3)}
+              alt=""
+              openLabel="View image full screen"
+              closeLabel="Close image"
+              title="Image in the chapter"
+              hint="Pinch, double-tap or press + and − to zoom. Drag down or press Esc to close."
+            >
+              <img src={demoCoverUrl(3)} alt="" className="h-auto w-full rounded-lg" />
+            </ImageLightbox>
+          </figure>
+        </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-xs text-muted-foreground">Comment with a spoiler</p>
+          <p className="rounded-lg border p-3 text-sm">
+            Did not see that coming. At the end{" "}
+            <SpoilerText coverLabel="Spoiler, tap to show">the keeper was the ghost all along</SpoilerText>. Chills.
+          </p>
+          <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => setSheetOpen(true)}>
+            Open paragraph comments
+          </Button>
+        </div>
+      </div>
+
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <DetentSheetContent
+          handleLabel={(detent) => `Change sheet height, now ${detent}`}
+          onDismiss={() => setSheetOpen(false)}
+          bodyClassName="px-4 pb-6"
+          header={
+            <SheetHeader className="pt-1">
+              <SheetTitle>Paragraph comments</SheetTitle>
+              <SheetDescription>{QUOTE_PARAGRAPHS[1]}</SheetDescription>
+            </SheetHeader>
+          }
+        >
+          <ul className="flex flex-col gap-3">
+            {Array.from({ length: 14 }, (_, index) => (
+              <li key={index} className="rounded-lg border p-3 text-sm">
+                Reader {index + 1}:{" "}
+                {index % 3 === 0 ? "That bell gave me goosebumps." : "Can't wait for the next chapter."}
+              </li>
+            ))}
+          </ul>
+        </DetentSheetContent>
+      </Sheet>
+      <BackToTopButton label="Back to top" />
+    </div>
+  );
+}
+
 const BROWSE_TABS = ["reading", "saved", "following", "lists"] as const;
 type BrowseTab = (typeof BROWSE_TABS)[number];
 
@@ -2139,6 +2284,10 @@ export function Gallery() {
         <BrowseFeaturedExample />
         <BrowseGridExample />
         <BrowseShelfExample />
+      </Section>
+
+      <Section title="Batch 2 · reader">
+        <ReaderToolsExample />
       </Section>
     </AppShell>
   );

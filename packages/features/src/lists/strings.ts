@@ -86,6 +86,8 @@ const vi = {
     removed: (name: string) => `Đã bỏ khỏi "${name}".`,
     guest: "Đăng nhập để dùng danh sách",
     error: { title: "Không tải được danh sách của bạn", retry: "Thử lại" },
+    sheetHeight: (height: "peek" | "half" | "full") =>
+      `Đổi chiều cao bảng, hiện tại: ${{ peek: "thu gọn", half: "một nửa", full: "toàn màn hình" }[height]}`,
   },
   errors: {
     forbidden: "Bạn không thể thực hiện thao tác này.",

@@ -1,7 +1,7 @@
 "use client";
 
 import { Heart, MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { formatCount, formatRelativeTime } from "@storynest/utils";
 import { COMMENT_STATUS, HIDE_SOURCE } from "@storynest/validation";
 import { Button } from "@storynest/ui/components/button";
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@storynest/ui/components/dropdown-menu";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
+import { SpoilerText } from "@storynest/ui/widgets/spoiler-text";
 import { ReportButton } from "../../moderation/index.ts";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useNavigation } from "../../_shared/platform.tsx";
@@ -26,6 +27,7 @@ import {
   useToggleCommentLike,
 } from "../hooks/use-comments.ts";
 import { commentErrorMessage, isPlaceholder, type Comment } from "../model/comment.ts";
+import { splitSpoilers } from "../model/spoiler.ts";
 import { commentText } from "../strings.ts";
 import { CommentComposer } from "./comment-composer.tsx";
 
@@ -150,7 +152,9 @@ export function CommentItem({
               }}
             />
           ) : (
-            <p className="whitespace-pre-line break-words text-sm">{comment.body}</p>
+            <p className="whitespace-pre-line break-words text-sm">
+              <CommentBody body={comment.body ?? ""} />
+            </p>
           )}
 
           <div className="flex flex-wrap items-center gap-1">
@@ -236,6 +240,23 @@ export function CommentItem({
         }}
       />
     </article>
+  );
+}
+
+/** A comment's text as plain text nodes, with `||spoiler||` parts covered until pressed (render only). */
+function CommentBody({ body }: { body: string }) {
+  return (
+    <>
+      {splitSpoilers(body).map((segment, index) =>
+        segment.spoiler ? (
+          <SpoilerText key={index} coverLabel={t.spoiler}>
+            {segment.text}
+          </SpoilerText>
+        ) : (
+          <Fragment key={index}>{segment.text}</Fragment>
+        ),
+      )}
+    </>
   );
 }
 

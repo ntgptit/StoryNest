@@ -40,6 +40,7 @@ Rule summary
 | BR-CMT-019 | Guest interaction | Verified |
 | BR-CMT-020 | Error contract and messages | Verified |
 | BR-CMT-021 | Reply event emission | Verified (SQL test) |
+| BR-CMT-022 | Spoiler convention (render only) | Verified (unit + component tests) |
 
 ## 2. Rules
 
@@ -294,3 +295,15 @@ Rule summary
 | Related screens | — |
 | Evidence | `supabase/migrations/20261104001100_comment_reply_notifications.sql:24-39`, `supabase/tests/170_comment_reply_notifications.test.sql:44-51`, `:72`, `:120` |
 | Status | Verified (SQL test) |
+
+### BR-CMT-022 — Spoiler convention (render only)
+| Field | Value |
+| --- | --- |
+| Description | Text written between two pairs of bars, `||like this||`, in a chapter or paragraph comment is shown covered until the reader presses it (tap, click, Enter or Space); pressing again covers it again. |
+| Preconditions | — |
+| Conditions | A spoiler needs a closing `||` and some non-space text in between; an unclosed `||` or an empty pair stays as typed. No nesting. |
+| Expected behavior | **Rendering only**: the body is stored, validated (length, spam rules) and sent exactly as typed, bars included, so notifications, excerpts and moderation see the plain text. While covered the spoiler is a button named "Spoiler, tap to show" (the hidden text is not read out); shown, it is plain text with `aria-expanded="true"`. The composer shows the one-line hint "Write \|\|text\|\| to hide a spoiler." when no error or counter takes that line. |
+| Exceptions | Spoilers inside chapter text are not supported (that would need a new mark type). |
+| Related screens | SCR-CMT-01 |
+| Evidence | `packages/features/src/comments/model/spoiler.ts`, `packages/features/src/comments/components/comment-item.tsx` (`CommentBody`), `packages/features/src/comments/components/comment-composer.tsx`, `packages/ui/src/widgets/spoiler-text.tsx`, `packages/features/src/comments/comments.test.tsx` ("spoilers in comments") |
+| Status | Verified (unit + component tests) |

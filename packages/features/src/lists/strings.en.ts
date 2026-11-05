@@ -83,6 +83,8 @@ export const en = {
     removed: (name: string) => `Removed from "${name}".`,
     guest: "Sign in to use lists",
     error: { title: "Couldn't load your lists", retry: "Try again" },
+    sheetHeight: (height: "peek" | "half" | "full") =>
+      `Change sheet height, now ${{ peek: "collapsed", half: "half", full: "full screen" }[height]}`,
   },
   errors: {
     forbidden: "You can't do this.",

@@ -910,6 +910,130 @@
   }
 }
 
+/*
+ * Batch 2 "reader": the chapter reader and its comments. Adapted from Lucian UX/UI Prompt #058, #061, #220, #281,
+ * #343, #368, #336, #396 and #138 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their durations and
+ * curves: ReadingTimeLeft, ImageLightbox, SelectionToolbar, HighlightSweep, BackToTopButton, DetentSheetContent and
+ * SpoilerText in packages/ui; the reading focus dim is plain opacity in the reader.
+ * - The lightbox sits on a near-black layer with light controls in both schemes (like the element's photo viewer).
+ * - The highlighter is a translucent marker yellow; `highlight-sweep` paints it under a paragraph from left to right,
+ *   holds it and fades it out once. Under reduced motion it is a static tint (the component removes it after a while).
+ * - The spoiler cover is a block of foreground colour with drifting grains of the background colour.
+ */
+:root {
+  --lightbox: oklch(0.12 0.01 60 / 94%);
+  --lightbox-foreground: oklch(0.98 0.005 85);
+  --highlighter: light-dark(oklch(0.9 0.16 95 / 60%), oklch(0.82 0.15 88 / 38%));
+}
+@theme inline {
+  --color-lightbox: var(--lightbox);
+  --color-lightbox-foreground: var(--lightbox-foreground);
+  --color-highlighter: var(--highlighter);
+}
+@property --highlight-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@theme {
+  /* Highlighter stroke (#281): starts slow, speeds through the middle and settles at the end of the line. */
+  --ease-marker: cubic-bezier(0.55, 0.1, 0.3, 1);
+  /* Back-to-top arrow (#343): slow take-off, then gone. */
+  --ease-launch: cubic-bezier(0.6, 0, 0.8, 0.4);
+
+  /* No fill mode: after the sweep the utility's own (faded, or static under reduced motion) state shows. */
+  --animate-highlight-sweep: highlight-sweep 2.8s ease;
+  /* Selection tools (#220) pop up from the selection; the back-to-top arrow (#343) launches and comes back. */
+  --animate-selection-tools-in: selection-tools-in 0.25s var(--ease-pop) both;
+  --animate-back-to-top-launch: back-to-top-launch 0.9s var(--ease-launch);
+  /* Spoiler cover (#396): the grains drift so the cover reads as "something is under here". */
+  --animate-spoiler-grain: spoiler-grain 1.6s linear infinite;
+
+  @keyframes highlight-sweep {
+    0% {
+      background-size: 0% 62%;
+      --highlight-alpha: 100%;
+      animation-timing-function: var(--ease-marker);
+    }
+    32% {
+      background-size: 100% 62%;
+    }
+    68% {
+      --highlight-alpha: 100%;
+    }
+    100% {
+      background-size: 100% 62%;
+      --highlight-alpha: 0%;
+    }
+  }
+  @keyframes selection-tools-in {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
+  @keyframes back-to-top-launch {
+    15% {
+      transform: translateY(2px);
+    }
+    55% {
+      transform: translateY(-160%);
+      opacity: 0;
+    }
+    56% {
+      transform: translateY(160%);
+      opacity: 0;
+    }
+    100% {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  @keyframes spoiler-grain {
+    to {
+      background-position:
+        4px 3px,
+        -3px 4px;
+    }
+  }
+}
+
+/* A paragraph's text under the highlighter: the stroke follows every line (box-decoration-break), not the box. */
+@utility highlight-sweep {
+  --highlight-alpha: 0%;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0.15em,
+    color-mix(in oklab, var(--highlighter) var(--highlight-alpha), transparent) 0.3em,
+    color-mix(in oklab, var(--highlighter) var(--highlight-alpha), transparent) calc(100% - 0.3em),
+    transparent calc(100% - 0.1em)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 72%;
+  background-size: 100% 62%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: var(--animate-highlight-sweep);
+  @media (prefers-reduced-motion: reduce) {
+    --highlight-alpha: 100%;
+  }
+}
+
+/* Covered spoiler: text invisible, a foreground block with two layers of grains in the background colour. */
+@utility spoiler-cover {
+  color: transparent;
+  background-color: var(--foreground);
+  background-image:
+    radial-gradient(color-mix(in oklab, var(--background) 45%, transparent) 0.6px, transparent 1px),
+    radial-gradient(color-mix(in oklab, var(--background) 30%, transparent) 0.6px, transparent 1px);
+  background-size:
+    4px 3px,
+    3px 4px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  user-select: none;
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
