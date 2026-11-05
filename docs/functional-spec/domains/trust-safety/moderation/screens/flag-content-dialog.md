@@ -22,10 +22,10 @@ containing "report"); the screen is the "Report" button and "Report content" dia
 
 | Host screen | Route | Kind | Owner hidden? | Placement | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| Story page (SCR-STORY-*) | `/story/[id]/[slug]` | `story` | **No** (`ownerId` not passed) | Under the story actions in the header, inside the 18+ gate | `packages/features/src/story/screens/story-screen.tsx:111-114` |
+| Story page (SCR-STORY-*) | `/story/[id]/[slug]` | `story` | **No** (`ownerId` not passed) | Under the story actions in the header, beside the Share button (hidden for private stories; added by PR #60), inside the 18+ gate | `packages/features/src/story/screens/story-screen.tsx:123-130` |
 | Chapter reader (SCR-READ-*) | `/story/[id]/[slug]/[chapterSlug]` | `chapter` | **No** | Centered after "— End of chapter —" and the vote button, before comments | `packages/features/src/reader/screens/reader-screen.tsx:157-160` |
 | Comment item (OBJ-CMT thread inside the reader) | same as reader | `comment` | Yes (`!own`) and only for `visible` comments; top-level comments and replies; visible label "Report" | Comment action row | `packages/features/src/comments/components/comment-item.tsx:186-188` |
-| Author page (SCR-AUTHOR-01) | `/author/[username]` | `user` | Yes (`ownerId = profile.userId`) | Under "Follow" in the profile header | `packages/features/src/author/screens/author-screen.tsx:87-90` |
+| Author page (SCR-AUTHOR-01) | `/author/[username]` | `user` | Yes (`ownerId = profile.userId`) | Under "Follow" and "Share" in the profile header (Share added by PR #60) | `packages/features/src/author/screens/author-screen.tsx:95-103` |
 
 Not mounted on: story cards in lists, reading list pages (`/lists/[id]`, OBJ-LIST), the member's own profile `/me`,
 Studio, notifications. A reading list itself cannot be reported (not a target kind, BR-MOD-002).

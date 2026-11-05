@@ -31,7 +31,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | SCR-HIST-01-C08 | Restored status | `role="status"` "Restored to draft." + "Open editor" link | `history-screen.tsx:226-236` |
 | SCR-HIST-01-C09 | Content view | `<article class="reader-text">` H2 title + `BlockView`s; empty note | `history-screen.tsx:269-278` |
 | SCR-HIST-01-C10 | Compare base select | Label "Compare with": "Current draft" + other versions | `history-screen.tsx:240-257` |
-| SCR-HIST-01-C11 | Diff view | Caption, summary (`aria-live`), list with Added/Removed/Changed badges, "Before:" text | `history-screen.tsx:300-338` |
+| SCR-HIST-01-C11 | Diff view | Caption, summary (`aria-live`), list with Added/Removed/Changed badges, "Before:" text | `history-screen.tsx:316-453` |
 | SCR-HIST-01-C13 | Differences only and change steps (Lucian #217 / #127) | Switch "Only show changes" folds each run of unchanged paragraphs into one "N unchanged paragraphs" row (opens on its own; folded rows are `inert`); "Previous change" / "Next change" with "Change i of n" (`aria-live`) scroll to and focus each change (consecutive changed blocks count as one). No restore per change: restore still takes the whole version (`BR-HIST-006`) | `history-screen.tsx` (`DiffView`), `model/history.ts` (`groupDiff`), `packages/ui/src/widgets/diff-folds.tsx` |
 | SCR-HIST-01-C12 | Restore confirm dialog | "Restore this version to the draft?" Restore / Cancel | `history-screen.tsx:280-297` |
 

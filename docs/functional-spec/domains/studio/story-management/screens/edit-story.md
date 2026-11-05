@@ -53,13 +53,13 @@
 | Validation | Type JPG/PNG/WebP, ≤ 10 MB (client); ≤ 2 MiB after processing (bucket) |
 | Error behavior | Inline alert (`role="alert"`) with the specific reason (BR-STM-014) |
 | Navigation | — |
-| Evidence | `components/cover-editor.tsx:54-59,84-103` |
+| Evidence | `components/cover-editor.tsx:62-67,94-105,117-131` |
 
 | Field | SCR-STM-03-A03 Remove cover |
 | --- | --- |
 | Trigger | "Remove cover" (only when a cover exists) |
 | Expected behavior | Key cleared, object deleted, toast "Cover removed."; no confirmation |
-| Evidence | `components/cover-editor.tsx:70-83` |
+| Evidence | `components/cover-editor.tsx:79-93` |
 
 | Field | SCR-STM-03-A04 Delete story |
 | --- | --- |

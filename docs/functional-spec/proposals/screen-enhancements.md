@@ -89,7 +89,7 @@ link and width:
 | SCR-CHM-01 Chapters | In description (`chapter-manager-screen.tsx:230`) | "Back to story details" → Edit (`:123-128`) | none | `max-w-2xl` 672 px | static |
 | SCR-TEAM-01 Team | In description (`team-screen.tsx:103`) | "Back to story details" | none | `max-w-2xl` | static |
 | SCR-STAT-01 Stats | **No** (`story-stats-screen.tsx:83`) | "← Back to Studio" (`:69-75`) | none | `max-w-3xl` 768 px | static |
-| SCR-EDT-01 Editor (ref) | — | → Chapters (`chapter-editor-screen.tsx:294`) | Preview, History | (other agent) | static |
+| SCR-EDT-01 Editor (ref) | — | → Chapters (`chapter-editor-screen.tsx:412-417`) | Preview, History | (other agent) | static |
 
 Consequences (`Verified (Code)` unless marked): moving between Edit, Chapters, Team and Stats of one story always
 goes back through the Studio list (Stats is not linked from anywhere but the list — U-STAT-01); "Back to story
@@ -239,7 +239,7 @@ tooltip on fine pointers and stay ≤ 3 in the header; "Sign in" uses the `outli
 nav on phones (Inferred overlap). Recommendation: reduced-motion base rule in `tokens.css` (FP-036/FP-037); Toaster
 `position="top-center"` below `lg`.
 
-**DS-12 Content width** — One `max-w-5xl` column (`app-shell.tsx:25,29`) for browse grids, detail pages and forms; desktop
+**DS-12 Content width** — One `max-w-5xl` column (`app-shell.tsx:93,99`) for browse grids, detail pages and forms; desktop
 story page leaves the right half empty below the header block (`d-story.png`) and browse cards get very tall. Recommendation:
 width tokens `--content-browse: 72rem` (5-column grids at `xl`), `--content-default: 64rem`, `--content-narrow: 42rem`
 (forms, settings, `/me`), reader keeps `--reader-measure`; `AppShell` `width` prop. Story-page two-column layout at `lg`
@@ -816,7 +816,7 @@ names), U-NOTI-01 (reply deep link stops at the paragraph).
 - Missing functionality: answering a reply and notifying participants — Verified (Code) `comment-item.tsx:174`, reply SQL `:45-66` → FP-049. Author badge — Verified (Code) `comment-item.tsx:108` → FP-025.
 - UX/UI: the heading has no count — Verified (Code) `reader-screen.tsx:166`. The paragraph trigger is 14 px at 50 % opacity — Verified (Runtime) `m-reader.png`, `metrics.json` (17 of 21 controls < 44 px). Item actions are `h-7` (28 px) — Verified (Code) `comment-item.tsx:178-180`. The sheet loads as two tall blank skeleton blocks — Verified (Runtime) `m-reader-paragraph-sheet.png`.
 - Workflow: guest sign-in returns to the top of the chapter — Verified (Code) `comment-thread.tsx:38`. Unsent text is discarded when the sheet closes — Verified (Code) (UI states table, "Unsaved changes: Missing").
-- IA: on desktop the paragraph sheet is a bottom sheet covering the text — Inferred (`reader-blocks.tsx:65`; no desktop sheet screenshot). The paragraph under discussion is not highlighted in the text — Inferred.
+- IA: on desktop the paragraph sheet is a bottom sheet covering the text — Inferred (`reader-blocks.tsx:161-178`, `detent-sheet.tsx:153` (`side="bottom"`, now with three heights: changed by PR #60); no desktop sheet screenshot). The paragraph under discussion is not highlighted in the text — Inferred.
 
 **Proposed experience**
 - Heading "Bình luận (N)" from `chapter_stats.comments` (already on the story page). An optional sort control "Mới nhất / Cũ nhất" (the unused `newestFirst` prop, `comment-thread.tsx:21-25`), subject to Q-CMT-02. "Hay nhất" (most liked) is out of scope until Q-CMT-02 is answered.
@@ -1163,7 +1163,7 @@ updated_by` and stats embed — or a `studio_chapter_list(story)` RPC if embeds 
 ### SE-EDT-01 — Chapter editor (SCR-EDT-01)
 
 **Current experience** — Purpose: write the chapter's working draft and publish it (BR-EDT-*). Structure (top→bottom,
-single left-aligned column `max-w-3xl`, `chapter-editor-screen.tsx:291`): "Back to chapters" + outline buttons
+single left-aligned column `max-w-3xl`, `chapter-editor-screen.tsx:585`; PR #60 added an optional side-by-side live preview, `:593-623`): "Back to chapters" + outline buttons
 Preview / Version history (32 px) → backup banner / conflict alert → title input (36 px, `maxLength 400`) → toolbar (9
 icon buttons, 36 px, wraps) → body (`reader-text`, min 50vh) → publish panel (H2, state badge, Publish / Schedule… /
 Unpublish) → footer "n words · status" + "Save draft". Lives in the main shell (sticky header, mobile bottom nav,
@@ -1173,10 +1173,10 @@ Unpublish) → footer "n words · status" + "Save draft". Lives in the main shel
 **Identified opportunities**
 - *Missing functionality*: focus mode, find & replace, writing stats, paste clean-up, empty-body placeholder, next/prev
   chapter, pre-publish review (FP-060), presence (FP-061), checkpoints entry (FP-059). — Verified (Code) absent.
-- *UX/UI*: status and Save below the chapter (Verified (Code) `:379-389`); toolbar not sticky (Verified (Code));
+- *UX/UI*: status and Save below the chapter (Verified (Code) `:542-561`); toolbar not sticky (Verified (Code));
   targets < 44 px (Verified (Code) `button.tsx:22-25`); 2-row toolbar at 390 px (Inferred (Code)); keyboard covers
   toolbar + bottom nav eats space (Hypothesised); on desktop the column is left-aligned leaving ~256 px empty on the
-  right of the 1024 px main column at 1280 (Inferred (Code), `app-shell.tsx:29` + `:291`).
+  right of the 1024 px main column at 1280 (Inferred (Code), `app-shell.tsx:99` + `chapter-editor-screen.tsx:585`).
 - *Workflow*: Preview/History exits lose unsaved text (Verified (Code), FP-003); publishing requires scrolling past the
   whole chapter (Verified (Code)); after publish there is no "next chapter" path (Verified (Code)).
 - *IA*: no H1 / story / chapter number (Verified (Code), `strings.en.ts:2` unused); Save draft is a primary-looking
@@ -1300,8 +1300,8 @@ Rendered inside the main shell. Limitations: stale (saved draft only, F-EDT-02);
 - *Missing functionality*: publish from preview; phone-width frame on desktop; unsaved-text indicator. — Verified
   (Code) absent.
 - *UX/UI*: the preview bar is `sticky top-0 z-10` while the site header is `sticky top-0 z-30`
-  (`preview-screen.tsx:64`, `app-shell.tsx:24`): both stick at 0, so once the page scrolls the bar slides under the
-  header and "Back to editor" is hidden — Inferred (Code); same pattern in the reader (`reader-screen.tsx:74`), flagged
+  (`preview-screen.tsx:64`, `app-shell.tsx:88`): both stick at 0, so once the page scrolls the bar slides under the
+  header and "Back to editor" is hidden — Inferred (Code); same pattern in the reader (`reader-screen.tsx:104`; changed by PR #60: the reader bar now uses `top-below-header` and the header hides on scroll-down), flagged
   for the reader agent. Header differs from the real reader, which shows "Chương 2" above the title
   (Verified (Runtime) guest reader `m-reader.png`; preview code has no label — Verified (Code)).
 - *Workflow*: Preview → back → scroll → publish (Verified (Code)); the preview cannot tell the author whether it
@@ -1700,9 +1700,9 @@ work is S and should ship with it.
 
 **Current experience** — `AppShell`: sticky 56 px header (`max-w-5xl`), content column `max-w-5xl px-4 py-6`, mobile bottom
 nav (Home, Library, Write, Me) hidden from `md`, generic grid skeleton, sonner toaster, no footer
-(`packages/ui/src/widgets/app-shell.tsx:22-34`, `bottom-nav.tsx:47`, `main-shell.tsx:13-18`). Header right side: SearchBox
+(`packages/ui/src/widgets/app-shell.tsx:80-107`, `bottom-nav.tsx:47`, `nav-items.ts:9-14`). Header right side: SearchBox
 (icon < `sm`, field ≥ `sm`), 18+ button, "VI/EN", bell (members), user menu or "Sign in" (`site-header.tsx:17-28`).
-Missing: desktop nav (U-SHELL-01), `next` on sign-in (U-SHELL-04), not-found/error pages (F-SHELL-01), skip link (RT-09),
+Missing: desktop nav (U-SHELL-01; a `DesktopNav` row was added by PR #60: changed), `next` on sign-in (U-SHELL-04), not-found/error pages (F-SHELL-01), skip link (RT-09),
 offline state, footer.
 
 **Identified opportunities**
