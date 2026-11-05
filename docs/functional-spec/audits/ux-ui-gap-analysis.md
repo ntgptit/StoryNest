@@ -96,7 +96,7 @@ sheet, TOC, search and rankings worked as specified.
 | U-EDT-05 | EDT | No confirmation before the first publish, which irreversibly notifies followers. | `editor/components/publish-panel.tsx` | FP-034 |
 | U-HIST-01 | HIST | Compare ignores title changes, says "paragraphs" for images/dividers, no "before" for a changed image. | `history/model/history.ts` | Quick fix |
 | U-HIST-02 | HIST / SCR-HIST-02 | Preview lacks "Chapter n" label and end marker; reuses history error text. | `history/screens/preview-screen.tsx` | Quick fix |
-| U-MOD-01 | MOD / SCR-MOD-01 | Queue card lacks date, comment author, closed-by, consequence text. | `moderation/components/report-card.tsx:155-186,245-249` | FP-024 |
+| U-MOD-01 | MOD / SCR-MOD-01 | Queue card lacks date, comment author, closed-by, consequence text. | `moderation/components/report-card.tsx:68-99,158-162` | FP-024 |
 | U-MOD-02 | MOD / SCR-MOD-01 | Only Pending/Resolved tabs; no status/kind filter; tab not in URL. | `moderation-screen.tsx:45-60` | FP-024 |
 | U-MAT-01 | MAT / SCR-MAT-01 | Gate "Go back" does nothing when there is no history (shared links). | `adult-content/components/adult-gate.tsx:24-26` | FP-005 |
 | U-MAT-02 | MAT / header | 18+ control is icon-only, announced as a toggle but opens a dialog. | `adult-content/components/adult-content-button.tsx:29-38` | FP-022 |
@@ -107,3 +107,34 @@ sheet, TOC, search and rankings worked as specified.
 | Alias | Canonical |
 | --- | --- |
 | U-HOME-01 | U-SHELL-01 |
+
+## 5. Phase 2 additions (2026-11-05)
+
+Found during [screen enhancement](../proposals/screen-enhancements.md) review; related Phase 1 IDs are named, not
+repeated. Totals after Phase 2: **71** UX/UI findings (9 P2 · 62 P3). U-SHELL-01 (no navigation from `md` up) is
+now **Verified (Runtime)** at 768 px as well (`t-home.png`: no section navigation at all on tablet).
+
+| ID | Pri | Object / screen | Current behaviour → improvement | Evidence | FP |
+| --- | --- | --- | --- | --- | --- |
+| U-SHELL-06 | P2 | SHELL / all | Focus ring is faint: `--ring` already has 50 % alpha and components add `ring-ring/50`, about 25 % effective (≈ 1.25:1 calculated in light mode) → full-strength ring token | `packages/design-tokens/src/tokens.css:52`, `packages/ui/src/components/button.tsx:8` (Inferred contrast) | FP-037, FP-022 |
+| U-I18N-03 | P3 | I18N / header | Language button shows "VI" but its accessible name is "Switch to English" (WCAG 2.5.3 label in name) | `packages/features/src/shell/components/language-switcher.tsx:12-19`, `shell/strings.en.ts:17` | FP-022 |
+| U-MAT-03 | P3 | MAT / SCR-MAT-01 | Continuing past the gate turns 18+ on for every list, but the gate does not say so | `packages/features/src/adult-content/hooks/use-adult-content.ts:15` | FP-005 |
+| U-STM-07 | P3 | STM / SCR-STM-02/03 | 18+ hint says "hidden from the home page" while 18+ stories are hidden from every list | `packages/features/src/studio/strings.en.ts:187` | Quick fix |
+| U-MOD-04 | P3 | MOD / SCR-MOD-01 | The queue drops "under review by": `reviewed_by` is returned by SQL but not mapped | `…/20261104002000_moderation.sql:209,233`, `packages/features/src/moderation/model/report.ts:37-54` | FP-024 |
+| U-TEAM-02 | P3 | TEAM / SCR-TEAM-01 | Co-authors and editors cannot see who is on their own team although RLS allows it | `…/20261103000100_auth_and_rls.sql:214-215`, `team-screen.tsx:62-64` | FP-016 |
+| U-HOME-04 | P3 | HOME, AUTHOR | "Updated" and the default order move on any story-row update (metadata edit, republish), not only on a new chapter (Q-HOME-02) | `discovery.api.ts` order by `updated_at` | FP-040, FP-041 |
+| U-STORY-03 | P3 | STORY / SCR-STORY-01 | A member who has read every published chapter is offered "Start reading" (chapter 1) again; no "caught up" state | BR-STORY-012, BR-PROG-008 | FP-044 |
+| U-LIB-04 | P3 | LIB, MOD / SCR-STORY-01 | A guest's Follow / Save / Vote / Report intent is lost at sign-in (the action is not completed afterwards) | `story-actions.tsx`, `report-button.tsx:86-88` | FP-048 |
+
+## 6. Runtime verification of signed-in flows (2026-11-05)
+
+New UX findings from the [runtime verification](../verification/README.md). Totals after this run: **73** UX/UI
+findings (9 P2 · 64 P3). Confirmed at runtime: U-NOTI-01 (reply notification lands on `#comments`, nothing opened or
+highlighted — VER-RDR-08), U-SHELL-04 (header "Đăng nhập" links to `/login` without `next` — VER-RDR-11), U-STAT-01
+(stats page does not name the story — VER-AUT-13), U-READ-03 (library label uses the position after reordering —
+VER-RDR-10).
+
+| ID | Pri | Object / screen | Current behaviour → improvement | Evidence | FP |
+| --- | --- | --- | --- | --- | --- |
+| U-STM-08 | P3 | STM / SCR-STM-01 | When every story is deleted, Studio shows the empty state "Bạn chưa có truyện nào" above "Hiện truyện đã xóa (1)" — the author is told they have no stories | Runtime (VER-AUT-15 debug capture) | FP-055 |
+| U-MOD-05 | P3 | MOD / SCR-MOD-01 | Every moderation action confirms with the same toast "Đã thực hiện." and the card moves to the other tab without saying where | Runtime (VER-MOD-04…09) | FP-024 |

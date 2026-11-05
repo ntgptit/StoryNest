@@ -76,7 +76,7 @@
 | Validation | — |
 | Error behavior | No link when a slug/username is missing |
 | Navigation | Leaves the console (no "back to queue" affordance besides browser back) |
-| Evidence | `model/report.ts:121-127`, `report-card.tsx:171-178` |
+| Evidence | `model/report.ts:121-127`, `report-card.tsx:84-91` |
 
 | Field | SCR-MOD-01-A05 — Start a content action |
 | --- | --- |
@@ -87,7 +87,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | Modal |
-| Evidence | `report-card.tsx:188-205` |
+| Evidence | `report-card.tsx:101-118` |
 
 | Field | SCR-MOD-01-A06 — Start a report action |
 | --- | --- |
@@ -98,7 +98,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | Modal |
-| Evidence | `report-card.tsx:206-242`, `moderation.test.tsx:465,493` |
+| Evidence | `report-card.tsx:119-155`, `moderation.test.tsx:465,493` |
 
 | Field | SCR-MOD-01-A07 — Write the reason |
 | --- | --- |
@@ -109,7 +109,7 @@
 | Validation | `checkReason` (BR-MOD-015); `maxLength=1000` |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `report-card.tsx:128,252-259,270`, `model/report.ts:153-159` |
+| Evidence | `report-card.tsx:41,165-172,183`, `model/report.ts:153-159` |
 
 | Field | SCR-MOD-01-A08 — Confirm |
 | --- | --- |
@@ -120,7 +120,7 @@
 | Validation | Server re-validates everything |
 | Error behavior | Message inside dialog (`role="alert"`), dialog stays open: forbidden "You don't have permission to do this.", notFound "This item no longer exists.", conflict "The status has changed or the action doesn't apply. Please reload.", invalid "This action can't be applied to the selected item.", network "No connection. Check your network and try again.", other "Something went wrong. Please try again." Queue refetches even on error (`onSettled`) |
 | Navigation | — |
-| Evidence | `report-card.tsx:137-152,260-264`, `model/report.ts:185-202`, `hooks/use-moderation.ts:57-99`, `moderation.test.tsx:418,504` |
+| Evidence | `report-card.tsx:50-65,173-177`, `model/report.ts:185-202`, `hooks/use-moderation.ts:57-99`, `moderation.test.tsx:418,504` |
 
 | Field | SCR-MOD-01-A09 — Cancel the dialog |
 | --- | --- |
@@ -131,7 +131,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `report-card.tsx:130-135,245,267`, `moderation.test.tsx:522` |
+| Evidence | `report-card.tsx:43-48,158,180`, `moderation.test.tsx:522` |
 
 | Field | SCR-MOD-01-A10 — Retry after a load error |
 | --- | --- |
@@ -152,10 +152,10 @@
 | Loading | Implemented | Auth loading → skeleton h-64; queue pending → skeleton h-40 (`moderation-screen.tsx:24,62-63`) |
 | Empty | Implemented | "No reports are pending." / "No reports have been handled yet." plain text (`moderation-screen.tsx:71-72`) |
 | Populated | Implemented | Cards (C04–C08) |
-| Validation error | Implemented | Reason length inline message (`report-card.tsx:259`) |
+| Validation error | Implemented | Reason length inline message (`report-card.tsx:172`) |
 | Request error | Implemented | Load: ErrorState + retry. Action: in-dialog alert (A08) |
 | Success | Implemented | Toast "Done." + refetch |
-| Disabled | Implemented | All action buttons disabled while a mutation of this card runs; Confirm disabled for invalid reason (`report-card.tsx:127,200,270`) |
+| Disabled | Implemented | All action buttons disabled while a mutation of this card runs; Confirm disabled for invalid reason (`report-card.tsx:40,113,183`) |
 | Unauthorized | Implemented | Server 404 for non-moderators, login redirect for guests; client fallbacks for other hosts (`page.tsx:18-20`, `moderation-screen.tsx:25-40`) |
 | Offline | Implemented (generic) | Load error text mentions the connection; action error "No connection…" |
 | Unsaved changes | Not applicable / Recommended | Closing the dialog discards a typed reason without warning (acceptable: short text) |

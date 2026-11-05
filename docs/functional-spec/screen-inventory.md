@@ -1,5 +1,7 @@
 # Screen Inventory
 
+Phase 2 assessment and proposed improvements for each screen: [proposals/screen-enhancements.md](proposals/screen-enhancements.md).
+
 Every screen, embedded panel and non-screen route found in `apps/web/src/app` (28 `page.tsx`, 1 route handler,
 robots, sitemaps, 2 OG image routes). Entry point: [README](README.md).
 
@@ -89,3 +91,16 @@ Desktop (≥ md) has no primary navigation at all: the bottom nav is hidden and 
 ## 5. Counts
 
 28 route screens + 4 global/embedded panel specs = **32 screen specifications**, plus 4 non-screen route groups.
+
+## 6. Proposed screens (Phase 2, not implemented)
+
+Reserved IDs for screens that only exist in proposals. They are **not** counted in §5 and get a screen spec only
+when the proposal is approved and built.
+
+| Reserved ID | Name | Route / mount | Proposal | Status |
+| --- | --- | --- | --- | --- |
+| SCR-PRF-03 | Welcome (first-run) | `/welcome?next=…` | [FP-035](proposals/feature-backlog.md#fp-035) | Proposed |
+| SCR-MOD-03 | Appeal dialog | Embedded (suspension banner, Studio removed-story notice, notifications) | [FP-063](proposals/feature-backlog.md#fp-063) | Proposed |
+| SCR-MOD-04 | Policy pages (guidelines, terms, privacy, copyright) | `/guidelines`, `/terms`, `/privacy`, `/copyright` | [FP-065](proposals/feature-backlog.md#fp-065), [FP-039](proposals/feature-backlog.md#fp-039) | Proposed — blocked by Q-X-02 |
+| (to assign) | My reports | `/me/reports` | [FP-031](proposals/feature-backlog.md#fp-031) amendment | Proposed |
+| (none) | Reader frame, studio writing frame, story workspace | Layout frames for existing screens, not new screens | FP-043, FP-058, FP-053 | Proposed |

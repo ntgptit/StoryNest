@@ -34,12 +34,12 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 
 | ID | Component | Content / behaviour | Evidence |
 | --- | --- | --- | --- |
-| SCR-MOD-02-C01 | Report button | Ghost/outline small button, Flag icon (`aria-hidden`), visible text "Report" (or caller's `label`), accessible name "Report story/chapter/comment/user" (`report.button` + `report.kinds.*`). Not rendered while auth is loading | `report-button.tsx:332-370` |
-| SCR-MOD-02-C02 | Dialog header | Title "Report content: <kind>"; description "Tell us why this content isn't appropriate. A moderator will review it." | `report-button.tsx:373-376`, `strings.en.ts:4-5` |
-| SCR-MOD-02-C03 | Reason select | Label "Reason"; placeholder "Choose a reason"; 7 options (BR-MOD-003) | `report-button.tsx:378-392` |
-| SCR-MOD-02-C04 | Details textarea | Label "Details (optional)"; placeholder "Briefly describe what you saw…"; `maxLength=2000`, no counter | `report-button.tsx:393-402` |
-| SCR-MOD-02-C05 | Error message | `role="alert"`, text by error kind | `report-button.tsx:403-407`, `model/report.ts:164-183` |
-| SCR-MOD-02-C06 | Footer | "Cancel" (outline), "Submit report" / "Sending…" (disabled until a reason is chosen and while sending) | `report-button.tsx:409-416` |
+| SCR-MOD-02-C01 | Report button | Ghost/outline small button, Flag icon (`aria-hidden`), visible text "Report" (or caller's `label`), accessible name "Report story/chapter/comment/user" (`report.button` + `report.kinds.*`). Not rendered while auth is loading | `report-button.tsx:54-92` |
+| SCR-MOD-02-C02 | Dialog header | Title "Report content: <kind>"; description "Tell us why this content isn't appropriate. A moderator will review it." | `report-button.tsx:95-98`, `strings.en.ts:4-5` |
+| SCR-MOD-02-C03 | Reason select | Label "Reason"; placeholder "Choose a reason"; 7 options (BR-MOD-003) | `report-button.tsx:100-114` |
+| SCR-MOD-02-C04 | Details textarea | Label "Details (optional)"; placeholder "Briefly describe what you saw…"; `maxLength=2000`, no counter | `report-button.tsx:115-124` |
+| SCR-MOD-02-C05 | Error message | `role="alert"`, text by error kind | `report-button.tsx:125-129`, `model/report.ts:164-183` |
+| SCR-MOD-02-C06 | Footer | "Cancel" (outline), "Submit report" / "Sending…" (disabled until a reason is chosen and while sending) | `report-button.tsx:131-138` |
 
 ## C. User actions & system responses
 
@@ -52,7 +52,7 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | — |
 | Error behavior | — |
 | Navigation | Login; after sign-in, back to the same path (query string and `#comments` anchor are not preserved); dialog does not reopen |
-| Evidence | `report-button.tsx:364-366`, `moderation.test.tsx:264` |
+| Evidence | `report-button.tsx:86-88`, `moderation.test.tsx:264` |
 
 | Field | SCR-MOD-02-A02 — Click "Report" as a member |
 | --- | --- |
@@ -63,7 +63,7 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | — |
 | Error behavior | — |
 | Navigation | Modal (focus handled by the shared Radix dialog) |
-| Evidence | `report-button.tsx:364-371` |
+| Evidence | `report-button.tsx:86-93` |
 
 | Field | SCR-MOD-02-A03 — Choose a reason |
 | --- | --- |
@@ -74,7 +74,7 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | `isReportReason` guard |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `report-button.tsx:380,413` |
+| Evidence | `report-button.tsx:102,135` |
 
 | Field | SCR-MOD-02-A04 — Type details |
 | --- | --- |
@@ -85,7 +85,7 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | `maxLength`; server ≤ 2000 after trim |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `report-button.tsx:395-401` |
+| Evidence | `report-button.tsx:117-123` |
 
 | Field | SCR-MOD-02-A05 — Submit |
 | --- | --- |
@@ -96,7 +96,7 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | Server BR-MOD-003…008 |
 | Error behavior | Dialog stays open with inputs kept; message: forbidden/unauthenticated "You can't submit a report right now.", notFound "This content no longer exists or you can't view it.", conflict "This content can't be reported.", invalid "You can't report your own content, or the information isn't valid.", rateLimited "You've sent too many reports today. Please try again later.", network "No connection. Check your network and try again.", other "Something went wrong. Please try again." |
 | Navigation | — |
-| Evidence | `report-button.tsx:344-355`, `api/moderation.api.ts:16-31`, `strings.en.ts:13,29-37`, `moderation.test.tsx:278,301` |
+| Evidence | `report-button.tsx:66-77`, `api/moderation.api.ts:16-31`, `strings.en.ts:13,29-37`, `moderation.test.tsx:278,301` |
 
 | Field | SCR-MOD-02-A06 — Cancel / close |
 | --- | --- |
@@ -107,13 +107,13 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `report-button.tsx:337-342,371`, `moderation.test.tsx:311` |
+| Evidence | `report-button.tsx:59-64,93`, `moderation.test.tsx:311` |
 
 ## D. UI states
 
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
-| Initial | Implemented | Closed; button only. Hidden while auth loads (`report-button.tsx:332`) |
+| Initial | Implemented | Closed; button only. Hidden while auth loads (`report-button.tsx:54`) |
 | Loading | Implemented | "Sending…" + disabled submit |
 | Empty | Not applicable | — |
 | Populated | Implemented | Form with reason/details |
