@@ -40,7 +40,7 @@ shared (unlisted link / public). This domain owns the story **follow** and **sav
 | D-READING / OBJ-PROG | `user_story_progress` feeds the Reading tab and "Continue with chapter N" | `BR-PROG-*` |
 | D-COMMUNITY / OBJ-NOTI | Follows are the audience of `chapter_published` | [BR-NOTI-003](../community/notifications/business-rules.md#br-noti-003--chapter_published) |
 | D-DISCOVERY / OBJ-HOME, OBJ-AUTHOR | `StoryCard`, story columns; author follows and `/following` are separate from story follows | `BR-AUTHOR-*` |
-| D-PLATFORM / OBJ-SHELL, OBJ-JOB, OBJ-SEO | Bottom nav and user menu entries; counter reconcile; list pages `noindex` | `packages/features/src/shell/components/main-shell.tsx:15`, `BR-JOB-*` |
+| D-PLATFORM / OBJ-SHELL, OBJ-JOB, OBJ-SEO | Bottom nav and user menu entries; counter reconcile; list pages `noindex` | `packages/features/src/shell/model/nav-items.ts:9-14`, `BR-JOB-*` |
 | D-ACCOUNT / OBJ-AUTH | Guards and sign-in redirects | `apps/web/src/lib/auth/route-guard.ts` |
 
 ## Domain-level open questions

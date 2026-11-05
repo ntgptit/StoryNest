@@ -21,9 +21,9 @@
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
 | SCR-LIB-01-C01 | Page header | "Library" / "Stories you're reading, have saved and are following." | `library-screen.tsx:59` |
-| SCR-LIB-01-C02 | Tabs | `TabsList` "Library sections": Reading, Saved, Following, Lists; default Reading; state not in URL | `library-screen.tsx:43-64` |
-| SCR-LIB-01-C03 | Story grid | `ul` "<Tab> stories", 2/3/4 columns, `StoryCard` per entry | `library-screen.tsx:103-111`, `:139-145` |
-| SCR-LIB-01-C04 | Entry actions | "Continue with chapter N" (Reading, primary), "Open story" (Saved/Following, outline), remove button (ghost), time line | `library-screen.tsx:155-181` |
+| SCR-LIB-01-C02 | Tabs | `TabsList` "Library sections": Reading, Saved, Following, Lists; default Reading; state not in URL | `library-screen.tsx:55-84` |
+| SCR-LIB-01-C03 | Story grid | `ul` "<Tab> stories", 2/3/4 columns, `StoryCard` per entry | `library-screen.tsx:133-148`, `:197` |
+| SCR-LIB-01-C04 | Entry actions | "Continue with chapter N" (Reading, primary), "Open story" (Saved/Following, outline), remove button (ghost), time line | `library-screen.tsx:207-222` |
 | SCR-LIB-01-C05 | Unavailable placeholder | Dashed `role="note"` card "Story no longer available" | `library-screen.tsx:198-205` |
 | SCR-LIB-01-C06 | Skeleton | 4 cover-shaped skeletons `aria-busy` | `library-screen.tsx:119-126` |
 | SCR-LIB-01-C07 | Empty state | Per tab icon/title/description | `library-screen.tsx:130-132`, `strings.en.ts:7-17` |
@@ -41,7 +41,7 @@
 | Validation | — |
 | Error behavior | Per-tab ErrorState |
 | Navigation | None (URL unchanged) |
-| Evidence | `library-screen.tsx:47`, `use-library.ts:13-25` |
+| Evidence | `library-screen.tsx:60`, `use-library.ts:13-25` |
 
 | Field | SCR-LIB-01-A02 Continue reading |
 | --- | --- |

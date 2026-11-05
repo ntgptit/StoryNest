@@ -66,7 +66,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | Protected targets redirect guests to sign-in (BR-AUTH-008) |
 | Navigation | `/`, `/library`, `/studio`, `/me` |
-| Evidence | `main-shell.tsx:13-18`, `bottom-nav.tsx:23-75` |
+| Evidence | `shell/model/nav-items.ts:9-14`, `bottom-nav.tsx:23-75` |
 
 | Field | SCR-SHELL-01-A02 Open account menu and choose an item |
 | --- | --- |

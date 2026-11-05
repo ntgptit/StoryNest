@@ -27,7 +27,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | `(auth)` pages use a separate centred layout (brand link only, no header controls); `/dev/gallery` builds its own `AppShell` |
 | Exceptions | Content gets bottom padding `pb-24` on mobile so the fixed nav never covers it |
 | Related screens | SCR-SHELL-01 and every (main) screen |
-| Evidence | `apps/web/src/app/(main)/layout.tsx:4-7`, `packages/features/src/shell/components/main-shell.tsx:20-34`, `packages/ui/src/widgets/app-shell.tsx:9-36`, `apps/web/src/app/(auth)/layout.tsx:4-14` |
+| Evidence | `apps/web/src/app/(main)/layout.tsx:4-7`, `packages/features/src/shell/components/main-shell.tsx:24-56`, `packages/ui/src/widgets/app-shell.tsx:43-110`, `apps/web/src/app/(auth)/layout.tsx:4-14` |
 | Status | Verified |
 
 ### BR-SHELL-002 — Header composition
@@ -111,7 +111,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | `useAppToast` without provider throws (fail loudly) |
 | Exceptions | — |
 | Related screens | All |
-| Evidence | `packages/features/src/_shared/toast.tsx:7-36`, `apps/web/src/lib/toast.ts:4-9` |
+| Evidence | `packages/features/src/_shared/toast.tsx:17-48`, `apps/web/src/lib/toast.ts:5-11` |
 | Status | Verified |
 
 ### BR-SHELL-009 — Error boundaries and 404 pages
