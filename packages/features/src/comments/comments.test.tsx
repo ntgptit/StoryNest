@@ -18,9 +18,12 @@ import {
   listComments,
   listReplies,
   postComment,
+  searchMentionCandidates,
   setCommentHidden,
   setCommentLike,
+  setCommentReaction,
 } from "./api/comments.api.ts";
+import { likePrefix } from "./model/mention.ts";
 import { CommentThread, useBlockCommentCounts } from "./index.ts";
 import {
   AUTHOR_HIDDEN_CARD_STATUS,
@@ -28,9 +31,11 @@ import {
   checkBody,
   commentErrorMessage,
   cursorAfter,
+  readReactions,
   toComment,
   toPage,
   withLike,
+  withReaction,
   type CommentCardRow,
 } from "./model/comment.ts";
 import { splitSpoilers } from "./model/spoiler.ts";
@@ -311,10 +316,13 @@ describe("CommentThread", () => {
     const c = fakeClient({ post_comment: (args) => ({ data: args.p_id, error: null }) });
     renderUi(c, thread());
     const box = await screen.findByLabelText(commentText.composer.label);
+    // The send button shows "posted" with a check for a moment after a success, and still sends the next text.
+    const send = (box as HTMLTextAreaElement).form!.querySelector<HTMLButtonElement>('button[type="submit"]')!;
     for (const text of ["Một", "Hai"]) {
       fireEvent.change(box, { target: { value: text } });
-      fireEvent.click(screen.getByRole("button", { name: commentText.composer.submit }));
+      fireEvent.click(send);
       await waitFor(() => expect((box as HTMLTextAreaElement).value).toBe(""));
+      await waitFor(() => expect(send.textContent).toBe(commentText.composer.done));
     }
     const [one, two] = c.of("post_comment");
     expect(two!.args.p_id).not.toBe(one!.args.p_id);
@@ -460,6 +468,23 @@ describe("CommentItem actions", () => {
     fireEvent.click(buttons[buttons.length - 1]!);
     await waitFor(() => expect(c.of("post_comment")).toHaveLength(1));
     expect(c.of("post_comment")[0]!.args).toMatchObject({ p_parent_id: cid(1), p_block_id: BLOCK, p_body: "Đồng ý" });
+  });
+
+  it("opens the reply box when a top-level comment is swiped right on touch, not on a short swipe", async () => {
+    const c = fakeClient({ list_comments: () => ({ data: [row(1)], error: null }) });
+    renderUi(c, thread());
+    const list = await listOf();
+    const content = list.getByText("Nội dung 1").closest("[data-swiping], .touch-pan-y") as HTMLElement;
+    const touch = (x: number) => ({ pointerType: "touch", isPrimary: true, pointerId: 1, clientX: x, clientY: 100 });
+    fireEvent.pointerDown(content, touch(20));
+    fireEvent.pointerMove(content, touch(50));
+    fireEvent.pointerUp(content, touch(50));
+    expect(screen.queryByLabelText(commentText.composer.replyLabel)).toBeNull();
+    fireEvent.pointerDown(content, touch(20));
+    fireEvent.pointerMove(content, touch(120));
+    fireEvent.pointerUp(content, touch(120));
+    expect(await screen.findByLabelText(commentText.composer.replyLabel)).toBeTruthy();
+    expect(list.getByRole("button", { name: commentText.item.reply }).getAttribute("aria-expanded")).toBe("true");
   });
 
   it("offers no reply on a reply, and no menu on someone else's comment", async () => {
@@ -744,5 +769,96 @@ describe("spoilers in comments", () => {
     const box = await screen.findByLabelText(commentText.composer.label);
     const hint = screen.getByText(commentText.composer.spoilerHint);
     expect(box.getAttribute("aria-describedby")).toBe(hint.id);
+  });
+});
+
+describe("reactions and mentions (batch 4 · community4)", () => {
+  it("reads reaction counts and my reactions from the card, dropping unknown codes", () => {
+    const c = toComment(row(1, { reactions: { laugh: 2, heart: 9, fire: 0 }, my_reactions: ["laugh", "nope"] }))!;
+    expect(c.reactions).toEqual({ laugh: 2 });
+    expect(c.myReactions).toEqual(["laugh"]);
+    expect(readReactions(null)).toEqual({});
+    expect(toComment(row(2))!.reactions).toEqual({});
+  });
+
+  it("shows a reaction at once, never below zero, and drops a chip that reaches zero", () => {
+    const base = toComment(row(1, { reactions: { laugh: 1 }, my_reactions: ["laugh"] }))!;
+    const off = withReaction(base, "laugh", false);
+    expect(off.reactions).toEqual({});
+    expect(off.myReactions).toEqual([]);
+    const on = withReaction(off, "fire", true);
+    expect(on.reactions).toEqual({ fire: 1 });
+    expect(withReaction(on, "fire", true)).toBe(on);
+  });
+
+  it("escapes LIKE wildcards in a typed name", () => {
+    expect(likePrefix("an_b")).toBe("an\\_b%");
+    expect(likePrefix("x%\\")).toBe("x\\%\\\\%");
+  });
+
+  it("sends the reaction to the RPC and reads back the counts", async () => {
+    const c = fakeClient({ set_comment_reaction: () => ({ data: { wow: 3 }, error: null }) });
+    expect(await setCommentReaction(c as unknown as DataClient, cid(1), "wow", true)).toEqual({ wow: 3 });
+    expect(c.of("set_comment_reaction")[0]?.args).toEqual({ p_comment_id: cid(1), p_reaction: "wow", p_on: true });
+  });
+
+  it("looks people up by username prefix, and asks nothing for an empty name", async () => {
+    const calls: unknown[][] = [];
+    const chain = {
+      select: (...a: unknown[]) => (calls.push(["select", ...a]), chain),
+      ilike: (...a: unknown[]) => (calls.push(["ilike", ...a]), chain),
+      order: (...a: unknown[]) => (calls.push(["order", ...a]), chain),
+      limit: async (...a: unknown[]) => {
+        calls.push(["limit", ...a]);
+        return { data: [{ username: "mai_lan", display_name: " " }], error: null };
+      },
+    };
+    const client = { from: vi.fn(() => chain) } as unknown as DataClient;
+    expect(await searchMentionCandidates(client, "")).toEqual([]);
+    expect(await searchMentionCandidates(client, "mai_")).toEqual([{ username: "mai_lan", name: "mai_lan" }]);
+    expect(calls).toContainEqual(["ilike", "username", "mai\\_%"]);
+  });
+
+  it("toggles a reaction chip at once and takes the server's counts", async () => {
+    const c = fakeClient({
+      list_comments: () => ({ data: [row(1, { reactions: { laugh: 1 }, my_reactions: [] })], error: null }),
+      set_comment_reaction: () => ({ data: { laugh: 7 }, error: null }),
+    });
+    renderUi(c, thread());
+    const list = await listOf();
+    const t = commentText.item.reactions;
+    fireEvent.click(list.getByRole("button", { name: t.chip(t.names.laugh, 1, false) }));
+    expect(await list.findByRole("button", { name: t.chip(t.names.laugh, 7, true) })).toBeTruthy();
+    expect(c.of("set_comment_reaction")[0]?.args).toMatchObject({ p_reaction: "laugh", p_on: true });
+  });
+
+  it("sends a guest to sign in from the reaction button", async () => {
+    const c = fakeClient({ list_comments: () => ({ data: [row(1)], error: null }) });
+    renderUi(c, thread(), false);
+    const list = await listOf();
+    fireEvent.click(list.getByRole("button", { name: commentText.item.reactions.guest }));
+    expect(push).toHaveBeenCalledWith(expect.stringContaining("/login"));
+    expect(c.of("set_comment_reaction")).toHaveLength(0);
+  });
+
+  it("marks @mentions in a comment as plain text", async () => {
+    const c = fakeClient({ list_comments: () => ({ data: [row(1, { body: "chào @mai_lan nhé" })], error: null }) });
+    renderUi(c, thread());
+    const list = await listOf();
+    const mention = await list.findByText("@mai_lan");
+    expect(mention.tagName).toBe("SPAN");
+    expect(mention.className).toContain("bg-mention");
+  });
+
+  it("the composer is a combobox that offers people after @", async () => {
+    renderUi(fakeClient(), thread());
+    const box = (await screen.findByLabelText(commentText.composer.label)) as HTMLTextAreaElement;
+    expect(box.getAttribute("role")).toBe("combobox");
+    fireEvent.change(box, { target: { value: "@" } });
+    box.setSelectionRange(1, 1);
+    fireEvent.change(box, { target: { value: "@ " } });
+    fireEvent.change(box, { target: { value: "@" } });
+    expect(box.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByText(commentText.composer.mentions.typeName)).toBeTruthy();
   });
 });

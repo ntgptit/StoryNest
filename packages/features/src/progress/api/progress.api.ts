@@ -1,3 +1,4 @@
+import type { ReadSource } from "@storynest/validation";
 import type { DataClient } from "../../_shared/client.ts";
 import { unwrap } from "../../_shared/errors.ts";
 import type { ChapterProgress, ReadingPosition, StoryProgress } from "../model/progress.ts";
@@ -55,16 +56,19 @@ export async function getStoryProgress(client: DataClient, storyId: string): Pro
 /**
  * Counts a read for the signed-in user, or for the anonymous id when `anonymousId` is given. The server dedupes
  * (one read per reader, chapter and day), so calling it twice is harmless. Resolves to whether this call counted.
+ * `source` is the in-app screen the story was opened from (optional; it never changes whether the read counts).
  */
 export async function recordChapterRead(
   client: DataClient,
   chapterId: string,
   anonymousId: string | null,
+  source?: ReadSource,
 ): Promise<boolean> {
   const counted = unwrap(
     await client.rpc("record_chapter_read", {
       p_chapter_id: chapterId,
       ...(anonymousId ? { p_anon_id: anonymousId } : {}),
+      ...(source ? { p_source: source } : {}),
     }),
   );
   return counted === true;

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
@@ -15,6 +15,7 @@ import { getChapterContent } from "./api/reader.api.ts";
 import {
   adjacentChapters,
   blockAnchor,
+  isStoryFinished,
   parseMarks,
   splitByMarks,
   toChapterContent,
@@ -26,6 +27,8 @@ import { setReaderFocus } from "./hooks/use-reader-focus.ts";
 import { READER_FOCUS_STORAGE_KEY, blockAtLine, stepFocus } from "./model/focus-mode.ts";
 import { READING_WORDS_PER_MINUTE, timeLeft } from "./model/reading-time.ts";
 import { readerText } from "./strings.ts";
+import { firstUnreadBlock, readAloudProgress, readAloudQueue, speechLang } from "./model/read-aloud.ts";
+import { chapterSections, currentSection } from "./model/sections.ts";
 
 afterEach(cleanup);
 
@@ -243,8 +246,8 @@ const listRows = [1, 2, 3].map((n) => ({
   version: { title: `Tựa ${n}`, word_count: 10 },
 }));
 
-function screenClient(chapter: () => { data: unknown; error: unknown }, mature = false) {
-  const stories = builderFor(() => ({ data: { ...storyRow, is_mature: mature }, error: null }));
+function screenClient(chapter: () => { data: unknown; error: unknown }, mature = false, status = "ongoing") {
+  const stories = builderFor(() => ({ data: { ...storyRow, is_mature: mature, status }, error: null }));
   const chapters = builderFor(chapter);
   // The list query has no maybeSingle and is awaited; the reader's single-chapter query calls maybeSingle.
   const originalThen = chapters.builder.then;
@@ -263,14 +266,14 @@ function screenClient(chapter: () => { data: unknown; error: unknown }, mature =
   return withAuth({ from }, null);
 }
 
-function renderReader(client: DataClient, imageUrlFor?: (key: string) => string) {
+function renderReader(client: DataClient, imageUrlFor?: (key: string) => string, chapterSlug = "chuong-2") {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <DataProvider client={client}>
         <AuthProvider>
           <PlatformProvider adapter={adapter}>
             <ToastProvider port={{ show: vi.fn() }}>
-              <ReaderScreen storyId={STORY_ID} chapterSlug="chuong-2" imageUrlFor={imageUrlFor} />
+              <ReaderScreen storyId={STORY_ID} chapterSlug={chapterSlug} imageUrlFor={imageUrlFor} />
             </ToastProvider>
           </PlatformProvider>
         </AuthProvider>
@@ -569,5 +572,166 @@ describe("ReaderScreen: reading tools", () => {
     expect(first.getAttribute("data-dimmed")).toBe("true");
     expect(second.hasAttribute("data-dimmed")).toBe(false);
     expect(window.scrollTo).toHaveBeenCalled();
+  });
+});
+
+describe("read aloud, sections and the end of the story (model)", () => {
+  const blocks = toChapterContent(
+    chapterRow({
+      version: {
+        title: "T",
+        word_count: 9,
+        blocks: [
+          block(1, { block_type: "heading", text_content: "Phần một" }),
+          block(2, { text_content: "  Sương phủ.  " }),
+          block(3, { block_type: "image", text_content: null, image_storage_key: "x.png" }),
+          block(4, { text_content: "   " }),
+          block(5, { block_type: "heading", text_content: "Phần hai" }),
+          block(6, { block_type: "divider", text_content: null }),
+        ],
+      },
+    }),
+  ).blocks;
+
+  it("reads the text blocks with something in them, in order, and starts at the first one below the bar", () => {
+    expect(readAloudQueue(blocks)).toEqual([
+      { id: bid(1), text: "Phần một" },
+      { id: bid(2), text: "Sương phủ." },
+      { id: bid(5), text: "Phần hai" },
+    ]);
+    expect(firstUnreadBlock([10, 40, 900], 64)).toBe(2);
+    expect(firstUnreadBlock([10, 20], 64)).toBe(-1);
+    expect(readAloudProgress(1, 4)).toBe(0.25);
+    expect(readAloudProgress(0, 0)).toBe(0);
+    expect(speechLang("vi")).toBe("vi-VN");
+    expect(speechLang("en")).toBe("en-US");
+  });
+
+  it("lists the headings as sections and finds the one being read", () => {
+    expect(chapterSections(blocks)).toEqual([
+      { id: bid(1), label: "Phần một" },
+      { id: bid(5), label: "Phần hai" },
+    ]);
+    expect(currentSection([], 100)).toBe(-1);
+    expect(currentSection([300, 900], 200)).toBe(0); // still in the lead-in: the first section
+    expect(currentSection([-500, 150, 900], 200)).toBe(1);
+  });
+
+  it("is the end of the story only on the last chapter of a completed story", () => {
+    const list = [item(1), item(2), item(3)];
+    expect(isStoryFinished("completed", list, "chuong-3")).toBe(true);
+    expect(isStoryFinished("completed", list, "chuong-2")).toBe(false);
+    expect(isStoryFinished("ongoing", list, "chuong-3")).toBe(false);
+    expect(isStoryFinished("completed", [], "chuong-3")).toBe(false);
+  });
+});
+
+describe("ReaderScreen: read aloud, outline and finish", () => {
+  const spoken: string[] = [];
+  let utterances: { text: string; lang: string; onend: (() => void) | null }[] = [];
+  const speech = { speak: vi.fn(), cancel: vi.fn() };
+
+  beforeEach(() => {
+    setStoredAdultContent(NO_ADULT_CONTENT);
+    spoken.length = 0;
+    utterances = [];
+    speech.speak.mockImplementation((u: { text: string }) => spoken.push(u.text));
+    Element.prototype.scrollIntoView = vi.fn();
+    Element.prototype.hasPointerCapture = vi.fn(() => false);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+    delete (window as { speechSynthesis?: unknown }).speechSynthesis;
+    delete (window as { SpeechSynthesisUtterance?: unknown }).SpeechSynthesisUtterance;
+  });
+
+  const withSpeech = () => {
+    Object.defineProperty(window, "speechSynthesis", { value: speech, configurable: true, writable: true });
+    (window as unknown as { SpeechSynthesisUtterance: unknown }).SpeechSynthesisUtterance = class {
+      text: string;
+      lang = "";
+      onend: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      constructor(text: string) {
+        this.text = text;
+        utterances.push(this);
+      }
+    };
+  };
+
+  const sectioned = (overrides: Partial<ChapterContentRow> = {}) =>
+    chapterRow({
+      version: {
+        title: "Tấm bản đồ",
+        word_count: 20,
+        blocks: [
+          block(1, { block_type: "heading", text_content: "Phần một" }),
+          block(2, { text_content: "Sương phủ kín khu rừng." }),
+          block(3, { block_type: "heading", text_content: "Phần hai" }),
+          block(4, { text_content: "Cô mở tấm bản đồ ra." }),
+        ],
+      },
+      ...overrides,
+    });
+
+  it("has no read-aloud button where the browser cannot speak", async () => {
+    renderReader(screenClient(() => ({ data: sectioned(), error: null })));
+    await screen.findByRole("heading", { level: 1, name: "Tấm bản đồ" });
+    expect(screen.queryByRole("button", { name: readerText.readAloud.play })).toBeNull();
+  });
+
+  it("reads the chapter aloud block by block in the app language, pauses and resumes where it stopped", async () => {
+    withSpeech();
+    renderReader(screenClient(() => ({ data: sectioned(), error: null })));
+    const play = await screen.findByRole("button", { name: readerText.readAloud.play });
+    fireEvent.click(play);
+    expect(spoken).toEqual(["Phần một"]);
+    expect(utterances[0]?.lang).toBe("vi-VN");
+    act(() => utterances[0]?.onend?.());
+    expect(spoken).toEqual(["Phần một", "Sương phủ kín khu rừng."]);
+
+    fireEvent.click(screen.getByRole("button", { name: readerText.readAloud.pause }));
+    expect(speech.cancel).toHaveBeenCalled();
+    // The cancelled utterance's end event must not move the reading on.
+    act(() => utterances[1]?.onend?.());
+    expect(spoken).toHaveLength(2);
+
+    fireEvent.click(screen.getByRole("button", { name: readerText.readAloud.play }));
+    expect(spoken.at(-1)).toBe("Sương phủ kín khu rừng.");
+  });
+
+  it("outlines a chapter's sections in the contents sheet and goes to one", async () => {
+    renderReader(screenClient(() => ({ data: sectioned(), error: null })));
+    await screen.findByRole("heading", { level: 1, name: "Tấm bản đồ" });
+    fireEvent.click(screen.getByRole("button", { name: readerText.toc.open }));
+    const outline = await screen.findByRole("navigation", { name: readerText.toc.inChapter });
+    const entries = within(outline).getAllByRole("button");
+    expect(entries.map((b) => b.textContent)).toEqual(["Phần một", "Phần hai"]);
+    // jsdom lays nothing out: both headings sit at the top, above the reading line, so the later one is current.
+    expect(entries.map((b) => b.getAttribute("aria-current"))).toEqual([null, "location"]);
+
+    fireEvent.click(entries[1]!);
+    await waitFor(() => expect(document.activeElement?.id).toBe(blockAnchor(bid(3))));
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+  });
+
+  it("shows no outline for a chapter with fewer than two headings", async () => {
+    renderReader(screenClient(() => ({ data: chapterRow(), error: null })));
+    await screen.findByRole("heading", { level: 1, name: "Tấm bản đồ" });
+    fireEvent.click(screen.getByRole("button", { name: readerText.toc.open }));
+    await screen.findByText(readerText.toc.description);
+    expect(screen.queryByRole("navigation", { name: readerText.toc.inChapter })).toBeNull();
+    expect(screen.queryByRole("group", { name: readerText.toc.scrub })).toBeNull();
+  });
+
+  it("congratulates the reader under the last chapter of a completed story, and only there", async () => {
+    const last = () => ({ data: chapterRow({ slug: "chuong-3", sort_order: 3 }), error: null });
+    renderReader(screenClient(last, false, "completed"), undefined, "chuong-3");
+    expect(await screen.findByRole("heading", { name: readerText.finished.title })).toBeTruthy();
+    cleanup();
+
+    renderReader(screenClient(last, false, "ongoing"), undefined, "chuong-3");
+    await screen.findByRole("heading", { level: 1, name: "Tấm bản đồ" });
+    expect(screen.queryByRole("heading", { name: readerText.finished.title })).toBeNull();
   });
 });

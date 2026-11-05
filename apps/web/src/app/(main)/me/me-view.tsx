@@ -3,6 +3,7 @@
 import { AppLink, shellText } from "@storynest/features";
 import { Button } from "@storynest/ui/components/button";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
+import type { ReactNode } from "react";
 
 const t = shellText.me;
 
@@ -12,8 +13,19 @@ export interface MeProfile {
   bio: string | null;
 }
 
-/** The account page. A client component so its text follows the language (the page that feeds it runs on the server). */
-export function MeView({ profile, email }: { profile: MeProfile | null; email: string | null }) {
+/**
+ * The account page. A client component so its text follows the language (the page that feeds it runs on the server).
+ * `children` is shown under the profile (the reader's own habits).
+ */
+export function MeView({
+  profile,
+  email,
+  children,
+}: {
+  profile: MeProfile | null;
+  email: string | null;
+  children?: ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -39,6 +51,7 @@ export function MeView({ profile, email }: { profile: MeProfile | null; email: s
       ) : (
         <p className="text-sm text-muted-foreground">{t.missingProfile}</p>
       )}
+      {children}
     </div>
   );
 }

@@ -15,6 +15,9 @@ import { CategoryChips } from "./category-chips.tsx";
 import { DiscoverFilterBar } from "./filter-sheet.tsx";
 import { LoosenFilters } from "./loosen-filters.tsx";
 import { TagFilters } from "./tag-filters.tsx";
+import { LengthFilter } from "./length-filter.tsx";
+import { markReadSource } from "../../progress/index.ts";
+import type { WordRange } from "../model/story-length.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
 /**
@@ -25,12 +28,15 @@ import { currentLocale } from "../../_shared/i18n.ts";
 export function DiscoverScreen({
   categorySlug,
   tagSlug,
+  words,
   pageSize,
   locale = currentLocale(),
   coverUrlFor,
 }: {
   categorySlug?: string | undefined;
   tagSlug?: string | undefined;
+  /** Story length range in words (the `words` address parameter). */
+  words?: WordRange | undefined;
   pageSize?: number | undefined;
   locale?: string;
   /** Resolves a cover storage key to a public URL (the app knows the Supabase project URL). */
@@ -38,7 +44,7 @@ export function DiscoverScreen({
 }) {
   const auth = useAuth();
   const categories = useCategories();
-  const feed = useLatestStories({ categorySlug, tagSlug, pageSize }, categories.data);
+  const feed = useLatestStories({ categorySlug, tagSlug, words, pageSize }, categories.data);
   const storyView = useStoryView();
 
   const stories = feed.data?.pages.flatMap((page) => page.items) ?? [];
@@ -62,17 +68,33 @@ export function DiscoverScreen({
         </nav>
       </div>
 
-      <div className="hidden flex-col gap-4 sm:flex">
+      {/* From sm up the category row follows the scroll, just under the header (Lucian 242), so switching category
+          never needs a trip back to the top; the tag row stays in place. */}
+      <div className="sticky top-below-header z-10 hidden bg-background/95 py-2 sm:-mx-6 sm:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:block">
         {categories.data ? (
-          <CategoryChips categories={rootCategories(categories.data)} activeSlug={categorySlug} tagSlug={tagSlug} />
+          <CategoryChips
+            categories={rootCategories(categories.data)}
+            activeSlug={categorySlug}
+            tagSlug={tagSlug}
+            words={words}
+          />
         ) : (
           <Skeleton className="h-9 w-full max-w-md rounded-full" aria-hidden />
         )}
-        <TagFilters categorySlug={categorySlug} tagSlug={tagSlug} />
       </div>
+      <TagFilters categorySlug={categorySlug} tagSlug={tagSlug} words={words} className="hidden sm:flex" />
+      <LengthFilter
+        key={words ? `${words.min}-${words.max ?? ""}` : "any"}
+        categories={categories.data}
+        categorySlug={categorySlug}
+        tagSlug={tagSlug}
+        words={words}
+        locale={locale}
+        className="hidden sm:flex"
+      />
 
       <div className="flex items-center gap-2">
-        <DiscoverFilterBar categories={categories.data} categorySlug={categorySlug} tagSlug={tagSlug} />
+        <DiscoverFilterBar categories={categories.data} categorySlug={categorySlug} tagSlug={tagSlug} words={words} />
         <div className="ml-auto">{storyView.toggle}</div>
       </div>
 
@@ -98,27 +120,37 @@ export function DiscoverScreen({
           title={tagSlug ? discoveryText.emptyTag.title : discoveryText.empty.title}
           description={tagSlug ? discoveryText.emptyTag.description : discoveryText.empty.description}
           action={
-            <LoosenFilters categories={categories.data} categorySlug={categorySlug} tagSlug={tagSlug} locale={locale} />
+            <LoosenFilters
+              categories={categories.data}
+              categorySlug={categorySlug}
+              tagSlug={tagSlug}
+              words={words}
+              locale={locale}
+            />
           }
         />
       ) : (
         <>
-          <StoryListFrame frameRef={storyView.containerRef}>
-            <InfiniteList
-              items={stories}
-              getKey={(story) => story.id}
-              listClassName={storyView.listClassName}
-              renderItem={(story) => (
-                <StoryTile story={story} locale={locale} coverUrlFor={coverUrlFor} variant={storyView.view} />
-              )}
-              hasMore={feed.hasNextPage}
-              isLoadingMore={feed.isFetchingNextPage}
-              onLoadMore={() => void feed.fetchNextPage()}
-              loadMoreLabel={discoveryText.loadMore}
-              loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
-              endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{discoveryText.endOfList}</p>}
-            />
-          </StoryListFrame>
+          {/* A story opened from the feed is a read from Discover (an in-app source, see markReadSource). */}
+          <div className="contents" onClickCapture={() => markReadSource("discover")}>
+            <StoryListFrame frameRef={storyView.containerRef}>
+              <InfiniteList
+                items={stories}
+                getKey={(story) => story.id}
+                listClassName={storyView.listClassName}
+                renderItem={(story) => (
+                  <StoryTile story={story} locale={locale} coverUrlFor={coverUrlFor} variant={storyView.view} />
+                )}
+                revealAppended
+                hasMore={feed.hasNextPage}
+                isLoadingMore={feed.isFetchingNextPage}
+                onLoadMore={() => void feed.fetchNextPage()}
+                loadMoreLabel={discoveryText.loadMore}
+                loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
+                endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{discoveryText.endOfList}</p>}
+              />
+            </StoryListFrame>
+          </div>
           {feed.isError ? (
             <ErrorState
               title={discoveryText.error.title}

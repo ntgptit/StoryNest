@@ -21,8 +21,12 @@ import { ChapterNav } from "../components/chapter-nav.tsx";
 import { ReaderSettingsSheet } from "../components/reader-settings-sheet.tsx";
 import { ReadingTracker } from "../components/reading-tracker.tsx";
 import { TocSheet } from "../components/toc-sheet.tsx";
+import { ReadAloudButton } from "../components/read-aloud-button.tsx";
+import { StoryFinished } from "../components/story-finished.tsx";
+import { chapterSections } from "../model/sections.ts";
+import { SimilarStories } from "../../recommendations/index.ts";
 import { useChapter } from "../hooks/use-chapter.ts";
-import { blockAnchor, COMMENTS_ANCHOR } from "../model/chapter.ts";
+import { blockAnchor, COMMENTS_ANCHOR, isStoryFinished } from "../model/chapter.ts";
 import { timeLeft } from "../model/reading-time.ts";
 import { useApplyReaderPreferences } from "../hooks/use-reader-preferences.ts";
 import { useReaderPreferencesSync } from "../hooks/use-reader-preferences-sync.ts";
@@ -34,17 +38,22 @@ import { readerText } from "../strings.ts";
  *
  * While reading, the app header gets out of the way: it slides up on scroll-down and back on scroll-up. The toolbar
  * always stays visible, right below the header while it shows and at the top of the screen while it is tucked away.
- * The toolbar also shows the reading time left in the chapter text; far down the page a back-to-top button appears.
+ * The toolbar also shows the reading time left in the chapter text and, where the browser can speak, a read-aloud
+ * button; far down the page a back-to-top button appears. Under the last chapter of a completed story the reader is
+ * congratulated and offered similar stories.
  */
 export function ReaderScreen({
   storyId,
   chapterSlug,
   imageUrlFor,
+  coverUrlFor,
 }: {
   storyId: string;
   chapterSlug: string;
   /** Resolves an image block's storage key to a public URL (the app knows the Supabase project URL). */
   imageUrlFor?: ((key: string) => string) | undefined;
+  /** Resolves a cover storage key to a public URL (similar stories after the last chapter). */
+  coverUrlFor?: ((key: string) => string) | undefined;
 }) {
   const chapter = useChapter(storyId, chapterSlug);
   const story = useStory(storyId);
@@ -85,6 +94,7 @@ export function ReaderScreen({
   const data = chapter.data;
   const storyData = story.data ?? null;
   const chapterItems = chapters.data ?? [];
+  const finished = storyData !== null && isStoryFinished(storyData.status, chapterItems, data.slug);
   const quoteText = storyData
     ? (quote: string, blockId: string) =>
         readerText.quote.text(
@@ -117,8 +127,16 @@ export function ReaderScreen({
             )}
             <div className="flex shrink-0 items-center gap-1">
               <TimeLeft wordCount={data.wordCount} textEnd={textEnd} />
+              <ReadAloudButton key={data.id} blocks={data.blocks} />
               <ReaderSettingsSheet />
-              {storyData ? <TocSheet story={storyData} chapters={chapterItems} currentSlug={data.slug} /> : null}
+              {storyData ? (
+                <TocSheet
+                  story={storyData}
+                  chapters={chapterItems}
+                  currentSlug={data.slug}
+                  sections={chapterSections(data.blocks)}
+                />
+              ) : null}
             </div>
           </div>
           <ReadingProgress label={readerText.progress} />
@@ -154,6 +172,9 @@ export function ReaderScreen({
           <p className="pt-4 text-center text-sm text-muted-foreground" aria-hidden>
             — {readerText.endOfChapter} —
           </p>
+          {finished && storyData ? (
+            <StoryFinished key={data.id} storyId={storyData.id} title={storyData.title} />
+          ) : null}
           <VoteButton chapterId={data.id} />
           <div className="flex justify-center">
             <ReportButton kind="chapter" targetId={data.id} />
@@ -167,6 +188,7 @@ export function ReaderScreen({
             <CommentThread chapterId={data.id} />
           </section>
           {storyData ? <ChapterNav story={storyData} chapters={chapterItems} chapterSlug={data.slug} /> : null}
+          {finished && storyData ? <SimilarStories storyId={storyData.id} coverUrlFor={coverUrlFor} /> : null}
         </article>
         <BackToTopButton label={readerText.backToTop} focusTargetRef={title} />
       </div>

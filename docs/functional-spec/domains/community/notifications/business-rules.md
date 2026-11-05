@@ -250,3 +250,15 @@ Rule summary
 | Related screens | — |
 | Evidence | `docs/WBS.md:221`, `docs/WBS.md:225`, `supabase/migrations/20261104001900_user_settings.sql:12-13` |
 | Status | Documented |
+
+### BR-NOTI-018 — "Mentioned you in a comment" (batch 4 · community4)
+| Field | Value |
+| --- | --- |
+| Description | The worker turns `comment.mentioned` into one `comment_mentioned` notification per mentioned person (actor = the comment author; payload like `comment_replied`: story/chapter titles and slugs, block, parent, 140-character excerpt). It links to the thread like a reply and is listed under the "Replies" filter. |
+| Preconditions | BR-CMT-024 found at least one name. |
+| Conditions | Recipient exists, is active and not deleted, is not the author, and can read the chapter (published chapter of a public/unlisted non-draft story, or the recipient owns/collaborates on the story). The author of the parent comment of a reply is skipped: they already get `comment_replied` for that reply. |
+| Expected behavior | Idempotent (dedupe key `comment_mentioned:<comment>` per recipient). Follows the existing "Replies and mentions" switch (`notify_comment_replied`, now relabelled): `notification_enabled` maps `comment_mentioned` to it, so the settings trigger drops it when off. Clients never write notifications. |
+| Exceptions | Nothing is sent when the comment is gone/hidden/deleted or the chapter unpublished by the time the worker runs. There is no user-block feature in the schema yet; the handler is the one place to add it. |
+| Related screens | SCR-NOTI-01, SCR-SET-01 |
+| Evidence | `supabase/migrations/20261106010100_comment_mentions.sql`, `supabase/tests/360_comment_mentions.test.sql`, `packages/features/src/notifications/model/notification.ts`, `packages/features/src/reader/highlights.test.tsx` ("mention notifications") |
+| Status | Verified (SQL + unit tests; not run on a real Supabase project) |

@@ -5,7 +5,19 @@ import { en } from "./strings.en.ts";
 const vi = {
   backToStory: "Về trang truyện",
   chapterLabel: (number: number) => `Chương ${number}`,
-  toc: { open: "Mục lục", title: "Mục lục", description: "Chọn chương để đọc." },
+  toc: {
+    open: "Mục lục",
+    title: "Mục lục",
+    description: "Chọn chương để đọc.",
+    inChapter: "Trong chương này",
+    scrub: "Nhảy đến chương",
+    scrubMark: (number: string) => `Từ chương ${number}`,
+  },
+  readAloud: { play: "Đọc to chương này", pause: "Tạm dừng đọc to" },
+  finished: {
+    title: "Bạn đã đọc hết truyện!",
+    description: (title: string) => `${title} đã hoàn thành. Cảm ơn bạn đã đọc đến chương cuối cùng.`,
+  },
   nav: { label: "Chuyển chương", previous: "Chương trước", next: "Chương sau", none: "Hết" },
   progress: "Tiến độ đọc chương",
   timeLeft: {
@@ -28,6 +40,17 @@ const vi = {
     comment: "Bình luận đoạn này",
     text: (quote: string, source: string, url: string) => `“${quote}”\n— ${source}\n${url}`,
     source: (story: string, chapter: string) => `${story}, ${chapter}`,
+  },
+  highlight: {
+    group: "Đánh dấu riêng của bạn",
+    pens: { underline: "Gạch chân", circle: "Khoanh tròn", box: "Đóng khung", strike: "Gạch ngang" },
+    remove: "Bỏ đánh dấu",
+    added: "Đã đánh dấu. Chỉ bạn nhìn thấy.",
+    removed: "Đã bỏ đánh dấu.",
+    failed: "Không lưu được đánh dấu. Thử lại.",
+    limit: "Chương này đã có quá nhiều đánh dấu của bạn.",
+    stale: (count: number) => `${count} đánh dấu cũ không còn khớp vì tác giả đã sửa đoạn văn.`,
+    clearStale: "Xóa đánh dấu cũ",
   },
   settings: {
     open: "Hiển thị",

@@ -4,5 +4,5 @@ export { SearchBox } from "./components/search-box.tsx";
 export { searchText } from "./strings.ts";
 export { searchHref, tabFromParam, normalizeTerm, type SearchTab } from "./model/search.ts";
 export { searchKeys } from "./keys.ts";
-export { useDebouncedValue, useSearchAuthors } from "./hooks/use-search.ts";
+export { useDebouncedValue, useSearchAuthors, useSuggestions } from "./hooks/use-search.ts";
 export { SUGGESTION_COUNT, SUGGESTION_DELAY_MS, isSearchable, type AuthorHit } from "./model/search.ts";

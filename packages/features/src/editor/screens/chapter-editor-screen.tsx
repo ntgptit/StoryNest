@@ -14,6 +14,7 @@ import { AutosaveIcon, type AutosaveIconState } from "@storynest/ui/widgets/auto
 import { DropZone } from "@storynest/ui/widgets/drop-zone";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { InlineAlert } from "@storynest/ui/widgets/inline-alert";
 import { SplitPane, useMinWidth } from "@storynest/ui/widgets/split-pane";
 import { SpotlightTour, type TourStep } from "@storynest/ui/widgets/spotlight-tour";
 import { useDataClientGetter } from "../../_shared/data.tsx";
@@ -25,6 +26,8 @@ import { DraftMergeView } from "../components/draft-merge-view.tsx";
 import { EditorToolbar } from "../components/editor-toolbar.tsx";
 import { FindReplacePanel } from "../components/find-replace-panel.tsx";
 import { PublishPanel } from "../components/publish-panel.tsx";
+import { EditLockPanel } from "../components/edit-lock-panel.tsx";
+import { ReviewPanel } from "../components/review-panel.tsx";
 import { useChapterDraft, useSaveChapterDraft } from "../hooks/use-chapter-draft.ts";
 import { useUploadChapterImage } from "../hooks/use-chapter-image.ts";
 import { createAutosaver, type Autosaver, type AutosaveStatus, type SaveOutcome } from "../model/autosaver.ts";
@@ -73,6 +76,7 @@ export function ChapterEditorScreen({
   onEditor,
   locale = currentLocale(),
   firstRunTour = false,
+  teamTools = false,
 }: {
   storyId: string;
   chapterId: string;
@@ -81,6 +85,11 @@ export function ChapterEditorScreen({
   locale?: string;
   /** Offer the short guided tour on this device's first visit (the app turns it on; off in embeds and tests). */
   firstRunTour?: boolean;
+  /**
+   * Show the team tools: who is editing (advisory edit lock with hand-over, Lucian 196) and the draft sign-off
+   * (Lucian 180). The app turns them on; embeds and tests leave them off.
+   */
+  teamTools?: boolean;
 }) {
   const draft = useChapterDraft(chapterId);
   // Bumped to throw the editor away and start again from the saved draft (after a conflict).
@@ -98,7 +107,7 @@ export function ChapterEditorScreen({
         title={t.error.title}
         description={t.error.description}
         retryLabel={t.error.retry}
-        onRetry={() => void draft.refetch()}
+        onRetry={() => draft.refetch()}
       />
     );
   }
@@ -114,6 +123,7 @@ export function ChapterEditorScreen({
       locale={locale}
       onEditor={onEditor}
       firstRunTour={firstRunTour}
+      teamTools={teamTools}
       startMerge={mergeOnOpen}
       onReload={async (options) => {
         await draft.refetch();
@@ -132,6 +142,7 @@ function DraftEditor({
   onReload,
   startMerge = false,
   firstRunTour,
+  teamTools,
 }: {
   draft: ChapterDraft;
   storyId: string;
@@ -141,6 +152,7 @@ function DraftEditor({
   onReload: (options?: { merge?: boolean }) => Promise<void>;
   startMerge?: boolean;
   firstRunTour: boolean;
+  teamTools: boolean;
 }) {
   const toast = useAppToast();
   const save = useSaveChapterDraft(draft.chapterId);
@@ -440,53 +452,57 @@ function DraftEditor({
 
   const column = (
     <div className="flex min-w-0 flex-col gap-4">
+      {teamTools ? <EditLockPanel chapterId={draft.chapterId} /> : null}
       {backup && merging ? (
         <DraftMergeView mine={backup} server={draft} onApply={applyMergedVersion} onCancel={() => setMerging(false)} />
       ) : backup ? (
-        <div role="status" className="flex flex-col gap-2 rounded-md border bg-card p-3 text-sm">
-          <p className="font-medium">{t.backup.title}</p>
-          <p className="text-muted-foreground">
-            {t.backup.description(formatRelativeTime(backup.savedAt, locale))}
-            {backup.baseRevision < draft.revision ? ` ${t.backup.olderBase}` : ""}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" onClick={restoreBackup} disabled={!editor}>
-              {t.backup.restore}
-            </Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => setMerging(true)} disabled={!editor}>
-              {t.merge.open}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                clearBackup(draft.chapterId);
-                setBackup(null);
-              }}
-            >
-              {t.backup.discard}
-            </Button>
-          </div>
-        </div>
+        <InlineAlert
+          title={t.backup.title}
+          actions={
+            <>
+              <Button type="button" size="sm" onClick={restoreBackup} disabled={!editor}>
+                {t.backup.restore}
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => setMerging(true)} disabled={!editor}>
+                {t.merge.open}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  clearBackup(draft.chapterId);
+                  setBackup(null);
+                }}
+              >
+                {t.backup.discard}
+              </Button>
+            </>
+          }
+        >
+          {t.backup.description(formatRelativeTime(backup.savedAt, locale))}
+          {backup.baseRevision < draft.revision ? ` ${t.backup.olderBase}` : ""}
+        </InlineAlert>
       ) : null}
 
       {conflict ? (
-        <div
-          role="alert"
-          className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm"
+        // Not dismissable: the draft cannot be saved again until it is reloaded or merged.
+        <InlineAlert
+          tone="danger"
+          title={t.conflict.title}
+          actions={
+            <>
+              <Button type="button" size="sm" variant="outline" onClick={() => void onReload()}>
+                {t.conflict.reload}
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => void onReload({ merge: true })}>
+                {t.merge.conflictOpen}
+              </Button>
+            </>
+          }
         >
-          <p className="font-medium text-destructive">{t.conflict.title}</p>
-          <p className="text-muted-foreground">{t.conflict.description}</p>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" variant="outline" onClick={() => void onReload()}>
-              {t.conflict.reload}
-            </Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => void onReload({ merge: true })}>
-              {t.merge.conflictOpen}
-            </Button>
-          </div>
-        </div>
+          {t.conflict.description}
+        </InlineAlert>
       ) : null}
 
       <div className="flex flex-col gap-1.5">
@@ -538,6 +554,10 @@ function DraftEditor({
           draft={{ title: checkTitle(title), body: bodyCheck }}
         />
       </div>
+
+      {teamTools ? (
+        <ReviewPanel chapterId={draft.chapterId} ensureSaved={ensureSaved} currentRevision={revision.current} />
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p

@@ -16,14 +16,18 @@ import { FormErrorSummary } from "@storynest/ui/components/form-error-summary";
 import { Input } from "@storynest/ui/components/input";
 import { PasswordInput } from "@storynest/ui/components/password-input";
 import { useState } from "react";
+import { AvailabilityHint } from "@storynest/ui/widgets/availability-hint";
 import { EnvelopeSent } from "@storynest/ui/widgets/envelope-sent";
 import { useForm } from "react-hook-form";
 import { AuthCard, FormError } from "../components/auth-card.tsx";
 import { EmailTypoFix } from "../components/email-typo-fix.tsx";
 import { PasswordStrength } from "../components/password-strength.tsx";
 import { TextLink } from "../components/auth-links.tsx";
+import { LockoutNotice, useLockout } from "../components/lockout.tsx";
+import { useUsernameAvailability } from "../../profile/index.ts";
 import { useSignUp } from "../hooks/use-auth-actions.ts";
 import { withNext } from "../model/auth-urls.ts";
+import { markFirstRunDue } from "../model/first-run.ts";
 import { translateErrors } from "../../_shared/form-resolver.ts";
 import { authErrorMessage, validationMessage } from "../model/messages.ts";
 import { authText } from "../strings.ts";
@@ -46,11 +50,22 @@ export function SignUpScreen({
   const signUp = useSignUp(next);
   const [confirmationSentTo, setConfirmationSentTo] = useState<string | null>(null);
 
-  const submit = form.handleSubmit((values: SignUp) =>
+  const lockout = useLockout();
+  const username = form.watch("username");
+  const availability = useUsernameAvailability(typeof username === "string" ? username : "");
+  const submit = form.handleSubmit((values: SignUp) => {
+    if (lockout.locked) return;
+    lockout.clear();
     signUp.mutate(values, {
-      onSuccess: (result) => (result.needsEmailConfirmation ? setConfirmationSentTo(values.email) : onSignedUp()),
-    }),
-  );
+      onSuccess: (result) => {
+        // The app frame shows a short intro the first time this account is signed in here (Lucian 383).
+        markFirstRunDue();
+        if (result.needsEmailConfirmation) setConfirmationSentTo(values.email);
+        else onSignedUp();
+      },
+      onError: lockout.start,
+    });
+  });
 
   if (confirmationSentTo) {
     // No resend here: the app has no "resend confirmation" call. The hint and "use a different email" cover a typo.
@@ -83,7 +98,11 @@ export function SignUpScreen({
     >
       <Form {...form}>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={signUp.isPending}>
-          <FormError message={signUp.error ? authErrorMessage(signUp.error) : null} />
+          {lockout.total !== null ? (
+            <LockoutNotice lockout={lockout} />
+          ) : (
+            <FormError message={signUp.error ? authErrorMessage(signUp.error) : null} />
+          )}
           <FormErrorSummary title={t.errorSummary} />
           <FormField
             control={form.control}
@@ -149,6 +168,7 @@ export function SignUpScreen({
                   />
                 </FormControl>
                 <FormDescription>{t.usernameHint}</FormDescription>
+                <AvailabilityHint status={availability} labels={t.usernameAvailability} />
                 <FormMessage />
               </FormItem>
             )}
@@ -166,7 +186,7 @@ export function SignUpScreen({
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={signUp.isPending}>
+          <Button type="submit" disabled={signUp.isPending || lockout.locked}>
             {signUp.isPending ? t.submitting : t.submit}
           </Button>
         </form>

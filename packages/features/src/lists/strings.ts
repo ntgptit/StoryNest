@@ -65,8 +65,13 @@ const vi = {
     moveDown: "Chuyển xuống",
     remove: "Bỏ khỏi danh sách",
     removed: "Đã bỏ khỏi danh sách.",
+    undo: "Hoàn tác",
+    restored: "Đã đưa truyện trở lại danh sách.",
     cancel: "Hủy",
     backToLibrary: "Về thư viện",
+    rename: (name: string) => `Đổi tên danh sách: ${name}`,
+    renameSave: "Lưu tên",
+    renamed: "Đã đổi tên danh sách.",
   },
   share: {
     access: "Ai mở được liên kết",

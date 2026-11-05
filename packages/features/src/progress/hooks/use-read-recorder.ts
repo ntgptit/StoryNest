@@ -5,6 +5,7 @@ import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { recordChapterRead } from "../api/progress.api.ts";
 import { getAnonymousReaderId } from "../model/anonymous-reader.ts";
+import { currentReadSource } from "../model/read-source.ts";
 import { READ_DWELL_MS } from "../model/progress.ts";
 
 /** Chapters already reported in this page session, per reader: SPA back/forward does not call the server again. */
@@ -31,7 +32,9 @@ export function useReadRecorder(chapterId: string) {
       timer = undefined;
       reported.add(key);
       const anonymousId = readerKey === "guest" ? getAnonymousReaderId() : null;
-      void recordChapterRead(getClient(), chapterId, anonymousId).catch(() => reported.delete(key));
+      void recordChapterRead(getClient(), chapterId, anonymousId, currentReadSource()).catch(() =>
+        reported.delete(key),
+      );
     };
     const sync = () => {
       if (timer !== undefined) clearTimeout(timer);

@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatCount, newId } from "@storynest/utils";
 import { DB_LIMITS } from "@storynest/validation";
 import { Button } from "@storynest/ui/components/button";
-import { Textarea } from "@storynest/ui/components/textarea";
+import { MentionTextarea } from "@storynest/ui/widgets/mention-textarea";
+import { SubmitButton } from "@storynest/ui/widgets/submit-button";
+import { useMentionCandidates } from "../hooks/use-comments.ts";
 import { bodyProblemMessage, checkBody } from "../model/comment.ts";
+import { MENTION_DEBOUNCE_MS } from "../model/mention.ts";
 import { commentText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
@@ -16,13 +19,17 @@ const SHOW_COUNTER_FROM = DB_LIMITS.commentBody * 0.8;
 /**
  * Text box for a comment, a reply or an edit. `onSubmit` gets the text and an id that stays the same for as long as
  * this text is being sent, so a retry after a lost answer cannot post twice; after a success the field is emptied and
- * the next text gets a new id. It rejects with the message to show.
+ * the next text gets a new id. It rejects with the message to show. The send button shows a spinner while sending
+ * and a check with `doneLabel` once the comment is in (SubmitButton); the check comes after the success, so it
+ * never holds the new comment back. Typing @ offers people to mention (Lucian 268); the server tells them once the
+ * comment is posted.
  */
 export function CommentComposer({
   label,
   initial = "",
   submitLabel = t.submit,
   submittingLabel = t.submitting,
+  doneLabel = t.done,
   autoFocus = false,
   onSubmit,
   onCancel,
@@ -31,6 +38,7 @@ export function CommentComposer({
   initial?: string;
   submitLabel?: string;
   submittingLabel?: string;
+  doneLabel?: string;
   autoFocus?: boolean;
   onSubmit: (body: string, id: string) => Promise<void>;
   onCancel?: (() => void) | undefined;
@@ -38,9 +46,21 @@ export function CommentComposer({
   const [text, setText] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(0);
   const id = useRef(newId());
   const inputId = useRef(`comment-${newId()}`).current;
   const hintId = `${inputId}-hint`;
+  const [typed, setTyped] = useState<string | null>(null);
+  const [query, setQuery] = useState<string | null>(null);
+  useEffect(() => {
+    if (typed === null) {
+      setQuery(null);
+      return;
+    }
+    const timer = setTimeout(() => setQuery(typed), MENTION_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [typed]);
+  const people = useMentionCandidates(query);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -56,6 +76,7 @@ export function CommentComposer({
       await onSubmit(text.trim(), id.current);
       setText(initial);
       id.current = newId();
+      setSent((count) => count + 1);
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : commentText.errors.generic);
     } finally {
@@ -68,15 +89,20 @@ export function CommentComposer({
       <label htmlFor={inputId} className="sr-only">
         {label}
       </label>
-      <Textarea
+      <MentionTextarea
         id={inputId}
         value={text}
+        onValueChange={setText}
+        candidates={typed ? (people.data ?? []) : []}
+        onQueryChange={setTyped}
+        listLabel={t.mentions.list}
+        emptyLabel={typed ? (people.isFetching ? commentText.loadingMore : t.mentions.empty) : t.mentions.typeName}
+        notifyLabel={t.mentions.notify}
         autoFocus={autoFocus}
         placeholder={t.placeholder}
         aria-invalid={error !== null}
         aria-describedby={hintId}
         disabled={sending}
-        onChange={(event) => setText(event.target.value)}
       />
       <div className="flex items-center justify-between gap-2">
         <p
@@ -95,9 +121,14 @@ export function CommentComposer({
               {t.cancel}
             </Button>
           ) : null}
-          <Button type="submit" size="sm" disabled={sending}>
-            {sending ? submittingLabel : submitLabel}
-          </Button>
+          <SubmitButton
+            size="sm"
+            label={submitLabel}
+            busyLabel={submittingLabel}
+            doneLabel={doneLabel}
+            busy={sending}
+            succeeded={sent}
+          />
         </div>
       </div>
     </form>

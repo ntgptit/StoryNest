@@ -23,6 +23,9 @@ import { usePopularTags, useStoryCount } from "../hooks/use-latest-stories.ts";
 import { rootCategories, type Category } from "../model/categories.ts";
 import { homeHref } from "../model/home-href.ts";
 import { discoveryText } from "../strings.ts";
+import type { WordRange } from "../model/story-length.ts";
+import { currentLocale } from "../../_shared/i18n.ts";
+import { LengthHistogram, lengthLabel } from "./length-filter.tsx";
 
 const t = discoveryText.filters;
 
@@ -31,7 +34,7 @@ const CHIP =
 const IDLE = "bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground";
 const ACTIVE = "border-primary bg-primary text-primary-foreground";
 
-type Draft = { categorySlug: string | undefined; tagSlug: string | undefined };
+type Draft = { categorySlug: string | undefined; tagSlug: string | undefined; words: WordRange | undefined };
 
 /**
  * The home feed's filters on a phone: a "Filters" button (with how many are on) and the active filters as chips that
@@ -43,17 +46,20 @@ export function DiscoverFilterBar({
   categories,
   categorySlug,
   tagSlug,
+  words,
 }: {
   categories: readonly Category[] | undefined;
   categorySlug?: string | undefined;
   tagSlug?: string | undefined;
+  words?: WordRange | undefined;
 }) {
   const navigation = useNavigation();
   const popular = usePopularTags();
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<Draft>({ categorySlug, tagSlug });
+  const [draft, setDraft] = useState<Draft>({ categorySlug, tagSlug, words });
   const categoryHeading = useId();
   const tagHeading = useId();
+  const lengthHeading = useId();
 
   const roots = categories ? rootCategories(categories) : [];
   const categoryName = (slug: string) => categories?.find((c) => c.slug === slug)?.name ?? slug;
@@ -66,10 +72,10 @@ export function DiscoverFilterBar({
       : tags;
 
   const count = useStoryCount(draft, categories, open);
-  const activeCount = Number(Boolean(categorySlug)) + Number(Boolean(tagSlug));
+  const activeCount = Number(Boolean(categorySlug)) + Number(Boolean(tagSlug)) + Number(Boolean(words));
 
   const onOpenChange = (next: boolean) => {
-    if (next) setDraft({ categorySlug, tagSlug }); // start from what the feed shows
+    if (next) setDraft({ categorySlug, tagSlug, words }); // start from what the feed shows
     setOpen(next);
   };
   const apply = () => {
@@ -150,14 +156,27 @@ export function DiscoverFilterBar({
                 </ul>
               </section>
             ) : null}
+            <section aria-labelledby={lengthHeading} className="flex flex-col gap-2">
+              <h3 id={lengthHeading} className="text-sm font-medium">
+                {discoveryText.length.title}
+              </h3>
+              <LengthHistogram
+                categories={categories}
+                categorySlug={draft.categorySlug}
+                tagSlug={draft.tagSlug}
+                value={draft.words}
+                onChange={(next) => setDraft((d) => ({ ...d, words: next }))}
+                enabled={open}
+              />
+            </section>
           </div>
           <SheetFooter className="flex-row gap-2 border-t">
             <Button
               type="button"
               variant="ghost"
               size="lg"
-              disabled={!draft.categorySlug && !draft.tagSlug}
-              onClick={() => setDraft({ categorySlug: undefined, tagSlug: undefined })}
+              disabled={!draft.categorySlug && !draft.tagSlug && !draft.words}
+              onClick={() => setDraft({ categorySlug: undefined, tagSlug: undefined, words: undefined })}
             >
               {t.reset}
             </Button>
@@ -176,7 +195,7 @@ export function DiscoverFilterBar({
 
       {categorySlug ? (
         <AppLink
-          href={homeHref({ tagSlug })}
+          href={homeHref({ tagSlug, words })}
           aria-label={t.removeCategory(categoryName(categorySlug))}
           className={cn(CHIP, ACTIVE, "gap-1 pr-2")}
         >
@@ -186,11 +205,21 @@ export function DiscoverFilterBar({
       ) : null}
       {tagSlug ? (
         <AppLink
-          href={homeHref({ categorySlug })}
+          href={homeHref({ categorySlug, words })}
           aria-label={t.removeTag(tagName(tagSlug))}
           className={cn(CHIP, ACTIVE, "gap-1 pr-2")}
         >
           #{tagName(tagSlug)}
+          <X aria-hidden className="size-3.5" />
+        </AppLink>
+      ) : null}
+      {words ? (
+        <AppLink
+          href={homeHref({ categorySlug, tagSlug })}
+          aria-label={discoveryText.length.clear}
+          className={cn(CHIP, ACTIVE, "gap-1 pr-2")}
+        >
+          {lengthLabel(words, currentLocale())}
           <X aria-hidden className="size-3.5" />
         </AppLink>
       ) : null}

@@ -6,7 +6,17 @@ import { useDataClientGetter } from "../../_shared/data.tsx";
 import { useShowMature } from "../../adult-content/index.ts";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
 import type { StorySummary } from "../../discovery/index.ts";
-import { searchAuthors, searchStories, searchTags, type OffsetPage } from "../api/search.api.ts";
+import { useAuth } from "../../_shared/auth.tsx";
+import { getAnonymousReaderId } from "../../progress/index.ts";
+import {
+  getTrendingSearches,
+  logSearch,
+  searchAuthors,
+  searchStories,
+  searchTags,
+  type OffsetPage,
+} from "../api/search.api.ts";
+import type { TrendingSearch } from "../model/trending.ts";
 import { searchKeys } from "../keys.ts";
 import { SUGGESTION_COUNT, isSearchable, type AuthorHit, type TagHit } from "../model/search.ts";
 
@@ -77,4 +87,37 @@ export function useSuggestions(term: string) {
     staleTime: SUGGESTION_STALE_MS,
     placeholderData: keepPreviousData,
   });
+}
+
+const TRENDING_STALE_MS = 5 * 60_000;
+
+/** The public trending searches. Failing quietly is fine: the search page works without them. */
+export function useTrendingSearches() {
+  const getClient = useDataClientGetter();
+  return useQuery<TrendingSearch[], AppError>({
+    queryKey: searchKeys.trending(),
+    queryFn: () => getTrendingSearches(getClient()).catch((e: unknown) => Promise.reject(toAppError(e))),
+    staleTime: TRENDING_STALE_MS,
+  });
+}
+
+/** Terms already counted in this page session, per searcher: going back and forth does not call the server again. */
+const logged = new Set<string>();
+
+/**
+ * Counts a submitted search toward the trend, once per term per page session, after the session is known (so a
+ * member is not counted as a guest first). Best effort: errors (a rate limit included) are ignored.
+ */
+export function useLogSearch(term: string) {
+  const auth = useAuth();
+  const getClient = useDataClientGetter();
+  const searcher = auth.status === "authenticated" ? auth.user.id : auth.status === "unauthenticated" ? "guest" : null;
+  useEffect(() => {
+    if (searcher === null || !isSearchable(term)) return;
+    const key = `${searcher}:${term}`;
+    if (logged.has(key)) return;
+    logged.add(key);
+    const anonymousId = searcher === "guest" ? getAnonymousReaderId() : null;
+    void logSearch(getClient(), term, anonymousId).catch(() => undefined);
+  }, [searcher, term, getClient]);
 }

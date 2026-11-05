@@ -11,7 +11,7 @@
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/page.tsx` (view `apps/web/src/app/(main)/studio/story-form-view.tsx`) |
 | Screen component | `packages/features/src/studio/screens/story-form-screen.tsx` (`EditStory` → `StoryFields mode="edit"`); `components/cover-editor.tsx`, `components/tag-editor.tsx`; `ui/widgets/confirm-dialog.tsx` |
 | Roles | Owner (all incl. delete/restore), co-author (all but delete/restore), editor (read-only notice) |
-| Entry points | SCR-STM-01 row "Edit"; redirect after SCR-STM-02; "Back to story details" on SCR-CHM-01 and SCR-TEAM-01 |
+| Entry points | SCR-STM-01 row "Edit"; redirect after SCR-STM-02; the story crumb on SCR-CHM-01 and SCR-TEAM-01 |
 | Workflows | WF-STM-03, WF-STM-04, WF-STM-05, WF-STM-06, WF-STM-07 |
 | Rules | BR-STM-007..022, BR-STM-024, BR-STM-025 |
 
@@ -23,12 +23,13 @@
 | SCR-STM-03-C03 | Notice "This story is deleted." (when deleted) | `story-form-screen.tsx:108` |
 | SCR-STM-03-C04 | Editor notice "You're an editor of this story, so you can't change its details." (replaces the form) | `story-form-screen.tsx:109-111` |
 | SCR-STM-03-C05 | Cover block: label "Cover", preview (2:3), "Add a cover"/"Change cover" ("Uploading…"), "Remove cover", hidden file input "Choose a cover", hint, alert; after a valid pick the crop dialog "Adjust the cover" (2:3 frame, "Zoom" slider, "Use photo"/"Cancel") | `components/cover-editor.tsx`, `packages/ui/src/widgets/image-crop-dialog.tsx` |
-| SCR-STM-03-C06..C13 | Same fields as SCR-STM-02-C04..C11 (title, slug, synopsis, category, tags, language, status, visibility, 18+) pre-filled | `story-form-screen.tsx:240-424` |
-| SCR-STM-03-C14 | "Save changes" (disabled until something changed; "Saving…"), "Cancel" → `/studio` | `story-form-screen.tsx:426-432` |
-| SCR-STM-03-C15 | Owner only: "Delete story" (destructive outline) or "Restore story" when deleted | `story-form-screen.tsx:433-462` |
-| SCR-STM-03-C16 | Confirm dialog "Delete this story?" | `story-form-screen.tsx:466-479` |
-| SCR-STM-03-C17 | Skeleton; error state (retry); empty state "Story not found" | `story-form-screen.tsx:85-98` |
+| SCR-STM-03-C06..C13 | Same fields as SCR-STM-02-C04..C11 (title, slug, synopsis, category, tags, language, status, visibility, 18+) pre-filled | `story-form-screen.tsx:212-395` |
+| SCR-STM-03-C14 | "Save changes" (disabled until something changed; spinner + "Saving…"; after a save a check draws itself next to "Saved" for 2 s, announced politely; Lucian 001 without the glass), "Cancel" → `/studio` | `story-form-screen.tsx`, `packages/ui/src/widgets/submit-button.tsx` |
+| SCR-STM-03-C15 | Owner only: "Delete story" (destructive outline) or "Restore story" when deleted | `story-form-screen.tsx:404-433` |
+| SCR-STM-03-C16 | Confirm dialog "Delete this story?" | `story-form-screen.tsx:437-450` |
+| SCR-STM-03-C17 | Skeleton; error state (retry); empty state "Story not found" | `story-form-screen.tsx:76-89` |
 | SCR-STM-03-C18 | Cover drop zone (Lucian 032) | As SCR-PRF-02-C14 for the cover row: same checks, crop dialog (2:3) and errors as the picker | `components/cover-editor.tsx`, `packages/ui/src/widgets/drop-zone.tsx` |
+| SCR-STM-03-C19 | Upload veil and size bars (Lucian 082, 301) | As SCR-PRF-02-C15 for the cover preview: veil with a turning ring while uploading, a hop when done, then original vs uploaded size with the saving | `components/cover-editor.tsx`, `_shared/use-image-sizes.ts` |
 | SCR-STM-03-C19 | Unsaved changes bar (Lucian 250): rises from the bottom while the form is dirty or the tags changed, "N unsaved changes", "Discard" (resets fields and tags) / "Save" (the same submit as C14). While dirty, closing the tab asks the browser's leave question and a click on an in-app link outside the form is stopped: the bar shakes, turns red, says "Save or discard your changes before leaving" and focuses Save. The form's own Cancel link is not stopped. Not shown when creating | `story-form-screen.tsx`, `packages/ui/src/widgets/unsaved-changes-bar.tsx` |
 
 ## C. User actions & system responses
@@ -125,3 +126,6 @@ F-STM-01, F-STM-02, F-STM-03, F-STM-05, F-STM-06, U-STM-01, U-STM-02, U-STM-03, 
 
 ## G. Open questions
 Q-TEAM-02, Q-STM-01.
+
+## Batch 4 · authoring4
+Update schedule (batch 4, Lucian 109): WeekdayPainter field "Update schedule" above the 18+ switch (BR-STM-028). Cover upload also stores a BlurHash and the cover preview blurs up (BR-STM-029). Rollback: top of `20261106040100_story_update_days.sql` and `20261106040500_cover_blurhash.sql`.

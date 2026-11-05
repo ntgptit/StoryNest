@@ -1,3 +1,4 @@
+import { STORY_STATUS } from "@storynest/validation";
 import type { ChapterListItem } from "../../story/index.ts";
 
 /** One row of chapter_version_blocks as the reader query returns it. */
@@ -128,6 +129,16 @@ export function adjacentChapters(chapters: readonly ChapterListItem[], chapterSl
   const index = chapters.findIndex((c) => c.slug === chapterSlug);
   if (index === -1) return { previous: null, next: null };
   return { previous: chapters[index - 1] ?? null, next: chapters[index + 1] ?? null };
+}
+
+/**
+ * The reader reached the end of the whole story: the last published chapter of a story its author marked completed
+ * (the latest chapter of an ongoing story is not an end).
+ */
+export function isStoryFinished(status: string, chapters: readonly ChapterListItem[], chapterSlug: string): boolean {
+  return (
+    status === STORY_STATUS.COMPLETED && chapters.length > 0 && chapters[chapters.length - 1]?.slug === chapterSlug
+  );
 }
 
 /** Stable DOM id of a block: the anchor for deep links and, later, paragraph comments (WBS M2). */

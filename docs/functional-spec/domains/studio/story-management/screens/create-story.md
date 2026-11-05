@@ -18,15 +18,15 @@
 ## B. Components
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
-| SCR-STM-02-C01 | Header "New story" / "Fill in the basics. You can change them any time, then add chapters later." | `story-form-screen.tsx:75-76`, `strings.en.ts:166-167` |
-| SCR-STM-02-C02 | Error banner (`role="alert"`) for non-field save errors | `story-form-screen.tsx:223-230` |
-| SCR-STM-02-C03 | Cover hint "Save the story first, then you can add a cover." | `story-form-screen.tsx:236-238` |
-| SCR-STM-02-C04 | "Story title" input | `story-form-screen.tsx:240-261` |
-| SCR-STM-02-C05 | "URL slug" input + hint "Lowercase letters, numbers and hyphens. Generated from the story title; you can edit it." | `story-form-screen.tsx:263-284` |
-| SCR-STM-02-C06 | "Synopsis" textarea (6 rows) + hint "Up to 5000 characters." | `story-form-screen.tsx:286-299` |
-| SCR-STM-02-C07 | "Category" select ("Not selected" + roots and "Parent › Child") | `story-form-screen.tsx:303-330`, `model/story-form.ts:69-81` |
-| SCR-STM-02-C08 | Tag editor: label "Tags", counter "n/10 tags", chips with remove buttons, input (placeholder "E.g. Romance, Adventure"), hint, alert, popular suggestions | `components/tag-editor.tsx:28-152` |
-| SCR-STM-02-C09 | "Language" select (Tiếng Việt / English) and "Status" select | `story-form-screen.tsx:334-383` |
+| SCR-STM-02-C01 | Header "New story" / "Fill in the basics. You can change them any time, then add chapters later." | `story-form-screen.tsx:66-67`, `strings.en.ts:166-167` |
+| SCR-STM-02-C02 | Error banner (`role="alert"`) for non-field save errors | `story-form-screen.tsx:197-204` |
+| SCR-STM-02-C03 | Cover hint "Save the story first, then you can add a cover." | `story-form-screen.tsx:208-210` |
+| SCR-STM-02-C04 | "Story title" input | `story-form-screen.tsx:212-233` |
+| SCR-STM-02-C05 | "URL slug" input + hint "Lowercase letters, numbers and hyphens. Generated from the story title; you can edit it." | `story-form-screen.tsx:235-256` |
+| SCR-STM-02-C06 | "Synopsis" textarea (6 rows) + hint "Up to 5000 characters." | `story-form-screen.tsx:258-271` |
+| SCR-STM-02-C07 | "Category" select ("Not selected" + roots and "Parent › Child") | `story-form-screen.tsx:273-300`, `model/story-form.ts:69-81` |
+| SCR-STM-02-C08 | Tag editor: label "Tags", counter "n/10 tags", chips with remove buttons, input (placeholder "E.g. Romance, Adventure"), hint, alert, popular suggestions. A chip just added pops in; a list that goes past the cap (the existing addTags "tooMany" rule) turns the counter red with a short shake (Lucian 019, motion-safe; nothing moves on load) | `components/tag-editor.tsx` |
+| SCR-STM-02-C09 | "Language" select (Tiếng Việt / English) and "Status" select | `story-form-screen.tsx:304-353` |
 | SCR-STM-02-C06b | Search / share preview (Lucian 249): tabs "Search result" / "Link share"; title, address `/story/{id}/{slug}` on the share origin, synopsis cut exactly as the story page's meta description (`storyMetaDescription`, 160 chars), cover once there is one; length bar "Synopsis: n/160 characters shown" (warning colour when it will be cut); note "This story will not show up in search engines…" when `isIndexable` is false (not public, or 18+) | `story-form-screen.tsx` (StoryLinkPreview), `packages/ui/src/widgets/search-result-preview.tsx` |
 | SCR-STM-02-C10 | "Visibility" radio cards (Lucian 015): Private / Link only / Public with the Lock / Link2 / Globe icons and the existing per-value hints as descriptions; real radio group (arrow keys move and choose), the frame slides to the chosen card | `story-form-screen.tsx`, `packages/ui/src/widgets/radio-cards.tsx` |
 | SCR-STM-02-C11 | "Mature content (18+)" switch + hint | `story-form-screen.tsx:410-424` |
@@ -111,3 +111,6 @@ F-STM-04, U-STM-01, U-STM-03, U-STM-05, U-STM-06.
 
 ## G. Open questions
 None.
+
+## Batch 4 · authoring4
+Update schedule (batch 4, Lucian 109): the same day painter is in the create form (BR-STM-028).

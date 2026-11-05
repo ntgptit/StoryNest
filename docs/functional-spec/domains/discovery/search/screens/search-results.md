@@ -13,22 +13,23 @@
 | Roles | Guest, Member, Moderator (same results) |
 | Guard | None; `robots: { index: false }`; title "Tìm kiếm · StoryNest" (server, Vietnamese only) |
 | Workflows | WF-SRCH-01, WF-SRCH-02, WF-SRCH-03 |
-| Rules | BR-SRCH-001…011 |
+| Rules | BR-SRCH-001…012, BR-PROG-016 |
 
 ## B. Components
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-SRCH-01-C01 | Header SearchBox | `form role=search`; input `role=combobox` "Search stories, authors or tags", placeholder "Search stories, authors, tags…"; listbox "Suggestions" with ≤ 5 titles + "See all results for “term”"; below `sm` an icon button "Open search" that expands the field in place, with a close button (changed by PR #60) | `search-box.tsx:123-225`, `strings.en.ts:3-6,11-12` |
-| SCR-SRCH-01-C02 | Page header | `PageHeader` "Search" | `search-screen.tsx:62` |
-| SCR-SRCH-01-C03 | Search form | Input (aria-label as C01, `maxLength` 120) + "Search" button | `search-screen.tsx:63-77` |
-| SCR-SRCH-01-C04 | Hint / length message | `role=status` text when term not searchable | `search-screen.tsx:79-82` |
-| SCR-SRCH-01-C05 | Results heading | `h2` "Results for “term”" | `search-screen.tsx:85` |
-| SCR-SRCH-01-C06 | Tabs | Stories / Authors / Tags (Radix tabs); also switchable by swiping the results sideways on touch (changed by PR #60) | `search-screen.tsx:109-125` |
-| SCR-SRCH-01-C07 | Story results | Card grid + infinite list, end "No more results." | `search-screen.tsx:159-194` |
-| SCR-SRCH-01-C08 | Author results | List of rows (avatar, name, @username · N stories) + "Load more" button | `search-screen.tsx:196-237` |
-| SCR-SRCH-01-C09 | Tag results | List of "#name / N stories" rows (≤ 10) | `search-screen.tsx:239-259` |
-| SCR-SRCH-01-C10 | Loading | Skeletons, `role=status` "Searching…" | `search-screen.tsx:139-147` |
-| SCR-SRCH-01-C11 | Empty / error | Per-tab empty texts; "Can't search right now" + "Try again" | `search-screen.tsx:149-157`, `strings.en.ts:17-22` |
+| SCR-SRCH-01-C01 | Header SearchBox | `form role=search`; input `role=combobox` "Search stories, authors or tags", placeholder "Search stories, authors, tags…"; listbox "Suggestions" with ≤ 5 titles + "See all results for “term”"; below `sm` an icon link "Open search" | `search-box.tsx:65-135`, `strings.en.ts:3-6,11-12` |
+| SCR-SRCH-01-C02 | Page header | `PageHeader` "Search" | `search-screen.tsx:63` |
+| SCR-SRCH-01-C03 | Search form | Input (aria-label as C01, `maxLength` 120) + "Search" button | `search-screen.tsx:64-78` |
+| SCR-SRCH-01-C04 | Hint / length message | `role=status` text when term not searchable | `search-screen.tsx:80-83` |
+| SCR-SRCH-01-C12 | Trending searches (empty box only) | Line "Trending · rank · term · marker" rolling every 2.5 s (not under reduced motion, while open, hovered or focused); pressing it unfolds the top 10 (rank, term, up n / down n / NEW / same); picking a term replaces the address with its search; note "Terms searched by at least 3 people…"; hidden when there are none | `search-screen.tsx` (`Trending`), `ui/widgets/trending-terms.tsx` (Lucian #322) (BR-SRCH-012) |
+| SCR-SRCH-01-C05 | Results heading | `h2` "Results for “term”" | `search-screen.tsx:86` |
+| SCR-SRCH-01-C06 | Tabs | Stories / Authors / Tags (Radix tabs); also switchable by swiping the results sideways on touch (changed by PR #60) | `search-screen.tsx:87-95` |
+| SCR-SRCH-01-C07 | Story results | Card grid + infinite list, end "No more results." | `search-screen.tsx:125-166` |
+| SCR-SRCH-01-C08 | Author results | List of rows (avatar, name, @username · N stories) + "Load more" button | `search-screen.tsx:168-209` |
+| SCR-SRCH-01-C09 | Tag results | List of "#name / N stories" rows (≤ 10) | `search-screen.tsx:211-231` |
+| SCR-SRCH-01-C10 | Loading | Skeletons, `role=status` "Searching…" | `search-screen.tsx:105-113` |
+| SCR-SRCH-01-C11 | Empty / error | Per-tab empty texts; "Can't search right now" + "Try again" | `search-screen.tsx:115-123`, `strings.en.ts:17-22` |
 
 ## C. User actions and system responses
 

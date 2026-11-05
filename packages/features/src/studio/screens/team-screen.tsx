@@ -13,8 +13,9 @@ import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { AutocompleteInput, type AutocompleteOption } from "@storynest/ui/widgets/autocomplete-input";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
+import { RoleMatrix } from "@storynest/ui/widgets/role-matrix";
 import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
-import { AppLink } from "../../_shared/platform.tsx";
+import { StudioCrumbs } from "../components/studio-crumbs.tsx";
 import {
   SUGGESTION_COUNT,
   SUGGESTION_DELAY_MS,
@@ -30,6 +31,7 @@ import {
   useRemoveCollaborator,
   useStoryInvitations,
 } from "../hooks/use-collaboration.ts";
+import { useRoleRights } from "../hooks/use-role-rights.ts";
 import { useStoryForEdit } from "../hooks/use-story-editing.ts";
 import {
   INVITATION_STATUS,
@@ -39,6 +41,7 @@ import {
   type Collaborator,
   type CollaboratorRole,
 } from "../model/collaboration.ts";
+import { MATRIX_ROLES } from "../model/role-rights.ts";
 import { studioText } from "../strings.ts";
 
 const t = studioText.team;
@@ -54,7 +57,7 @@ export function TeamScreen({ storyId }: { storyId: string }) {
         title={studioText.error.title}
         description={studioText.error.description}
         retryLabel={studioText.error.retry}
-        onRetry={() => void story.refetch()}
+        onRetry={() => story.refetch()}
       />
     );
   }
@@ -100,13 +103,10 @@ function Team({ storyId, storyTitle }: { storyId: string; storyTitle: string }) 
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <PageHeader title={t.title} description={t.description(storyTitle)} />
-      <AppLink
-        href={`/studio/story/${storyId}`}
-        className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
-      >
-        {t.backToStory}
-      </AppLink>
+      <div className="flex flex-col gap-2">
+        <StudioCrumbs storyId={storyId} storyTitle={storyTitle} page="team" />
+        <PageHeader title={t.title} description={t.description(storyTitle)} />
+      </div>
 
       <section aria-label={t.currentTitle} className="flex flex-col gap-2">
         <h2 className="text-base font-semibold">{t.currentTitle}</h2>
@@ -185,6 +185,8 @@ function Team({ storyId, storyTitle }: { storyId: string; storyTitle: string }) 
 
       <InviteForm storyId={storyId} />
 
+      <RoleRightsSection />
+
       <ConfirmDialog
         open={removing !== null}
         onOpenChange={(open) => {
@@ -207,6 +209,48 @@ function Team({ storyId, storyTitle }: { storyId: string; storyTitle: string }) 
         }}
       />
     </div>
+  );
+}
+
+/**
+ * Read-only matrix of the role rights (Lucian 184, BR-TEAM-014), generated from public.story_role_rights(): the
+ * database's documented list, which a SQL test keeps equal to what RLS and the functions enforce. No toggles: the
+ * roles' rights are fixed.
+ */
+function RoleRightsSection() {
+  const rights = useRoleRights();
+  const m = t.matrix;
+  return (
+    <section aria-labelledby="role-rights-title" className="flex flex-col gap-2">
+      <h2 id="role-rights-title" className="text-base font-semibold">
+        {m.title}
+      </h2>
+      <p className="text-sm text-muted-foreground">{m.description}</p>
+      {rights.isPending ? (
+        <Skeleton className="h-64 w-full rounded-xl" aria-busy />
+      ) : rights.isError ? (
+        <p role="alert" className="text-sm text-muted-foreground">
+          {m.error}{" "}
+          <Button type="button" size="sm" variant="link" className="h-auto p-0" onClick={() => rights.refetch()}>
+            {m.retry}
+          </Button>
+        </p>
+      ) : (
+        <div className="rounded-xl border bg-card p-3 text-card-foreground">
+          <RoleMatrix
+            caption={m.caption}
+            labels={{ right: m.right, allowed: m.allowed, notAllowed: m.notAllowed }}
+            columns={MATRIX_ROLES.map((role) => ({ key: role, label: studioText.role[role] }))}
+            rows={rights.data.map((right) => ({
+              key: right.capability,
+              // A right added on the server before the app knows its name still shows, under its key.
+              label: m.rights[right.capability as keyof typeof m.rights] ?? right.capability,
+              allowed: right.allowed,
+            }))}
+          />
+        </div>
+      )}
+    </section>
   );
 }
 

@@ -12,6 +12,7 @@ import {
   type RankingPeriod,
   type RankingRow,
 } from "../model/ranking.ts";
+import { HISTORY_DAYS, HISTORY_STORIES, toHistoryDays, type HistoryDay, type HistoryRow } from "../model/history.ts";
 
 export interface RankingPage {
   items: RankedStory[];
@@ -66,4 +67,34 @@ export async function getRankingFreshness(client: DataClient): Promise<RankingFr
   const rows = unwrap(await client.rpc("ranking_freshness").returns<FreshnessRow[]>()) ?? [];
   const row = rows[0];
   return row ? toFreshness(row) : null;
+}
+
+export interface RankingHistory {
+  days: HistoryDay[];
+  /** Titles of the stories in the history, by id (a story the reader may no longer see is simply missing). */
+  titles: Record<string, string>;
+}
+
+/** The daily snapshots of a period's ranking over the last week, with the stories' titles. */
+export async function getRankingHistory(
+  client: DataClient,
+  period: RankingPeriod,
+  includeMature: boolean,
+): Promise<RankingHistory> {
+  const rows =
+    unwrap(
+      await client
+        .rpc("ranking_history", {
+          p_period: period,
+          p_days: HISTORY_DAYS,
+          p_include_mature: includeMature,
+          p_limit: HISTORY_STORIES,
+        })
+        .returns<HistoryRow[]>(),
+    ) ?? [];
+  const days = toHistoryDays(rows);
+  const ids = [...new Set(days.flatMap((day) => day.entries.map((entry) => entry.storyId)))];
+  if (ids.length === 0) return { days, titles: {} };
+  const stories = unwrap(await client.from("stories").select("id, title").in("id", ids)) ?? [];
+  return { days, titles: Object.fromEntries(stories.map((story) => [story.id, story.title])) };
 }

@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { AuthCard, FormError } from "../components/auth-card.tsx";
 import { EmailTypoFix } from "../components/email-typo-fix.tsx";
 import { TextLink } from "../components/auth-links.tsx";
+import { LockoutNotice, useLockout } from "../components/lockout.tsx";
 import { useSignIn } from "../hooks/use-auth-actions.ts";
 import { withNext } from "../model/auth-urls.ts";
 import { translateErrors } from "../../_shared/form-resolver.ts";
@@ -34,7 +35,12 @@ export function SignInScreen({
     defaultValues: { email: "", password: "" },
   });
   const signIn = useSignIn();
-  const submit = form.handleSubmit((values: SignIn) => signIn.mutate(values, { onSuccess: onSignedIn }));
+  const lockout = useLockout();
+  const submit = form.handleSubmit((values: SignIn) => {
+    if (lockout.locked) return;
+    lockout.clear();
+    signIn.mutate(values, { onSuccess: onSignedIn, onError: lockout.start });
+  });
 
   return (
     <AuthCard
@@ -53,7 +59,14 @@ export function SignInScreen({
               {notice}
             </p>
           ) : null}
-          <FormError message={signIn.error ? authErrorMessage(signIn.error) : null} />
+          {lockout.total !== null ? (
+            <LockoutNotice
+              lockout={lockout}
+              action={<TextLink href="/forgot-password">{authText.lockout.resetInstead}</TextLink>}
+            />
+          ) : (
+            <FormError message={signIn.error ? authErrorMessage(signIn.error) : null} />
+          )}
           <FormField
             control={form.control}
             name="email"
@@ -103,7 +116,7 @@ export function SignInScreen({
           <div className="text-right text-sm">
             <TextLink href="/forgot-password">{t.forgot}</TextLink>
           </div>
-          <Button type="submit" disabled={signIn.isPending}>
+          <Button type="submit" disabled={signIn.isPending || lockout.locked}>
             {signIn.isPending ? t.submitting : t.submit}
           </Button>
         </form>

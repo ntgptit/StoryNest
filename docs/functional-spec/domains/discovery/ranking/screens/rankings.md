@@ -14,17 +14,18 @@
 | Guard | None; indexed; listed in sitemap (`apps/web/src/lib/seo/sitemap.ts:43`); title "Xếp hạng · StoryNest" (server, Vietnamese only) |
 | Navigation entry | Only the "See rankings" link on SCR-HOME-01 (not in header, bottom nav or user menu → U-HOME-01) |
 | Workflows | WF-RANK-01, WF-RANK-02 |
-| Rules | BR-RANK-001…008 |
+| Rules | BR-RANK-001…009, BR-PROG-016 |
 
 ## B. Components
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-RANK-01-C01 | Page header | "Ranking" / "The most read and most voted stories." | `ranking-screen.tsx:37`, `strings.en.ts:2-3` |
-| SCR-RANK-01-C02 | Period tabs | `TabsList` "Time period": Today, This week, This month, All time | `ranking-screen.tsx:38-46`, `strings.en.ts:4-5` |
-| SCR-RANK-01-C03 | Freshness note | "Updated <relative>" | `ranking-screen.tsx:47-51` |
-| SCR-RANK-01-C04 | Ranked grid | Infinite list of ranked cards | `ranking-screen.tsx:69-80` |
-| SCR-RANK-01-C05 | Ranked card | Rank badge (aria-label "Rank N"), `StoryCard`, "<n> reads · <m> votes" | `ranking-screen.tsx:81-109` |
-| SCR-RANK-01-C06 | Empty / error | "No ranking yet…", "Couldn't load the ranking" + "Try again" | `ranking-screen.tsx:53-67`, `strings.en.ts:12-17` |
+| SCR-RANK-01-C01 | Page header | "Ranking" / "The most read and most voted stories." | `ranking-screen.tsx:44`, `strings.en.ts:2-3` |
+| SCR-RANK-01-C02 | Period tabs | `TabsList` "Time period": Today, This week, This month, All time | `ranking-screen.tsx:45-53`, `strings.en.ts:4-5` |
+| SCR-RANK-01-C03 | Freshness note | "Updated <relative>" | `ranking-screen.tsx:54-58` |
+| SCR-RANK-01-C07 | Last 7 days | Card "Ranks over the last 7 days" with tabs "Race" (bar race of the top 6 by score per snapshot day: Play / Pause, day slider, big day label) and "Ups and downs" (slope chart of today's ranks against the first day, Rank / Score switch, names to focus one line, status line); note on daily snapshots; "The ranking history is recorded once a day…" with one day; hidden with none or on error | `ranking/components/ranking-history.tsx`, `ui/widgets/bar-race.tsx` (Lucian #246), `ui/widgets/slope-chart.tsx` (Lucian #359) (BR-RANK-009) |
+| SCR-RANK-01-C04 | Ranked grid | Infinite list of ranked cards; a story opened from it is a read from "ranking" (BR-PROG-016) | `ranking-screen.tsx:76-87` |
+| SCR-RANK-01-C05 | Ranked card | Rank badge (aria-label "Rank N"), `StoryCard`, "<n> reads · <m> votes" | `ranking-screen.tsx:93-123` |
+| SCR-RANK-01-C06 | Empty / error | "No ranking yet…", "Couldn't load the ranking" + "Try again" | `ranking-screen.tsx:60-74`, `strings.en.ts:12-17` |
 
 ## C. User actions and system responses
 

@@ -18,8 +18,8 @@
 ## B. Components
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
-| SCR-CHM-01-C01 | Header "Manage chapters" / "Order, URL slugs and status of the chapters in "<story>"." | `chapter-manager-screen.tsx:230`, `strings.en.ts:22-23` |
-| SCR-CHM-01-C02 | Link "Back to story details" → `/studio/story/{id}` | `chapter-manager-screen.tsx:231-236` |
+| SCR-CHM-01-C01 | Header "Manage chapters" / "Order, URL slugs and status of the chapters in "<story>"." | `chapter-manager-screen.tsx:122`, `strings.en.ts:22-23` |
+| SCR-CHM-01-C02 | Breadcrumb (Lucian 103) `nav` "Location in Studio": Studio → `/studio` › story title → `/studio/story/{id}` › Chapters (current page). Beside the story crumb, when the author has more than one story, a "Switch to another story" button (Lucian 037) opens a menu of their stories (useMyStories, role as second line, check on the current one) and opens the chapters of the one picked. Replaces the old "Back to story details" link | `components/studio-crumbs.tsx`, `packages/ui/src/widgets/breadcrumbs.tsx` |
 | SCR-CHM-01-C12 | Scheduled outbox (Lucian #190), above the list, only when a live chapter is scheduled: heading "Scheduled", "These chapters publish by themselves, soonest first. Times are in {zone}."; one card per chapter in `scheduled_for` order with the time (relative + exact, user locale/time zone) as a button (`aria-expanded`) opening an inline `datetime-local` "New publish time" (min now+1 min) + "Save new time" / "Cancel"; title, "Chapter n · /slug"; "Publish now"; [owner/co-author] "Cancel schedule"; inline `role="alert"` on refusal. A rescheduled time drops into place (`animate-outbox-moved`) | `components/scheduled-chapters.tsx`, `model/studio-chapter.ts` (`scheduledChapters`) |
 | SCR-CHM-01-C03 | Ordered list "Chapter list": row with "Chapter n", title / "(untitled)", status badge, "Deleted" badge, `/slug` | `chapter-manager-screen.tsx:244-263`, `components/chapter-row.tsx:131-142` |
 | SCR-CHM-01-C04 | Live-row actions: Move up / Move down (icon buttons, aria-label "Move up: <title>"), "Write", "Change URL slug", [owner/co-author] "Archive" or "Unarchive", "Delete" | `components/chapter-row.tsx:159-209` |
@@ -115,7 +115,7 @@
 | Navigation | — |
 | Evidence | `components/scheduled-chapters.tsx`, `scheduled-outbox.test.tsx` |
 
-| Field | SCR-CHM-01-A09 Back to story details / Retry |
+| Field | SCR-CHM-01-A09 Breadcrumb (story / Studio) / Retry |
 | --- | --- |
 | Trigger | Link; "Try again" in error state |
 | Expected behavior | Navigate to SCR-STM-03 (editor sees read-only notice there); refetch story and chapters |
@@ -165,3 +165,6 @@ F-CHM-01, F-STM-04, F-CHM-03, U-CHM-01, U-CHM-02, U-CHM-03, U-STM-05.
 
 ## G. Open questions
 Q-TEAM-02.
+
+## Batch 4 · authoring4
+Parts tree (batch 4, Lucian 102): below the chapter list a "Parts" section shows the story as a tree (TreeFolder per part run, empty parts after), a part picker per chapter, add / rename / delete part. BR-CHM-016. Rollback: see the top of `20261106040000_story_parts.sql`.

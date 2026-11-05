@@ -62,6 +62,50 @@ const vi = {
     noBio: "Chưa có giới thiệu.",
     missingProfile: "Chưa tìm thấy hồ sơ cho tài khoản này.",
   },
+  // Command palette (Ctrl/Cmd+K, desktop): go to a section or open a story suggestion.
+  palette: {
+    title: "Bảng lệnh",
+    input: "Tìm trang hoặc truyện",
+    placeholder: "Đi tới trang hoặc tìm truyện…",
+    results: "Kết quả",
+    empty: "Không có kết quả phù hợp",
+    goTo: "Đi tới",
+    stories: "Truyện",
+    searchAll: (term: string) => `Xem mọi kết quả cho “${term}”`,
+    notifications: "Thông báo",
+    newStory: "Viết truyện mới",
+    hints: { move: "↑↓ chọn", run: "Enter mở", close: "Esc đóng" },
+  },
+  // Intro shown once on this device after sign-up (skippable).
+  intro: {
+    pages: {
+      read: {
+        title: "Đọc theo cách của bạn",
+        body: "Mở một truyện và đọc từng chương. Chỗ bạn đọc dở được ghi nhớ để lần sau đọc tiếp.",
+      },
+      follow: {
+        title: "Theo dõi và lưu vào Thư viện",
+        body: "Theo dõi truyện và tác giả bạn thích, lưu truyện vào Thư viện để luôn tìm lại được.",
+      },
+      write: {
+        title: "Viết trong Studio",
+        body: "Tạo truyện mới, soạn từng chương và đăng khi bạn sẵn sàng.",
+      },
+    },
+    next: "Tiếp",
+    done: "Bắt đầu",
+    skip: "Bỏ qua",
+    step: (page: number, total: number) => `Trang ${page}/${total}`,
+  },
+  // Page for an address that leads nowhere: suggests the closest real page, or a search for the words in it.
+  notFound: {
+    title: "Không tìm thấy trang",
+    description: "Địa chỉ này không tồn tại hoặc trang đã bị gỡ.",
+    didYouMean: "Có phải ý bạn là",
+    searchFor: (term: string) => `Tìm “${term}”`,
+    searchAuthors: (term: string) => `Tìm tác giả “${term}”`,
+    home: "Về trang chủ",
+  },
 } as const;
 
 export const shellText = defineText("shell", vi, en);

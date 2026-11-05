@@ -1,8 +1,9 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { FunnelSteps, type FunnelStep } from "./funnel-steps.tsx";
 import { CalendarHeatmap, type HeatmapCell } from "./calendar-heatmap.tsx";
+import { ScatterPicker, type ScatterPoint } from "./scatter-picker.tsx";
 import { SyncedSmallMultiples, zoomInWindow, type SmallMultipleDay } from "./synced-small-multiples.tsx";
 
 afterEach(cleanup);
@@ -440,5 +441,74 @@ describe("CalendarHeatmap", () => {
       "Sat",
       "Sun",
     ]);
+  });
+});
+
+describe("ScatterPicker", () => {
+  const dots: ScatterPoint[] = [
+    { key: "a", x: 100, y: 5, label: "Dot A", detail: "Detail A" },
+    { key: "b", x: 5, y: 10, label: "Dot B", detail: "Detail B" },
+    { key: "c", x: 50, y: 0, label: "Dot C", detail: "Detail C" },
+  ];
+  const base = {
+    points: dots,
+    label: "Plot",
+    hint: "Use arrows",
+    xLabel: "X",
+    yLabel: "Y",
+    formatX: (value: number) => `x${value}`,
+    formatY: (value: number) => `y${value}`,
+    summary: "Summary",
+  };
+  const status = () => document.querySelector('[data-slot="scatter-status"]')?.textContent;
+  const dot = (name: string) => screen.getByRole<HTMLButtonElement>("button", { name });
+
+  it("places each dot on the scale of the largest value and shows a pressed dot's detail", () => {
+    render(<ScatterPicker {...base} />);
+    expect(dot("Dot A").style.left).toBe("100%");
+    expect(dot("Dot A").style.bottom).toBe("50%");
+    expect(dot("Dot B").style.left).toBe("5%");
+    expect(dot("Dot C").style.bottom).toBe("0%");
+    expect(status()).toBe("Summary");
+    expect(document.querySelector('[data-slot="scatter-status"]')?.getAttribute("aria-live")).toBe("polite");
+    fireEvent.click(dot("Dot B"));
+    expect(dot("Dot B").getAttribute("aria-pressed")).toBe("true");
+    expect(status()).toBe("Detail B");
+    fireEvent.click(dot("Dot B"));
+    expect(status()).toBe("Summary");
+  });
+
+  it("is one tab stop moved by the arrow keys in x order, and Esc lets go", () => {
+    render(<ScatterPicker {...base} />);
+    const group = screen.getByRole("group", { name: "Plot" });
+    expect(screen.getAllByRole("button").filter((b) => b.tabIndex === 0)).toEqual([dot("Dot B")]);
+    dot("Dot B").focus();
+    fireEvent.keyDown(group, { key: "ArrowRight" });
+    expect(document.activeElement).toBe(dot("Dot C"));
+    fireEvent.keyDown(group, { key: "End" });
+    expect(document.activeElement).toBe(dot("Dot A"));
+    expect(dot("Dot A").tabIndex).toBe(0);
+    fireEvent.click(dot("Dot A"));
+    expect(status()).toBe("Detail A");
+    fireEvent.keyDown(group, { key: "Escape" });
+    expect(status()).toBe("Summary");
+    fireEvent.keyDown(group, { key: "Home" });
+    expect(document.activeElement).toBe(dot("Dot B"));
+  });
+
+  it("fades the dots under the filter value and lets go of a picked one", () => {
+    const onPressedChange = vi.fn();
+    const filter = { label: "Fade small", pressed: false, onPressedChange, below: 10 };
+    const { rerender } = render(<ScatterPicker {...base} filter={filter} />);
+    fireEvent.click(dot("Dot B"));
+    fireEvent.click(screen.getByRole("button", { name: "Fade small" }));
+    expect(onPressedChange).toHaveBeenCalledWith(true);
+    rerender(<ScatterPicker {...base} filter={{ ...filter, pressed: true }} />);
+    expect(screen.getByRole("button", { name: "Fade small" }).getAttribute("aria-pressed")).toBe("true");
+    expect(dot("Dot B").disabled).toBe(true);
+    expect(dot("Dot C").disabled).toBe(false);
+    expect(document.querySelector<HTMLElement>('[data-slot="scatter-band"]')?.style.width).toBe("10%");
+    expect(status()).toBe("Summary");
+    expect(dot("Dot C").tabIndex).toBe(0);
   });
 });

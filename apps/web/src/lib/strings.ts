@@ -33,6 +33,7 @@ export const appText = {
     editChapter: "Soạn chương",
     storyFallback: "Truyện",
     chapterFallback: "Chương",
+    notFound: "Không tìm thấy trang",
   },
   /** Title of a chapter page: "<chapter> · <story>" (the site name is appended by the layout template). */
   chapterTitle: (chapter: string, story: string) => `${chapter} · ${story}`,

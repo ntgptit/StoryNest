@@ -66,7 +66,7 @@ interface FakeOptions {
   members?: unknown[];
   sent?: unknown[];
   mine?: unknown[];
-  rpc?: (name: string, args: Record<string, unknown>) => { data: unknown; error: unknown };
+  rpc?: (name: string, args: Record<string, unknown>) => { data: unknown; error: unknown } | undefined;
   deleteResult?: { data: unknown; error: unknown };
 }
 
@@ -276,6 +276,45 @@ describe("TeamScreen", () => {
     expect(within(sent).getByText(t.status.declined)).toBeTruthy();
     // only a pending invitation can be cancelled
     expect(within(sent).getAllByRole("button", { name: t.cancelInvitation })).toHaveLength(1);
+  });
+
+  it("shows the read-only role matrix generated from story_role_rights(), with no toggles", async () => {
+    const c = fakeClient({
+      rpc: (name) =>
+        name === "story_role_rights"
+          ? {
+              data: [
+                { capability: "publish_chapters", owner: true, co_author: true, editor: true },
+                { capability: "manage_team", owner: true, co_author: false, editor: false },
+                { capability: "brand_new_right", owner: true, co_author: true, editor: false },
+              ],
+              error: null,
+            }
+          : undefined,
+    });
+    renderWith(c, <TeamScreen storyId={STORY_ID} />);
+    const table = await screen.findByRole("table", { name: t.matrix.caption });
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent),
+    ).toEqual([t.matrix.right, studioText.role.owner, studioText.role.co_author, studioText.role.editor]);
+    const publish = within(table).getByRole("row", { name: new RegExp(t.matrix.rights.publish_chapters) });
+    expect(
+      within(publish)
+        .getAllByRole("cell")
+        .map((td) => td.textContent),
+    ).toEqual([t.matrix.allowed, t.matrix.allowed, t.matrix.allowed]);
+    const team = within(table).getByRole("row", { name: new RegExp(t.matrix.rights.manage_team) });
+    expect(
+      within(team)
+        .getAllByRole("cell")
+        .map((td) => td.textContent),
+    ).toEqual([t.matrix.allowed, t.matrix.notAllowed, t.matrix.notAllowed]);
+    // A right the app has no name for yet still shows, under its key.
+    expect(within(table).getByRole("rowheader", { name: "brand_new_right" })).toBeTruthy();
+    expect(within(table).queryByRole("button")).toBeNull();
+    expect(within(table).queryByRole("switch")).toBeNull();
   });
 
   it("is closed to a collaborator who does not own the story", async () => {

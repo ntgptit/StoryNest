@@ -22,6 +22,7 @@ Everything a reader does between finding a story and finishing it: the public st
 | `OBJ-STORY` | Public story page and visibility | [story/](story/business-rules.md) | [SCR-STORY-01 Story page](story/screens/story-page.md) `/story/[id]/[slug]` | BR-STORY-001…016 | [WF-STORY-01…05](story/workflows.md) |
 | `OBJ-READ` | Chapter reader and reader preferences | [chapter-reader/](chapter-reader/business-rules.md) | [SCR-READ-01 Chapter reader](chapter-reader/screens/chapter-reader.md) `/story/[id]/[slug]/[chapterSlug]` | BR-READ-001…018 | [WF-READ-01…06](chapter-reader/workflows.md) |
 | `OBJ-PROG` | Reading progress and read counting | [reading-progress/](reading-progress/business-rules.md) | None of its own (SCR-READ-01, SCR-STORY-01, SCR-LIB-01) | BR-PROG-001…015 | [WF-PROG-01…05](reading-progress/workflows.md) |
+| `OBJ-HAB` | Reading habits (streak, daily goal, level, badges; private) | [reading-habits/](reading-habits/business-rules.md) | None of its own (SCR-PRF-01 panel, SCR-LIB-01 chip, SCR-SET-01 goal) | BR-HAB-001…008 | — |
 
 Related object owned elsewhere but documented by the same analysis: `OBJ-VOTE` → [community/vote](../community/vote/business-rules.md) (button on SCR-READ-01).
 

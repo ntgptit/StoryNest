@@ -13,7 +13,7 @@
 | Roles | Owner, co-author; editor and non-members see no-access / not-found states |
 | Entry points | SCR-STM-01 row "Stats" (owner, co-author). Not linked from SCR-STM-03, SCR-CHM-01 or SCR-TEAM-01 |
 | Workflows | WF-STAT-01, WF-STAT-02 |
-| Rules | BR-STAT-001..014, BR-STM-023 |
+| Rules | BR-STAT-001..020, BR-STM-023 |
 
 ## B. Components
 | ID | Component | Notes / evidence |
@@ -24,6 +24,12 @@
 | SCR-STAT-01-C04 | Section "By day": three small multiples (Reads `--chart-1`, Likes `--chart-2`, Comments `--chart-3`) on one day axis with a shared cursor, per-chart value + change from the day before, dashed average line, first/middle/last day ticks, dotted flags on days a chapter was first published; a `figure` captioned with the summary ("30-day chart: n reads, …"); zoom row ("Zoom in", "Show all" while zoomed, live status "Showing <from> – <to>: n of N days." / "Selected <from> – <to>, n days. …"); "Show as table" toggle; or "No activity in this range yet."; note | `components/daily-chart.tsx`, `ui/widgets/synced-small-multiples.tsx` (BR-STAT-009, BR-STAT-012, BR-STAT-014) |
 | SCR-STAT-01-C08 | Section "Reads over the last 90 days": weeks × weekdays heatmap (Monday first, Mon/Wed/Fri labelled, month labels above the weeks), status line (summary, or the picked day's reads, likes, comments and publish note), legend "Reads per day" with the whole-number range of each shade, "Show reads by week as a table" toggle, note (UTC days, reads are not distinct readers, always 90 days); "No reads in the last 90 days." when every day has 0 reads | `components/reads-heatmap.tsx`, `ui/widgets/calendar-heatmap.tsx` (BR-STAT-013) |
 | SCR-STAT-01-C07 | Section "Read-through by chapter": funnel of the published chapters in reading order (bar width = reads ÷ most-read chapter, change from the chapter before, biggest drop in `--chart-1`), status line (live region) with the summary; first 8 steps + "Show all n chapters"; note that steps are reads, not distinct readers; hidden when no chapter is published; "No reads yet to draw the funnel." when every chapter has 0 reads | `components/read-through-funnel.tsx`, `ui/widgets/funnel-steps.tsx` (BR-STAT-011) |
+| SCR-STAT-01-C09 | Section "Chapters compared" (only with at least two chapters that have reads): axis choice "Likes per 100 reads" / "Retention" (`aria-pressed` buttons), optional "Fade chapters under n reads" toggle, scatter of reads (across) against the chosen axis with 0 and max ticks, status line (live region) with "n chapters plotted[, n faded]. Press a dot to see its figures." plus how many are left out; note that reads are not distinct readers | `components/chapter-scatter.tsx`, `ui/widgets/scatter-picker.tsx` (BR-STAT-015) |
+| SCR-STAT-01-C10 | Range tab "Custom": month calendar (From / To fields, month switch, Monday-first grid limited to the last 90 UTC days, summary "n days · d – d", Apply), then the applied range as a link that reopens it | `ui/widgets/date-range-calendar.tsx` (Lucian #030), `components/audience-insights.tsx` (BR-STAT-016) |
+| SCR-STAT-01-C11 | Section "New readers by week": cohort table (8 weekly rows, "Start", "+1"… columns, shaded share cells, dashed hidden cohorts), status line, note | `ui/widgets/cohort-grid.tsx` (Lucian #161, BR-STAT-017) |
+| SCR-STAT-01-C12 | Section "Signed in or guests": 10 × 10 waffle, legend buttons with rolling percentages, line "n accounts and n guest browsers read it." | `ui/widgets/waffle-chart.tsx` (Lucian #326, BR-STAT-018) |
+| SCR-STAT-01-C13 | Section "Where readers come from": Sankey Readers → Read on → Followed, source buttons, status line, hidden-sources line | `ui/widgets/flow-sankey.tsx` (Lucian #153, BR-STAT-020) |
+| SCR-STAT-01-C14 | Section "What readers say": month switch and word cloud, status line, note (no comment text, two commenters minimum) | `ui/widgets/word-cloud.tsx` (Lucian #399, BR-STAT-019) |
 | SCR-STAT-01-C05 | Section "By chapter": table (Chapter, Reads + bar, Likes, Comments, Retention), horizontal scroll on narrow screens, note; empty "No chapters have been published yet." | `story-stats-screen.tsx` |
 | SCR-STAT-01-C06 | States: auth skeleton; sign-in prompt; no access; not found; error + "Try again" | `story-stats-screen.tsx:36-71,92-102` |
 
@@ -82,6 +88,12 @@
 | Expected behavior | The status line (polite live region) shows "Chapter n · title: n reads, x% of chapter 1, −y% compared with chapter n−1."; otherwise the summary "Chapter N has x% of chapter 1's reads. Biggest drop at chapter k: −y% …" (or "only one chapter" / "no basis" / "no chapter has fewer reads" variants) |
 | Evidence | `components/read-through-funnel.tsx`, `ui/widgets/funnel-steps.tsx`; `analytics.test.tsx` ("sums up the read-through …") |
 
+| Field | SCR-STAT-01-A09 Compare chapters in the scatter |
+| --- | --- |
+| Trigger | Press an axis button or the fade toggle; press a dot (again to let go), or Tab into the plot (one tab stop) and use ←/→ (↓/↑) to move in reads order, Home/End, Enter/Space (pick), Esc (let go) |
+| Expected behavior | The picked dot turns `--chart-1` with a halo and the status line shows "Chapter n · title: n reads, n likes, <axis> <value>."; each dot's accessible name is that sentence. Switching the axis moves the dots; the fade toggle shades the low-read band, fades those dots, makes them unpickable and lets go of the picked dot |
+| Evidence | `components/chapter-scatter.tsx`, `ui/widgets/scatter-picker.tsx`; `analytics.test.tsx` ("ChapterScatter"); `ui/widgets/stats-widgets.test.tsx` ("ScatterPicker") |
+
 ## D. UI states
 | State | Status | Evidence / note |
 | --- | --- | --- |
@@ -114,6 +126,7 @@
 - SCR-STAT-01-AC14 Given I switch ranges, Then each total counts from the old range's figure to the new one in about 0.75 s (reduced motion: it jumps), And it does not count on the first load, And a screen reader reads only the final number.
 - SCR-STAT-01-AC15 Given the 30-day charts, When I drag across 5 days with a mouse (or Shift+←/→ then Enter, or pick a day and press "Zoom in"), Then all three charts show only those days rescaled, And "Show all" brings back the 30 days.
 - SCR-STAT-01-AC16 Given any range is selected, Then the heatmap shows the last 90 UTC days, And pressing a square (or moving to it with the arrow keys) shows that day's reads, likes and comments.
+- SCR-STAT-01-AC17 Given chapters with 200, 100 and 5 reads, When I press chapter 2's dot, Then the status reads its reads, likes and likes per 100 reads, And "Fade chapters under 20 reads" fades chapter 3.
 
 ## F. Findings referenced
 U-STAT-01, U-STAT-02, F-STM-06.

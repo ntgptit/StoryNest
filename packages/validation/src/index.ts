@@ -6,5 +6,8 @@ export * from "./inputs.ts";
 export * from "./auth.ts";
 export * from "./profile.ts";
 export * from "./reader-preferences.ts";
+export * from "./reading-habits.ts";
 export * from "./story.ts";
 export * from "./chapter.ts";
+export * from "./announcement.ts";
+export * from "./authoring.ts";

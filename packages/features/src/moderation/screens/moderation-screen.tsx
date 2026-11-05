@@ -11,6 +11,7 @@ import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { useAuth } from "../../_shared/auth.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
+import { AnnouncementManager } from "../../announcements/index.ts";
 import { ReportCard } from "../components/report-card.tsx";
 import { useIsModerator, useReportQueue } from "../hooks/use-moderation.ts";
 import { QUEUE_FILTER, type QueueFilter } from "../model/report.ts";
@@ -18,7 +19,7 @@ import { moderationText } from "../strings.ts";
 
 const t = moderationText.console;
 
-/** The moderation console: the report queue (waiting / handled) with the actions on each item. */
+/** The moderation console: the report queue (waiting / handled) with the actions on each item, then announcements. */
 export function ModerationScreen() {
   const auth = useAuth();
   const moderator = useIsModerator();
@@ -39,7 +40,12 @@ export function ModerationScreen() {
   if (!moderator) {
     return <EmptyState icon={ShieldOff} title={t.noAccess.title} description={t.noAccess.description} />;
   }
-  return <Queue />;
+  return (
+    <div className="flex w-full max-w-3xl flex-col gap-8">
+      <Queue />
+      <AnnouncementManager />
+    </div>
+  );
 }
 
 /** Which report the detail panel shows, where it was in the list, and how it was reached (for the step animation). */
@@ -97,7 +103,7 @@ function Queue() {
           title={t.error.title}
           description={t.error.description}
           retryLabel={t.error.retry}
-          onRetry={() => void queue.refetch()}
+          onRetry={() => queue.refetch()}
         />
       ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{filter === QUEUE_FILTER.OPEN ? t.empty.open : t.empty.closed}</p>

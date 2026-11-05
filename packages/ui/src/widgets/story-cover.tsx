@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
 
 import { cn } from "../lib/utils.ts";
+import { BlurUpImage } from "./blur-up-image.tsx";
 
 /** 2:3 story cover. Without an image it shows the title's first letter, so lists never have holes. */
 export function StoryCover({
   title,
   coverUrl,
+  placeholder,
   eager = false,
   morphTarget = false,
   className,
@@ -13,6 +15,8 @@ export function StoryCover({
 }: {
   title: string;
   coverUrl?: string | null;
+  /** BlurHash of the cover (stories.cover_blurhash): shown blurred while the picture loads, then faded out. */
+  placeholder?: string | null;
   /** Set for the main cover of a page (above the fold); list tiles stay lazy. */
   eager?: boolean;
   /** The cover a tapped story card grows into (view transition, see lib/view-transition.ts). One per page. */
@@ -26,7 +30,9 @@ export function StoryCover({
       data-morph-target={morphTarget ? "" : undefined}
       className={cn("relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-muted", className)}
     >
-      {coverUrl ? (
+      {coverUrl && placeholder ? (
+        <BlurUpImage src={coverUrl} hash={placeholder} eager={eager} />
+      ) : coverUrl ? (
         <img src={coverUrl} alt="" loading={eager ? "eager" : "lazy"} className="size-full object-cover" />
       ) : (
         <div

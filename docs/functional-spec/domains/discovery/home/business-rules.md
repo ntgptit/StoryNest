@@ -158,3 +158,27 @@
 | Related screens | SCR-HOME-01 |
 | Evidence | `discovery/screens/tag-filters.tsx:27`, `discovery/screens/discover-screen.tsx:79-88,122-129`, `recommendations/components/recommendation-list.tsx:25`, `discovery/discovery-tags.test.tsx:250`, `discovery/discovery.test.tsx:340` |
 | Status | Verified |
+
+### BR-HOME-013 — Event popup with "Don't show today" (Lucian 311, batch 4 · platform4)
+| Field | Value |
+| --- | --- |
+| Description | The unfiltered home page opens a popup with the active `announcements` of kind `popup` for the interface language: sliding cards (2.8 s each, drag or arrow keys, "1 / 3" and dots) with the end date ("Until 30 Nov") and an optional "View details" link |
+| Preconditions | At least one active popup (same window and language rule as BR-SHELL-015); not on a category/tag-filtered view |
+| Conditions | Opens once per visit of the page, unless "Don't show today" was chosen on this device today for these same announcements (`localStorage["storynest.announcements.popupSnoozed"] = {day, ids}`, day = the reader's local date) |
+| Expected behavior | "Don't show today" and "Close" (also Escape or a press outside) shrink the card into a gift button in the bottom corner (above the phone bottom navigation) that opens it again; after "Don't show today" a "See you tomorrow" note shows for a moment. The next day, or when a new popup announcement is published the same day, it opens again |
+| Exceptions | Per device only: nothing is stored in the account. Under reduced motion nothing slides by itself and the card closes without shrinking |
+| Related screens | SCR-HOME-01 (C12) |
+| Evidence | `packages/features/src/announcements/components/home-event-popup.tsx`, `packages/features/src/announcements/model/announcement.ts` (`isPopupSnoozed`, `snoozePopupToday`), `packages/ui/src/widgets/event-popup.tsx`, `apps/web/src/app/(main)/discover-home.tsx`, `announcements/announcements.test.tsx`. Rollback (top of the migration): `DROP FUNCTION public.active_announcements(text, text); DROP TABLE public.announcements;` |
+| Status | Verified (unit, SQL test); not run against a real Supabase project |
+
+### BR-HOME-014 — Length filter
+| Field | Value |
+| --- | --- |
+| Description | `story_stats.word_count` (sum of the published versions' `word_count` of the published, not deleted chapters) and `story_stats.published_chapters` are kept by triggers (chapter publish / re-publish / unpublish / archive / delete; a story_stats row created later starts with the computed length). The feed filters by a word range through `story_stats!inner(word_count)` (gte min, lt max). The range picker (Lucian #024) is a histogram of `story_length_histogram(include_mature, language, category_ids, tag_slug)` over fixed buckets 0, 2k, 10k, 30k, 60k, 100k, 200k, 400k+ (`STORY_LENGTH_EDGES`), with two thumbs and the rolling count of stories in range |
+| Preconditions | BR-HOME-001 |
+| Conditions | The range lives in the URL as `words=min-max` (`max` empty = no upper bound; only bucket edges accepted, anything else is no filter) and combines with category and tag; every chip and link keeps it. A story without a stats row is left out while the filter is on. Clients cannot write the two columns (no write grant on story_stats) |
+| Expected behavior | From `sm` up: a "Filter by length" button unfolds the histogram with Apply and "Remove length filter". On a phone: a "Length" section in the filter sheet; the footer count includes it. An empty result offers "Remove length filter" with its count (BR-HOME loosen) |
+| Exceptions | Words are whitespace-separated (a Vietnamese syllable is one word), as counted by publish_chapter |
+| Related screens | SCR-HOME-01 (C13) |
+| Evidence | `supabase/migrations/20261106030600_story_length.sql`; `supabase/tests/480_story_length.test.sql`; `packages/ui/src/widgets/range-histogram.tsx`; `packages/features/src/discovery/model/story-length.ts`, `screens/length-filter.tsx`, `api/discovery.api.ts` (`LENGTH_FILTER_COLUMN`, `getLengthHistogram`). Rollback: `DROP FUNCTION public.story_length_histogram(boolean, text, bigint[], text); DROP TRIGGER chapters_story_length ON public.chapters; DROP TRIGGER story_stats_init_length ON public.story_stats; DROP FUNCTION public.sync_story_length(), public.story_stats_init_length(), private.refresh_story_length(uuid), private.story_length(uuid); DROP INDEX public.idx_story_stats_word_count; ALTER TABLE public.story_stats DROP COLUMN word_count, DROP COLUMN published_chapters;` |
+| Status | Verified on local PostgreSQL; not run against Supabase |

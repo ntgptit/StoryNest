@@ -13,7 +13,7 @@
 | Roles | Guest, Member (adds For-you block and Following shortcut), Moderator (same as member) |
 | Guard | None (public). Indexed (no `robots` override in `page.tsx`) |
 | Workflows | WF-HOME-01, WF-HOME-02, WF-HOME-03, WF-HOME-04, WF-REC-02 |
-| Rules | BR-HOME-001…012, BR-TAX-003/004, BR-REC-005…008 |
+| Rules | BR-HOME-001…013, BR-PROG-016, BR-TAX-003/004, BR-REC-005…008 |
 
 ## B. Components
 | ID | Component | Description | Evidence |
@@ -25,10 +25,12 @@
 | SCR-HOME-01-C05 | Category chips (nav "Categories") | "All" + root categories as links; horizontally scrollable; skeleton while tree loads. Shown from `sm` up only: on a phone the filters sit in a bottom sheet (`DiscoverFilterBar`) instead (changed by PR #60) | `category-chips.tsx:31-38`, `discover-screen.tsx:65-77` |
 | SCR-HOME-01-C06 | Active-tag line | "Filtering by tag #name" + "Clear tag filter" (X icon) | `tag-filters.tsx:31-41` |
 | SCR-HOME-01-C07 | Popular tags (nav "Popular tags") | Up to 12 `#tag` chips, toggling | `tag-filters.tsx:43-61`, `model/popular-tags.ts:1` |
-| SCR-HOME-01-C08 | Story grid | 2/3/4 columns; `StoryCard` per story | `story-tile.tsx:13`, `discover-screen.tsx:106-121` |
-| SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:114-119` |
-| SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:95-99` |
-| SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:79-88,122-129` |
+| SCR-HOME-01-C13 | Length filter | `sm`+: button "Filter by length" / "Length: 2k – 30k words" unfolding a histogram of stories per length bucket with two thumbs ("Shortest", "Longest"), rolling "n stories", note, Apply, and "Remove length filter"; phone: section "Length" in the filter sheet (counts in the footer) and an active chip; empty result: "Remove length filter · n stories" | `discovery/screens/length-filter.tsx`, `filter-sheet.tsx`, `ui/widgets/range-histogram.tsx` (Lucian #024) (BR-HOME-014) |
+| SCR-HOME-01-C08 | Story grid | 2/3/4 columns; `StoryCard` per story | `discover-screen.tsx:19,98-116` |
+| SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:110-115` |
+| SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:90-95` |
+| SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:74-83,117-124` |
+| SCR-HOME-01-C12 | Event popup (Lucian 311, batch 4 · platform4) | Unfiltered home only: dialog "Events" with the active popup announcements as sliding cards ("Until …", title, text, "View details"), "Don't show today" / "Close", then a gift button "Show events again" (BR-HOME-013) | `announcements/components/home-event-popup.tsx`, `packages/ui/src/widgets/event-popup.tsx` |
 
 ## C. User actions and system responses
 
@@ -134,6 +136,8 @@
 ### C.x Browse interactions (Lucian batch 2 · browse)
 
 - **Featured row** (Lucian 057): on the unfiltered Home, above "For you", the week's top 5 from the ranking (`useTopStories("week")`, no separate featured data) as a carousel: one slide at a time, auto-advance every 5.2 s with a timer bar in the active dot; pauses on hover, focus inside, hidden tab and the Pause button; never moves by itself under reduced motion; swipe or dots to jump. Hidden while loading fails or when the ranking is empty.
+- **Category row follows the scroll** (Lucian 242, batch 3): from `sm` up the category chip row is sticky just under the header (`top-below-header`) while the feed scrolls; the tag row stays in place. When the row is wider than the screen, the active chip is scrolled to its middle (sideways only) on load and on category change.
+- **Loaded-more cards rise in** (Lucian 251, batch 3): the cards of a page brought in by "Load more" (button or sentinel) rise in a short stagger (60 ms apart, capped), once, motion-safe only; never the first page, a replaced (new filter) or refreshed list, nor on scrolling back. Same on Rankings, the author page and the Following feed (`InfiniteList revealAppended`).
 - **Filters on phones** (Lucian 305): below `sm` the category and tag chip rows are replaced by a "Filters" button (with the number of active filters) and the active filters as removable chips. The button opens a bottom sheet to pick a category and a tag; its main button says "Show N stories" from a head-only exact count on the feed's own query (`countLatestStories`, same filters, no RPC) and applies the choice by navigating to `homeHref(...)`. A choice that lists nothing cannot be applied. From `sm` up nothing changes.
 - **Empty filtered feed** (Lucian 092): the empty state offers one link per active filter ("Remove tag #x · N stories", "Remove category y · N stories"), counts from the same head-only query.
 - **Grid / list** (Lucian 308): a toggle switches the story grid to rows (StoryCard `list` variant); remembered in this browser (`localStorage storynest.story-view`); covers FLIP between layouts on a change only.

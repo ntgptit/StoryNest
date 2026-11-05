@@ -3,6 +3,7 @@ import type { DataClient } from "../_shared/client.ts";
 import { toAppError } from "../_shared/errors.ts";
 import { listMyStories } from "./api/studio.api.ts";
 import { listStudioChapters } from "./api/chapters.api.ts";
+import { listStoryParts } from "./api/parts.api.ts";
 import { listCollaborators, listMyInvitations, listStoryInvitations } from "./api/collaboration.api.ts";
 import { getStoryForEdit, listDeletedStories } from "./api/story-write.api.ts";
 import { studioKeys } from "./keys.ts";
@@ -56,5 +57,12 @@ export function myInvitationsQueryOptions(getClient: () => DataClient, userId: s
   return {
     queryKey: studioKeys.myInvitations(userId),
     queryFn: () => listMyInvitations(getClient()).catch((error: unknown) => Promise.reject(toAppError(error))),
+  };
+}
+
+export function storyPartsQueryOptions(getClient: () => DataClient, storyId: string) {
+  return {
+    queryKey: studioKeys.parts(storyId),
+    queryFn: () => listStoryParts(getClient(), storyId).catch((error: unknown) => Promise.reject(toAppError(error))),
   };
 }

@@ -1,6 +1,8 @@
 "use client";
 
+import type { CommentReaction } from "@storynest/validation";
 import {
+  keepPreviousData,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -19,11 +21,21 @@ import {
   listComments,
   listReplies,
   postComment,
+  searchMentionCandidates,
   setCommentHidden,
   setCommentLike,
+  setCommentReaction,
 } from "../api/comments.api.ts";
+import type { MentionSuggestion } from "../model/mention.ts";
 import { commentKeys } from "../keys.ts";
-import { cursorAfter, withLike, type Comment, type CommentCursor, type CommentPage } from "../model/comment.ts";
+import {
+  cursorAfter,
+  withLike,
+  withReaction,
+  type Comment,
+  type CommentCursor,
+  type CommentPage,
+} from "../model/comment.ts";
 
 type Pages = InfiniteData<CommentPage, CommentCursor | undefined>;
 
@@ -173,6 +185,56 @@ export function useToggleCommentLike(chapterId: string) {
     },
     onSuccess: (likes, { commentId, liked }) =>
       mapComment(queryClient, chapterId, commentId, (comment) => ({ ...comment, likedByMe: liked, likes })),
+  });
+}
+
+/**
+ * Gives a reaction to a comment or takes it back, shown at once in every list the comment appears in; the server's
+ * counts replace the guess, and a refusal (a limit, a suspended account) puts everything back.
+ */
+export function useToggleCommentReaction(chapterId: string) {
+  const getClient = useDataClientGetter();
+  const queryClient = useQueryClient();
+  return useMutation<
+    Partial<Record<CommentReaction, number>>,
+    AppError,
+    { commentId: string; reaction: CommentReaction; on: boolean },
+    { snapshots: [readonly unknown[], unknown][] }
+  >({
+    mutationFn: async ({ commentId, reaction, on }) => {
+      try {
+        return await setCommentReaction(getClient(), commentId, reaction, on);
+      } catch (error) {
+        throw toAppError(error);
+      }
+    },
+    onMutate: async ({ commentId, reaction, on }) => {
+      await queryClient.cancelQueries({ queryKey: commentKeys.chapter(chapterId) });
+      const snapshots = queryClient.getQueriesData({ queryKey: commentKeys.chapter(chapterId) }) as [
+        readonly unknown[],
+        unknown,
+      ][];
+      mapComment(queryClient, chapterId, commentId, (comment) => withReaction(comment, reaction, on));
+      return { snapshots };
+    },
+    onError: (_error, _input, context) => {
+      for (const [key, data] of context?.snapshots ?? []) queryClient.setQueryData(key, data);
+    },
+    onSuccess: (reactions, { commentId }) =>
+      mapComment(queryClient, chapterId, commentId, (comment) => ({ ...comment, reactions })),
+  });
+}
+
+/** People for the @ list while a name is typed (null: the list is closed, nothing is asked). */
+export function useMentionCandidates(query: string | null) {
+  const getClient = useDataClientGetter();
+  return useQuery<MentionSuggestion[], AppError>({
+    queryKey: commentKeys.mentions(query ?? ""),
+    queryFn: () =>
+      searchMentionCandidates(getClient(), query ?? "").catch((e: unknown) => Promise.reject(toAppError(e))),
+    enabled: query !== null && query !== "",
+    staleTime: 30 * 1000,
+    placeholderData: keepPreviousData,
   });
 }
 

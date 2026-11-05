@@ -6,7 +6,7 @@ import type { DataClient } from "../_shared/client.ts";
 import { DataProvider } from "../_shared/data.tsx";
 import { AppError } from "../_shared/errors.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
-import { TEST_USER_ID, testSession, withAuth } from "../_shared/test-auth.ts";
+import { testSession, withAuth } from "../_shared/test-auth.ts";
 import { ToastProvider } from "../_shared/toast.tsx";
 import { readBackup, writeBackup } from "../editor/model/local-backup.ts";
 import { getVersionBlocks, listChapterVersions } from "./api/history.api.ts";
@@ -142,6 +142,8 @@ interface FakeOptions {
   liveVersionId?: string | null;
   blocks?: Record<string, unknown[]>;
   updateRows?: unknown[];
+  /** Error code restore_chapter_version answers with (none = success). */
+  restoreError?: string;
 }
 
 const blockRow = (n: number, text: string, order = n, extra: Record<string, unknown> = {}) => ({
@@ -166,6 +168,12 @@ const versionRow = (n: number, extra: Record<string, unknown> = {}) => ({
 
 function fakeClient(options: FakeOptions = {}) {
   const updates: { values: Record<string, unknown>; eqs: [string, unknown][] }[] = [];
+  const rpcCalls: { name: string; args: Record<string, unknown> }[] = [];
+  const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+    rpcCalls.push({ name, args });
+    if (options.restoreError) return { data: null, error: { code: options.restoreError, message: "refused" } };
+    return { data: Number(args.p_expected_revision) + 1, error: null };
+  });
   const blockQueries: unknown[] = [];
   const draftBody = options.draftBody ?? [{ block_id: bid(1), type: "paragraph", text: "Bản nháp" }];
   const from = vi.fn((table: string) => {
@@ -207,7 +215,7 @@ function fakeClient(options: FakeOptions = {}) {
     };
     return builder;
   });
-  return { from, updates, blockQueries };
+  return { from, rpc, updates, rpcCalls, blockQueries };
 }
 
 describe("history api", () => {
@@ -300,7 +308,8 @@ describe("HistoryScreen", () => {
 
   it("switches to another version", async () => {
     renderWith(twoVersions(), <HistoryScreen storyId={STORY_ID} chapterId={CHAPTER_ID} />);
-    fireEvent.click(await screen.findByRole("button", { name: new RegExp(t.versionLabel(1)) }));
+    const list = await screen.findByRole("list", { name: t.listLabel });
+    fireEvent.click(within(list).getByRole("button", { name: new RegExp(t.versionLabel(1)) }));
     const viewer = await screen.findByRole("region", { name: t.viewerLabel(1) });
     expect(await within(viewer).findByText("Đoạn một cũ")).toBeTruthy();
     expect(within(viewer).queryByText("Đoạn ba")).toBeNull();
@@ -328,29 +337,28 @@ describe("HistoryScreen", () => {
     expect(await within(viewer).findByText(t.compare.summary(1, 0, 1))).toBeTruthy();
   });
 
-  it("restores a version into the draft only after confirmation, at the revision just read, keeping block ids", async () => {
+  it("restores a version on the server only after confirmation, at the revision just read", async () => {
     const c = twoVersions({ draftRevision: 7 });
     renderWith(c, <HistoryScreen storyId={STORY_ID} chapterId={CHAPTER_ID} />);
     const viewer = await screen.findByRole("region", { name: t.viewerLabel(2) });
     await within(viewer).findByText("Đoạn ba");
     fireEvent.click(within(viewer).getByRole("button", { name: t.restore.action }));
-    expect(c.updates).toHaveLength(0);
+    expect(c.rpcCalls).toHaveLength(0);
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("button", { name: t.restore.confirm }));
-    await waitFor(() => expect(c.updates).toHaveLength(1));
-    const update = c.updates[0]!;
-    expect(update.eqs).toEqual([
-      ["chapter_id", CHAPTER_ID],
-      ["revision", 7],
-    ]);
-    expect(update.values).toMatchObject({ title: "Tiêu đề v2", revision: 8, updated_by: TEST_USER_ID });
-    expect((update.values.body as { block_id: string }[]).map((b) => b.block_id)).toEqual([bid(1), bid(2), bid(3)]);
+    await waitFor(() => expect(c.rpcCalls).toHaveLength(1));
+    // The server copies the version (block ids and all) and makes it the draft's base: nothing is written directly.
+    expect(c.rpcCalls[0]).toEqual({
+      name: "restore_chapter_version",
+      args: { p_version_id: vid(2), p_expected_revision: 7 },
+    });
+    expect(c.updates).toHaveLength(0);
     await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.restore.done));
     expect(await screen.findByRole("link", { name: t.restore.openEditor })).toBeTruthy();
   });
 
   it("reports a conflict when the draft changed elsewhere and does not claim success", async () => {
-    const c = twoVersions({ updateRows: [] });
+    const c = twoVersions({ restoreError: "PT409" });
     renderWith(c, <HistoryScreen storyId={STORY_ID} chapterId={CHAPTER_ID} />);
     const viewer = await screen.findByRole("region", { name: t.viewerLabel(2) });
     await within(viewer).findByText("Đoạn ba");
@@ -374,8 +382,8 @@ describe("HistoryScreen", () => {
     await within(viewer).findByText("Đoạn ba");
     fireEvent.click(within(viewer).getByRole("button", { name: t.restore.action }));
     fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: t.restore.confirm }));
-    await waitFor(() => expect(c.updates).toHaveLength(1));
-    expect(readBackup(CHAPTER_ID)).toBeNull();
+    await waitFor(() => expect(c.rpcCalls).toHaveLength(1));
+    await waitFor(() => expect(readBackup(CHAPTER_ID)).toBeNull());
   });
 
   it("shows an empty state for a chapter never published, and not found for another story", async () => {
@@ -506,5 +514,32 @@ describe("PreviewScreen", () => {
     cleanup();
     renderWith(fakeClient({ draftStoryId: "x" }), <PreviewScreen storyId={STORY_ID} chapterId={CHAPTER_ID} />);
     expect(await screen.findByText(t.notFound.title)).toBeTruthy();
+  });
+});
+
+describe("branching history (batch 4 authoring4, Lucian 177)", () => {
+  const branched = () =>
+    fakeClient({
+      versions: [versionRow(3, { parent_version_id: vid(1) }), versionRow(2), versionRow(1)],
+      liveVersionId: vid(3),
+    });
+
+  it("reads parents, and reads versions from before the graph as a straight line", async () => {
+    const list = await listChapterVersions(branched() as unknown as DataClient, CHAPTER_ID);
+    expect(Object.fromEntries(list.map((v) => [v.number, v.parentId]))).toEqual({ 3: vid(1), 2: vid(1), 1: null });
+  });
+
+  it("draws the graph: the live version continues from version 1, version 2 is a side branch", async () => {
+    renderWith(branched(), <HistoryScreen storyId={STORY_ID} chapterId={CHAPTER_ID} />);
+    const graph = await screen.findByRole("group", { name: t.graph.label });
+    const live = within(graph).getByRole("button", { name: t.graph.node(3, true, 1) });
+    expect(within(graph).getByRole("button", { name: t.graph.node(2, false, 1) })).toBeTruthy();
+    expect(screen.getByText(t.graph.branches(1))).toBeTruthy();
+    // The restored branch is called out in the list too.
+    expect(screen.getByText(t.graph.from(1))).toBeTruthy();
+    // Pressing a dot selects that version for viewing.
+    fireEvent.click(within(graph).getByRole("button", { name: t.graph.node(1, false, null) }));
+    expect(await screen.findByRole("region", { name: t.viewerLabel(1) })).toBeTruthy();
+    expect(live.getAttribute("aria-pressed")).toBe("false");
   });
 });

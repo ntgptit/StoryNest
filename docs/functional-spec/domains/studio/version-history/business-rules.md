@@ -139,3 +139,15 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Related screens | SCR-HIST-01 |
 | Evidence | `packages/features/src/history/model/history.ts:89-105`, `packages/features/src/history/screens/history-screen.tsx:292-295`, `packages/features/src/history/strings.en.ts:50,58-65`, test `history.test.tsx:129,352` |
 | Status | Verified |
+
+### BR-HIST-012 — Branching version history (batch 4, Lucian 177)
+| Field | Value |
+| --- | --- |
+| Description | `chapter_versions.parent_version_id` records the version the draft descended from when it was published; `chapter_drafts.base_version_id` is that base (server-owned, no client grant) |
+| Preconditions | Restore: owner / co-author / editor via `restore_chapter_version(version_id, expected_revision)` |
+| Conditions | Triggers on `chapter_versions` set the parent (draft base, else latest version) and move the base to the new version; the publish core is unchanged, so what is published is unchanged. Restore copies the version into the draft on the server, revision + 1, base = that version (PT409 stale revision, PT404 unknown / no role, 22023 missing revision / no draft) |
+| Expected behavior | History shows a branch graph (main line = live version, side branches below), "Continued from version n" on branched versions, and restoring then publishing starts a new branch |
+| Exceptions | Versions published before this migration have no stored parent (immutable rows, not back-filled) and read as linear |
+| Related screens | SCR-HIST-01 |
+| Evidence | `supabase/migrations/20261106040300_branching_version_history.sql`; `supabase/tests/515_branching_history.test.sql`; `packages/features/src/history/hooks/use-history.ts`; `packages/ui/src/widgets/branch-graph.tsx`; `packages/features/src/history/history.test.tsx` |
+| Status | Verified (SQL test, unit test). Supersedes the client-side restore write described in BR-EDT-019/020 (restore now goes through the RPC; error texts unchanged) |

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { newId } from "@storynest/utils";
-import { VISIBILITIES, type Visibility } from "@storynest/validation";
+import { VISIBILITIES, VISIBILITY, type Visibility } from "@storynest/validation";
 import { Button } from "@storynest/ui/components/button";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import {
 } from "@storynest/ui/components/dialog";
 import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
+import { PadlockIcon } from "@storynest/ui/widgets/padlock-icon";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@storynest/ui/components/select";
 import { Textarea } from "@storynest/ui/components/textarea";
 import { checkListForm, asVisibility, type ListFormProblems, type ListFormValues } from "../model/list.ts";
@@ -106,8 +107,10 @@ export function ListFormDialog({
               value={values.visibility}
               onValueChange={(value) => setValues({ ...values, visibility: asVisibility(value) satisfies Visibility })}
             >
-              <SelectTrigger id={visibilityId} className="w-full">
-                <SelectValue />
+              <SelectTrigger id={visibilityId} className="w-full justify-start">
+                {/* Closed while only the owner can see the list; the shackle lifts once others can open it. */}
+                <PadlockIcon open={values.visibility !== VISIBILITY.PRIVATE} className="size-4 text-muted-foreground" />
+                <SelectValue className="mr-auto" />
               </SelectTrigger>
               <SelectContent>
                 {VISIBILITIES.map((value) => (

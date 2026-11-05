@@ -20,14 +20,15 @@ Note: `MyInvitations` (invitee side) is **not** on this screen; it is mounted on
 ## B. Components
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
-| SCR-TEAM-01-C01 | Header "Collaborators" / "Invite others to write "<story>" with you. They only join after accepting the invitation." | `team-screen.tsx:103`, `strings.en.ts:110-112` |
-| SCR-TEAM-01-C02 | Link "Back to story details" | `team-screen.tsx:104-109` |
-| SCR-TEAM-01-C03 | Section "Current collaborators": rows name, @username, role badge, "Remove"; empty "No collaborators yet." | `team-screen.tsx:111-142` |
-| SCR-TEAM-01-C04 | Section "Invitations": rows invitee name, @username · role, status badge (Pending/Accepted/Declined/Cancelled), "Cancel invitation" on pending; empty "No invitations sent." | `team-screen.tsx:144-184` |
-| SCR-TEAM-01-C05 | Form "Invite a collaborator": "Username" input + hint/error (same element), "Role" select + role hint, "Send invitation" | `team-screen.tsx:240-291` |
-| SCR-TEAM-01-C06 | Confirm dialog "Remove this collaborator?" | `team-screen.tsx:188-208` |
-| SCR-TEAM-01-C07 | Skeletons, error state with retry, "Story not found", "Only the owner can manage this" | `team-screen.tsx:50-72,84-99` |
+| SCR-TEAM-01-C01 | Header "Collaborators" / "Invite others to write "<story>" with you. They only join after accepting the invitation." | `team-screen.tsx:95`, `strings.en.ts:110-112` |
+| SCR-TEAM-01-C02 | Breadcrumb Studio › story › Collaborators (Lucian 103), as on SCR-CHM-01-C02; the story switcher (Lucian 037) lists only stories the author owns (only the owner manages a team) and opens their team page | `components/studio-crumbs.tsx`, `packages/ui/src/widgets/breadcrumbs.tsx` |
+| SCR-TEAM-01-C03 | Section "Current collaborators": rows name, @username, role badge, "Remove"; empty "No collaborators yet." | `team-screen.tsx:103-134` |
+| SCR-TEAM-01-C04 | Section "Invitations": rows invitee name, @username · role, status badge (Pending/Accepted/Declined/Cancelled), "Cancel invitation" on pending; empty "No invitations sent." | `team-screen.tsx:136-176` |
+| SCR-TEAM-01-C05 | Form "Invite a collaborator": "Username" input + hint/error (same element), "Role" select + role hint, "Send invitation" | `team-screen.tsx:231-278` |
+| SCR-TEAM-01-C06 | Confirm dialog "Remove this collaborator?" | `team-screen.tsx:180-200` |
+| SCR-TEAM-01-C07 | Skeletons, error state with retry, "Story not found", "Only the owner can manage this" | `team-screen.tsx:42-64,76-91` |
 | SCR-TEAM-01-C08 | Username combobox (Lucian 034) | From 3 characters (a leading @ ignored, 250 ms pause) up to 5 authors from the existing author search (`search_authors`: people with a public story) with avatar, name and @username, typed part marked. Arrow keys move, Enter/press picks, Tab accepts the faint completion, Escape closes; "Searching…" / "No author matches. You can still invite by the exact username." Enter without a highlighted row submits what was typed, so any exact username still works | `team-screen.tsx` (`useAuthorSuggestions`), `packages/ui/src/widgets/autocomplete-input.tsx` |
+| SCR-TEAM-01-C09 | Role permission matrix (Lucian 184, read-only, batch 4 · platform4) | Below the invite form: "What each role can do" / "Taken from the database's permission rules. These rights are fixed and cannot be changed per story." Table Right × Owner / Co-author / Editor from `story_role_rights()`; skeleton while loading, "Could not load the rights table." + "Try again" (BR-TEAM-014) | `team-screen.tsx` (`RoleRightsSection`), `packages/ui/src/widgets/role-matrix.tsx` |
 
 ## C. User actions & system responses
 
@@ -64,7 +65,7 @@ Note: `MyInvitations` (invitee side) is **not** on this screen; it is mounted on
 
 | Field | SCR-TEAM-01-A05 Back / Retry |
 | --- | --- |
-| Trigger | "Back to story details"; "Try again" |
+| Trigger | Breadcrumb (story / Studio); "Try again" |
 | Expected behavior | SCR-STM-03; refetch collaborators and invitations |
 | Evidence | `team-screen.tsx:87-99,104-109` |
 

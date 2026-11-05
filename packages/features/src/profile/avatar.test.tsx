@@ -246,6 +246,17 @@ describe("AvatarEditor", () => {
     expect(revoke).toHaveBeenCalledWith("blob:picked");
   });
 
+  it("shows the original and the uploaded size after an upload", async () => {
+    const { client } = fakeClient();
+    const small: PreparedAvatar = { ...prepared, blob: new Blob(["y".repeat(30_000)], { type: "image/webp" }) };
+    const { toast } = setup(profileOf(null), async () => small, client);
+    choose(new File(["x".repeat(1_000_000)], "me.png", { type: "image/png" }));
+    await confirmCrop();
+    await waitFor(() => expect(toast).toHaveBeenCalled());
+    expect(document.querySelector('[data-slot="size-shrink"]')?.textContent).toContain("97");
+    expect(document.querySelector('[data-slot="upload-veil"]')?.getAttribute("data-busy")).toBeNull();
+  });
+
   /** Drops `file` onto the avatar row the way a browser does (a drag that carries files). */
   const drop = (file: File) => {
     const target = screen.getByRole("button", { name: profileText.avatar.add });

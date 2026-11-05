@@ -26,6 +26,7 @@
 | SCR-AUTH-01-C08 | Submit button | "Sign in" / pending "Signing in…" |
 | SCR-AUTH-01-C09 | Footer | "Don't have an account?" + "Sign up" → `/register[?next]` |
 | SCR-AUTH-01-C10 | Email typo suggestion (Lucian 264) | Under the email field, `aria-live="polite"`: button "Did you mean {address}?" with the corrected letters marked; one press fills the field (BR-AUTH-001) |
+| SCR-AUTH-01-C11 | Lockout countdown (Lucian 067, batch 3 · shell3) | Replaces the alert banner only when a rate-limit error names its wait ("…after 37 seconds", Supabase's email limit does): padlock in a shrinking ring, "Too many attempts" / "Try again in 0:37" (ticks visually; the region announces the full wait once), at zero the shackle opens and "You can try again now". Submit stays disabled until then. No number in the error → the usual "You're going too fast" banner, nothing estimated. Adds "Reset your password instead" → `/forgot-password` while waiting |
 
 ## C. User actions & system responses
 

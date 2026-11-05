@@ -6,6 +6,7 @@ import { cn } from "../lib/utils.ts";
 
 export function PageHeader({
   title,
+  heading,
   description,
   actions,
   onBack,
@@ -13,6 +14,8 @@ export function PageHeader({
   className,
 }: {
   title: string;
+  /** Replaces the plain `<h1>` (e.g. an InlineEditTitle for the owner); it must render the page's `<h1>` itself. */
+  heading?: ReactNode;
   description?: string;
   actions?: ReactNode;
   /** Shows a back button when provided; `backLabel` is its accessible name. */
@@ -34,7 +37,7 @@ export function PageHeader({
         </Button>
       ) : null}
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-2xl font-semibold tracking-tight">{title}</h1>
+        {heading ?? <h1 className="truncate text-2xl font-semibold tracking-tight">{title}</h1>}
         {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}

@@ -29,6 +29,7 @@
 | SCR-LIB-01-C07 | Empty state | Per tab icon/title/description | `library-screen.tsx:130-132`, `strings.en.ts:7-17` |
 | SCR-LIB-01-C08 | Error state | "Couldn't load your library" + "Try again" | `library-screen.tsx:109-117` |
 | SCR-LIB-01-C09 | My lists (Lists tab) | See [SCR-LIST-01 §B](../../reading-lists/screens/reading-list.md#b-components) component C08 | `my-lists.tsx` |
+| SCR-LIB-01-C10 | Reading streak chip (header action, batch 4 habits4) | Flame + "N days · read/goal today", link to `/me` named "N-day streak, read of goal chapters today. See your reading habits"; hidden until the habits load and on an error (BR-HAB-002, BR-HAB-003) | `packages/features/src/reading-habits/screens/reading-streak-chip.tsx` |
 
 ## C. User actions & system responses
 
@@ -136,6 +137,7 @@
 - SCR-LIB-01-AC10 [Proposed] Given more than 50 entries in a tab, when I reach the end, then I can load more (F-LIB-01).
 - SCR-LIB-01-AC11 [Proposed] Given I open `/library?tab=lists` (or come back from a list page), when the page loads, then the Lists tab is selected (U-LIB-01).
 - SCR-LIB-01-AC12 [Proposed] Given I remove an entry by mistake, when the toast shows, then it offers "Undo" (U-LIB-02).
+- SCR-LIB-01-AC13 Given I read 2 chapters today with a goal of 3 and a 4-day streak, when the library loads, then the header chip reads "4 days · 2/3 today" and opens `/me` (BR-HAB-002/003).
 
 ## F. Findings referenced
 

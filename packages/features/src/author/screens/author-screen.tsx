@@ -2,6 +2,7 @@
 
 import { UserRound } from "lucide-react";
 import { formatCount } from "@storynest/utils";
+import { Button } from "@storynest/ui/components/button";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
@@ -11,6 +12,8 @@ import { RollingNumber } from "@storynest/ui/widgets/rolling-number";
 import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
 import { STORY_GRID, StoryListFrame, StoryTile, useLatestStories, useStoryView } from "../../discovery/index.ts";
 import { ReportButton } from "../../moderation/index.ts";
+import { AppLink } from "../../_shared/platform.tsx";
+import { searchHref } from "../../search/index.ts";
 import { ShareButton, shareText } from "../../share/index.ts";
 import { FollowAuthorButton } from "../components/follow-author-button.tsx";
 import { useAuthorProfile } from "../hooks/use-author.ts";
@@ -39,12 +42,24 @@ export function AuthorScreen({
         title={t.error.title}
         description={t.error.description}
         retryLabel={t.error.retry}
-        onRetry={() => void profile.refetch()}
+        onRetry={() => profile.refetch()}
       />
     );
   }
   if (!profile.data) {
-    return <EmptyState icon={UserRound} title={t.notFound.title} description={t.notFound.description} />;
+    // A mistyped name: the authors search finds the close ones (Lucian 089).
+    return (
+      <EmptyState
+        icon={UserRound}
+        title={t.notFound.title}
+        description={t.notFound.description}
+        action={
+          <Button asChild variant="outline" className="h-auto min-h-9 max-w-full py-2 break-words whitespace-normal">
+            <AppLink href={searchHref(username, "authors")}>{t.notFound.searchSimilar(username)}</AppLink>
+          </Button>
+        }
+      />
+    );
   }
   return <AuthorPage profile={profile.data} locale={locale} coverUrlFor={coverUrlFor} />;
 }
@@ -113,7 +128,7 @@ function AuthorPage({
             title={t.error.title}
             description={t.error.description}
             retryLabel={t.error.retry}
-            onRetry={() => void feed.refetch()}
+            onRetry={() => feed.refetch()}
           />
         ) : feed.isPending ? (
           <div className={STORY_GRID} aria-busy>
@@ -132,6 +147,7 @@ function AuthorPage({
               renderItem={(story) => (
                 <StoryTile story={story} locale={locale} coverUrlFor={coverUrlFor} variant={storyView.view} />
               )}
+              revealAppended
               hasMore={feed.hasNextPage}
               isLoadingMore={feed.isFetchingNextPage}
               onLoadMore={() => void feed.fetchNextPage()}

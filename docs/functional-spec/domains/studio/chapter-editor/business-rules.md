@@ -385,3 +385,27 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Related screens | SCR-EDT-01 |
 | Evidence | `packages/features/src/editor/hooks/use-publishing.ts:42-64` |
 | Status | Verified |
+
+### BR-EDT-029 — Draft sign-off (batch 4, Lucian 180)
+| Field | Value |
+| --- | --- |
+| Description | One current review per chapter (`chapter_reviews`: pending → approved / changes_requested, the saved revision it is about, notes up to 500 chars) |
+| Preconditions | Ask: any team member (`request_chapter_review`, the draft is saved first, revision must match). Decide: owner or co-author who did not ask (`decide_chapter_review`) |
+| Conditions | Asking again replaces the review with a new pending one. Notifications (existing table / realtime / bell): `chapter_review_requested` to owner + co-authors except the requester, `chapter_review_approved` / `chapter_review_changes_requested` to the requester; deduped per revision / decision; link to the editor |
+| Expected behavior | The editor shows a sign-off sheet with three seals (drafted, review, approved; sent back stamps in the destructive colour) and says when the draft changed after the reviewed revision |
+| Exceptions | Advisory: publish / schedule / unpublish do not read reviews. Editor deciding → 42501; deciding your own request → 42501; not pending → PT409; archived chapter → PT409 |
+| Related screens | SCR-EDT-01, SCR-NOTI-01 |
+| Evidence | `supabase/migrations/20261106040400_chapter_reviews.sql`; `supabase/tests/520_chapter_reviews.test.sql`; `packages/features/src/editor/components/review-panel.tsx`; `packages/features/src/editor/team-tools.test.tsx`; `packages/features/src/notifications/model/notification.ts` |
+| Status | Verified (SQL test, unit test) |
+
+### BR-EDT-030 — Advisory edit lock with hand-over (batch 4, Lucian 196)
+| Field | Value |
+| --- | --- |
+| Description | `chapter_edit_locks` (holder, 90 s expiry, optional request) managed only by `claim_edit_lock`, `request_edit_lock`, `hand_over_edit_lock`, `decline_edit_request`, `release_edit_lock` |
+| Preconditions | Team member with an active account (42501 / PT404 otherwise) |
+| Conditions | The open editor claims on open and every 30 s while visible (takes a free / expired lock, renews its own), releases on close; a holder no longer on the team does not keep it. Updates via Supabase Realtime (already used for notifications) plus a 20 s poll |
+| Expected behavior | The editor shows who is editing; others can ask, the holder can hand over or keep editing |
+| Exceptions | Advisory only: it never blocks typing or saving and does not touch `chapter_drafts`, so the optimistic revision check is unchanged. Hand over without holding the lock or without a request → PT409 |
+| Related screens | SCR-EDT-01 |
+| Evidence | `supabase/migrations/20261106040600_chapter_edit_locks.sql`; `supabase/tests/530_chapter_edit_locks.test.sql`; `packages/features/src/editor/hooks/use-team-tools.ts`; `packages/ui/src/widgets/control-handoff.tsx` |
+| Status | Verified (SQL test, unit test); realtime delivery not verified (no Supabase project) |

@@ -10,7 +10,7 @@
 | User goals | See the trend over 7/30/90 days; spot the chapter where readers stop |
 | Actors / roles | Owner, co-author (editor excluded) |
 | Related entities | RPCs `author_chapter_stats(story)`, `author_story_daily(story, days)`; tables `chapter_stats`, `chapter_read_events`, `chapter_votes`, `comments`, `chapter_versions`; index `idx_chapter_read_events_story_day` |
-| Code | `packages/features/src/analytics/{api/analytics.api.ts,hooks/use-analytics.ts,model/stats.ts,components/daily-chart.tsx,components/reads-heatmap.tsx,screens/story-stats-screen.tsx,keys.ts}`; `packages/ui/src/widgets/{synced-small-multiples,calendar-heatmap,funnel-steps,rolling-number}.tsx`; `supabase/migrations/20261104002100_author_stats.sql` |
+| Code | `packages/features/src/analytics/{api/analytics.api.ts,hooks/use-analytics.ts,model/stats.ts,components/daily-chart.tsx,components/reads-heatmap.tsx,screens/story-stats-screen.tsx,keys.ts}`; `packages/ui/src/widgets/{synced-small-multiples,calendar-heatmap,funnel-steps,scatter-picker,rolling-number}.tsx`; `supabase/migrations/20261104002100_author_stats.sql` |
 | Dependencies | OBJ-PROG (read events / read counting), OBJ-VOTE, OBJ-CMT, OBJ-JOB (stats aggregation job, event purge) |
 
 | Rule | Name | Status |
@@ -29,6 +29,12 @@
 | BR-STAT-012 | Publish-day flags | Verified |
 | BR-STAT-013 | Reads heatmap (last 90 days) | Verified |
 | BR-STAT-014 | Zooming the daily charts | Verified |
+| BR-STAT-015 | Chapters compared (scatter) | Verified |
+| BR-STAT-016 | Custom date range | Verified (local PostgreSQL only) |
+| BR-STAT-017 | Weekly reader cohorts | Verified (local PostgreSQL only) |
+| BR-STAT-018 | Signed-in versus guest reads | Verified (local PostgreSQL only) |
+| BR-STAT-019 | What readers say (comment terms) | Verified (local PostgreSQL only) |
+| BR-STAT-020 | Where readers come from | Verified (local PostgreSQL only) |
 
 ## 2. Rules
 
@@ -134,7 +140,7 @@
 | Description | Three small multiples (Reads, Likes, Comments: the three series `author_story_daily` returns) on one day axis. Before drawing, `alignDaily` puts the points on one sorted, gap-free UTC axis (a duplicate day is added up, a missing day is 0, a malformed day is dropped), so index i is the same day in every chart. Each chart has its own scale: bar height = value ÷ that series' busiest day, a non-zero value at least 2% tall, zero empty; a dashed line marks the series' mean over the range. A shared cursor (pointer, touch, ←/→/Home/End/Esc on a focused chart) shows that day's value and the change from the day before in every chart and announces the day in a polite live region; with no cursor the latest day is shown. The figure's caption is the text summary ("30-day chart: n reads, n likes, n comments"); a "Show as table" toggle lists the same numbers |
 | Preconditions | Daily series loaded |
 | Conditions | All-zero range → "No activity in this range yet." instead of a chart. Each chart keeps 90 bar slots (the longest range) counted back from the latest day, so switching ranges morphs the bars that stay instead of replacing them; the previous range stays on screen while the next loads (`placeholderData`). Colours `--chart-1..3` only |
-| Expected behavior | No chart library; motion only on a range change or a zoom (BR-STAT-014), never on first render; reduced motion clamps it |
+| Expected behavior | No chart library; motion only on a range change, a zoom (BR-STAT-014) or a scatter axis/filter change (BR-STAT-015), never on first render; reduced motion clamps it |
 | Exceptions | — (U-STAT-02 resolved) |
 | Related screens | SCR-STAT-01 |
 | Evidence | `packages/features/src/analytics/components/daily-chart.tsx`; `packages/ui/src/widgets/synced-small-multiples.tsx`; `packages/features/src/analytics/model/stats.ts` (`alignDaily`, `formatDay`); `packages/features/src/analytics/analytics.test.tsx`; `packages/ui/src/widgets/stats-widgets.test.tsx` |
@@ -199,3 +205,75 @@
 | Related screens | SCR-STAT-01 |
 | Evidence | `packages/ui/src/widgets/synced-small-multiples.tsx`; `packages/ui/src/widgets/stats-widgets.test.tsx` ("SyncedSmallMultiples zoom") |
 | Status | Verified |
+
+### BR-STAT-015 — Chapters compared (scatter)
+| Field | Value |
+| --- | --- |
+| Description | "Chapters compared" plots each published chapter as a dot from the BR-STAT-002 rows only (`chapterScatter`, pure): x = the chapter's all-time reads, y = a choice of **Likes per 100 reads** (`likes ÷ reads × 100`, default) or **Retention** (BR-STAT-003). The axes start at 0 and end at the largest plotted value. The optional filter "Fade chapters under n reads" fades (and makes unpickable) chapters with fewer than `ceil(0.1 × most-read chapter's reads)` reads (`lowReadsThreshold`, `LOW_READS_SHARE`), because their ratios swing a lot |
+| Preconditions | BR-STAT-001; chapters loaded |
+| Conditions | Section shown only when at least two chapters have reads. Likes per 100 reads leaves out chapters with 0 reads; Retention leaves out chapter 1 and any chapter after one with 0 reads; the summary says how many are left out. No filter when the threshold would be 1 read or less, or no plotted chapter is under it. Nothing plottable on the chosen axis → "No chapter can be plotted on this axis yet." |
+| Expected behavior | Labelled as reads, never readers (note). Pressing a dot shows "Chapter n · title: n reads, n likes, <axis> <value>." in a polite live region. Switching the axis or toggling the filter is purely a view: nothing is requested, the dots glide to their new places (never on first render; reduced motion jumps) |
+| Exceptions | Reads, not distinct readers, so likes per 100 reads is not a share of readers who liked |
+| Related screens | SCR-STAT-01 |
+| Evidence | `packages/features/src/analytics/model/stats.ts` (`chapterScatter`, `lowReadsThreshold`); `packages/features/src/analytics/components/chapter-scatter.tsx`; `packages/ui/src/widgets/scatter-picker.tsx` (Lucian #155); `packages/features/src/analytics/analytics.test.tsx` ("chapter scatter model", "ChapterScatter"); `packages/ui/src/widgets/stats-widgets.test.tsx` ("ScatterPicker") |
+| Status | Verified |
+
+### BR-STAT-016 — Custom date range
+| Field | Value |
+| --- | --- |
+| Description | Besides 7/30/90 days, the range tabs offer **Custom**: a month calendar (Lucian #030) picks a first and a last UTC day; Apply replaces the preset for the totals (BR-STAT-005) and the daily charts (BR-STAT-009). Served by `author_story_daily_range(story_id, from, to)`, same rows and rules as `author_story_daily` |
+| Preconditions | BR-STAT-001 |
+| Conditions | from ≤ to, both inside the last 90 UTC days (today included), at most 90 days: days outside are disabled in the calendar and refused by the RPC (22023), because daily reads are purged after 90 days and an older day would show reads as 0. The heatmap stays on 90 days; the cohorts, split and sources use 90 days while a custom range is on |
+| Expected behavior | The band follows the pointer or the arrow keys between the two picks; months slide sideways only when changed; the applied range shows as a link ("from – to (n days)") that reopens the calendar. A preset tab clears the custom range |
+| Exceptions | Not persisted (local state, like the preset) |
+| Related screens | SCR-STAT-01 |
+| Evidence | `supabase/migrations/20261106030000_author_story_daily_range.sql` (also `private.story_audience_gate`, the owner/co-author rule shared by BR-STAT-016..020); `supabase/tests/450_audience_insights.test.sql`; `packages/ui/src/widgets/date-range-calendar.tsx`; `packages/features/src/analytics/model/insights.ts` (`rangeBounds`, `isValidRange`); `analytics/hooks/use-analytics.ts` (`useDailySeries`). Rollback: `DROP FUNCTION public.author_story_daily_range(uuid, date, date); DROP FUNCTION private.story_audience_gate(uuid);` (after the later insight functions) |
+| Status | Verified on local PostgreSQL with the Supabase shim; not run against a Supabase project |
+
+### BR-STAT-017 — Weekly reader cohorts
+| Field | Value |
+| --- | --- |
+| Description | A cohort table (Lucian #161): one row per ISO week (Monday, UTC) of the last 8 weeks holding the readers who first read the story that week, one column per week after, each cell the share of the cohort that read any chapter that week. `author_reader_cohorts(story_id, weeks 1..12)` returns only counts per (cohort week, offset) |
+| Preconditions | BR-STAT-001 |
+| Conditions | A reader is one `chapter_read_events.reader_id` (an account, or one anonymous browser id). "First read" = first read still kept (events are purged after 90 days), computed over all kept events, so a reader from before the window is never new inside it. **Cohorts of 1–4 readers are suppressed** (NULL counts, `suppressed = true`), drawn as dashed empty cells, so an author cannot follow one known reader week by week; a week nobody started in is a cohort of 0 |
+| Expected behavior | Press a cell to read "Started the week of d (n new readers) · k weeks later: p% still reading" in a polite live region; press again to clear. No reader id leaves the database |
+| Exceptions | A reader whose real first read is older than 90 days counts as new; a guest on two browsers is two readers |
+| Related screens | SCR-STAT-01 |
+| Evidence | `20261106030100_reader_cohorts.sql`; `450_audience_insights.test.sql` (section 3b); `packages/ui/src/widgets/cohort-grid.tsx`; `analytics/components/audience-insights.tsx` (`ReaderCohorts`); `AUDIENCE_LIMITS.minGroupSize` in `packages/validation/src/limits.ts`. Rollback: `DROP FUNCTION public.author_reader_cohorts(uuid, integer);` |
+| Status | Verified on local PostgreSQL; not run against Supabase |
+
+### BR-STAT-018 — Signed-in versus guest reads
+| Field | Value |
+| --- | --- |
+| Description | A 100-cell waffle chart (Lucian #326) of the reads of the selected window split by `chapter_read_events.is_anonymous`, with the number of distinct accounts and guest browsers. `author_reader_split(story_id, days 1..90)` returns four counts |
+| Preconditions | BR-STAT-001 |
+| Conditions | Window = the preset days (90 with a custom range). Cells by largest remainder so they add up to 100; no reads → "No reads in this range yet." |
+| Expected behavior | On a window change only the cells that change hands flip, along a diagonal (22 ms apart), and the legend percentages roll; never on first render. Press a legend item to keep only that segment in focus |
+| Exceptions | Aggregate only; the two read counts add up to the daily reads of the same days |
+| Related screens | SCR-STAT-01 |
+| Evidence | `20261106030200_reader_split.sql`; `450_audience_insights.test.sql` (3c); `packages/ui/src/widgets/waffle-chart.tsx`. Rollback: `DROP FUNCTION public.author_reader_split(uuid, integer);` |
+| Status | Verified on local PostgreSQL; not run against Supabase |
+
+### BR-STAT-019 — What readers say (comment terms)
+| Field | Value |
+| --- | --- |
+| Description | A word cloud per month (Lucian #399) of the last 3 months: the 24 most frequent terms of the story's **visible** comments (status `visible`, not deleted, chapter not deleted), sized by how many comments contain them. `author_comment_terms(story_id, months 1..12, limit 1..50)` tokenises in SQL (`comment_tokens`: NFC, lower-case incl. Vietnamese capitals, split on whitespace / ASCII punctuation / digits, 2–30 characters) and drops the stopwords of `term_stopwords` (Vietnamese and English function words, URL pieces; administrator-editable, not readable by API roles) |
+| Preconditions | BR-STAT-001 |
+| Conditions | A term is listed only when **at least two different commenters** used it that month, so a word only one person wrote cannot be read back. No comment text, comment id or author id is returned. A word repeated in one comment counts once |
+| Expected behavior | Switch month: words that stay glide (FLIP) and resize, new words pop in; press a word for "“term”: n comments · ±k vs last month / new this month" |
+| Exceptions | Vietnamese is split by syllable; on a non-UTF-8 test cluster only ASCII is lower-cased (Supabase is UTF-8) |
+| Related screens | SCR-STAT-01 |
+| Evidence | `20261106030300_comment_terms.sql`; `450_audience_insights.test.sql` (section 4); `packages/ui/src/widgets/word-cloud.tsx`. Rollback: `DROP FUNCTION public.author_comment_terms(uuid, integer, integer); DROP FUNCTION public.comment_tokens(text); DROP TABLE public.term_stopwords;` |
+| Status | Verified on local PostgreSQL (SQL_ASCII cluster); the UTF-8 lower-casing path is not exercised by the tests |
+
+### BR-STAT-020 — Where readers come from
+| Field | Value |
+| --- | --- |
+| Description | A three-stage Sankey (Lucian #153): per in-app source of each reader's first read in the window (BR-PROG-016), readers → read on (at least two different chapters in the window) → followed (signed-in readers who follow the story now). `author_read_sources(story_id, days 1..90)` |
+| Preconditions | BR-STAT-001, BR-PROG-016 |
+| Conditions | Sources with fewer than 5 readers come back with NULL counts (`suppressed`) and are listed only as "n sources … hidden"; reads recorded without a source group as "Unknown" |
+| Expected behavior | Press a source to keep only its flow (its dashes march, not under reduced motion) and read "Search: n readers, n read on, n followed (p%)" |
+| Exceptions | No referrer or other-site data exists, so there is no "external" channel |
+| Related screens | SCR-STAT-01 |
+| Evidence | `20261106030700_read_sources.sql`; `450_audience_insights.test.sql` (3d), `490_read_sources.test.sql`; `packages/ui/src/widgets/flow-sankey.tsx`. Rollback: see BR-PROG-016 |
+| Status | Verified on local PostgreSQL; not run against Supabase |

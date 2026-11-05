@@ -28,6 +28,7 @@ export function emptyStoryForm(): StoryForm {
     status: STORY_STATUS.DRAFT,
     visibility: VISIBILITY.PRIVATE,
     isMature: false,
+    updateDays: 0,
   };
 }
 
@@ -57,6 +58,7 @@ function toColumns(form: StoryForm) {
     status: form.status,
     visibility: form.visibility,
     is_mature: form.isMature,
+    ...(form.updateDays === undefined ? {} : { update_days: form.updateDays }),
   };
 }
 

@@ -1,21 +1,34 @@
 import { VISIBILITIES, VISIBILITY, type Visibility } from "@storynest/validation";
 import { excerpt } from "@storynest/utils";
 import { storyHref, toStorySummary, type StoryListRow, type StorySummary } from "../../discovery/index.ts";
+import { toPartRef, type PartRef } from "../../_shared/parts.ts";
 
 /** One row of the story-page query: the discovery row plus the fields only the detail page needs. */
 export interface StoryDetailRow extends StoryListRow {
   visibility: string;
   created_at: string;
+  /** Weekly update schedule (bit mask, Monday = bit 0). */
+  update_days?: number;
+  /** BlurHash of the cover, for the blur-up placeholder. */
+  cover_blurhash?: string | null;
 }
 
 export interface StoryDetail extends StorySummary {
   visibility: Visibility;
   createdAt: string;
+  updateDays: number;
+  coverBlurhash: string | null;
 }
 
 export function toStoryDetail(row: StoryDetailRow): StoryDetail {
   const visibility = VISIBILITIES.find((v) => v === row.visibility) ?? VISIBILITY.PRIVATE;
-  return { ...toStorySummary(row), visibility, createdAt: row.created_at };
+  return {
+    ...toStorySummary(row),
+    visibility,
+    createdAt: row.created_at,
+    updateDays: row.update_days ?? 0,
+    coverBlurhash: row.cover_blurhash ?? null,
+  };
 }
 
 /**
@@ -41,6 +54,8 @@ export interface ChapterRow {
   sort_order: number;
   first_published_at: string | null;
   version: { title: string; word_count: number } | null;
+  /** The story part (volume) the chapter is in. */
+  part?: { id: string; title: string } | { id: string; title: string }[] | null;
 }
 
 export interface ChapterListItem {
@@ -51,6 +66,8 @@ export interface ChapterListItem {
   title: string;
   wordCount: number;
   publishedAt: string | null;
+  /** The part (volume) heading this chapter sits under, if any. */
+  part?: PartRef | null;
 }
 
 export function toChapterListItem(row: ChapterRow): ChapterListItem {
@@ -61,6 +78,7 @@ export function toChapterListItem(row: ChapterRow): ChapterListItem {
     title: row.version?.title ?? "",
     wordCount: row.version?.word_count ?? 0,
     publishedAt: row.first_published_at,
+    part: toPartRef(row.part),
   };
 }
 

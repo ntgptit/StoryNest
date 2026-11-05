@@ -23,6 +23,7 @@
 | SCR-AUTH-03-C05 | Footer link | "Back to sign in" → `/login` |
 | SCR-AUTH-03-C06 | Sent card (`role="status"`) | "Instructions sent" / "If this email has an account, you'll get a password reset link within a few minutes." |
 | SCR-AUTH-03-C07 | Email typo suggestion (Lucian 264) | As SCR-AUTH-01-C10 (BR-AUTH-001) |
+| SCR-AUTH-03-C09 | Lockout countdown (Lucian 067, batch 3 · shell3) | On the request form: as SCR-AUTH-01-C11, without the reset link. On the sent card a resend that is refused with a named wait restarts the "Resend in {n} s" ring for that wait instead |
 | SCR-AUTH-03-C08 | Sent card extras (Lucian 064) | Envelope animation, the address, spam hint, "Resend email" (locked "Resend in {n} s" with a ring for 60 s, `aria-disabled`; after a resend "Email sent again." and the envelope replays; errors in the alert banner), "Use a different email" → form (BR-AUTH-014) |
 
 ## C. User actions & system responses

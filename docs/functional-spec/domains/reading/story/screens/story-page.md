@@ -32,13 +32,14 @@
 | SCR-STORY-01-C08 | Library actions | `StoryActions`: Follow / Following, Save to library / Saved (toggle buttons with `aria-pressed`), plus `AddToListButton`. Group label = "Sign in to follow or save stories" | `story/components/story-actions.tsx` (rules `BR-LIB-*`, `BR-LIST-*`) |
 | SCR-STORY-01-C09 | Report button | `ReportButton kind="story"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `story-screen.tsx:129-130` |
 | SCR-STORY-01-C10 | Synopsis | h2 "Synopsis". Text keeps line breaks; empty → "The author hasn't written a synopsis yet." Clamped to 6 lines with a fade and "Show more / Show less" (`ExpandableText`, Lucian #288): the toggle appears only when the text really overflows (measured), carries `aria-expanded`/`aria-controls`, and the full text stays in the DOM (SEO) | `story-screen.tsx`, `ui/widgets/expandable-text.tsx` |
-| SCR-STORY-01-C11 | Tag list | `#tag` badges linking to the home feed filtered by tag; aria-label "View stories tagged {name}" (`BR-TAX-*`) | `story-screen.tsx:149-159` |
-| SCR-STORY-01-C12 | Chapter list | h2 "Chapters" + "N chapters". Ordered list of rows: "Chapter N", title (truncated), "N words" | `story-screen.tsx:162-208` |
-| SCR-STORY-01-C13 | Similar stories | `SimilarStories` ("you may also like" with a reason) (`BR-REC-*`) | `story-screen.tsx:210` |
-| SCR-STORY-01-C14 | Skeletons | Page skeleton (cover + 3 lines) and chapter-list skeleton (3 rows), `aria-busy` | `story-screen.tsx:172-177,244-255` |
+| SCR-STORY-01-C11 | Tag list | `#tag` badges linking to the home feed filtered by tag; aria-label "View stories tagged {name}" (`BR-TAX-*`) | `story-screen.tsx:125-135` |
+| SCR-STORY-01-C12 | Chapter list | h2 "Chapters" + "N chapters". Ordered list of rows: "Chapter N", title (truncated), "N words". A long story (more than 50 chapters, [BR-READ-022](../../chapter-reader/business-rules.md#br-read-022--long-stories-chapter-ranges)) shows the rows in an accordion of ranges ("Chapters 1–50", "50 chapters"; one open at a time; headers are buttons with `aria-expanded`, ↑/↓/Home/End move between them; the continue chapter's range opens first). The bottom-sheet TOC of C17 gets a scrub rail for such stories | `story-screen.tsx` (`ChapterList`, `ChapterRangeList`), `ui/widgets/accordion-list.tsx` |
+| SCR-STORY-01-C13 | Similar stories | `SimilarStories` ("you may also like" with a reason) (`BR-REC-*`) | `story-screen.tsx:186` |
+| SCR-STORY-01-C14 | Skeletons | Page skeleton (cover + 3 lines) and chapter-list skeleton (3 rows), `aria-busy` | `story-screen.tsx:148-153,192-203` |
 | SCR-STORY-01-C15 | JSON-LD + metadata | `Book` structured data, canonical, robots, OG (server only) | `page.tsx:18-39,55-63` |
 | SCR-STORY-01-C16 | Share button | "Share" next to Report; not shown for a private story. Opens the share dialog (`ShareDialog`, Lucian #254): the absolute story link (canonical origin via `PlatformAdapter.shareOrigin`) in a read-only field, "Copy" that turns into a check (`CopyLinkButton`, Lucian #008, announced politely), and "Share with another app" where `navigator.share` exists | `story-screen.tsx`, `features/share/components/share-button.tsx` |
 | SCR-STORY-01-C17 | Sticky reading bar | Once C07 has scrolled up out of view a compact bar rises at the bottom (above the mobile bottom nav, safe-area aware; `StickyActionBar`, Lucian #221): title, "Chapter N · title", a "Chapters" button that opens the TOC as a bottom sheet (`TocSheet`, continue chapter marked `aria-current="step"`) and the same Start/Continue link. It slips away when C07 is visible again; while hidden it is `inert` and `aria-hidden`. Not shown without published chapters | `story-screen.tsx`, `ui/widgets/sticky-action-bar.tsx`, `reader/components/toc-sheet.tsx` |
+| SCR-STORY-01-C18 | Rating (Lucian 016, batch 4 · community4) | Under the library actions: "Rating", the average and count, and for a signed-in reader a five-star slider (preview on hover, newly lit stars pop with a sparkle, arrows/Home/End/0–5, word for the score); disabled with a hint until a chapter was read; guests get a sign-in link (BR-STORY-017) | `story-screen.tsx`, `components/story-rating.tsx`, `ui/widgets/star-rating.tsx` |
 
 ## C. User actions & system responses
 
@@ -236,3 +237,6 @@ F-STORY-01 (report shown to author), F-STORY-02 (unbounded chapter list), F-STOR
 
 - Q-STORY-01 — Should stories of suspended authors stay readable? (BR-STORY-016)
 - Q-READ-01 — Should "Chapter N" be the position among published chapters or `sort_order`? (BR-STORY-011)
+
+## Batch 4 · authoring4
+Batch 4 authoring4: cover blur-up from `cover_blurhash` (BR-STM-029); "Updates on …" line under the counters (BR-STM-028); next chapter countdown above the chapter list (BR-STORY-018); chapters grouped into part folders (BR-CHM-016). The reader contents sheet heads part runs with the part name. Rollback: top of `20261106040200_next_chapter_countdown.sql`.

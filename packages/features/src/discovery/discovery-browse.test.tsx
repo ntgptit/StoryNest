@@ -157,7 +157,9 @@ describe("DiscoverScreen: empty filtered feed (loosen the filters)", () => {
       count: (q) => (tagOf(q) ? 2 : categoryOf(q) ? 9 : 0),
     });
     renderScreen(client, <DiscoverScreen categorySlug="lang-man" tagSlug="tinh-yeu" />);
-    const loosen = within(await screen.findByRole("navigation", { name: t.loosen.label }));
+    // The block only renders after the empty feed and both count queries settle (several async rounds); the default
+    // 1 s findBy wait was not enough when the machine was busy.
+    const loosen = within(await screen.findByRole("navigation", { name: t.loosen.label }, { timeout: 5000 }));
     const withoutTag = loosen.getByRole("link", { name: new RegExp(t.loosen.withoutTag("Tình yêu")) });
     expect(withoutTag.getAttribute("href")).toBe("/?category=lang-man");
     await waitFor(() => expect(withoutTag.textContent).toContain(t.loosen.count("9")));

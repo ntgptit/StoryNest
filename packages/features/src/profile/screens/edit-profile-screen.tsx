@@ -15,6 +15,7 @@ import {
 import { Input } from "@storynest/ui/components/input";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { Textarea } from "@storynest/ui/components/textarea";
+import { AvailabilityHint } from "@storynest/ui/widgets/availability-hint";
 import { UnsavedChangesBar, useLeaveGuard } from "@storynest/ui/widgets/unsaved-changes-bar";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -23,6 +24,7 @@ import { translateErrors } from "../../_shared/form-resolver.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useUpdateProfile } from "../hooks/use-update-profile.ts";
+import { useUsernameAvailability } from "../hooks/use-username-availability.ts";
 import { isUsernameTaken, profileErrorMessage, validationMessage } from "../model/messages.ts";
 import { AvatarEditor } from "../components/avatar-editor.tsx";
 import { profileText } from "../strings.ts";
@@ -86,6 +88,8 @@ function EditProfileForm({
     }),
   );
 
+  const availability = useUsernameAvailability(form.watch("username") ?? "", profile.username);
+
   const bannerError = update.error && !isUsernameTaken(update.error) ? profileErrorMessage(update.error) : null;
 
   // Unsaved changes: a Save / Discard bar, and leaving the page asks first (Lucian 250). The form's own Cancel link
@@ -140,6 +144,7 @@ function EditProfileForm({
                   <Input autoComplete="username" autoCapitalize="none" spellCheck={false} {...field} />
                 </FormControl>
                 <FormDescription>{t.usernameHint}</FormDescription>
+                <AvailabilityHint status={availability} labels={t.availability} />
                 <FormMessage />
               </FormItem>
             )}

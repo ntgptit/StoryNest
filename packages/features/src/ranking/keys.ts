@@ -4,4 +4,5 @@ export const rankingKeys = {
   all: ["ranking"] as const,
   top: (period: string, mature: boolean) => ["ranking", "top", period, mature] as const,
   freshness: () => ["ranking", "freshness"] as const,
+  history: (period: string, mature: boolean) => ["ranking", "history", period, mature] as const,
 };

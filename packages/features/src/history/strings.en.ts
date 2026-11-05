@@ -4,6 +4,14 @@ export const en = {
     `Published versions of the chapter "${chapterTitle}". Old versions are never edited.`,
   backToEditor: "Back to editor",
   versionLabel: (n: number) => `Version ${n}`,
+  graph: {
+    label: "Version branch graph",
+    hint: "Each dot is a publication, joined to the version it continued from. Restoring an older version and publishing starts a new branch.",
+    node: (n: number, live: boolean, from: number | null) =>
+      `Version ${n}${live ? ", live" : ""}${from === null ? "" : `, continued from version ${from}`}`,
+    branches: (count: number) => (count === 0 ? "One branch" : `${count + 1} branches`),
+    from: (n: number) => `Continued from version ${n}`,
+  },
   listLabel: "Versions",
   live: "Currently visible to readers",
   by: (name: string) => `by ${name}`,

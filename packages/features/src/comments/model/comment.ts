@@ -1,4 +1,12 @@
-import { COMMENT_STATUS, DB_LIMITS, HIDE_SOURCE, type CommentStatus, type HideSource } from "@storynest/validation";
+import {
+  COMMENT_REACTIONS,
+  COMMENT_STATUS,
+  DB_LIMITS,
+  HIDE_SOURCE,
+  type CommentReaction,
+  type CommentStatus,
+  type HideSource,
+} from "@storynest/validation";
 import type { AppError } from "../../_shared/errors.ts";
 import { commentText } from "../strings.ts";
 
@@ -19,6 +27,9 @@ export interface CommentCardRow {
   like_count: number | null;
   liked_by_me: boolean | null;
   reply_count: number | null;
+  /** {"laugh": 2, ...}: only reactions that have any (jsonb). Absent on rows from before reactions. */
+  reactions?: unknown;
+  my_reactions?: string[] | null;
 }
 
 export interface Comment {
@@ -40,12 +51,29 @@ export interface Comment {
   likes: number;
   likedByMe: boolean;
   replyCount: number;
+  /** How many readers gave each reaction (only reactions with at least one). */
+  reactions: Partial<Record<CommentReaction, number>>;
+  /** The viewer's own reactions. */
+  myReactions: CommentReaction[];
 }
 
 /** The card status for a comment the story's author hid. The table only knows `hidden`; the card says who did it. */
 export const AUTHOR_HIDDEN_CARD_STATUS = "author_hidden";
 
 const STATUSES: readonly string[] = Object.values(COMMENT_STATUS);
+const isReaction = (value: unknown): value is CommentReaction =>
+  typeof value === "string" && (COMMENT_REACTIONS as readonly string[]).includes(value);
+
+/** The card's reaction counts; unknown codes (a newer server) and non-positive counts are dropped. */
+export function readReactions(value: unknown): Partial<Record<CommentReaction, number>> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+  const counts: Partial<Record<CommentReaction, number>> = {};
+  for (const [code, count] of Object.entries(value as Record<string, unknown>)) {
+    const n = Number(count);
+    if (isReaction(code) && Number.isFinite(n) && n > 0) counts[code] = n;
+  }
+  return counts;
+}
 const isStatus = (value: string): value is CommentStatus => STATUSES.includes(value);
 
 function readStatus(value: string): { status: CommentStatus; hiddenBy: HideSource | null } | null {
@@ -77,6 +105,8 @@ export function toComment(row: CommentCardRow): Comment | null {
     likes: Number(row.like_count ?? 0),
     likedByMe: row.liked_by_me === true,
     replyCount: Number(row.reply_count ?? 0),
+    reactions: readReactions(row.reactions),
+    myReactions: (row.my_reactions ?? []).filter(isReaction),
   };
 }
 
@@ -107,6 +137,21 @@ export function cursorAfter(page: CommentPage): CommentCursor | undefined {
 export function withLike(comment: Comment, liked: boolean): Comment {
   if (comment.likedByMe === liked) return comment;
   return { ...comment, likedByMe: liked, likes: Math.max(0, comment.likes + (liked ? 1 : -1)) };
+}
+
+/** A reaction shown at once while the server is still answering (counts never below zero). */
+export function withReaction(comment: Comment, reaction: CommentReaction, on: boolean): Comment {
+  const mine = comment.myReactions.includes(reaction);
+  if (mine === on) return comment;
+  const count = Math.max(0, (comment.reactions[reaction] ?? 0) + (on ? 1 : -1));
+  const reactions = { ...comment.reactions };
+  if (count > 0) reactions[reaction] = count;
+  else delete reactions[reaction];
+  return {
+    ...comment,
+    reactions,
+    myReactions: on ? [...comment.myReactions, reaction] : comment.myReactions.filter((r) => r !== reaction),
+  };
 }
 
 export function isPlaceholder(comment: Comment): boolean {

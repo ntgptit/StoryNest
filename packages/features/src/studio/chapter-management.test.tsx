@@ -30,6 +30,9 @@ import {
   type StudioChapterRow,
 } from "./model/studio-chapter.ts";
 import { ChapterManagerScreen } from "./index.ts";
+import { partRuns } from "../_shared/parts.ts";
+import { flagsToMask, maskToFlags, updateDaysText, weekdayNames } from "../_shared/update-days.ts";
+import { emptyStoryForm, toStoryUpdate } from "./model/story-form.ts";
 import { studioText } from "./strings.ts";
 
 afterEach(cleanup);
@@ -114,6 +117,10 @@ function fakeClient(options: {
   hold?: { current: Promise<void> | null };
   rpc?: (name: string, args: Record<string, unknown>) => Result;
   update?: Result;
+  /** Rows of the studio list (useMyStories: the user's own stories); without it that read gets the chapter rows. */
+  myStories?: unknown[];
+  /** Rows of story_parts (the parts tree). */
+  parts?: unknown[];
 }) {
   const rpcCalls: { name: string; args: Record<string, unknown> }[] = [];
   const updates: { values: unknown; calls: Call[] }[] = [];
@@ -160,7 +167,13 @@ function fakeClient(options: {
       const result =
         updateValues !== undefined
           ? (options.update ?? { data: [{ id: "x" }], error: null })
-          : { data: chapters, error: null };
+          : table === "story_parts"
+            ? { data: options.parts ?? [], error: null }
+            : options.myStories && table === "stories"
+              ? { data: options.myStories, error: null }
+              : options.myStories && table === "story_collaborators"
+                ? { data: [], error: null }
+                : { data: chapters, error: null };
       const gate = updateValues === undefined ? options.hold?.current : null;
       return gate ? gate.then(() => resolve(result)) : resolve(result);
     };
@@ -265,6 +278,32 @@ const itemFor = (title: string) =>
     .find((li) => li.textContent?.includes(title)) as HTMLElement;
 
 describe("ChapterManagerScreen", () => {
+  it("shows Studio > story > Chapters, and the switcher opens the chapters of another of my stories", async () => {
+    const story = (id: string, title: string) => ({
+      id,
+      slug: title,
+      title,
+      status: "ongoing",
+      visibility: "private",
+      is_mature: false,
+      cover_storage_key: null,
+      updated_at: "2026-11-01T00:00:00Z",
+      chapters: [{ count: 1 }],
+    });
+    const OTHER = "5eed0000-0000-4000-8000-00000000d0ff";
+    renderManager(fakeClient({ myStories: [story(STORY_ID, "Truyện thử"), story(OTHER, "Truyện khác")] }));
+    const nav = await screen.findByRole("navigation", { name: studioText.crumbs.label });
+    expect(within(nav).getByRole("link", { name: studioText.title }).getAttribute("href")).toBe("/studio");
+    expect(within(nav).getByRole("link", { name: "Truyện thử" }).getAttribute("href")).toBe(
+      `/studio/story/${STORY_ID}`,
+    );
+    expect(within(nav).getByText(studioText.crumbs.chapters).closest("[aria-current]")).toBeTruthy();
+    const trigger = await within(nav).findByRole("button", { name: studioText.crumbs.switchStory });
+    fireEvent.pointerDown(trigger, { button: 0, pointerType: "mouse" });
+    fireEvent.click(await screen.findByRole("menuitemradio", { name: /Truyện khác/ }));
+    expect(push).toHaveBeenCalledWith(`/studio/story/${OTHER}/chapters`);
+  });
+
   it("lists the chapters with status, slug and position, deleted ones last", async () => {
     renderManager(
       fakeClient({
@@ -644,5 +683,71 @@ describe("chapter actions, selection and bulk", () => {
     );
     await screen.findByRole("list", { name: t.listLabel });
     expect(screen.queryByRole("checkbox")).toBeNull();
+  });
+});
+
+describe("parts tree (batch 4 authoring4, Lucian 102)", () => {
+  const P1 = "9a000000-0000-4000-8000-000000000001";
+  const P2 = "9a000000-0000-4000-8000-000000000002";
+
+  it("splits chapters into runs of the same part without reordering them", () => {
+    const part = (id: string | null) => (id === null ? null : { id, title: id });
+    const runs = partRuns(
+      [P1, P1, null, P1, P2].map((id, i) => ({ i, id })),
+      (x) => part(x.id),
+    );
+    expect(runs.map((r) => [r.part?.id ?? null, r.items.map((x) => x.i)])).toEqual([
+      [P1, [0, 1]],
+      [null, [2]],
+      [P1, [3]],
+      [P2, [4]],
+    ]);
+    expect(new Set(runs.map((r) => r.key)).size).toBe(4);
+    expect(toStudioChapter(row(1, { part_id: P1 })).partId).toBe(P1);
+    expect(toStudioChapter(row(1)).partId).toBeNull();
+  });
+
+  it("shows parts as folders (empty ones too) and moves a chapter into a part", async () => {
+    const t1 = fakeClient({
+      chapters: [row(1, { part_id: P1 }), row(2)],
+      parts: [
+        { id: P1, title: "Tập một" },
+        { id: P2, title: "Tập hai" },
+      ],
+    });
+    renderManager(t1);
+    const tree = await screen.findByRole("list", { name: studioText.parts.treeLabel });
+    const first = await within(tree).findByRole("button", { name: /Tập một/ });
+    expect(first.getAttribute("aria-expanded")).toBe("true");
+    expect(within(tree).getByRole("button", { name: /Tập hai/ })).toBeTruthy();
+    expect(within(tree).getByText(studioText.parts.emptyPart)).toBeTruthy();
+    fireEvent.click(within(tree).getByRole("combobox", { name: studioText.parts.partOf("Chương 2") }));
+    fireEvent.click(await screen.findByRole("option", { name: "Tập hai" }));
+    await waitFor(() => expect(t1.updates.some((u) => (u.values as { part_id?: string }).part_id === P2)).toBe(true));
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", studioText.parts.moved));
+  });
+
+  it("refuses a blank part name before sending anything", async () => {
+    const t1 = fakeClient({ chapters: [row(1)] });
+    renderManager(t1);
+    fireEvent.click(await screen.findByRole("button", { name: studioText.parts.add.submit }));
+    expect(await screen.findByText(studioText.parts.validation.titleRequired)).toBeTruthy();
+    expect(t1.from.mock.calls.filter(([table]) => table === "story_parts")).toHaveLength(1); // the list read only
+  });
+});
+
+describe("update days and cover placeholder (batch 4 authoring4, Lucian 109 and 258)", () => {
+  it("turns the painted days into the bit mask and names them in the reader's language", () => {
+    expect(flagsToMask([true, false, false, true, false, false, false])).toBe(9);
+    expect(maskToFlags(9)).toEqual([true, false, false, true, false, false, false]);
+    expect(updateDaysText(9, "en")).toBe("Monday and Thursday");
+    expect(updateDaysText(0, "en")).toBe("");
+    expect(weekdayNames("en", "short")[6]).toBe("Sun");
+  });
+
+  it("sends the schedule with the story form, and leaves it alone when the form has none", () => {
+    expect(toStoryUpdate({ ...emptyStoryForm(), title: "T", slug: "t", updateDays: 65 }).update_days).toBe(65);
+    const { updateDays: _drop, ...withoutDays } = emptyStoryForm();
+    expect("update_days" in toStoryUpdate({ ...withoutDays, title: "T", slug: "t" })).toBe(false);
   });
 });

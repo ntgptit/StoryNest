@@ -10,6 +10,8 @@ export interface StudioChapterRow {
   scheduled_for: string | null;
   deleted_at: string | null;
   updated_at: string;
+  /** The story part (volume) the chapter is in, if any. */
+  part_id?: string | null;
   /** One-to-one embed of chapter_drafts: the working title (the draft outlives publishing). */
   draft: { title: string } | { title: string }[] | null;
 }
@@ -23,6 +25,7 @@ export interface StudioChapter {
   scheduledFor: string | null;
   deleted: boolean;
   updatedAt: string;
+  partId: string | null;
 }
 
 export function toStudioChapter(row: StudioChapterRow): StudioChapter {
@@ -37,6 +40,7 @@ export function toStudioChapter(row: StudioChapterRow): StudioChapter {
     scheduledFor: row.scheduled_for,
     deleted: row.deleted_at !== null,
     updatedAt: row.updated_at,
+    partId: row.part_id ?? null,
   };
 }
 

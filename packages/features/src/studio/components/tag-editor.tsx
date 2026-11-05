@@ -6,6 +6,7 @@ import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
 import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
+import { cn } from "@storynest/ui/lib/utils";
 import { usePopularTags } from "../../discovery/index.ts";
 import {
   MAX_STORY_TAGS,
@@ -24,6 +25,8 @@ const t = studioText.tags;
  * Chips for a story's tags. Enter, a comma or leaving the field turns what was typed into tags (a pasted list too);
  * Backspace on an empty field removes the last one; the most used tags are offered as one-click suggestions so authors
  * reuse them instead of inventing near-duplicates. Nothing is saved here: the form saves the tags with the story.
+ * A tag just added pops in, and going past MAX_STORY_TAGS shakes the "n/max" counter in the error colour (Lucian
+ * 019's chips; the cap and the message are the existing addTags rule). Neither moves on first render.
  */
 export function TagEditor({
   value,
@@ -41,12 +44,18 @@ export function TagEditor({
   const hintId = useId();
   const [draft, setDraft] = useState("");
   const [problem, setProblem] = useState<TagProblem | null>(null);
+  // Slugs added by the last commit (they pop in) and how many commits ran into the cap (each one shakes the counter).
+  const [added, setAdded] = useState<ReadonlySet<string>>(() => new Set());
+  const [overCap, setOverCap] = useState(0);
   const popular = usePopularTags();
 
   const commit = (raw: string) => {
     if (raw.trim() === "") return;
     const result = addTags(value, raw);
     setProblem(result.problem);
+    if (result.problem === "tooMany") setOverCap((count) => count + 1);
+    const before = new Set(value.map((tag) => tag.slug));
+    setAdded(new Set(result.tags.filter((tag) => !before.has(tag.slug)).map((tag) => tag.slug)));
     if (result.tags.length !== value.length) onChange(result.tags);
     setDraft("");
   };
@@ -75,13 +84,23 @@ export function TagEditor({
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-2">
         <Label htmlFor={inputId}>{t.label}</Label>
-        <span className="text-xs text-muted-foreground">{t.count(value.length, MAX_STORY_TAGS)}</span>
+        <span
+          key={overCap}
+          data-state={problem === "tooMany" ? "over" : "ok"}
+          className={cn(
+            "text-xs text-muted-foreground tabular-nums transition-colors",
+            problem === "tooMany" && "font-medium text-destructive",
+            overCap > 0 && "motion-safe:animate-field-shake",
+          )}
+        >
+          {t.count(value.length, MAX_STORY_TAGS)}
+        </span>
       </div>
 
       {value.length > 0 ? (
         <ul aria-label={t.listLabel} className="flex flex-wrap gap-1.5">
           {value.map((tag) => (
-            <li key={tag.slug}>
+            <li key={tag.slug} className={cn(added.has(tag.slug) && "motion-safe:animate-check-pop")}>
               <Badge variant="secondary" className="gap-1 pr-1">
                 #{tag.name}
                 <Button

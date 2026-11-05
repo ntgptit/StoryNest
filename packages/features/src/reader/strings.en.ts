@@ -1,7 +1,19 @@
 export const en = {
   backToStory: "Back to story",
   chapterLabel: (number: number) => `Chapter ${number}`,
-  toc: { open: "Contents", title: "Contents", description: "Choose a chapter to read." },
+  toc: {
+    open: "Contents",
+    title: "Contents",
+    description: "Choose a chapter to read.",
+    inChapter: "In this chapter",
+    scrub: "Jump to chapter",
+    scrubMark: (number: string) => `From chapter ${number}`,
+  },
+  readAloud: { play: "Read this chapter aloud", pause: "Pause reading aloud" },
+  finished: {
+    title: "You finished the story!",
+    description: (title: string) => `${title} is complete. Thanks for reading all the way to the last chapter.`,
+  },
   nav: { label: "Chapter navigation", previous: "Previous chapter", next: "Next chapter", none: "End" },
   progress: "Chapter reading progress",
   timeLeft: {
@@ -24,6 +36,18 @@ export const en = {
     comment: "Comment on paragraph",
     text: (quote: string, source: string, url: string) => `“${quote}”\n— ${source}\n${url}`,
     source: (story: string, chapter: string) => `${story}, ${chapter}`,
+  },
+  highlight: {
+    group: "Your private marks",
+    pens: { underline: "Underline", circle: "Circle", box: "Box", strike: "Strike" },
+    remove: "Remove mark",
+    added: "Marked. Only you can see it.",
+    removed: "Mark removed.",
+    failed: "Couldn't save the mark. Try again.",
+    limit: "You have too many marks in this chapter.",
+    stale: (count: number) =>
+      `${count} old mark${count === 1 ? " no longer matches" : "s no longer match"} because the author edited the paragraph.`,
+    clearStale: "Delete old marks",
   },
   settings: {
     open: "Display",

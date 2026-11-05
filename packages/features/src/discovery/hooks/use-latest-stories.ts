@@ -5,7 +5,13 @@ import { useDataClientGetter } from "../../_shared/data.tsx";
 import type { AppError } from "../../_shared/errors.ts";
 import { useShowMature } from "../../adult-content/index.ts";
 import { toAppError } from "../../_shared/errors.ts";
-import { countLatestStories, listPopularTags, type StoryPage } from "../api/discovery.api.ts";
+import {
+  countLatestStories,
+  getLengthHistogram,
+  listPopularTags,
+  type LengthBucket,
+  type StoryPage,
+} from "../api/discovery.api.ts";
 import { discoveryKeys, type LatestStoriesFilter } from "../keys.ts";
 import type { Category } from "../model/categories.ts";
 import { POPULAR_TAGS_LIMIT, type PopularTag } from "../model/popular-tags.ts";
@@ -72,5 +78,29 @@ export function usePopularTags(limit: number = POPULAR_TAGS_LIMIT) {
     queryKey: discoveryKeys.popularTags(limit),
     queryFn: () => listPopularTags(getClient(), limit).catch((error: unknown) => Promise.reject(toAppError(error))),
     staleTime: POPULAR_TAGS_STALE_MS,
+  });
+}
+
+const LENGTHS_STALE_MS = 5 * 60_000;
+
+/** Story counts per length bucket for the other filters (the histogram of the length filter). */
+export function useLengthHistogram(
+  filterWanted: LatestStoriesFilter,
+  categories: readonly Category[] | undefined,
+  enabled = true,
+) {
+  const getClient = useDataClientGetter();
+  const showMature = useShowMature();
+  const filter: LatestStoriesFilter = { ...filterWanted, includeMature: showMature };
+  const needsCategories = Boolean(filter.categorySlug);
+  return useQuery<LengthBucket[], AppError>({
+    queryKey: discoveryKeys.lengths(filter),
+    queryFn: () =>
+      getLengthHistogram(getClient(), { ...filter, categories: categories ?? [] }).catch((error: unknown) =>
+        Promise.reject(toAppError(error)),
+      ),
+    enabled: enabled && (!needsCategories || categories !== undefined),
+    staleTime: LENGTHS_STALE_MS,
+    placeholderData: keepPreviousData,
   });
 }

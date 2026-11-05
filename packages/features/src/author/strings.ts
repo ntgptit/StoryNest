@@ -20,6 +20,7 @@ const vi = {
   notFound: {
     title: "Không tìm thấy tác giả",
     description: "Tác giả không tồn tại hoặc tài khoản không còn hiển thị.",
+    searchSimilar: (name: string) => `Tìm tác giả “${name}”`,
   },
   error: { title: "Không tải được trang tác giả", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   loadMore: "Tải thêm",

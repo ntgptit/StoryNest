@@ -27,6 +27,8 @@
 | SCR-NOTI-01-C05 | Empty state | Icon BellOff, "No notifications yet" / "New chapters and invites will show up here." | `notifications-screen.tsx:63-64` |
 | SCR-NOTI-01-C06 | Error state | "Couldn't load notifications" / "Check your connection and try again." / "Try again" | `notifications-screen.tsx:50-56` |
 | SCR-NOTI-01-C07 | Load more | "Load more" / "Loading…" | `notifications-screen.tsx:75-86` |
+| SCR-NOTI-01-C08 | Filter bar (Lucian 271 + 166) | Shown once something is loaded. Type chips "All / New chapters / Replies / Team" (radio group "Filter by type", a pill slides to the chosen one, each with the count it would keep) and an "Unread only" toggle (`aria-pressed`). Filters only the pages already loaded (no server query; unknown types show under All only); "Load more" still pages everything. While filtered, a polite line says "Showing N of M loaded notifications"; nothing left → "None of the loaded notifications match." (+ "Load more to look further." when more pages exist). Not remembered across visits | `notifications-screen.tsx`, `model/notification.ts` (`notificationGroup`, `filterNotifications`, `countByFilter`), `ui/widgets/choice-pills.tsx` |
+| SCR-NOTI-01-C09 | Incoming rows (Lucian 227) | A notification that arrives through Realtime while the page is open slides in at the top and glows briefly; the first load and "Load more" pages never animate (reduced motion: no motion) | `ui/lib/use-arrivals.ts`, `animate-row-arrive` in `tokens.css` |
 
 ## C. User actions & system responses
 

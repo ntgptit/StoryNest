@@ -95,6 +95,103 @@ export const en = {
         .filter(Boolean)
         .join(", ") + ".",
   },
+  scatter: {
+    title: "Chapters compared",
+    metricLabel: "Vertical axis",
+    metrics: { likesPer100: "Likes per 100 reads", retention: "Retention" },
+    label: (metric: string) => `Chapters by reads (across) and ${metric} (up)`,
+    hint: "Use the arrow keys to move between chapters, Enter to pick one, Esc to let go.",
+    xAxis: "Reads →",
+    yAxis: (metric: string) => `↑ ${metric}`,
+    filter: (reads: string) => `Fade chapters under ${reads} reads`,
+    summary: (shown: number, faded: number) =>
+      `${shown} chapter${shown === 1 ? "" : "s"} plotted${faded > 0 ? `, ${faded} faded` : ""}. Press a dot to see its figures.`,
+    omittedLikes: (count: number) =>
+      `${count} chapter${count === 1 ? " has" : "s have"} no reads yet and ${count === 1 ? "is" : "are"} not plotted.`,
+    omittedRetention: (count: number) =>
+      `${count} chapter${count === 1 ? " has" : "s have"} no retention (the first chapter, or the one before had no reads) and ${count === 1 ? "is" : "are"} not plotted.`,
+    empty: "No chapter can be plotted on this axis yet.",
+    detail: (point: { number: number; title: string; reads: string; likes: string; metric: string; value: string }) =>
+      `Chapter ${point.number} · ${point.title}: ${point.reads} read${point.reads === "1" ? "" : "s"}, ${point.likes} like${point.likes === "1" ? "" : "s"}, ${point.metric} ${point.value}.`,
+    note: "Reads are each chapter's all-time reads (a reader counts once per chapter per day), not distinct readers. Likes per 100 reads = likes ÷ reads × 100; a chapter with few reads swings a lot, so those can be faded.",
+  },
+  custom: {
+    tab: "Custom",
+    open: "Pick a date range",
+    applied: (from: string, to: string, days: number) => `${from} – ${to} (${days} days)`,
+    calendar: {
+      fromLabel: "From",
+      toLabel: "To",
+      placeholder: "Pick a day",
+      previousMonth: "Previous month",
+      nextMonth: "Next month",
+      gridLabel: "Days of the month",
+      apply: "Apply",
+      pickStart: "Pick the first day",
+      pickEnd: "Now pick the last day",
+      summary: (days: number, from: string, to: string) => `${days} days · ${from} – ${to}`,
+    },
+    note: "Only the last 90 days can be picked (daily reads are kept for 90 days). Days are UTC days.",
+  },
+  cohorts: {
+    title: "New readers by week",
+    label: "Share of readers still reading, by starting week",
+    week: (offset: number) => (offset === 0 ? "Start" : `+${offset}`),
+    idle: "Pick a cell to see its share.",
+    size: (readers: number) => `${readers} new readers`,
+    hiddenSize: "Fewer than 5 readers, hidden",
+    cell: (week: string, offset: number, percent: string, size: string) =>
+      offset === 0
+        ? `Started the week of ${week} (${size})`
+        : `Started the week of ${week} (${size}) · ${offset} weeks later: ${percent} still reading`,
+    hidden: (week: string) => `Week of ${week}: fewer than 5 readers, so hidden`,
+    empty: "No readers in the last 8 weeks yet.",
+    note: "Each row is the readers who first read the story that week (Monday to Sunday, UTC); each cell is the share of them still reading in a later week. A reader is an account, or a browser when not signed in. Weeks with fewer than 5 new readers are hidden so nobody's reading can be singled out. Only the last 90 days are kept.",
+  },
+  split: {
+    title: "Signed in or guests",
+    label: (days: number) => `Reads of the last ${days} days by reader type, each cell is 1%`,
+    legend: "Reader type",
+    signedIn: "Signed in",
+    anonymous: "Guests",
+    share: (label: string, percent: number, reads: string) => `${label}: ${percent}% (${reads} reads)`,
+    readers: (signedIn: string, anonymous: string) => `${signedIn} accounts and ${anonymous} guest browsers read it.`,
+    empty: "No reads in this range yet.",
+    note: "Follows the 7, 30 or 90 days picked above (a custom range uses 90 days).",
+  },
+  terms: {
+    title: "What readers say",
+    periods: "Month",
+    cloud: (month: string) => `Frequent words in comments, ${month}`,
+    word: (term: string, mentions: number, change: number | null) =>
+      `“${term}”: ${mentions} comments${change === null ? " · new this month" : change === 0 ? " · same as last month" : ` · ${change > 0 ? "+" : ""}${change} vs last month`}`,
+    idle: "Pick a word to see how many comments mention it.",
+    empty: "No word was used by at least two people this month yet.",
+    note: "Words of the visible comments, split by syllable for Vietnamese; common filler words are left out. A word shows only when at least two different people wrote it, and comment text is never shown.",
+  },
+  sources: {
+    title: "Where readers come from",
+    stages: ["Readers", "Read on", "Followed"] as const,
+    picker: "Source",
+    all: (readers: number, followed: number) => `${readers} readers → ${followed} followed the story`,
+    one: (label: string, readers: number, continued: number, followed: number, percent: string) =>
+      `${label}: ${readers} readers, ${continued} read on, ${followed} followed (${percent})`,
+    names: {
+      story_page: "Story page",
+      next_chapter: "Next chapter",
+      library: "Library",
+      search: "Search",
+      discover: "Discover",
+      ranking: "Rankings",
+      notification: "Notifications",
+      profile: "Author page",
+      other: "Other",
+      unknown: "Unknown",
+    },
+    hidden: (count: number) => `${count} sources had fewer than 5 readers and are hidden.`,
+    empty: "Not enough readers to draw yet (each source needs at least 5).",
+    note: "The source is the StoryNest screen the reader opened the story from, taken from their first read in the range; readers are never followed on other sites. “Read on” means at least two chapters in the range; “Followed” counts signed-in accounts that follow the story.",
+  },
   chapters: {
     title: "By chapter",
     note: "“Retention” is the chapter's reads compared with the previous chapter.",

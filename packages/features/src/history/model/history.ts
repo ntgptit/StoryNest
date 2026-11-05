@@ -9,6 +9,8 @@ export interface VersionRow {
   word_count: number;
   created_at: string;
   published_at: string | null;
+  /** The version this one grew from (branching history); null for the first one and for versions from before it. */
+  parent_version_id?: string | null;
   author: { username: string; display_name: string } | { username: string; display_name: string }[] | null;
 }
 
@@ -22,9 +24,15 @@ export interface ChapterVersion {
   authorName: string;
   /** True for the version readers see right now. */
   live: boolean;
+  /**
+   * The version this one was published from. Versions from before the branching history have no stored parent and
+   * are read as a straight line (the previous number); the first version has none.
+   */
+  parentId: string | null;
 }
 
 export function toChapterVersions(rows: readonly VersionRow[], liveVersionId: string | null): ChapterVersion[] {
+  const byNumber = new Map(rows.map((row) => [row.version_no, row.id]));
   return rows
     .map((row) => {
       const author = Array.isArray(row.author) ? row.author[0] : row.author;
@@ -38,6 +46,7 @@ export function toChapterVersions(rows: readonly VersionRow[], liveVersionId: st
         publishedAt: row.published_at,
         authorName: name,
         live: row.id === liveVersionId,
+        parentId: row.parent_version_id ?? byNumber.get(row.version_no - 1) ?? null,
       };
     })
     .sort((a, b) => b.number - a.number);

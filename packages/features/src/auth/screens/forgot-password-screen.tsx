@@ -12,9 +12,10 @@ import { useForm } from "react-hook-form";
 import { AuthCard, FormError } from "../components/auth-card.tsx";
 import { EmailTypoFix } from "../components/email-typo-fix.tsx";
 import { TextLink } from "../components/auth-links.tsx";
+import { LockoutNotice, useLockout } from "../components/lockout.tsx";
 import { useRequestPasswordReset } from "../hooks/use-auth-actions.ts";
 import { translateErrors } from "../../_shared/form-resolver.ts";
-import { authErrorMessage, validationMessage } from "../model/messages.ts";
+import { authErrorMessage, retryAfterSeconds, validationMessage } from "../model/messages.ts";
 import { RESEND_COOLDOWN_SECONDS } from "../model/resend.ts";
 import { authText } from "../strings.ts";
 
@@ -30,14 +31,21 @@ export function ForgotPasswordScreen() {
   // Bumped by every successful resend: replays the envelope and says "sent again".
   const [resent, setResent] = useState(0);
   const cooldown = useCountdown(RESEND_COOLDOWN_SECONDS);
-  const submit = form.handleSubmit((values: ForgotPassword) =>
+  // The server's own wait after "too many requests" (Lucian 067); a resend uses the resend ring for it instead.
+  const lockout = useLockout();
+  const [resendWait, setResendWait] = useState(RESEND_COOLDOWN_SECONDS);
+  const submit = form.handleSubmit((values: ForgotPassword) => {
+    if (lockout.locked) return;
+    lockout.clear();
     request.mutate(values, {
       onSuccess: () => {
         setSentTo(values.email);
+        setResendWait(RESEND_COOLDOWN_SECONDS);
         cooldown.restart();
       },
-    }),
-  );
+      onError: lockout.start,
+    });
+  });
 
   const back = <TextLink href="/login">{t.back}</TextLink>;
 
@@ -49,7 +57,14 @@ export function ForgotPasswordScreen() {
         {
           onSuccess: () => {
             setResent((count) => count + 1);
+            setResendWait(RESEND_COOLDOWN_SECONDS);
             cooldown.restart();
+          },
+          onError: (error) => {
+            const seconds = retryAfterSeconds(error);
+            if (seconds === null) return;
+            setResendWait(seconds);
+            cooldown.restart(seconds);
           },
         },
       );
@@ -66,7 +81,7 @@ export function ForgotPasswordScreen() {
           <FormError message={request.error ? authErrorMessage(request.error) : null} />
           <ResendButton
             secondsLeft={cooldown.left}
-            total={RESEND_COOLDOWN_SECONDS}
+            total={resendWait}
             label={t.resend}
             waitingLabel={t.resendIn}
             pending={request.isPending}
@@ -92,7 +107,11 @@ export function ForgotPasswordScreen() {
     <AuthCard title={t.title} description={t.description} footer={back}>
       <Form {...form}>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={request.isPending}>
-          <FormError message={request.error ? authErrorMessage(request.error) : null} />
+          {lockout.total !== null ? (
+            <LockoutNotice lockout={lockout} />
+          ) : (
+            <FormError message={request.error ? authErrorMessage(request.error) : null} />
+          )}
           <FormField
             control={form.control}
             name="email"
@@ -121,7 +140,7 @@ export function ForgotPasswordScreen() {
               </FormItem>
             )}
           />
-          <Button type="submit" disabled={request.isPending}>
+          <Button type="submit" disabled={request.isPending || lockout.locked}>
             {request.isPending ? t.submitting : t.submit}
           </Button>
         </form>

@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@storynest/ui/components/form";
 import { FormErrorSummary } from "@storynest/ui/components/form-error-summary";
+import { InlineAlert } from "@storynest/ui/widgets/inline-alert";
 import { Input } from "@storynest/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@storynest/ui/components/select";
 import { Skeleton } from "@storynest/ui/components/skeleton";
@@ -28,8 +29,12 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { RadioCards } from "@storynest/ui/widgets/radio-cards";
 import { SearchResultPreview } from "@storynest/ui/widgets/search-result-preview";
+import { SubmitButton } from "@storynest/ui/widgets/submit-button";
 import { UnsavedChangesBar, useLeaveGuard } from "@storynest/ui/widgets/unsaved-changes-bar";
+import { WeekdayPainter } from "@storynest/ui/widgets/weekday-painter";
 import { usePublicUrl } from "../../_shared/avatar.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
+import { flagsToMask, maskToFlags, updateDaysText, weekdayNames } from "../../_shared/update-days.ts";
 import { toAppError } from "../../_shared/errors.ts";
 import { translateErrors } from "../../_shared/form-resolver.ts";
 import { AppLink, useNavigation, usePlatform } from "../../_shared/platform.tsx";
@@ -89,7 +94,7 @@ function EditStory({ storyId }: { storyId: string }) {
         title={studioText.error.title}
         description={studioText.error.description}
         retryLabel={studioText.error.retry}
-        onRetry={() => void story.refetch()}
+        onRetry={() => story.refetch()}
       />
     );
   }
@@ -134,6 +139,8 @@ function StoryFields({
   const setDeleted = useSetStoryDeleted();
   const setTagsMutation = useSetStoryTags();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Bumped after every successful save of an existing story: the Save button draws its check (Lucian 001).
+  const [savedCount, setSavedCount] = useState(0);
   // Tags are saved with the story but are not part of the story form (they live in their own table, behind an RPC).
   const [tags, setTags] = useState<TagChip[]>(edit?.tags ?? []);
   const [savedTags, setSavedTags] = useState<TagChip[]>(edit?.tags ?? []);
@@ -183,13 +190,17 @@ function StoryFields({
     }
     // Only the tags changed: leave the story row alone (an update would move it to the top of "recently updated").
     if (!form.formState.isDirty) {
-      if (tagsChanged && (await saveTags(storyId))) toast.success(t.saved);
+      if (tagsChanged && (await saveTags(storyId))) {
+        setSavedCount((count) => count + 1);
+        toast.success(t.saved);
+      }
       return;
     }
     update.mutate(values, {
       onSuccess: async () => {
         form.reset(values);
         if (tagsChanged && !(await saveTags(storyId))) return;
+        setSavedCount((count) => count + 1);
         toast.success(t.saved);
       },
       onError: onFailure,
@@ -220,19 +231,15 @@ function StoryFields({
   return (
     <Form {...form}>
       <form ref={formRef} onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={busy}>
-        {bannerError ? (
-          <p
-            role="alert"
-            className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          >
-            {bannerError}
-          </p>
-        ) : null}
+        {bannerError ? <InlineAlert tone="danger">{bannerError}</InlineAlert> : null}
 
         <FormErrorSummary title={t.errorSummary} />
 
         {edit ? (
-          <CoverEditor story={{ id: storyId, coverStorageKey: edit.coverStorageKey }} title={form.watch("title")} />
+          <CoverEditor
+            story={{ id: storyId, coverStorageKey: edit.coverStorageKey, coverBlurhash: edit.coverBlurhash }}
+            title={form.watch("title")}
+          />
         ) : (
           <p className="text-sm text-muted-foreground">{t.cover.saveFirst}</p>
         )}
@@ -409,6 +416,30 @@ function StoryFields({
 
         <FormField
           control={form.control}
+          name="updateDays"
+          render={({ field }) => {
+            const locale = currentLocale();
+            const mask = field.value ?? 0;
+            const days = updateDaysText(mask, locale, "short");
+            return (
+              <FormItem>
+                <p className="text-sm leading-none font-medium">{t.updateDays.label}</p>
+                <FormDescription>{t.updateDays.hint}</FormDescription>
+                <WeekdayPainter
+                  value={maskToFlags(mask)}
+                  onChange={(flags) => field.onChange(flagsToMask(flags))}
+                  dayLabels={weekdayNames(locale, "short")}
+                  dayNames={weekdayNames(locale, "long")}
+                  summary={days === "" ? t.updateDays.none : t.updateDays.summary(days)}
+                  label={t.updateDays.label}
+                />
+              </FormItem>
+            );
+          }}
+        />
+
+        <FormField
+          control={form.control}
           name="isMature"
           render={({ field }) => (
             <FormItem className="flex flex-row items-start justify-between gap-4 rounded-lg border p-3">
@@ -424,9 +455,14 @@ function StoryFields({
         />
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={busy || (mode === "edit" && !form.formState.isDirty && !tagsChanged)}>
-            {busy ? t.submitting : mode === "create" ? t.submitCreate : t.submitSave}
-          </Button>
+          <SubmitButton
+            label={mode === "create" ? t.submitCreate : t.submitSave}
+            busyLabel={t.submitting}
+            doneLabel={t.done}
+            busy={busy}
+            succeeded={savedCount}
+            disabled={busy || (mode === "edit" && !form.formState.isDirty && !tagsChanged)}
+          />
           <Button asChild variant="ghost">
             <AppLink href="/studio">{t.cancel}</AppLink>
           </Button>

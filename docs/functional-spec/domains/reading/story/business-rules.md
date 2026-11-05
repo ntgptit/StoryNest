@@ -226,3 +226,27 @@
 | Related screens | SCR-STORY-01, SCR-READ-01 |
 | Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:93-101` (no owner check), `:182-184` |
 | Status | Verified (absence of a check); intent is open: Q-STORY-01 |
+
+### BR-STORY-017 — Star ratings (batch 4 · community4, Lucian 016)
+| Field | Value |
+| --- | --- |
+| Description | Signed-in readers rate a story 1–5, one rating per reader per story (`story_ratings`); rating again replaces it, NULL (0 in the widget) takes it back. `story_stats.rating_count`, `rating_sum` and `rating_avg` (stored generated, 2 decimals, NULL without ratings) move by trigger in the same transaction and are readable wherever `story_stats` is. |
+| Preconditions | Active account; story readable; not the owner or a collaborator. |
+| Conditions | **Decision: rating needs having opened N = 1 chapter** of the story (a `user_chapter_progress` row for a published chapter), kept in `abuse_limits.rating_min_chapters_read` (an administrator may raise it or set 0). Reason: stops ratings from people who only saw the cover, while a reader who stopped after one chapter can still say why. Taking a rating back is always allowed. |
+| Expected behavior | Story page shows "★ 4.3 · 12 ratings" (or "No ratings yet") and, for a signed-in reader, the five-star slider "Your rating" (disabled with "Read at least 1 chapter to rate this story." until then); guests get "Sign in to rate". `get_story_rating` returns the summary plus chapters_read / chapters_needed (guests too). |
+| Exceptions | 42501 not signed in / not active / own story (HINT own_story) / not read enough (HINT read_first); PT404 story not readable; 22023 stars outside 1–5. Ratings of a later-suspended reader stay counted; account deletion cascades and the trigger corrects the counters. |
+| Related screens | SCR-STORY-01 |
+| Evidence | `supabase/migrations/20261106010300_story_ratings.sql`, `supabase/tests/380_story_ratings.test.sql`, `packages/ui/src/widgets/star-rating.tsx`, `packages/features/src/story/components/story-rating.tsx`, `packages/features/src/story/rating.test.tsx` |
+| Status | Verified (SQL + unit/component tests; not run on a real Supabase project) |
+
+### BR-STORY-018 — Next chapter countdown, schedule line and parts (batch 4, Lucian 265 / 109 / 102)
+| Field | Value |
+| --- | --- |
+| Description | `next_chapter_at(story_id)` (SECURITY DEFINER, anon + authenticated) returns only the earliest future `scheduled_for` of the story's non-deleted scheduled chapters |
+| Preconditions | Caller can read the story (`can_read_story`); otherwise, for an unknown story or nothing scheduled: NULL (no probing) |
+| Conditions | Fetched in the browser only (not prefetched), refreshed every 5 min; a non-timestamp answer is treated as none |
+| Expected behavior | Above the chapter list: "Next chapter in 3 h 12 min 05 s" ticking every second, bar shrinking from the latest chapter to the next; at zero the headline swaps to "A new chapter is on its way". The header shows the weekly schedule (BR-STM-028); the chapter list groups runs of a part into folders (BR-CHM-016) |
+| Exceptions | No id, title or draft content leaves the function |
+| Related screens | SCR-STORY-01 |
+| Evidence | `supabase/migrations/20261106040200_next_chapter_countdown.sql`; `supabase/tests/510_next_chapter_countdown.test.sql`; `packages/features/src/story/api/story.api.ts` (`getNextChapterAt`); `packages/ui/src/widgets/next-chapter-countdown.tsx`; `packages/features/src/story/story.test.tsx` |
+| Status | Verified (SQL test, unit test) |

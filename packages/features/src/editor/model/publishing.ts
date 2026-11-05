@@ -1,3 +1,4 @@
+import { formatRelativeTime } from "@storynest/utils";
 import { CHAPTER_STATUS } from "@storynest/validation";
 import type { AppError } from "../../_shared/errors.ts";
 import type { ChapterPublishState, PublishRole } from "../api/publishing.api.ts";
@@ -57,6 +58,17 @@ export function scheduleInstant(localValue: string, now: Date = new Date()): Sch
 
 export function localZone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+/**
+ * How long until a scheduled chapter goes live, for the line under its state ("Goes live in 3 hours"). Under a minute
+ * left, or already past (the server publishes it on its next run), it says it is about to go live instead.
+ */
+export function scheduleCountdown(iso: string, locale: string, now: number = Date.now()): string {
+  const t = editorText.publish;
+  const left = new Date(iso).getTime() - now;
+  if (Number.isNaN(left) || left < MINIMUM_LEAD_MS) return t.dueNow;
+  return t.countdown(formatRelativeTime(iso, locale, now));
 }
 
 export function formatLocalDateTime(iso: string, locale: string): string {
