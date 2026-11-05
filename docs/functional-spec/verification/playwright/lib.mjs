@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-const require = createRequire(new URL("../../../../apps/web/package.json", import.meta.url));
+const require = createRequire(new globalThis.URL("../../../../apps/web/package.json", import.meta.url));
 const { createClient } = require("@supabase/supabase-js");
 export const URL = process.env.QA_SUPABASE_URL;
 export const KEY = process.env.QA_SUPABASE_KEY;

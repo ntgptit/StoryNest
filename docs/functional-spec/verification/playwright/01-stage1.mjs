@@ -10,6 +10,8 @@ try {
   const visDefault = await p.getByRole("combobox", { name: "Hiển thị" }).innerText().catch(() => "?");
   const statusDefault = await p.getByRole("combobox", { name: "Tình trạng" }).innerText().catch(() => "?");
   await p.getByLabel("Tên truyện").fill("[QA] Câu chuyện kiểm thử A");
+  // The story link is unique per author and earlier runs keep their story (cleanup cannot delete published versions): a run suffix keeps this one distinct.
+  if (process.env.QA_SLUG_SUFFIX) await p.getByLabel("Đường dẫn").fill(`qa-cau-chuyen-kiem-thu-a-${process.env.QA_SLUG_SUFFIX}`);
   await p.getByLabel("Giới thiệu").fill("Dữ liệu kiểm thử tự động (QA). Không phải nội dung thật.");
   await shot(p, "aut-02-new-story-form");
   await p.getByRole("button", { name: "Tạo truyện" }).click();
