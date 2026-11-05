@@ -65,7 +65,11 @@ export function formatLocalDateTime(iso: string, locale: string): string {
 
 /** Smallest value the picker should allow, in the picker's own format ("YYYY-MM-DDTHH:mm", local time). */
 export function minLocalDateTime(now: Date = new Date()): string {
-  const soon = new Date(now.getTime() + MINIMUM_LEAD_MS);
+  return localDateTimeValue(new Date(now.getTime() + MINIMUM_LEAD_MS));
+}
+
+/** An instant in the picker's own format ("YYYY-MM-DDTHH:mm", local time), e.g. to start from the current schedule. */
+export function localDateTimeValue(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${soon.getFullYear()}-${pad(soon.getMonth() + 1)}-${pad(soon.getDate())}T${pad(soon.getHours())}:${pad(soon.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }

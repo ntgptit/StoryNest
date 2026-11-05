@@ -47,6 +47,16 @@ export function sortChapters(chapters: readonly StudioChapter[]): StudioChapter[
   );
 }
 
+/** Live chapters waiting for their publish time, soonest first (then in reading order). */
+export function scheduledChapters(chapters: readonly StudioChapter[]): (StudioChapter & { scheduledFor: string })[] {
+  return chapters
+    .filter(
+      (c): c is StudioChapter & { scheduledFor: string } =>
+        !c.deleted && c.status === CHAPTER_STATUS.SCHEDULED && c.scheduledFor !== null,
+    )
+    .sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime() || a.position - b.position);
+}
+
 export function liveChapterIds(chapters: readonly StudioChapter[]): string[] {
   return sortChapters(chapters)
     .filter((c) => !c.deleted)

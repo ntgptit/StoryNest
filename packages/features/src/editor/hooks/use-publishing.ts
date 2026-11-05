@@ -1,7 +1,11 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
 import { useAuth } from "../../_shared/auth.tsx";
+import { useAppToast } from "../../_shared/toast.tsx";
+import { publishErrorMessage } from "../model/publishing.ts";
+import { editorText } from "../strings.ts";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
 import { discoveryKeys } from "../../discovery/index.ts";
@@ -58,4 +62,62 @@ export function usePublishAction(chapterId: string) {
         queryClient.invalidateQueries({ queryKey: discoveryKeys.all }),
       ]),
   });
+}
+
+/**
+ * The publish / schedule / unpublish flow every surface shares (the editor's publish panel, the chapter manager's
+ * scheduled list). One action at a time: locked from the first click until the answer is back, so a double click
+ * cannot publish twice. Publish and schedule first ask `ensureSaved` for the draft revision to send (null: it could
+ * not be saved, nothing is sent), so a draft someone else changed meanwhile is refused instead of published over.
+ * A refusal is shown as `error` (the RPC contract's message); success shows `success` as a toast.
+ * Each action resolves to whether it went through.
+ */
+export function usePublishFlow(chapterId: string, ensureSaved: () => Promise<number | null>) {
+  const toast = useAppToast();
+  const action = usePublishAction(chapterId);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+
+  const run = async (task: (revision: number) => Promise<void>, needsSaved: boolean, success: string) => {
+    if (lock.current) return false;
+    lock.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      let revision = 0;
+      if (needsSaved) {
+        const saved = await ensureSaved();
+        if (saved === null) {
+          setError(editorText.publish.saveFirst);
+          return false;
+        }
+        revision = saved;
+      }
+      await task(revision);
+      toast.success(success);
+      return true;
+    } catch (failure) {
+      setError(publishErrorMessage(toAppError(failure)));
+      return false;
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  };
+
+  return {
+    busy,
+    error,
+    publish: (success: string) =>
+      run((revision) => action.mutateAsync({ kind: "publish", expectedRevision: revision }), true, success),
+    /** `scheduledFor` is the ISO instant from scheduleInstant (the picker's value already checked). */
+    schedule: (scheduledFor: string, success: string) =>
+      run(
+        (revision) => action.mutateAsync({ kind: "schedule", expectedRevision: revision, scheduledFor }),
+        true,
+        success,
+      ),
+    unpublish: (success: string) => run(() => action.mutateAsync({ kind: "unpublish" }), false, success),
+  };
 }

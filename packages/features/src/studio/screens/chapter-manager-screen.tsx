@@ -18,7 +18,9 @@ import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { translateErrors } from "../../_shared/form-resolver.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
 import { RenameSlugDialog } from "../components/rename-slug-dialog.tsx";
+import { ScheduledChapters } from "../components/scheduled-chapters.tsx";
 import {
   useArchiveChapter,
   useCreateChapter,
@@ -28,6 +30,7 @@ import {
 } from "../hooks/use-chapter-management.ts";
 import { useStoryForEdit } from "../hooks/use-story-editing.ts";
 import { slugFromTitle } from "../model/story-form.ts";
+import type { StudioRole } from "../model/studio-story.ts";
 import {
   chapterErrorMessage,
   chapterValidationMessage,
@@ -42,8 +45,8 @@ const t = studioText.chapters;
 
 type Pending = { kind: "archive" | "delete"; chapter: StudioChapter };
 
-/** Chapter list of one story: add, reorder, rename the slug, archive and delete/restore. */
-export function ChapterManagerScreen({ storyId }: { storyId: string }) {
+/** Chapter list of one story: add, reorder, rename the slug, archive and delete/restore, and the scheduled ones. */
+export function ChapterManagerScreen({ storyId, locale = currentLocale() }: { storyId: string; locale?: string }) {
   const story = useStoryForEdit(storyId);
   const chapters = useStudioChapters(storyId);
 
@@ -76,6 +79,8 @@ export function ChapterManagerScreen({ storyId }: { storyId: string }) {
       storyId={storyId}
       storyTitle={story.data.form.title}
       canManage={story.data.role !== "editor"}
+      role={story.data.role}
+      locale={locale}
       chapters={chapters.data}
     />
   );
@@ -85,12 +90,17 @@ function ChapterManager({
   storyId,
   storyTitle,
   canManage,
+  role,
+  locale,
   chapters,
 }: {
   storyId: string;
   storyTitle: string;
   /** Owners and co-authors may archive and delete; editors only add, reorder and rename. */
   canManage: boolean;
+  /** For the scheduled list, which follows the publish panel's rules. */
+  role: StudioRole;
+  locale: string;
   chapters: StudioChapter[];
 }) {
   const toast = useAppToast();
@@ -126,6 +136,8 @@ function ChapterManager({
       >
         {t.backToStory}
       </AppLink>
+
+      <ScheduledChapters chapters={chapters} role={role} locale={locale} />
 
       {chapters.length === 0 ? (
         <EmptyState icon={ListOrdered} title={t.empty.title} description={t.empty.description} />

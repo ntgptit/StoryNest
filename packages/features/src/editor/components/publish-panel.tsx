@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
 import {
@@ -15,15 +15,13 @@ import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
 import { CHAPTER_STATUS } from "@storynest/validation";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
-import { useAppToast } from "../../_shared/toast.tsx";
-import { usePublishAction, useChapterPublishState } from "../hooks/use-publishing.ts";
+import { useChapterPublishState, usePublishFlow } from "../hooks/use-publishing.ts";
 import {
   canPublish,
   canUnpublishChapter,
   formatLocalDateTime,
   localZone,
   minLocalDateTime,
-  publishErrorMessage,
   scheduleInstant,
 } from "../model/publishing.ts";
 import { editorText } from "../strings.ts";
@@ -45,54 +43,19 @@ export function PublishPanel({
   locale: string;
   ensureSaved: () => Promise<number | null>;
 }) {
-  const toast = useAppToast();
   const state = useChapterPublishState(chapterId);
-  const action = usePublishAction(chapterId);
-  const [error, setError] = useState<string | null>(null);
+  const flow = usePublishFlow(chapterId, ensureSaved);
   const [scheduling, setScheduling] = useState(false);
   const [confirmUnpublish, setConfirmUnpublish] = useState(false);
   const [scheduleValue, setScheduleValue] = useState("");
   const [scheduleError, setScheduleError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const lock = useRef(false);
 
   if (!state.data) return null;
   const current = state.data;
   const zone = localZone();
+  const { busy, error } = flow;
 
-  /** Runs one action under the lock; shows the contract-based message when the server refuses. */
-  const run = async (task: (revision: number | null) => Promise<void>, needsSaved: boolean, success: string) => {
-    if (lock.current) return false;
-    lock.current = true;
-    setBusy(true);
-    setError(null);
-    try {
-      let revision: number | null = null;
-      if (needsSaved) {
-        revision = await ensureSaved();
-        if (revision === null) {
-          setError(t.saveFirst);
-          return false;
-        }
-      }
-      await task(revision);
-      toast.success(success);
-      return true;
-    } catch (failure) {
-      setError(publishErrorMessage(failure as Parameters<typeof publishErrorMessage>[0]));
-      return false;
-    } finally {
-      lock.current = false;
-      setBusy(false);
-    }
-  };
-
-  const publish = () =>
-    run(
-      (revision) => action.mutateAsync({ kind: "publish", expectedRevision: revision as number }),
-      true,
-      current.status === CHAPTER_STATUS.PUBLISHED ? t.republished : t.published,
-    );
+  const publish = () => flow.publish(current.status === CHAPTER_STATUS.PUBLISHED ? t.republished : t.published);
 
   const submitSchedule = async () => {
     const parsed = scheduleInstant(scheduleValue);
@@ -101,13 +64,7 @@ export function PublishPanel({
       return;
     }
     setScheduleError(null);
-    const done = await run(
-      (revision) =>
-        action.mutateAsync({ kind: "schedule", expectedRevision: revision as number, scheduledFor: parsed.iso }),
-      true,
-      t.scheduled,
-    );
-    if (done) setScheduling(false);
+    if (await flow.schedule(parsed.iso, t.scheduled)) setScheduling(false);
   };
 
   const stateText =
@@ -207,7 +164,7 @@ export function PublishPanel({
         cancelLabel={t.scheduleDialog.cancel}
         destructive
         onConfirm={async () => {
-          const done = await run(() => action.mutateAsync({ kind: "unpublish" }), false, t.unpublished);
+          const done = await flow.unpublish(t.unpublished);
           if (!done) throw new Error("unpublish failed"); // keeps the dialog open; the message is already shown
         }}
       />

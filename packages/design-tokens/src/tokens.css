@@ -500,6 +500,37 @@
   scroll-margin-top: calc(var(--app-header-offset, 0px) + 4rem);
 }
 
+/*
+ * Batch "editor" (chapter editor and chapter manager), adapted from Lucian UX/UI Prompt #128, #149 and #190
+ * (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt). Every one plays only after the author did something.
+ */
+@theme {
+  /* Find and replace (#128): the text a replace just wrote fades in from a highlight. */
+  --animate-replace-flash: replace-flash 0.6s var(--ease-soft);
+  @keyframes replace-flash {
+    from {
+      opacity: 0.65;
+      background-color: color-mix(in oklab, var(--primary) 30%, transparent);
+    }
+  }
+
+  /* Conflict merge (MergeChoice, #149): the version the author keeps dips in. */
+  --animate-merge-pick: merge-pick 0.22s var(--ease-soft);
+  @keyframes merge-pick {
+    from {
+      transform: translateY(3px);
+    }
+  }
+
+  /* Scheduled outbox (ScheduledOutboxItem, #190): a rescheduled time drops into place. */
+  --animate-outbox-moved: outbox-moved 0.45s var(--ease-soft);
+  @keyframes outbox-moved {
+    from {
+      transform: translateY(-6px);
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

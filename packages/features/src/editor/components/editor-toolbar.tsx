@@ -2,10 +2,22 @@
 
 import type { Editor } from "@tiptap/core";
 import { useEditorState } from "@tiptap/react";
-import { Bold, Heading2, ImagePlus, Italic, Minus, Redo2, Strikethrough, Underline, Undo2 } from "lucide-react";
+import {
+  Bold,
+  Heading2,
+  ImagePlus,
+  Italic,
+  Minus,
+  Redo2,
+  Strikethrough,
+  TextSearch,
+  Underline,
+  Undo2,
+} from "lucide-react";
 import { useRef, type ComponentType } from "react";
 import { Button } from "@storynest/ui/components/button";
 import { IMAGE_ACCEPTED_TYPES } from "../../_shared/image-prepare.ts";
+import { findReplaceState } from "../model/find-replace.ts";
 import { editorText } from "../strings.ts";
 
 const t = editorText.toolbar;
@@ -14,6 +26,8 @@ type Item = {
   label: string;
   icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   active?: boolean;
+  /** For a button that opens a panel: whether it is open (aria-expanded instead of aria-pressed). */
+  expanded?: boolean;
   disabled?: boolean;
   run: () => void;
 };
@@ -40,6 +54,7 @@ export function EditorToolbar({
       strike: e.isActive("strike"),
       canUndo: e.can().undo(),
       canRedo: e.can().redo(),
+      finding: findReplaceState(e.state).open,
     }),
   });
 
@@ -75,6 +90,12 @@ export function EditorToolbar({
           },
         ]
       : []),
+    {
+      label: t.find,
+      icon: TextSearch,
+      expanded: state.finding,
+      run: () => (state.finding ? editor.chain().closeFindReplace().focus().run() : editor.commands.openFindReplace()),
+    },
     { label: t.undo, icon: Undo2, disabled: !state.canUndo, run: () => editor.chain().focus().undo().run() },
     { label: t.redo, icon: Redo2, disabled: !state.canRedo, run: () => editor.chain().focus().redo().run() },
   ];
@@ -85,14 +106,15 @@ export function EditorToolbar({
       aria-label={t.label}
       className="flex flex-wrap items-center gap-1 rounded-lg border bg-card p-1"
     >
-      {items.map(({ label, icon: Icon, active, disabled, run }) => (
+      {items.map(({ label, icon: Icon, active, expanded, disabled, run }) => (
         <Button
           key={label}
           type="button"
           size="icon"
-          variant={active ? "secondary" : "ghost"}
+          variant={active || expanded ? "secondary" : "ghost"}
           aria-label={label}
           aria-pressed={active === undefined ? undefined : active}
+          aria-expanded={expanded}
           disabled={disabled}
           // The toolbar must not take focus away from the text (it would lose the selection on some browsers).
           onMouseDown={(event) => event.preventDefault()}

@@ -17,7 +17,9 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import type { ChapterDraft } from "../api/draft.api.ts";
 import { chapterImageUrl } from "../api/images.api.ts";
+import { DraftMergeView } from "../components/draft-merge-view.tsx";
 import { EditorToolbar } from "../components/editor-toolbar.tsx";
+import { FindReplacePanel } from "../components/find-replace-panel.tsx";
 import { PublishPanel } from "../components/publish-panel.tsx";
 import { useChapterDraft, useSaveChapterDraft } from "../hooks/use-chapter-draft.ts";
 import { useUploadChapterImage } from "../hooks/use-chapter-image.ts";
@@ -59,6 +61,8 @@ export function ChapterEditorScreen({
   const draft = useChapterDraft(chapterId);
   // Bumped to throw the editor away and start again from the saved draft (after a conflict).
   const [session, setSession] = useState(0);
+  // The reload was asked for to merge: the fresh editor opens the merge of the kept copy with the new draft.
+  const [mergeOnOpen, setMergeOnOpen] = useState(false);
 
   if (draft.isPending) return <Skeleton className="h-96 w-full max-w-3xl rounded-xl" aria-busy />;
   if (draft.isError) {
@@ -85,8 +89,10 @@ export function ChapterEditorScreen({
       storyId={storyId}
       locale={locale}
       onEditor={onEditor}
-      onReload={async () => {
+      startMerge={mergeOnOpen}
+      onReload={async (options) => {
         await draft.refetch();
+        setMergeOnOpen(options?.merge === true);
         setSession((value) => value + 1);
       }}
     />
@@ -99,12 +105,15 @@ function DraftEditor({
   locale,
   onEditor,
   onReload,
+  startMerge = false,
 }: {
   draft: ChapterDraft;
   storyId: string;
   locale: string;
   onEditor?: ((editor: Editor | null) => void) | undefined;
-  onReload: () => Promise<void>;
+  /** `merge`: open the merge view on the fresh draft (when this device kept a copy that differs). */
+  onReload: (options?: { merge?: boolean }) => Promise<void>;
+  startMerge?: boolean;
 }) {
   const toast = useAppToast();
   const save = useSaveChapterDraft(draft.chapterId);
@@ -124,6 +133,7 @@ function DraftEditor({
     const stored = readBackup(draft.chapterId);
     return stored && differsFromServer(stored, draft) ? stored : null;
   });
+  const [merging, setMerging] = useState(() => startMerge && backup !== null);
   const backupTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const editorRef = useRef<Editor | null>(null);
   // The Save button asks for a confirmation toast; background autosaves stay quiet (the footer shows their status).
@@ -274,14 +284,24 @@ function DraftEditor({
     };
   }, [writeLocalBackup]);
 
-  const restoreBackup = () => {
-    if (!backup || !editor) return;
-    setTitle(backup.title);
-    titleRef.current = backup.title;
-    editor.commands.setContent(bodyToDoc(backup.body), { emitUpdate: true });
+  /** Puts a title and body in the editor as an ordinary edit: autosave saves it against the current revision. */
+  const loadContent = (next: { title: string; body: ChapterDraft["body"] }) => {
+    if (!editor) return false;
+    setTitle(next.title);
+    titleRef.current = next.title;
+    editor.commands.setContent(bodyToDoc(next.body), { emitUpdate: true });
     setBackup(null);
+    setMerging(false);
     touched();
-    toast.success(t.backup.restored);
+    return true;
+  };
+
+  const restoreBackup = () => {
+    if (backup && loadContent(backup)) toast.success(t.backup.restored);
+  };
+
+  const applyMergedVersion = (merged: { title: string; body: ChapterDraft["body"] }) => {
+    if (loadContent(merged)) toast.success(t.merge.applied);
   };
 
   /** The revision to publish: unsaved text is saved first; null when that did not work (invalid, conflict, offline). */
@@ -318,16 +338,21 @@ function DraftEditor({
         </div>
       </div>
 
-      {backup ? (
+      {backup && merging ? (
+        <DraftMergeView mine={backup} server={draft} onApply={applyMergedVersion} onCancel={() => setMerging(false)} />
+      ) : backup ? (
         <div role="status" className="flex flex-col gap-2 rounded-md border bg-card p-3 text-sm">
           <p className="font-medium">{t.backup.title}</p>
           <p className="text-muted-foreground">
             {t.backup.description(formatRelativeTime(backup.savedAt, locale))}
             {backup.baseRevision < draft.revision ? ` ${t.backup.olderBase}` : ""}
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" onClick={restoreBackup} disabled={!editor}>
               {t.backup.restore}
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setMerging(true)} disabled={!editor}>
+              {t.merge.open}
             </Button>
             <Button
               type="button"
@@ -351,9 +376,14 @@ function DraftEditor({
         >
           <p className="font-medium text-destructive">{t.conflict.title}</p>
           <p className="text-muted-foreground">{t.conflict.description}</p>
-          <Button type="button" size="sm" variant="outline" className="w-fit" onClick={() => void onReload()}>
-            {t.conflict.reload}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="outline" onClick={() => void onReload()}>
+              {t.conflict.reload}
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => void onReload({ merge: true })}>
+              {t.merge.conflictOpen}
+            </Button>
+          </div>
         </div>
       ) : null}
 
@@ -378,14 +408,17 @@ function DraftEditor({
       </div>
 
       {editor ? (
-        <EditorToolbar editor={editor} onImage={insertImage} imageBusy={imageUpload.isPending} />
+        <>
+          <EditorToolbar editor={editor} onImage={insertImage} imageBusy={imageUpload.isPending} />
+          <FindReplacePanel editor={editor} />
+        </>
       ) : (
         <Skeleton className="h-11 w-full rounded-lg" aria-hidden />
       )}
 
       <EditorContent
         editor={editor}
-        className="reader-text min-h-[50vh] rounded-lg border bg-card p-4 text-card-foreground [&_.ProseMirror]:min-h-[45vh] [&_.ProseMirror]:outline-none [&_.ProseMirror>*+*]:mt-[1em] [&_h2]:text-xl [&_h2]:font-semibold [&_hr]:my-6 [&_hr]:border-border [&_figure]:min-h-16 [&_figure]:rounded-md [&_figure]:border [&_figure]:border-dashed [&_figure]:p-2 [&_figure_img]:mx-auto [&_figure_img]:max-h-[60vh] [&_figure_img]:rounded-sm [&_.ProseMirror-selectednode]:ring-2 [&_.ProseMirror-selectednode]:ring-ring"
+        className="reader-text min-h-[50vh] rounded-lg border bg-card p-4 text-card-foreground [&_.ProseMirror]:min-h-[45vh] [&_.ProseMirror]:outline-none [&_.ProseMirror>*+*]:mt-[1em] [&_h2]:text-xl [&_h2]:font-semibold [&_hr]:my-6 [&_hr]:border-border [&_figure]:min-h-16 [&_figure]:rounded-md [&_figure]:border [&_figure]:border-dashed [&_figure]:p-2 [&_figure_img]:mx-auto [&_figure_img]:max-h-[60vh] [&_figure_img]:rounded-sm [&_.ProseMirror-selectednode]:ring-2 [&_.ProseMirror-selectednode]:ring-ring [&_.find-match]:rounded-xs [&_.find-match]:bg-primary/15 [&_.find-match-current]:bg-primary/35 [&_.find-match-current]:ring-1 [&_.find-match-current]:ring-primary [&_.find-replaced]:animate-replace-flash"
       />
 
       <PublishPanel chapterId={draft.chapterId} locale={locale} ensureSaved={ensureSaved} />

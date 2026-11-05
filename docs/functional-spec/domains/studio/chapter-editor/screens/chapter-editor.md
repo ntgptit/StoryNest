@@ -12,7 +12,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Name | Chapter editor (vi `editorText.title` "Soạn chương"; browser title `appText.pageTitle.editChapter` "Soạn chương · StoryNest", always Vietnamese — owned by `OBJ-I18N`) |
 | Route | `/studio/story/{id}/chapter/{chapterId}` (protected prefix `/studio`, `robots: noindex`) |
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/page.tsx` → `chapter-editor-view.tsx` |
-| Screen component | `packages/features/src/editor/screens/chapter-editor-screen.tsx` (`ChapterEditorScreen` → `DraftEditor`), with `components/editor-toolbar.tsx`, `components/publish-panel.tsx` |
+| Screen component | `packages/features/src/editor/screens/chapter-editor-screen.tsx` (`ChapterEditorScreen` → `DraftEditor`), with `components/editor-toolbar.tsx`, `components/find-replace-panel.tsx`, `components/draft-merge-view.tsx`, `components/publish-panel.tsx` |
 | Roles | owner, co_author, editor (`BR-TEAM-*`); unpublish / cancel schedule: owner, co_author only |
 | Entry points | Chapter manager "Write" link (`packages/features/src/studio/screens/chapter-manager-screen.tsx:198`), "Back to editor" on SCR-HIST-01/02, "Open editor" after restore |
 | Workflows | WF-EDT-01 … WF-EDT-10, WF-HIST-03 (target) |
@@ -23,10 +23,12 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | --- | --- | --- | --- |
 | SCR-EDT-01-C01 | Back link | "Back to chapters" → `/studio/story/{id}/chapters` | `chapter-editor-screen.tsx:293-298` |
 | SCR-EDT-01-C02 | Preview / Version history buttons | Outline links to `…/preview` and `…/history` | `chapter-editor-screen.tsx:299-306` |
-| SCR-EDT-01-C03 | Backup banner | `role="status"`; title, time, optional older-base warning; Restore / Discard | `chapter-editor-screen.tsx:309-333` |
-| SCR-EDT-01-C04 | Conflict alert | `role="alert"`; "The draft was edited elsewhere" + "Load latest version" | `chapter-editor-screen.tsx:335-346` |
+| SCR-EDT-01-C03 | Backup banner | `role="status"`; title, time, optional older-base warning; Restore / Compare and merge / Discard | `chapter-editor-screen.tsx` (backup block) |
+| SCR-EDT-01-C04 | Conflict alert | `role="alert"`; "The draft was edited elsewhere" + "Load latest version" / "Load latest and merge" | `chapter-editor-screen.tsx` (conflict block) |
 | SCR-EDT-01-C05 | Chapter title field | Label "Chapter title", placeholder "Chapter title", `maxLength=400`, inline error `role="alert"` | `chapter-editor-screen.tsx:348-366` |
-| SCR-EDT-01-C06 | Formatting toolbar | `role="toolbar"` "Formatting": Heading, Bold, Italic, Underline, Strikethrough (toggle, `aria-pressed`), Divider, Insert picture (+hidden file input "Choose a picture to insert"), Undo, Redo (disabled when unavailable). Icon buttons 36 px. Skeleton until editor ready | `editor-toolbar.tsx:46-121`, `packages/ui/src/components/button.tsx:25` |
+| SCR-EDT-01-C06 | Formatting toolbar | `role="toolbar"` "Formatting": Heading, Bold, Italic, Underline, Strikethrough (toggle, `aria-pressed`), Divider, Insert picture (+hidden file input "Choose a picture to insert"), Find and replace (`aria-expanded`), Undo, Redo (disabled when unavailable). Icon buttons 36 px. Skeleton until editor ready | `editor-toolbar.tsx`, `packages/ui/src/components/button.tsx:25` |
+| SCR-EDT-01-C13 | Find and replace panel (Lucian #128) | `role="search"` "Find and replace in the chapter", under the toolbar while open: Find → Replace with, "Replace all"; count "3/12" (+ polite live text "Match 3 of 12" / "No matches" / "N replaced"), Previous / Next match, "Match case" toggle (`aria-pressed`), Replace, Close. Matches are ProseMirror decorations (`find-match`, current `find-match-current`); replaced text flashes once (`animate-replace-flash`) | `components/find-replace-panel.tsx`, `model/find-replace.ts`, `packages/ui/src/widgets/find-replace-bar.tsx` |
+| SCR-EDT-01-C14 | Merge view (Lucian #149) | Replaces the backup banner while open: "Merge your version with the server's", "Take all mine" / "Take all from the server", "N differences left to decide" (polite), one `role="group"` per differing block (and the title) with "Mine" / "On the server" buttons (`aria-pressed`; a missing side reads "(Not in this version)"; "formatting only" note), "Use the merged version" (disabled until all decided), "Not now" | `components/draft-merge-view.tsx`, `model/draft-merge.ts`, `packages/ui/src/widgets/merge-choice.tsx` |
 | SCR-EDT-01-C07 | Body editor | Tiptap `EditorContent`, `role="textbox"`, `aria-multiline`, `aria-label="Chapter content"`, reader typography (`reader-text`), min 50vh; image blocks as framed pictures | `chapter-editor-screen.tsx:208-225,374-377` |
 | SCR-EDT-01-C08 | Publish panel | `<section aria-label="Publish chapter">`: H2, state badge, archived hint, error alert, Publish / Publish new version, Schedule…, Unpublish / Cancel schedule | `publish-panel.tsx:121-160` |
 | SCR-EDT-01-C09 | Schedule dialog | Title "Schedule publication", `datetime-local` "Publish time" (min now+1 min), "Your time zone: {zone}", inline error, Cancel / Schedule | `publish-panel.tsx:162-199` |
@@ -113,6 +115,17 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Navigation | — |
 | Evidence | `chapter-editor-screen.tsx:265-273,316-330` |
 
+| Field | SCR-EDT-01-A07b Compare and merge (backup) |
+| --- | --- |
+| Trigger | C03 "Compare and merge" |
+| Preconditions | Banner visible |
+| Expected behavior | C14 opens: the backup ("mine") against the draft as loaded ("server"), compared with the version history's `diffBlocks` (blocks matched by `block_id`). The author picks a side per differing block / the title (or takes all of one side); "Use the merged version" loads the result into the editor as an ordinary edit (toast "Merged version in place, saving automatically.") and autosave saves it with the loaded draft's revision (`BR-EDT-009`); "Not now" returns to the banner unchanged |
+| State change | Editor content; `chapter_drafts` after autosave (revision check unchanged; the backup key is removed after a clean save) |
+| Validation | Merged blocks keep their ids, one block per id; a block only one side has is kept or dropped by the choice |
+| Error behavior | A save conflict after merging is handled like any other (C04) |
+| Navigation | — |
+| Evidence | `model/draft-merge.ts`, `chapter-editor-screen.tsx` (`loadContent`), `editor-screen.test.tsx` "merging…" |
+
 | Field | SCR-EDT-01-A08 Load latest version (conflict) |
 | --- | --- |
 | Trigger | C04 button |
@@ -123,6 +136,28 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Error behavior | Refetch error → load error state |
 | Navigation | — |
 | Evidence | `chapter-editor-screen.tsx:76-79,342` |
+
+| Field | SCR-EDT-01-A08b Load latest and merge (conflict) |
+| --- | --- |
+| Trigger | C04 "Load latest and merge" |
+| Preconditions | Status conflict |
+| Expected behavior | As A08 (the text is kept as a device backup, the draft is refetched, the editor remounted), then C14 opens directly on the fresh draft; applying it saves against the fresh revision |
+| State change | Editor session reset; then as A07b |
+| Validation | — |
+| Error behavior | No differing backup → plain reload |
+| Navigation | — |
+| Evidence | `chapter-editor-screen.tsx` (`onReload({ merge: true })`, `startMerge`) |
+
+| Field | SCR-EDT-01-A13 Find and replace |
+| --- | --- |
+| Trigger | Ctrl/Cmd+F in the text or C06 "Find and replace"; Esc (in the text or the panel) or Close ends it |
+| Preconditions | Editor ready |
+| Expected behavior | C13 opens with focus in Find (a one-line selection becomes the query). Matching runs per text block across mark boundaries, never across blocks or line breaks and never into image/divider blocks; case-insensitive unless "Match case". Enter / Shift+Enter or the arrows select the next / previous match (wrapping). Replace replaces the current match and moves on; Replace all replaces every match in one transaction (one Undo restores all), keeping the marks the match started with |
+| State change | Document → autosave (decorations themselves never reach the body) |
+| Validation | Empty query: no matches; the query is literal text |
+| Error behavior | — |
+| Navigation | — |
+| Evidence | `model/find-replace.ts`, `find-replace.test.ts`, `editor-screen.test.tsx` "find and replace" |
 
 | Field | SCR-EDT-01-A09 Publish / Publish new version |
 | --- | --- |
@@ -183,7 +218,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Unauthorized | Implemented | Anonymous → login redirect; no role → "Chapter not found"; editor → no Unpublish button |
 | Offline | Implemented | Autosave error + backoff + `online` retry; local backup; image/publish "No connection…" messages |
 | Unsaved changes | Implemented (partial) | Footer "Unsaved changes…", `beforeunload` prompt, backup banner. **Missing**: no in-app navigation guard / flush (F-EDT-02) |
-| Conflict | Implemented | Alert + reload + backup offer |
+| Conflict | Implemented | Alert + reload + backup offer, or reload straight into the block merge (C14) |
 | Not found / unreadable | Implemented | Empty states `notFound`, `cannotOpen` |
 
 ## E. Acceptance criteria
@@ -209,6 +244,9 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | SCR-EDT-01-AC17 | Given a time less than one minute ahead or empty, when "Schedule" is pressed, then an inline error is shown and no request is sent. | Validation |
 | SCR-EDT-01-AC18 | Given an archived chapter, when the panel loads, then no publish/schedule buttons are shown and "Unarchive it in the chapter list before publishing." is displayed. | State |
 | SCR-EDT-01-AC19 | Given an owner, when they confirm "Unpublish chapter", then the chapter returns to draft and the toast "Chapter unpublished and returned to draft." is shown. | Happy |
+| SCR-EDT-01-AC25 | Given a chapter where "Lan" appears 3 times (once split over bold/plain text), when the author searches "lan", then "1/3" is shown and all three are highlighted; "Replace all" with "Mai" replaces all three and one Undo restores them; an image block is never touched. | Happy / Edge |
+| SCR-EDT-01-AC26 | Given a device backup that differs from the server draft, when the author chooses "Compare and merge", picks a side for each difference and applies, then the editor shows the merged text and the next save is sent with the server draft's revision. | Happy / State transition |
+| SCR-EDT-01-AC27 | Given a save conflict, when the author chooses "Load latest and merge", then the merge view opens on the freshly loaded draft and the merged text saves against that revision (a further concurrent save still conflicts). | Edge |
 | SCR-EDT-01-AC20 `[Proposed]` | Given a published chapter, when the panel loads, then "Schedule…" is not offered (or is explained as unavailable). | Edge (F-EDT-01) |
 | SCR-EDT-01-AC21 `[Proposed]` | Given unsaved changes, when the author follows an in-app link (Preview, Version history, Back to chapters), then pending changes are saved before navigating, or the author is asked to confirm. | Navigation (F-EDT-02) |
 | SCR-EDT-01-AC22 `[Proposed]` | Given the publish state cannot be loaded, when the editor is shown, then the panel shows a loading placeholder and an error with retry instead of disappearing. | Error (F-EDT-04) |
