@@ -107,8 +107,8 @@ Adds the 31 active Phase 2 proposals (`FP-035…FP-066`, FP-052 merged into FP-0
 [feature backlog](feature-backlog.md#phase-2-proposals-product-discovery). Still a recommendation: nothing here is
 approved, and approved items move into `docs/WBS.md`.
 
-> **WBS (2026-11-05):** increments I-1…I-6 are planned as [`docs/WBS.md` Phase 9](../../WBS.md#phase-9-hoàn-thiện-sau-product-discovery-lập-2026-11-05--92-ngày)
-> (9-I1…9-I6, WP 9.1–9.46). The WBS is the authority for order and status from now on.
+> **WBS (2026-11-05):** increments I-1…I-6 are planned as [`docs/WBS.md` Phase 9](../../WBS.md#phase-9-hoàn-thiện-sau-product-discovery-lập-2026-11-05)
+> (9-P0…9-P3 by urgency, WP 9.1–9.47). The WBS is the authority for order and status from now on.
 
 ### 5.1 Ranking method
 
