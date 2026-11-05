@@ -101,7 +101,7 @@ storynest/
 | `features` | `ui`, `utils`, `validation`, `database` | `next/*`, `apps/*`; feature khác chỉ qua `index.ts` |
 | `apps/web`, `apps/mobile` | mọi package | import ngược lẫn nhau |
 
-Quy ước khác: business logic nằm ở `api/` và `model/`, không nằm trong component hay hook; mọi ghi quan trọng đi qua RPC hoặc `api/` có test; không màu/spacing thô (chỉ token); chuỗi UI qua i18n; một feature = một PR/vertical slice gồm cả DB (nếu cần) → validation → api → UI → test.
+Quy ước khác: business logic nằm ở `api/` và `model/`, không nằm trong component hay hook; mọi ghi quan trọng đi qua RPC hoặc `api/` có test; không màu/spacing thô (chỉ token); chuỗi UI qua i18n; một feature = một PR/vertical slice gồm cả DB (nếu cần) → validation → api → UI → test. Mọi PR tuân theo quy tắc performance ở [`PERFORMANCE.md`](PERFORMANCE.md).
 
 ---
 
@@ -250,7 +250,7 @@ Phụ thuộc quyết định 1.1. Chỉ nên bắt đầu khi Phase 2 và 3 đ�
 | **8.1** | CI/CD: Vercel preview, **triển khai migration có kiểm soát** (nhánh Supabase/preview DB), quy trình rollback | 2 |
 | **8.2** | Giám sát: Sentry (web + mobile), log Supabase, cảnh báo cho outbox dead letter và cron thất bại | 2 |
 | **8.3** | Rà soát bảo mật: RLS audit lại sau mỗi phase, `get_advisors`, kiểm tra quyền Storage, secret scanning, header bảo mật/CSP | 3 |
-| **8.4** | Hiệu năng: ngân sách (LCP/INP/bundle), kiểm tra N+1 và kế hoạch truy vấn cho trang nóng, test tải trên đường đọc | 3 |
+| **8.4** | Hiệu năng: ngân sách (LCP/INP/bundle), kiểm tra N+1 và kế hoạch truy vấn cho trang nóng, test tải trên đường đọc. _Quy tắc: [`PERFORMANCE.md`](PERFORMANCE.md). Audit lần đầu (2026-11-04) và kế hoạch PR A–J: [`perf-audit-2026-11-04.md`](perf-audit-2026-11-04.md)._ | 3 |
 | **8.5** | Trợ năng: kiểm WCAG 2.1 AA trên các màn core (bàn phím, tương phản, screen reader, cỡ chữ) | 2 |
 | **8.6** | Sao lưu/khôi phục (PITR), kịch bản sự cố, danh sách kiểm tra phát hành | 2 |
 
@@ -385,7 +385,7 @@ Chưa lên lịch (chờ dữ liệu sử dụng hoặc quyết định, xem roa
 
 Rủi ro cao nhất, nên làm sớm trong phase của nó: **editor + chuyển đổi `block_id` (3.5)**, **dedupe lượt đọc (2.6)**, **đọc offline (7.4)**, **kiểm tra Storage policy (D3)**.
 
-## 4. Quyết định đã chốt (2026-11-03)
+## 4. Quyết định đã chốt (2026-11-03, bổ sung Q8–Q10 ngày 2026-11-04)
 
 | # | Quyết định | Hệ quả cho WBS |
 | --- | --- | --- |
@@ -396,6 +396,9 @@ Rủi ro cao nhất, nên làm sớm trong phase của nó: **editor + chuyển 
 | Q5 | **Hai project Supabase (dev + prod)**, migration qua CI | WP 0.0 dựng project dev; 8.1 triển khai migration theo từng môi trường; chuyển sang branching khi có nhiều người sửa schema |
 | Q6 | **OAuth Google ở M1; bình luận theo đoạn ở M2** | WP 1.1 giữ OAuth; WP 4.2 là mốc của bình luận theo đoạn (M1 không có bình luận) |
 | Q7 | **Xóa tài khoản = ẩn danh hóa, giữ nội dung** | WP 6.4: xóa thông tin cá nhân (profile, email ở `auth.users`, avatar), đặt hiển thị "Người dùng đã xóa", story/bình luận giữ lại; không hard-delete `auth.users` nên FK RESTRICT không phải đổi; cần chính sách riêng cho story đang theo dõi và trường hợp tác giả muốn gỡ truyện (làm riêng trước khi ẩn danh) |
+| Q8 | **Trang cá nhân được prefetch ở server** (2026-11-04) | Trang cần đăng nhập (library, studio, settings, notifications, following, moderation…) tải dữ liệu ban đầu trên server bằng client gắn cookie (kiểm auth + RLS), QueryClient theo request rồi `HydrationBoundary`. **Không bao giờ** đưa dữ liệu cá nhân vào cache dùng chung (`"use cache"`, CDN). Thay quy ước cũ "dữ liệu cá nhân không prefetch ở server" trong các `keys.ts` |
+| Q9 | **URL là nguồn xác định ngôn ngữ cho trang public** (2026-11-04) | Trang public có tiền tố `/vi/...`, `/en/...`, canonical và `hreflang` thống nhất. Cookie hoặc profile chỉ lưu preference (dùng để chuyển hướng khi chưa có tiền tố). Server render đúng ngôn ngữ, nên `LanguageProvider` không còn đổi `key`/remount sau hydration. Ảnh hưởng: WP 0.4 (cơ chế hiện tại là localStorage + đồng bộ tài khoản), SEO (WP 6.6), route tree `apps/web/src/app` |
+| Q10 | **Cache Components + `"use cache"` cho dữ liệu public** (2026-11-04) | Không thêm `unstable_cache` mới. Bật Cache Components trong một PR riêng, có đánh giá tương thích (proxy, `cookies()`, route dynamic) và rollout từng phần. Không dùng `experimental.staleTimes` |
 
 Còn mở: chính sách pháp lý cho Q7 (thời hạn lưu, yêu cầu gỡ nội dung theo luật) cần người phụ trách xác nhận trước khi làm WP 6.4; WP 6.9 cũng cần nội dung pháp lý.
 
