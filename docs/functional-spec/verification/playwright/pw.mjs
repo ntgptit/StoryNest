@@ -13,6 +13,8 @@ export async function browser() { return chromium.launch(); }
 export async function ctxFor(b, role, size = { width: 1280, height: 900 }) {
   const st = `${OUT}state/${role}.json`;
   const ctx = await b.newContext({ viewport: size, locale: "vi-VN", ...(fs.existsSync(st) && role !== "guest" ? { storageState: st } : {}) });
+  // The editor offers a first-run tour whose overlay blocks clicks; mark it seen for the test browser (same key the app writes).
+  await ctx.addInitScript(() => { try { window.localStorage.setItem("storynest.editor.tour-done", "1"); } catch {} });
   if (role !== "guest" && !fs.existsSync(st)) {
     const p = await ctx.newPage();
     await p.goto(B + "/login?next=%2Fme", { waitUntil: "networkidle" });
