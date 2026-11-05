@@ -68,4 +68,4 @@ collaborator's role (F-TEAM-03).
 | Postconditions | They can be invited again; they are not notified |
 | Affected objects | OBJ-TEAM |
 | Related screens | SCR-TEAM-01 |
-| Status | Verified — `team-screen.tsx:180-200` |
+| Status | Verified — `team-screen.tsx:188-208` |

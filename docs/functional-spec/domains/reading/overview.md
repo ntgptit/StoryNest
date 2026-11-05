@@ -36,7 +36,7 @@ Related object owned elsewhere but documented by the same analysis: `OBJ-VOTE` �
 | deleted (`deleted_at`) | 404 | 404 on the public page (studio only) | 404 on the public page | No | No |
 | Chapter draft / scheduled / archived / deleted | 404 | 404 in the reader (studio preview only) | 404 in the reader | — | — |
 
-Sources: `supabase/migrations/20261103000100_auth_and_rls.sql:93-112,198-202`, `packages/features/src/story/api/story.api.ts:26-55`, `packages/features/src/reader/api/reader.api.ts:18-36`, `packages/features/src/story/model/story-detail.ts:24-26`.
+Sources: `supabase/migrations/20261103000100_auth_and_rls.sql:93-112,198-202`, `packages/features/src/story/api/story.api.ts:26-55`, `packages/features/src/reader/api/reader.api.ts:18-36`, `packages/features/src/story/model/story-detail.ts:25-27`.
 
 ## Cross-domain dependencies
 
@@ -59,7 +59,7 @@ Sources: `supabase/migrations/20261103000100_auth_and_rls.sql:93-112,198-202`, `
 | ID | Question | Why it matters | Evidence |
 | --- | --- | --- | --- |
 | Q-STORY-01 | Should stories by a suspended or deactivated author stay publicly readable? | Moderation policy. Today they stay readable and the author shows as "Anonymous author" | `supabase/migrations/20261103000100_auth_and_rls.sql:93-101,182-184` |
-| Q-READ-01 | Should "Chapter N" be the position among published chapters, or `sort_order` (gaps)? | The numbering readers see. The model comment says "1-based position" | `packages/features/src/story/model/story-detail.ts:40,51` |
+| Q-READ-01 | Should "Chapter N" be the position among published chapters, or `sort_order` (gaps)? | The numbering readers see. The model comment says "1-based position" | `packages/features/src/story/model/story-detail.ts:49,60` |
 | Q-PROG-01 | Should "Continue reading" point at the last opened chapter or the furthest one read? | Re-reading an old chapter moves the pointer back | `supabase/migrations/20261104000000_save_reading_progress.sql:63-66` |
 | Q-PROG-02 | Should reads by the author or team count? | Read counts and rankings can be inflated by authors | `supabase/migrations/20261104000100_chapter_reads.sql:55-66` |
 | Q-VOTE-01 | (community) Should authors vote for their own chapters, or on unpublished ones? | Rankings weight votes 5× | `supabase/migrations/20261103000100_auth_and_rls.sql:264-265` |

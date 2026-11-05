@@ -21,19 +21,19 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-HIST-01-C01 | Page header | "Version history" + description with chapter title | `history-screen.tsx:104` |
-| SCR-HIST-01-C02 | Back link | "Back to editor" | `history-screen.tsx:105-110` |
-| SCR-HIST-01-C03 | Version list | `<ol aria-label="Versions">` of toggle buttons (`aria-pressed`): "Version n", live badge, title, words · published · author | `history-screen.tsx:116-138` |
-| SCR-HIST-01-C04 | Empty state | "This chapter hasn't been published yet" | `history-screen.tsx:112-113` |
-| SCR-HIST-01-C05 | Viewer section | `<section aria-label="Content of version n">` | `history-screen.tsx:201` |
-| SCR-HIST-01-C06 | Mode toggle | `role="group"` buttons "Content" / "Compare" (`aria-pressed`) | `history-screen.tsx:203-216` |
-| SCR-HIST-01-C07 | Restore button | "Restore to draft" | `history-screen.tsx:217-219` |
-| SCR-HIST-01-C08 | Restored status | `role="status"` "Restored to draft." + "Open editor" link | `history-screen.tsx:222-232` |
-| SCR-HIST-01-C09 | Content view | `<article class="reader-text">` H2 title + `BlockView`s; empty note | `history-screen.tsx:260-269` |
-| SCR-HIST-01-C10 | Compare base select | Label "Compare with": "Current draft" + other versions | `history-screen.tsx:236-253` |
+| SCR-HIST-01-C01 | Page header | "Version history" + description with chapter title | `history-screen.tsx:108` |
+| SCR-HIST-01-C02 | Back link | "Back to editor" | `history-screen.tsx:109-114` |
+| SCR-HIST-01-C03 | Version list | `<ol aria-label="Versions">` of toggle buttons (`aria-pressed`): "Version n", live badge, title, words · published · author | `history-screen.tsx:120-142` |
+| SCR-HIST-01-C04 | Empty state | "This chapter hasn't been published yet" | `history-screen.tsx:116-117` |
+| SCR-HIST-01-C05 | Viewer section | `<section aria-label="Content of version n">` | `history-screen.tsx:205` |
+| SCR-HIST-01-C06 | Mode toggle | `role="group"` buttons "Content" / "Compare" (`aria-pressed`) | `history-screen.tsx:207-220` |
+| SCR-HIST-01-C07 | Restore button | "Restore to draft" | `history-screen.tsx:221-223` |
+| SCR-HIST-01-C08 | Restored status | `role="status"` "Restored to draft." + "Open editor" link | `history-screen.tsx:226-236` |
+| SCR-HIST-01-C09 | Content view | `<article class="reader-text">` H2 title + `BlockView`s; empty note | `history-screen.tsx:269-278` |
+| SCR-HIST-01-C10 | Compare base select | Label "Compare with": "Current draft" + other versions | `history-screen.tsx:240-257` |
 | SCR-HIST-01-C11 | Diff view | Caption, summary (`aria-live`), list with Added/Removed/Changed badges, "Before:" text | `history-screen.tsx:300-338` |
 | SCR-HIST-01-C13 | Differences only and change steps (Lucian #217 / #127) | Switch "Only show changes" folds each run of unchanged paragraphs into one "N unchanged paragraphs" row (opens on its own; folded rows are `inert`); "Previous change" / "Next change" with "Change i of n" (`aria-live`) scroll to and focus each change (consecutive changed blocks count as one). No restore per change: restore still takes the whole version (`BR-HIST-006`) | `history-screen.tsx` (`DiffView`), `model/history.ts` (`groupDiff`), `packages/ui/src/widgets/diff-folds.tsx` |
-| SCR-HIST-01-C12 | Restore confirm dialog | "Restore this version to the draft?" Restore / Cancel | `history-screen.tsx:271-288` |
+| SCR-HIST-01-C12 | Restore confirm dialog | "Restore this version to the draft?" Restore / Cancel | `history-screen.tsx:280-297` |
 
 ## C. User actions & system responses
 
@@ -46,7 +46,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | `draft.storyId = {id}` |
 | Error behavior | "Chapter not found" / "Couldn't load the history" + Try again (refetches both) |
 | Navigation | Anonymous → login |
-| Evidence | `history-screen.tsx:48-79` |
+| Evidence | `history-screen.tsx:52-83` |
 
 | Field | SCR-HIST-01-A02 Select a version |
 | --- | --- |
@@ -57,7 +57,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | — |
 | Error behavior | Blocks error → ErrorState + retry |
 | Navigation | — |
-| Evidence | `history-screen.tsx:99-100,121-122,140-149,184-194` |
+| Evidence | `history-screen.tsx:103-104,125-126,144-153,188-198` |
 
 | Field | SCR-HIST-01-A03 Compare |
 | --- | --- |
@@ -79,7 +79,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | `chapterBodySchema` on the restored body |
 | Error behavior | Toast by kind (`BR-HIST-009`); dialog stays open |
 | Navigation | "Open editor" → SCR-EDT-01 |
-| Evidence | `history-screen.tsx:217-232,271-288`, `hooks/use-history.ts:36-62` |
+| Evidence | `history-screen.tsx:221-236,280-297`, `hooks/use-history.ts:36-62` |
 
 | Field | SCR-HIST-01-A05 Back to editor |
 | --- | --- |
@@ -90,7 +90,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/studio/story/{id}/chapter/{chapterId}` |
-| Evidence | `history-screen.tsx:105-110` |
+| Evidence | `history-screen.tsx:109-114` |
 
 ## D. UI states
 

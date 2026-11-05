@@ -66,7 +66,7 @@ Rule summary
 | `event_type` | Produced by | When | Recipient | Not produced when | Switchable (OBJ-SET) | Dedupe key | Destination (link check) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `chapter_published` | Worker handler `notify_chapter_published` for outbox event `chapter.published` | First publish of a chapter (re-publishing an edit is silent) | Every follower of the story with an active, non-deleted account | Recipient is the publisher; chapter no longer published/deleted at processing; story deleted, private, or draft | Yes `notify_chapter_published` | `chapter_published:<chapter>` | `/story/{storyId}/{story_slug}/{chapter_slug}` — route exists; stale story slug redirects; **stale chapter slug → 404** (F-NOTI-01) |
-| `comment_replied` | Worker handler `notify_comment_replied` for outbox event `comment.replied` | Insert of a reply | Author of the parent comment (active account) | Reply or parent not visible/deleted at processing; self-reply; chapter not published / story deleted | Yes `notify_comment_replied` | `comment_replied:<reply>` | Same chapter URL + `#b-<block_id>` (paragraph) or `#comments` — anchors exist (`block-view.tsx:16`, `reader-screen.tsx:118`); sheet/reply not opened (U-NOTI-01); stale chapter slug → 404 |
+| `comment_replied` | Worker handler `notify_comment_replied` for outbox event `comment.replied` | Insert of a reply | Author of the parent comment (active account) | Reply or parent not visible/deleted at processing; self-reply; chapter not published / story deleted | Yes `notify_comment_replied` | `comment_replied:<reply>` | Same chapter URL + `#b-<block_id>` (paragraph) or `#comments` — anchors exist (`block-view.tsx:33`, `reader-screen.tsx:162`); sheet/reply not opened (U-NOTI-01); stale chapter slug → 404 |
 | `collaboration_invited` | `invite_collaborator` (same transaction) | Owner invites a user | Invitee | — | **No** (always delivered) | `collab-invite:<invitation>` | `/studio` — Studio shows "My invitations" with accept/decline (`studio-screen.tsx:127`); after the invitation is answered/cancelled the link leads to nothing specific |
 | `collaboration_accepted` | `respond_invitation` (same transaction) | Invitee accepts | Inviter | — | Yes `notify_collaboration_answers` | `collab-reply:<invitation>` | `/studio/story/{storyId}/team` — route exists |
 | `collaboration_declined` | `respond_invitation` | Invitee declines | Inviter | — | Yes `notify_collaboration_answers` | `collab-reply:<invitation>` | `/studio/story/{storyId}/team` — route exists |
@@ -176,7 +176,7 @@ Rule summary
 | Expected behavior | Badge hidden at 0. |
 | Exceptions | — |
 | Related screens | SCR-NOTI-01 (C01) |
-| Evidence | `packages/features/src/notifications/components/notification-bell.tsx:10-38`, `packages/features/src/notifications/api/notifications.api.ts:40-48`, `packages/features/src/notifications/model/notification.ts:141-144`, `packages/features/src/shell/components/site-header.tsx:20` |
+| Evidence | `packages/features/src/notifications/components/notification-bell.tsx:10-38`, `packages/features/src/notifications/api/notifications.api.ts:40-48`, `packages/features/src/notifications/model/notification.ts:141-144`, `packages/features/src/shell/components/site-header.tsx:25` |
 | Status | Verified |
 
 ### BR-NOTI-012 — Mark one read on open

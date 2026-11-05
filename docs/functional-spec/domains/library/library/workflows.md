@@ -97,4 +97,4 @@
 | Postconditions | — |
 | Affected objects | OBJ-AUTH |
 | Related screens | SCR-LIB-01, story page |
-| Status | Verified — `apps/web/src/lib/auth/route-guard.ts:42-44`, `packages/features/src/story/components/story-actions.tsx:22`, `:32` |
+| Status | Verified — `apps/web/src/lib/auth/route-guard.ts:42-44`, `packages/features/src/story/components/story-actions.tsx:26`, `:32` |

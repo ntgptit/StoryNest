@@ -84,7 +84,7 @@
 | Expected behavior | Each period has its own link and cache |
 | Exceptions | — |
 | Related screens | SCR-RANK-01 |
-| Evidence | `apps/web/src/app/(main)/ranking/page.tsx:11-14`, `ranking/model/ranking.ts:3-18`, `ranking/screens/ranking-screen.tsx:45`, `ranking/ranking.test.tsx:80,90,285` |
+| Evidence | `apps/web/src/app/(main)/ranking/page.tsx:11-14`, `ranking/model/ranking.ts:3-18`, `ranking/screens/ranking-screen.tsx:38`, `ranking/ranking.test.tsx:80,90,285` |
 | Status | Verified |
 
 ### BR-RANK-007 — Freshness note
@@ -96,7 +96,7 @@
 | Expected behavior | Note hidden when no row or on failure |
 | Exceptions | — |
 | Related screens | SCR-RANK-01 |
-| Evidence | `20261104001500_rankings.sql:113-119`, `ranking/hooks/use-ranking.ts:33-41`, `ranking/screens/ranking-screen.tsx:54-58`, `ranking/ranking.test.tsx:299,308` |
+| Evidence | `20261104001500_rankings.sql:113-119`, `ranking/hooks/use-ranking.ts:33-41`, `ranking/screens/ranking-screen.tsx:47-51`, `ranking/ranking.test.tsx:299,308` |
 | Status | Verified |
 
 ### BR-RANK-008 — Ranked card

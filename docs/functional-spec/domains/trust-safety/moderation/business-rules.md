@@ -84,7 +84,7 @@
 | Expected behavior | Server: 22023 → "You can't report your own content, or the information isn't valid." Client hides the button for the owner **only** where it knows the owner: own comments (`!own`) and own author page (`ownerId`) |
 | Exceptions | Story page and chapter reader do not pass `ownerId`, so the owner sees "Report" on their own story/chapter and only learns on submit (F-MOD-01). Co-authors/editors are not "owners" and may report the story |
 | Related screens | SCR-MOD-02 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:163-165`, `moderation/components/report-button.tsx:40-41,56`, `packages/features/src/story/screens/story-screen.tsx:113`, `packages/features/src/reader/screens/reader-screen.tsx:115`, `packages/features/src/comments/components/comment-item.tsx:182-184`, `packages/features/src/author/screens/author-screen.tsx:89`, `packages/features/src/author/author.test.tsx:398` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:163-165`, `moderation/components/report-button.tsx:40-41,56`, `packages/features/src/story/screens/story-screen.tsx:129`, `packages/features/src/reader/screens/reader-screen.tsx:159`, `packages/features/src/comments/components/comment-item.tsx:186-188`, `packages/features/src/author/screens/author-screen.tsx:102`, `packages/features/src/author/author.test.tsx:406` |
 | Status | Verified |
 
 ### BR-MOD-007 — Duplicate reports are idempotent
@@ -96,7 +96,7 @@
 | Expected behavior | Re-submitting returns the existing report id; nothing is overwritten (first reason/details kept); the client shows the same success toast "Report sent. Thank you." Another reporter gets their own report on the same target; the queue card shows "N pending reports about this item" |
 | Exceptions | Once the report is closed, the same reporter can report the target again (counts against BR-ABU-004). The duplicate check runs before the rate limit, so a duplicate never consumes quota |
 | Related screens | SCR-MOD-02, SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:53-56,167-172`, `20261104002200_abuse_limits.sql:167-173`, `supabase/tests/260_moderation.test.sql:94-106`, `moderation/strings.en.ts:13,54` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:53-56,167-172`, `20261104002200_abuse_limits.sql:167-173`, `supabase/tests/260_moderation.test.sql:94-106`, `moderation/strings.en.ts:13,63` |
 | Status | Verified |
 
 ### BR-MOD-008 — Report rate limit
@@ -132,7 +132,7 @@
 | Expected behavior | Sets `status`, `reviewed_by = moderator`, `reviewed_at = now()`, writes audit `review_report` / `resolve_report` / `dismiss_report`. Console shows "Under review" only for `pending`; "Mark as resolved" and "Dismiss report" for any open report; none for closed reports |
 | Exceptions | Closed is terminal — there is no reopen. Dismissing never touches the content. Reports are also closed automatically by content actions (BR-MOD-017) |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:436-468`, `moderation/components/report-card.tsx:119-155`, `supabase/tests/260_moderation.test.sql:255-272`, `moderation/moderation.test.tsx:465,493` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:436-468`, `moderation/components/report-card.tsx:173-209`, `supabase/tests/260_moderation.test.sql:255-272`, `moderation/moderation.test.tsx:465,493` |
 | Status | Verified |
 
 ### BR-MOD-011 — Hide / unhide a comment (moderator)
@@ -144,7 +144,7 @@
 | Expected behavior | Hidden comment disappears for other readers (placeholder), stays visible to its author with "A moderator hid this comment. Only you can see it."; story managers see "A moderator hid this comment. You can't unhide it." (OBJ-CMT). `comment_hides.source = 'moderator'` is recorded by the OBJ-CMT trigger, so the story author cannot unhide it |
 | Exceptions | **Author-hidden comment** (OBJ-CMT): the queue shows state "Hidden" and offers only "Unhide comment", which overrides the author's choice; `hide_comment` on it changes nothing (status already `hidden`), so it is never converted into a moderator hide and the author can still unhide it later (F-MOD-04) |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:362-377`, `20261104001800_comment_moderation_by_author.sql:10-14,36-45`, `moderation/model/report.ts:133-136`, `packages/features/src/comments/strings.en.ts:40-43`, `supabase/tests/260_moderation.test.sql:172-197` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:362-377`, `20261104001800_comment_moderation_by_author.sql:10-14,36-45`, `moderation/model/report.ts:133-136`, `packages/features/src/comments/strings.en.ts:41-44`, `supabase/tests/260_moderation.test.sql:172-197` |
 | Status | Verified |
 
 ### BR-MOD-012 — Remove / restore a story
@@ -180,7 +180,7 @@
 | Expected behavior | Sets `account_status` to `suspended` / `active`. A `deactivated` account is never touched |
 | Exceptions | A suspension made outside the console (service role) cannot be reinstated from the console. The 22023 for "moderator cannot be suspended" maps to the generic "This action can't be applied to the selected item." |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:399-421`, `supabase/tests/260_moderation.test.sql:226-246`, `moderation/strings.en.ts:99` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:399-421`, `supabase/tests/260_moderation.test.sql:226-246`, `moderation/strings.en.ts:108` |
 | Status | Verified |
 
 ### BR-MOD-015 — Every moderator action needs a written reason
@@ -192,7 +192,7 @@
 | Expected behavior | Reason is stored trimmed in the audit row |
 | Exceptions | Dismissing and "Under review" need a reason too |
 | Related screens | SCR-MOD-01 |
-| Evidence | `moderation/model/report.ts:31-32,153-159`, `moderation/components/report-card.tsx:41,165-172,183`, `supabase/migrations/20261104002000_moderation.sql:43,354-357,447`, `moderation/strings.en.ts:86-92` |
+| Evidence | `moderation/model/report.ts:31-32,153-159`, `moderation/components/report-card.tsx:60,219-226,237`, `supabase/migrations/20261104002000_moderation.sql:43,354-357,447`, `moderation/strings.en.ts:95-101` |
 | Status | Verified |
 
 ### BR-MOD-016 — Effects of a suspension
@@ -252,7 +252,7 @@
 | Expected behavior | Non-moderator gets the standard 404; page is `robots: noindex` and disallowed in `robots.txt` |
 | Exceptions | `ModerationScreen` also has client fallbacks (sign-in prompt, "You don't have access to this page") used by non-Next hosts; on web they are unreachable |
 | Related screens | SCR-MOD-01 |
-| Evidence | `apps/web/src/lib/auth/route-guard.ts:37-45`, `apps/web/src/app/(main)/moderation/page.tsx:12-20`, `apps/web/src/app/(main)/moderation/page.test.tsx:24-38`, `packages/features/src/shell/components/user-menu.tsx:69-73`, `moderation/screens/moderation-screen.tsx:21-42` |
+| Evidence | `apps/web/src/lib/auth/route-guard.ts:37-45`, `apps/web/src/app/(main)/moderation/page.tsx:12-20`, `apps/web/src/app/(main)/moderation/page.test.tsx:24-38`, `packages/features/src/shell/components/user-menu.tsx:71-75`, `moderation/screens/moderation-screen.tsx:22-43` |
 | Status | Verified |
 
 ### BR-MOD-021 — What the affected parties see

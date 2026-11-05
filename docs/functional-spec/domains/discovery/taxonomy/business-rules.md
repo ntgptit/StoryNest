@@ -157,5 +157,5 @@
 | Expected behavior | Home requests 12 (5-minute cache); Studio editor offers up to 8 as suggestions (OBJ-STM). Mature exclusion is a documented decision (WBS 5.6) |
 | Exceptions | Failure → home hides the bar |
 | Related screens | SCR-HOME-01 |
-| Evidence | `20261104001400_tags.sql:101-120`, `discovery/model/popular-tags.ts:1`, `discovery/api/discovery.api.ts:106-110`, `supabase/tests/200_tags.test.sql:163-174`, `docs/WBS.md:211` |
+| Evidence | `20261104001400_tags.sql:101-120`, `discovery/model/popular-tags.ts:1`, `discovery/api/discovery.api.ts:131-135`, `supabase/tests/200_tags.test.sql:163-174`, `docs/WBS.md:211` |
 | Status | Verified (SQL test) |

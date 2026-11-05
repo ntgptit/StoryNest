@@ -36,7 +36,7 @@
 | Expected behavior | Order `updated_at DESC, id DESC`; next cursor = base64 `{u: updatedAt, i: id}` of the last item, or null; next page strictly after the cursor (ties neither skipped nor repeated). Pages load on scroll (IntersectionObserver, 240 px margin) and via a visible "Load more" button; end shows "You've seen all the stories." |
 | Exceptions | Malformed cursor → `AppError("invalid")` before any query |
 | Related screens | SCR-HOME-01 |
-| Evidence | `discovery/api/discovery.api.ts:40-49,84-103`, `discovery/keys.ts:34`, `packages/ui/src/widgets/infinite-list.tsx:30-62`, `discovery/discovery.test.tsx:98,110,120`, `discovery/strings.en.ts:10-11` |
+| Evidence | `discovery/api/discovery.api.ts:40-49,109-128`, `discovery/keys.ts:47`, `packages/ui/src/widgets/infinite-list.tsx:30-62`, `discovery/discovery.test.tsx:98,110,120`, `discovery/strings.en.ts:10-11` |
 | Status | Verified |
 
 ### BR-HOME-003 — Category filter
@@ -48,7 +48,7 @@
 | Expected behavior | Ids = root + direct children (BR-TAX-004). Unknown slug → empty list (never "everything") with the generic empty state |
 | Exceptions | Category tree fails to load while a category filter is active → error state |
 | Related screens | SCR-HOME-01 |
-| Evidence | `discovery/api/discovery.api.ts:74-79`, `discovery/model/categories.ts:10-14`, `discovery/hooks/use-latest-stories.ts:25,34`, `discovery/screens/discover-screen.tsx:46`, `discovery/discovery.test.tsx:146,205` |
+| Evidence | `discovery/api/discovery.api.ts:74-79`, `discovery/model/categories.ts:10-14`, `discovery/hooks/use-latest-stories.ts:25,34`, `discovery/screens/discover-screen.tsx:45`, `discovery/discovery.test.tsx:146,205` |
 | Status | Verified |
 
 ### BR-HOME-004 — Tag filter
@@ -60,7 +60,7 @@
 | Expected behavior | Filtered list; the "Filtering by tag #name" line with "Clear tag filter" link keeps the category; unknown tag → "No stories with this tag yet" empty state |
 | Exceptions | Active tag not among popular tags → named by its slug |
 | Related screens | SCR-HOME-01 |
-| Evidence | `discovery/api/discovery.api.ts:21-24,63,81`, `discovery/screens/tag-filters.tsx:26-41`, `discovery/screens/discover-screen.tsx:93-94`, `discovery/discovery-tags.test.tsx:116-133,213-236` |
+| Evidence | `discovery/api/discovery.api.ts:21-24,63,81`, `discovery/screens/tag-filters.tsx:26-41`, `discovery/screens/discover-screen.tsx:98-99`, `discovery/discovery-tags.test.tsx:116-133,213-236` |
 | Status | Verified |
 
 ### BR-HOME-005 — Language filter (API only)
@@ -72,7 +72,7 @@
 | Expected behavior | Today the home feed always lists all languages |
 | Exceptions | — |
 | Related screens | SCR-HOME-01 |
-| Evidence | `discovery/api/discovery.api.ts:72`, `discovery/keys.ts:5-6`, `apps/web/src/app/(main)/page.tsx:18-22`, `discovery/discovery.test.tsx:133`, `docs/WBS.md:154` (WP 2.2 "lọc theo category/ngôn ngữ") → F-HOME-02 |
+| Evidence | `discovery/api/discovery.api.ts:74`, `discovery/keys.ts:5-6`, `apps/web/src/app/(main)/page.tsx:18-22`, `discovery/discovery.test.tsx:133`, `docs/WBS.md:154` (WP 2.2 "lọc theo category/ngôn ngữ") → F-HOME-02 |
 | Status | Verified |
 
 ### BR-HOME-006 — Filters live in the URL
@@ -108,7 +108,7 @@
 | Expected behavior | "Recommended for you" (BR-REC-005) above the feed only on the **unfiltered** home and only for a member. Shortcut "From authors you follow" → `/following` only for members; "See rankings" → `/ranking` for everyone |
 | Exceptions | — |
 | Related screens | SCR-HOME-01 |
-| Evidence | `apps/web/src/app/(main)/discover-home.tsx:9-13`, `discovery/screens/discover-screen.tsx:54-63`, `discovery/discovery-tags.test.tsx:171` |
+| Evidence | `apps/web/src/app/(main)/discover-home.tsx:9-13`, `discovery/screens/discover-screen.tsx:53-62`, `discovery/discovery-tags.test.tsx:171` |
 | Status | Verified |
 
 ### BR-HOME-009 — Story card content
@@ -144,7 +144,7 @@
 | Expected behavior | Following/unfollowing an author invalidates all discovery queries (`discoveryKeys.all`) |
 | Exceptions | — |
 | Related screens | SCR-HOME-01 |
-| Evidence | `discovery/queries.ts:11-19`, `discovery/hooks/use-latest-stories.ts:38-48`, `author/hooks/use-author.ts:44` |
+| Evidence | `discovery/queries.ts:11-19`, `discovery/hooks/use-latest-stories.ts:66-76`, `author/hooks/use-author.ts:44` |
 | Status | Verified |
 
 ### BR-HOME-012 — Failure isolation
@@ -156,5 +156,5 @@
 | Expected behavior | Popular tags failing → tag bar hidden, feed shown. For-you failing/loading → block hidden. Feed failing with no items → full error state with "Try again" (refetches tree and feed); failing on a later page → inline error under the list with "Try again" (fetches next page) |
 | Exceptions | — |
 | Related screens | SCR-HOME-01 |
-| Evidence | `discovery/screens/tag-filters.tsx:27`, `discovery/screens/discover-screen.tsx:74-83,117-124`, `recommendations/components/recommendation-list.tsx:25`, `discovery/discovery-tags.test.tsx:250`, `discovery/discovery.test.tsx:340` |
+| Evidence | `discovery/screens/tag-filters.tsx:27`, `discovery/screens/discover-screen.tsx:79-88,122-129`, `recommendations/components/recommendation-list.tsx:25`, `discovery/discovery-tags.test.tsx:250`, `discovery/discovery.test.tsx:340` |
 | Status | Verified |

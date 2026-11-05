@@ -77,7 +77,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/me` |
-| Evidence | `edit-profile-screen.tsx:151-153` |
+| Evidence | `edit-profile-screen.tsx:165-167` |
 
 ## D. UI states
 | State | Status | Evidence / note |

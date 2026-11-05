@@ -88,4 +88,4 @@
 | Postconditions | — |
 | Affected objects | OBJ-MOD, OBJ-CMT, OBJ-STM, OBJ-NOTI |
 | Related screens | Comment thread (OBJ-CMT), Studio list (OBJ-STM) |
-| Status | Verified (code) — `packages/features/src/comments/components/comment-item.tsx:89-93`, `packages/features/src/studio/screens/studio-screen.tsx:154-200`, `packages/features/src/studio/model/story-form.ts:107-110`, `packages/features/src/studio/strings.en.ts:157-163,238` |
+| Status | Verified (code) — `packages/features/src/comments/components/comment-item.tsx:91-95`, `packages/features/src/studio/screens/studio-screen.tsx:154-200`, `packages/features/src/studio/model/story-form.ts:107-110`, `packages/features/src/studio/strings.en.ts:206-212,318` |

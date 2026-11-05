@@ -12,7 +12,7 @@
 | Route file | `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx` (server: metadata, 404/308, JSON-LD, hydrate); `.../[chapterSlug]/reader-view.tsx` (client wrapper, image URL resolver); `.../[chapterSlug]/opengraph-image.tsx` |
 | Server loader | `apps/web/src/lib/story/load-chapter.ts` (+ `load-story.ts`) |
 | Screen component | `packages/features/src/reader/screens/reader-screen.tsx` (`ReaderScreen`) |
-| Pre-paint script | `buildReaderBootstrapScript(CHAPTER_PATH_PATTERN)` in `apps/web/src/app/layout.tsx:37` |
+| Pre-paint script | `buildReaderBootstrapScript(CHAPTER_PATH_PATTERN)` in `apps/web/src/app/layout.tsx:40` |
 | Roles | Guest, Member, Story team, Moderator, Crawler |
 | Business rules | [BR-READ-001…018](../business-rules.md), [BR-PROG-*](../../reading-progress/business-rules.md), [BR-VOTE-*](../../../community/vote/business-rules.md), `BR-CMT-*`, `BR-MOD-004…006`, `BR-MAT-009` |
 | Workflows | [WF-READ-01…06](../workflows.md), [WF-PROG-01, 02, 04](../../reading-progress/workflows.md), [WF-VOTE-01, 02](../../../community/vote/workflows.md) |
@@ -23,21 +23,21 @@
 
 | ID | Component | Description | Source |
 | --- | --- | --- | --- |
-| SCR-READ-01-C01 | Adult gate (SCR-MAT-01) | Wraps everything when the story is mature (`BR-MAT-009`) | `reader-screen.tsx:71` |
+| SCR-READ-01-C01 | Adult gate (SCR-MAT-01) | Wraps everything when the story is mature (`BR-MAT-009`) | `reader-screen.tsx:101` |
 | SCR-READ-01-C02 | Reading tracker | Invisible. Restores and saves position (members) and records the read (everyone) | `reader/components/reading-tracker.tsx`, `reader-screen.tsx:73` |
-| SCR-READ-01-C03 | Back to story link | "←" + story title (truncated). Screen-reader text "Back to story" | `reader-screen.tsx:76-87` |
+| SCR-READ-01-C03 | Back to story link | "←" + story title (truncated). Screen-reader text "Back to story" | `reader-screen.tsx:106-117` |
 | SCR-READ-01-C04 | Display button + Reading options sheet | Right sheet: Font size (−/+, current size name in `<output aria-live>`), Line spacing, Font, Background as `aria-pressed` toggle groups | `reader/components/reader-settings-sheet.tsx` |
 | SCR-READ-01-C05 | Contents button + TOC sheet | Right sheet listing published chapters, current one `aria-current="page"` | `reader/components/toc-sheet.tsx` |
-| SCR-READ-01-C06 | Progress bar | `role="progressbar"` "Chapter reading progress", 0–100 of the **page** scroll | `packages/ui/src/widgets/reading-progress.tsx`, `reader-screen.tsx:93` |
+| SCR-READ-01-C06 | Progress bar | `role="progressbar"` "Chapter reading progress", 0–100 of the **page** scroll | `packages/ui/src/widgets/reading-progress.tsx`, `reader-screen.tsx:124` |
 | SCR-READ-01-C07 | Chapter header | "Chapter N" + h1 title | `reader-screen.tsx:97-100` |
 | SCR-READ-01-C08 | Chapter blocks | Paragraph / heading (h2) / image / divider with anchors `b-{id}` and inline marks | `reader/components/reader-blocks.tsx`, `block-view.tsx`, `rich-text.tsx` |
 | SCR-READ-01-C09 | Inline comment buttons | Small speech-bubble button + count at the end of each paragraph or heading. Opens a bottom sheet with that block's `CommentThread` (owned by OBJ-CMT, SCR-CMT-01); the sheet has three heights (peek 30 %, half 55 %, full 92 % of the viewport), opens at half, follows a drag of its top, closes when pulled well below the lowest; its grabber button steps through the heights (↑/↓) | `reader-blocks.tsx`, `packages/ui/src/widgets/detent-sheet.tsx` |
-| SCR-READ-01-C10 | End marker | "— End of chapter —" (`aria-hidden`) | `reader-screen.tsx:110-112` |
+| SCR-READ-01-C10 | End marker | "— End of chapter —" (`aria-hidden`) | `reader-screen.tsx:154-156` |
 | SCR-READ-01-C11 | Vote button | Toggle + "N votes" (`aria-live`) ([BR-VOTE-*](../../../community/vote/business-rules.md)) | `reader/components/vote-button.tsx` |
-| SCR-READ-01-C12 | Report button | `ReportButton kind="chapter"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `reader-screen.tsx:114-116` |
+| SCR-READ-01-C12 | Report button | `ReportButton kind="chapter"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `reader-screen.tsx:158-160` |
 | SCR-READ-01-C13 | Comments section | `section#comments`, h2 + chapter-level `CommentThread` (SCR-CMT-01) | `reader-screen.tsx:117-124` |
 | SCR-READ-01-C14 | Chapter nav | "Previous chapter" / "Next chapter" links with `rel`, or disabled placeholders | `reader/components/chapter-nav.tsx` |
-| SCR-READ-01-C15 | Skeleton | Title + 6 lines, `aria-busy` | `reader-screen.tsx:132-142` |
+| SCR-READ-01-C15 | Skeleton | Title + 6 lines, `aria-busy` | `reader-screen.tsx:192-202` |
 | SCR-READ-01-C16 | Time left | Ring + "N min left" in the toolbar ("N min" on phones), check when finished (BR-READ-019) | `packages/ui/src/widgets/reading-time-left.tsx`, `reader-screen.tsx` (`TimeLeft`) |
 | SCR-READ-01-C17 | Image lightbox | An image block is a button "View image full screen": opens a Radix dialog that grows from the image; pinch, double tap, wheel, +/− zoom, drag or arrows pan, 0 resets; Esc, close button, tap beside the photo or drag down close; focus returns to the image | `packages/ui/src/widgets/image-lightbox.tsx`, `block-view.tsx` |
 | SCR-READ-01-C18 | Quote tools | Toolbar over a selection inside one block (below it on touch screens): "Copy quote", "Comment on paragraph"; Esc dismisses (BR-READ-021) | `packages/ui/src/widgets/selection-toolbar.tsx`, `reader-blocks.tsx` |
@@ -81,7 +81,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | → SCR-READ-01 (other chapter) |
-| Evidence | `chapter-nav.tsx:22-45`, `reader.test.tsx:328` |
+| Evidence | `chapter-nav.tsx:22-45`, `reader.test.tsx:331` |
 
 #### SCR-READ-01-A04 — Open the table of contents and jump
 | Field | Value |
@@ -105,7 +105,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | → SCR-STORY-01 |
-| Evidence | `reader-screen.tsx:76-87` |
+| Evidence | `reader-screen.tsx:106-117` |
 
 #### SCR-READ-01-A06 — Change font size
 | Field | Value |
@@ -117,7 +117,7 @@
 | Validation | Closed list |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `reader-settings-sheet.tsx:79-106`, `preferences.test.tsx:197` |
+| Evidence | `reader-settings-sheet.tsx:86-113`, `preferences.test.tsx:197` |
 
 #### SCR-READ-01-A07 — Change line spacing / font / background
 | Field | Value |
@@ -129,7 +129,7 @@
 | Validation | Closed list |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `reader-settings-sheet.tsx:107-127`, `preferences.test.tsx:167` |
+| Evidence | `reader-settings-sheet.tsx:114-134`, `preferences.test.tsx:167` |
 
 #### SCR-READ-01-A08 — Vote / unvote
 | Field | Value |
@@ -165,7 +165,7 @@
 | Validation | Server refuses self-reports (also shown to the author: F-STORY-01) |
 | Error behavior | `BR-MOD-004…006` |
 | Navigation | — |
-| Evidence | `reader-screen.tsx:115` |
+| Evidence | `reader-screen.tsx:159` |
 
 #### SCR-READ-01-A11 — Retry after a load error
 | Field | Value |
@@ -177,7 +177,7 @@
 | Validation | — |
 | Error behavior | Stays in the error state |
 | Navigation | — |
-| Evidence | `reader-screen.tsx:47-58`, `reader.test.tsx:371` |
+| Evidence | `reader-screen.tsx:66-77`, `reader.test.tsx:374` |
 
 #### SCR-READ-01-A12 — Confirm age (mature story)
 | Field | Value |
@@ -189,7 +189,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | "Go back" → history back |
-| Evidence | `adult-gate.tsx:17-34`, `reader.test.tsx:299` |
+| Evidence | `adult-gate.tsx:17-34`, `reader.test.tsx:302` |
 
 #### SCR-READ-01-A13 — Open a deep link
 | Field | Value |
@@ -201,7 +201,7 @@
 | Validation | — |
 | Error behavior | Unknown anchor → top of the chapter |
 | Navigation | — |
-| Evidence | `use-reading-tracker.ts:69-70`, `block-view.tsx:16` |
+| Evidence | `use-reading-tracker.ts:69-70`, `block-view.tsx:33` |
 
 **Keyboard**: in focus mode ↑/↓ move the focused block (BR-READ-020); in the image lightbox +/−/0 zoom and arrows pan; the sheet grabber takes ↑/↓. No other custom shortcuts. Everything is reachable with Tab. The sheets are Radix dialogs (Esc closes them, focus is trapped). Disabled nav placeholders are not focusable. Recommended: ←/→ for previous/next (U-READ-01).
 
@@ -210,8 +210,8 @@
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
 | Initial | Implemented | SSR HTML with content and preferences applied pre-paint (`layout.tsx:37`) |
-| Loading | Implemented | `ReaderSkeleton` until **both** chapter and story are loaded (`reader-screen.tsx:46`). The vote button is hidden until its count is known |
-| Empty | Implemented | "This chapter has no content yet." (`reader-screen.tsx:102-104`) |
+| Loading | Implemented | `ReaderSkeleton` until **both** chapter and story are loaded (`reader-screen.tsx:65`). The vote button is hidden until its count is known |
+| Empty | Implemented | "This chapter has no content yet." (`reader-screen.tsx:139-141`) |
 | Populated | Implemented | Full layout (B) |
 | Validation error | Not applicable | Preferences are closed lists. Comment and report forms belong to CMT/MOD |
 | Request error | Implemented (partial) | Load: error state + "Try again". Vote: toast + rollback. Progress, read and preference sync errors are silent by design. **Missing**: a vote-state load error hides the vote button (U-STORY-01) |

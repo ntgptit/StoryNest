@@ -52,7 +52,7 @@
 | Expected behavior | Invitation `pending`; invitee notified (`collaboration_invited`, payload story title + role); UI toast "Invitation sent.", username cleared, lists reloaded. Default role in the form: Editor |
 | Exceptions | A declined or cancelled invitation can be re-sent (new row). Story locked `FOR UPDATE` while inviting |
 | Related screens | SCR-TEAM-01 |
-| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:54-103`; `packages/features/src/studio/api/collaboration.api.ts:42-52`; `packages/features/src/studio/screens/team-screen.tsx:205-229`; `supabase/tests/110_collaboration.test.sql:28-41,73,99-102`; `packages/features/src/studio/collaboration.test.tsx:183,284,303,312` |
+| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:54-103`; `packages/features/src/studio/api/collaboration.api.ts:42-52`; `packages/features/src/studio/screens/team-screen.tsx:205-229`; `supabase/tests/110_collaboration.test.sql:28-41,73,99-102`; `packages/features/src/studio/collaboration.test.tsx:188,289,354,363` |
 | Status | Verified |
 
 ### BR-TEAM-003 — Answering an invitation
@@ -64,7 +64,7 @@
 | Expected behavior | Accept: collaborator row with the invited role (upsert), invitation `accepted`; decline: `declined`. `responded_at` set; inviter notified (`collaboration_accepted`/`declined`, subject to the inviter's setting) |
 | Exceptions | — |
 | Related screens | SCR-STM-01 (inbox) |
-| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:105-148`; `packages/features/src/studio/components/my-invitations.tsx:36-69`; `supabase/tests/110_collaboration.test.sql:67,70`; `packages/features/src/studio/collaboration.test.tsx:359,375` |
+| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:105-148`; `packages/features/src/studio/components/my-invitations.tsx:36-69`; `supabase/tests/110_collaboration.test.sql:67,70`; `packages/features/src/studio/collaboration.test.tsx:410,426` |
 | Status | Verified |
 
 ### BR-TEAM-004 — Cancelling an invitation
@@ -76,7 +76,7 @@
 | Expected behavior | Status `cancelled`; toast "Invitation cancelled."; no notification to the invitee (Verified: no INSERT into notifications) |
 | Exceptions | — |
 | Related screens | SCR-TEAM-01 |
-| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:150-168`; `packages/features/src/studio/screens/team-screen.tsx:155-170`; `packages/features/src/studio/collaboration.test.tsx:326` |
+| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:150-168`; `packages/features/src/studio/screens/team-screen.tsx:163-178`; `packages/features/src/studio/collaboration.test.tsx:377` |
 | Status | Verified |
 
 ### BR-TEAM-005 — My pending invitations (inbox)
@@ -88,7 +88,7 @@
 | Expected behavior | Inbox lines "<inviter> invited you to be <role>" with "Accept" / "Decline" |
 | Exceptions | No created date shown; invitations of a deleted story stay pending (and count toward the 20 cap) but are hidden — Inferred from `:90,178` |
 | Related screens | SCR-STM-01 |
-| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:170-182`; `packages/features/src/studio/model/collaboration.ts:64-86`; `packages/features/src/studio/strings.en.ts:100-108` |
+| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:170-182`; `packages/features/src/studio/model/collaboration.ts:64-86`; `packages/features/src/studio/strings.en.ts:146-154` |
 | Status | Verified |
 
 ### BR-TEAM-006 — A story's invitation history
@@ -100,7 +100,7 @@
 | Expected behavior | "Cancel invitation" only on pending ones |
 | Exceptions | Older invitations beyond 100 are not reachable |
 | Related screens | SCR-TEAM-01 |
-| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:184-195`; `packages/features/src/studio/screens/team-screen.tsx:136-176` |
+| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:184-195`; `packages/features/src/studio/screens/team-screen.tsx:144-184` |
 | Status | Verified |
 
 ### BR-TEAM-007 — Removing a collaborator / leaving a story
@@ -112,7 +112,7 @@
 | Expected behavior | Row deleted; toast "Collaborator removed."; lists reloaded. Removed user loses access at once (role gone) |
 | Exceptions | Zero rows → "The invitation or collaborator no longer exists.". **Leaving has no UI** — a collaborator opening the Team page sees "Only the owner can manage this" (F-TEAM-02). No notification to the removed person |
 | Related screens | SCR-TEAM-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:216,221-222`; `supabase/migrations/20261104000500_collaboration_invitations.sql:12-13`; `packages/features/src/studio/api/collaboration.api.ts:62-68`; `packages/features/src/studio/screens/team-screen.tsx:120-128,180-200`; `supabase/tests/110_collaboration.test.sql:77`; `supabase/tests/10_rls.test.sql:144` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:216,221-222`; `supabase/migrations/20261104000500_collaboration_invitations.sql:12-13`; `packages/features/src/studio/api/collaboration.api.ts:62-68`; `packages/features/src/studio/screens/team-screen.tsx:128-136,188-208`; `supabase/tests/110_collaboration.test.sql:77`; `supabase/tests/10_rls.test.sql:144` |
 | Status | Verified (leave not in UI) |
 
 ### BR-TEAM-008 — Changing a collaborator's role
@@ -136,7 +136,7 @@
 | Expected behavior | Collaborator and invitation queries run only for the owner |
 | Exceptions | — |
 | Related screens | SCR-TEAM-01 |
-| Evidence | `packages/features/src/studio/screens/team-screen.tsx:39-66,70-71`; `packages/features/src/studio/strings.en.ts:114-117`; `packages/features/src/studio/collaboration.test.tsx:276` |
+| Evidence | `packages/features/src/studio/screens/team-screen.tsx:47-74,78-79`; `packages/features/src/studio/strings.en.ts:160-163`; `packages/features/src/studio/collaboration.test.tsx:281` |
 | Status | Verified |
 
 ### BR-TEAM-010 — Studio role-permission matrix
@@ -146,12 +146,12 @@ O = owner, CA = co-author, E = editor. ✓ allowed, ✗ refused, — not offered
 | Capability | DB: O | DB: CA | DB: E | UI offers to | DB evidence | UI evidence | Consistent? |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | See story in Studio, open its studio pages | ✓ | ✓ | ✓ | O, CA, E | `20261103000100_auth_and_rls.sql:198-202` | `studio/api/studio.api.ts:18-39` | Yes |
-| Edit story settings (title, slug, synopsis, category, language, status, visibility, 18+) | ✓ | ✓ | ✗ | O, CA ("Edit"; E sees read-only notice) | `…auth_and_rls.sql:205-211`; `supabase/tests/10_rls.test.sql:143` | `studio-screen.tsx:61-69`; `story-form-screen.tsx:100-104` | Yes |
-| Cover upload / change / remove | ✓ | ✓ | ✗ | O, CA | `20261104002400_story_image_buckets.sql:49-52`; key via `stories_update` | `story-form-screen.tsx:206-207` | Yes |
-| Story tags | ✓ | ✓ | ✗ | O, CA | `20261104001400_tags.sql:48-51` | `story-form-screen.tsx:302` | Yes |
-| Soft-delete story | ✓ | ✓ | ✗ | O | `…auth_and_rls.sql:205-211` (deleted_at in grant, CA in policy) | `story-form-screen.tsx:404` | **No — CA allowed by DB, documented owner-only (F-STM-01)** |
-| Restore story | ✓* | ✓* | ✗ | O (*not after moderator removal) | same + `20261104002000_moderation.sql:103-116` | `story-write.api.ts:116-127`; `story-form-screen.tsx:404-422` | **No — CA allowed by DB; UI offers restore of moderator-removed story (F-STM-02)** |
-| Create chapter | ✓ | ✓ | ✓ | O, CA, E | `20261104000400_chapter_management.sql:49-52` | `chapter-manager-screen.tsx:252` | Yes |
+| Edit story settings (title, slug, synopsis, category, language, status, visibility, 18+) | ✓ | ✓ | ✗ | O, CA ("Edit"; E sees read-only notice) | `…auth_and_rls.sql:205-211`; `supabase/tests/10_rls.test.sql:143` | `studio-screen.tsx:61-69`; `story-form-screen.tsx:109-113` | Yes |
+| Cover upload / change / remove | ✓ | ✓ | ✗ | O, CA | `20261104002400_story_image_buckets.sql:49-52`; key via `stories_update` | `story-form-screen.tsx:234-235` | Yes |
+| Story tags | ✓ | ✓ | ✗ | O, CA | `20261104001400_tags.sql:48-51` | `story-form-screen.tsx:332` | Yes |
+| Soft-delete story | ✓ | ✓ | ✗ | O | `…auth_and_rls.sql:205-211` (deleted_at in grant, CA in policy) | `story-form-screen.tsx:433` | **No — CA allowed by DB, documented owner-only (F-STM-01)** |
+| Restore story | ✓* | ✓* | ✗ | O (*not after moderator removal) | same + `20261104002000_moderation.sql:103-116` | `story-write.api.ts:116-127`; `story-form-screen.tsx:433-451` | **No — CA allowed by DB; UI offers restore of moderator-removed story (F-STM-02)** |
+| Create chapter | ✓ | ✓ | ✓ | O, CA, E | `20261104000400_chapter_management.sql:49-52` | `chapter-manager-screen.tsx:307` | Yes |
 | Reorder chapters | ✓ | ✓ | ✓ | O, CA, E | `…chapter_management.sql:72-75` | `chapter-manager-screen.tsx:177-196` | Yes |
 | Rename chapter slug | ✓ | ✓ | ✓ | O, CA, E | `…auth_and_rls.sql:236-240` | `chapter-manager-screen.tsx:200-202` | Yes |
 | Archive / unarchive chapter | ✓ | ✓ | ✗ (42501) | O, CA | `…chapter_management.sql:115-117,140-142`; `supabase/tests/100_chapter_management.test.sql:103,121` | `chapter-manager-screen.tsx:203-229` | Yes |
@@ -160,12 +160,12 @@ O = owner, CA = co-author, E = editor. ✓ allowed, ✗ refused, — not offered
 | Publish now / schedule chapter | ✓ | ✓ | ✓ | O, CA, E | `20261103000200_publish_chapter_rpc.sql:11,217-232,235-251`; `supabase/tests/20_publish.test.sql:84-96` | `editor/model/publishing.ts:11-13` | DB = editor UI; **invitation copy says editors cannot publish (F-TEAM-01)** |
 | Unpublish / cancel schedule | ✓ | ✓ | ✗ (42501) | O, CA | `…publish_chapter_rpc.sql:278-297`; `supabase/tests/20_publish.test.sql:151` | `editor/model/publishing.ts:7-9,15-19` | Yes |
 | View version history, preview, restore a version into the draft | ✓ | ✓ | ✓ | O, CA, E | `…auth_and_rls.sql:254-258` (read), `:247-252` (draft write) | OBJ-HIST | Inferred (OBJ-HIST) |
-| Invite, cancel invitation, see story invitations | ✓ | ✗ (PT404) | ✗ (PT404) | O | `20261104000500_collaboration_invitations.sql:70-73,160-163,192` | `team-screen.tsx:62-64`; `studio-screen.tsx:75-82` | Yes |
-| Remove another collaborator | ✓ | ✗ | ✗ | O | `…auth_and_rls.sql:221-222`; `supabase/tests/10_rls.test.sql:144` | `team-screen.tsx:120-128` | Yes |
+| Invite, cancel invitation, see story invitations | ✓ | ✗ (PT404) | ✗ (PT404) | O | `20261104000500_collaboration_invitations.sql:70-73,160-163,192` | `team-screen.tsx:70-72`; `studio-screen.tsx:75-82` | Yes |
+| Remove another collaborator | ✓ | ✗ | ✗ | O | `…auth_and_rls.sql:221-222`; `supabase/tests/10_rls.test.sql:144` | `team-screen.tsx:128-136` | Yes |
 | Leave the story (remove self) | — | ✓ | ✓ | nobody | `…auth_and_rls.sql:221-222` | — | **No — allowed action hidden (F-TEAM-02)** |
 | Change a collaborator's role | ✓ | ✗ | ✗ | nobody | `…auth_and_rls.sql:219-220` | — | No UI (F-TEAM-03) |
-| View story statistics | ✓ | ✓ | ✗ (42501) | O, CA ("Stats"; E gets "You can't view these statistics" on direct URL) | `20261104002100_author_stats.sql:43-48,83-88` | `studio-screen.tsx:83-91`; `analytics/screens/story-stats-screen.tsx:55-57` | Yes |
-| Hide / show readers' comments on the story | ✓ | ✓ | ✗ | O, CA (comment item) | `20261104001800_comment_moderation_by_author.sql:58-62,133-135` | `comments/components/comment-item.tsx:54,64-65` | Yes (OBJ-CMT) |
+| View story statistics | ✓ | ✓ | ✗ (42501) | O, CA ("Stats"; E gets "You can't view these statistics" on direct URL) | `20261104002100_author_stats.sql:43-48,83-88` | `studio-screen.tsx:83-91`; `analytics/screens/story-stats-screen.tsx:66-68` | Yes |
+| Hide / show readers' comments on the story | ✓ | ✓ | ✗ | O, CA (comment item) | `20261104001800_comment_moderation_by_author.sql:58-62,133-135` | `comments/components/comment-item.tsx:56,66-67` | Yes (OBJ-CMT) |
 | Accept / decline an invitation | invitee only | | | invitee (Studio inbox) | `…collaboration_invitations.sql:120-123` | `my-invitations.tsx` | Yes |
 
 Account status: every RPC above requires an active account; direct-table writes (story settings, story delete/restore,
@@ -207,7 +207,7 @@ publish row above.
 | Expected behavior | Typed username kept after an invite error |
 | Exceptions | The three PT409 causes share one message (U-TEAM-01). Owner-only story-not-found (PT404) on invite would read as "No user found…" — Inferred |
 | Related screens | SCR-TEAM-01, SCR-STM-01 |
-| Evidence | `packages/features/src/studio/model/collaboration.ts:127-159`; `packages/features/src/studio/strings.en.ts:146-154`; `packages/features/src/studio/collaboration.test.tsx:171` |
+| Evidence | `packages/features/src/studio/model/collaboration.ts:127-159`; `packages/features/src/studio/strings.en.ts:195-203`; `packages/features/src/studio/collaboration.test.tsx:176` |
 | Status | Verified |
 
 ### BR-TEAM-013 — `story_role` is the single source of the role

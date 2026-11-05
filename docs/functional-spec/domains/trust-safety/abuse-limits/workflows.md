@@ -13,7 +13,7 @@
 | Postconditions | Posting works again once older comments leave the window |
 | Affected objects | OBJ-ABU, OBJ-CMT |
 | Related screens | Comment thread / composer (OBJ-CMT) |
-| Status | Verified (`supabase/tests/280_abuse_limits.test.sql:62-99`, `comments/comments.test.tsx:322-335`) |
+| Status | Verified (`supabase/tests/280_abuse_limits.test.sql:62-99`, `comments/comments.test.tsx:323-336`) |
 
 ### WF-ABU-02 — A comment or an edit is refused as spam
 | Field | Value |

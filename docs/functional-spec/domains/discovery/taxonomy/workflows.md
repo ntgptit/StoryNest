@@ -19,7 +19,7 @@
 | Field | Value |
 | --- | --- |
 | User goal | See stories sharing a theme |
-| Trigger | Popular-tag chip (SCR-HOME-01), tag badge on the story page (`story/screens/story-screen.tsx:129`), tag result in SCR-SRCH-01 Tags tab |
+| Trigger | Popular-tag chip (SCR-HOME-01), tag badge on the story page (`story/screens/story-screen.tsx:153`), tag result in SCR-SRCH-01 Tags tab |
 | Preconditions | — |
 | Main flow | 1. Link → `/?tag=slug` (story page / search links drop any category; home chips keep it). 2. Feed filtered (BR-HOME-004). |
 | Alternative flows | Tag already active on home → chip click clears it |

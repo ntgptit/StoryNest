@@ -47,9 +47,9 @@ own story, `set_comment_hidden`, `comment_hides`, "hidden by author" notices) is
 | Account status | OBJ-AUTH, OBJ-PRF | Suspension flips `app_users.account_status`; profile (`app_users_read`) and author page hide the account | `20261103000100_auth_and_rls.sql:182-184`, `20261104001600_author_follows.sql:50` |
 | Discovery lists | OBJ-HOME, OBJ-SRCH, OBJ-RANK, OBJ-REC, OBJ-AUTHOR | Every list passes `useShowMature()` (BR-MAT-005); most RPCs also drop suspended owners (see discovery overview matrix, F-HOME-01) | `domains/discovery/overview.md` |
 | Library, reading lists | OBJ-LIB, OBJ-LIST | 18+ stories the user saved stay visible by decision (BR-MAT-007); others' public lists are not filtered (F-MAT-02) | `docs/WBS.md:211` |
-| Settings page | OBJ-SET | `/settings` hosts an "Adult content (18+)" switch that uses the same store (BR-MAT-003) | `packages/features/src/settings/screens/settings-screen.tsx:152-171` |
-| Header & menu | OBJ-SHELL | Header hosts the 18+ toggle; user menu shows "Moderation" to moderators only | `shell/components/site-header.tsx:18`, `shell/components/user-menu.tsx:69-73` |
-| SEO | OBJ-SEO | 18+ stories are `noindex`, no JSON-LD, not in sitemap; but metadata/OG still carry the title (F-MAT-01) | `story/model/story-detail.ts:24-26`, `apps/web/src/lib/seo/sitemap-data.ts:29,55` |
+| Settings page | OBJ-SET | `/settings` hosts an "Adult content (18+)" switch that uses the same store (BR-MAT-003) | `packages/features/src/settings/screens/settings-screen.tsx:180-199` |
+| Header & menu | OBJ-SHELL | Header hosts the 18+ toggle; user menu shows "Moderation" to moderators only | `shell/components/site-header.tsx:22`, `shell/components/user-menu.tsx:71-75` |
+| SEO | OBJ-SEO | 18+ stories are `noindex`, no JSON-LD, not in sitemap; but metadata/OG still carry the title (F-MAT-01) | `story/model/story-detail.ts:25-27`, `apps/web/src/lib/seo/sitemap-data.ts:29,55` |
 | Error contract | OBJ-SHELL (`_shared/errors.ts`) | 42501/PT404/PT409/22023/PT429 → `forbidden/notFound/conflict/invalid/rateLimited`; spam HINT passes through `details` | `packages/validation/src/rpc.ts:27-39`, `packages/features/src/_shared/errors.ts:86-96` |
 | Sign-up limits / captcha | OBJ-AUTH | Not implemented; delegated to Supabase Auth project settings (BR-ABU-008) | `20261104002200_abuse_limits.sql:20-22` |
 | Notifications | OBJ-NOTI | No moderation notification type exists (reported party / reporter are never told) | `docs/WBS.md:219` ("Chưa làm") |

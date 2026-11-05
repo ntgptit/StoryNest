@@ -41,7 +41,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | Only `vi`/`en` accepted (`isLanguage`) |
 | Error behavior | Account save failure is silent (U-SET-01) |
 | Navigation | Stays |
-| Evidence | `settings-screen.tsx:113-129`, `use-language-sync.ts:45-75` |
+| Evidence | `settings-screen.tsx:139-155`, `use-language-sync.ts:45-75` |
 
 | Field | SCR-SET-01-A02 Toggle a notification type |
 | --- | --- |
@@ -52,7 +52,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | — |
 | Error behavior | Rollback + toast "Could not save your settings. The previous value was restored." |
 | Navigation | Stays |
-| Evidence | `settings-screen.tsx:95-96,131-142`, `use-settings.ts:27-50` |
+| Evidence | `settings-screen.tsx:121-122,157-168`, `use-settings.ts:27-50` |
 
 | Field | SCR-SET-01-A03 Open reading preferences |
 | --- | --- |
@@ -63,7 +63,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | BR-READ-* |
 | Error behavior | BR-READ-* |
 | Navigation | Sheet overlay |
-| Evidence | `settings-screen.tsx:91,146-150` |
+| Evidence | `settings-screen.tsx:117,174-178` |
 
 | Field | SCR-SET-01-A04 Turn 18+ on |
 | --- | --- |
@@ -74,7 +74,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | — |
 | Error behavior | Per BR-MAT-* |
 | Navigation | Dialog |
-| Evidence | `settings-screen.tsx:152-172` |
+| Evidence | `settings-screen.tsx:180-200` |
 
 | Field | SCR-SET-01-A05 Turn 18+ off |
 | --- | --- |
@@ -85,7 +85,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | — |
 | Error behavior | Per BR-MAT-* |
 | Navigation | Stays |
-| Evidence | `settings-screen.tsx:158` |
+| Evidence | `settings-screen.tsx:186` |
 
 | Field | SCR-SET-01-A06 Retry loading |
 | --- | --- |
@@ -96,7 +96,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | — |
 | Error behavior | Stays in error state |
 | Navigation | — |
-| Evidence | `settings-screen.tsx:104-110` |
+| Evidence | `settings-screen.tsx:130-136` |
 
 ## D. UI states
 | State | Status | Evidence / note |

@@ -53,7 +53,7 @@ No password confirmation field, no terms/privacy consent (WBS 6.9 legal pages �
 | Validation | `withNext` |
 | Error behavior | — |
 | Navigation | SCR-AUTH-01 |
-| Evidence | `sign-up-screen.tsx:53,66-69` |
+| Evidence | `sign-up-screen.tsx:58,78-81` |
 
 | Field | SCR-AUTH-02-A03 Toggle password visibility |
 | --- | --- |
@@ -64,7 +64,7 @@ No password confirmation field, no terms/privacy consent (WBS 6.9 legal pages �
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `sign-up-screen.tsx:102-107` |
+| Evidence | `sign-up-screen.tsx:123-128` |
 
 ## D. UI states
 | State | Status | Evidence / note |

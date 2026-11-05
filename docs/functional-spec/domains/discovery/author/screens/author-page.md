@@ -21,11 +21,11 @@
 | SCR-AUTHOR-01-C01 | Profile skeleton | `h-40` block `aria-busy` while session/profile load | `author-screen.tsx:35` |
 | SCR-AUTHOR-01-C02 | Header | Avatar (size-16), `h1` display name, "@username · N followers · M stories", bio or "This author hasn't written a bio yet." A long bio is clamped to 4 lines with a fade and "Show more / Show less" (`ExpandableText`, Lucian #288): toggle only when it really overflows, `aria-expanded`, full text always in the DOM | `author-screen.tsx`, `strings.en.ts`, `ui/widgets/expandable-text.tsx` |
 | SCR-AUTHOR-01-C03 | Follow button | "Follow"/"Following" with icon, `aria-pressed`, hidden on own page | `follow-author-button.tsx:18-44` |
-| SCR-AUTHOR-01-C04 | Report button | Report this person (OBJ-MOD) | `author-screen.tsx:89` |
+| SCR-AUTHOR-01-C04 | Report button | Report this person (OBJ-MOD) | `author-screen.tsx:102` |
 | SCR-AUTHOR-01-C08 | Share button | "Share" under Follow: dialog with the absolute author link `https://<site>/author/<username>` (canonical origin), "Copy" that turns into a check (Lucian #008 / #254) and "Share with another app" where `navigator.share` exists | `author-screen.tsx`, `features/share/components/share-button.tsx` |
 | SCR-AUTHOR-01-C05 | Stories section | `h2` "Author's stories"; card grid + infinite list; end "No more stories." | `author-screen.tsx:93-131`, `strings.en.ts:4,23-24` |
 | SCR-AUTHOR-01-C06 | Not found | Empty state "Author not found" | `author-screen.tsx:46-48` |
-| SCR-AUTHOR-01-C07 | Error states | Profile error and stories error, both "Couldn't load the author page" + "Try again" | `author-screen.tsx:36-45,95-101` |
+| SCR-AUTHOR-01-C07 | Error states | Profile error and stories error, both "Couldn't load the author page" + "Try again" | `author-screen.tsx:36-45,111-117` |
 
 ## C. User actions and system responses
 
@@ -49,7 +49,7 @@
 | Validation | Self → hidden; cap 1000 |
 | Error behavior | Toasts per BR-AUTHOR-007; state unchanged |
 | Navigation | — |
-| Evidence | `follow-author-button.tsx:31-38`, `use-author.ts:35-46`, `author.test.tsx:342,377` |
+| Evidence | `follow-author-button.tsx:31-38`, `use-author.ts:35-46`, `author.test.tsx:343,385` |
 
 | Field | SCR-AUTHOR-01-A03 — Unfollow (member) |
 | --- | --- |
@@ -60,7 +60,7 @@
 | Validation | — |
 | Error behavior | Generic toast |
 | Navigation | — |
-| Evidence | `author.test.tsx:361` |
+| Evidence | `author.test.tsx:369` |
 
 | Field | SCR-AUTHOR-01-A04 — Follow as guest |
 | --- | --- |
@@ -71,7 +71,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | Login (SCR-AUTH-*) → SCR-AUTHOR-01 |
-| Evidence | `follow-author-button.tsx:33`, `author.test.tsx:334` |
+| Evidence | `follow-author-button.tsx:33`, `author.test.tsx:335` |
 
 | Field | SCR-AUTHOR-01-A05 — Load more stories / open a story |
 | --- | --- |
@@ -93,7 +93,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `author-screen.tsx:89`, `author.test.tsx:401` |
+| Evidence | `author-screen.tsx:102`, `author.test.tsx:409` |
 
 | Field | SCR-AUTHOR-01-A07 — Retry |
 | --- | --- |
@@ -104,7 +104,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `author-screen.tsx:42,100`, `author.test.tsx:317` |
+| Evidence | `author-screen.tsx:42,116`, `author.test.tsx:318` |
 
 | Field | SCR-AUTHOR-01-A08 — Share the author page / read the whole bio |
 | --- | --- |

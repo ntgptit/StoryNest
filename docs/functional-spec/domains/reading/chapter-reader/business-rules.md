@@ -61,7 +61,7 @@
 | Expected behavior | Server: `notFound()` → HTTP 404; metadata = fallback title "Chương", `robots: {index:false}`. Client-rendered: "Chapter not found" / "The chapter doesn't exist, isn't published, or has been removed." (vi `readerText.notFound`). Archiving a chapter takes it off the shelf immediately (published pointer cleared, `BR-CHM-*`). |
 | Exceptions | Load error ≠ not found: the server returns `undefined`, the page renders and the client retries, then shows "Couldn't load the chapter" + "Try again". |
 | Related screens | SCR-READ-01 |
-| Evidence | `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx:21,38-47`, `apps/web/src/lib/story/load-chapter.ts:9-27`, `packages/features/src/reader/screens/reader-screen.tsx:47-64`, `packages/features/src/reader/strings.en.ts:35-43`, `supabase/migrations/20261104000400_chapter_management.sql:16-19`, `apps/web/src/lib/story/load-chapter.test.ts:28-33`, `packages/features/src/reader/reader.test.tsx:181,371` |
+| Evidence | `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx:21,38-47`, `apps/web/src/lib/story/load-chapter.ts:9-27`, `packages/features/src/reader/screens/reader-screen.tsx:66-83`, `packages/features/src/reader/strings.en.ts:59-67`, `supabase/migrations/20261104000400_chapter_management.sql:16-19`, `apps/web/src/lib/story/load-chapter.test.ts:28-33`, `packages/features/src/reader/reader.test.tsx:184,374` |
 | Status | Verified |
 
 ### BR-READ-003 — Chapter URL redirects
@@ -85,7 +85,7 @@
 | Expected behavior | One query loads the chapter plus `version:chapter_versions!fk_chapter_published_version(title, word_count, blocks:chapter_version_blocks(...))`. Republishing replaces the content on the next load. A chapter row without a version is treated as not readable. |
 | Exceptions | — |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/api/reader.api.ts:7-36`, `supabase/migrations/20261103000100_auth_and_rls.sql:118-128,255-258`, `packages/features/src/reader/reader.test.tsx:161` |
+| Evidence | `packages/features/src/reader/api/reader.api.ts:7-36`, `supabase/migrations/20261103000100_auth_and_rls.sql:118-128,255-258`, `packages/features/src/reader/reader.test.tsx:164` |
 | Status | Verified |
 
 ### BR-READ-005 — Block types and order
@@ -97,7 +97,7 @@
 | Expected behavior | Unknown block types are skipped, so the rest of the chapter still renders. An image block without a storage key is skipped. An image whose URL cannot be resolved renders nothing. Images are lazy-loaded with `alt=""` (U-READ-02). Paragraph text keeps line breaks (`whitespace-pre-line`). |
 | Exceptions | — |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/model/chapter.ts:61-79`, `packages/features/src/reader/components/block-view.tsx:17-42`, `supabase/migrations/20261103000000_init_schema.sql:156-157`, `packages/features/src/reader/reader.test.tsx:96` |
+| Evidence | `packages/features/src/reader/model/chapter.ts:61-79`, `packages/features/src/reader/components/block-view.tsx:17-42`, `supabase/migrations/20261103000000_init_schema.sql:156-157`, `packages/features/src/reader/reader.test.tsx:99` |
 | Status | Verified |
 
 ### BR-READ-006 — Inline marks and safe rendering
@@ -109,7 +109,7 @@
 | Expected behavior | Text is cut at every mark boundary. Marks may overlap. Ranges are clamped to the text, and empty or inverted ranges are ignored. Malformed marks are dropped and the text still renders. Rendering uses React text nodes wrapped in `strong/em/u/s`: **nothing from the database becomes HTML**. |
 | Exceptions | — |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/model/chapter.ts:21-59,93-119`, `packages/features/src/reader/components/rich-text.tsx:4-22`, `packages/features/src/reader/reader.test.tsx:51-93,361` |
+| Evidence | `packages/features/src/reader/model/chapter.ts:21-59,93-119`, `packages/features/src/reader/components/rich-text.tsx:4-22`, `packages/features/src/reader/reader.test.tsx:54-96,364` |
 | Status | Verified |
 
 ### BR-READ-007 — Stable block anchors
@@ -121,7 +121,7 @@
 | Expected behavior | `#b-<id>` deep links scroll to the block (with `scroll-mt-20` below the sticky toolbar). A hash in the URL takes priority over restoring the saved position ([BR-PROG-007](../reading-progress/business-rules.md#br-prog-007--restore-on-open)). Notification links to replies use `#comments` or a block anchor (`BR-NOTI-*`). Inline paragraph comments attach to the same block ids (`BR-CMT-*`). |
 | Exceptions | Anchors exist only after the adult gate is passed (Inferred). |
 | Related screens | SCR-READ-01, SCR-CMT-01 |
-| Evidence | `packages/features/src/reader/model/chapter.ts:133-139`, `packages/features/src/reader/components/block-view.tsx:16`, `packages/features/src/reader/screens/reader-screen.tsx:117-121`, `supabase/migrations/20261103000000_init_schema.sql:115`, `packages/features/src/notifications/model/notification.ts:92-99`, `packages/features/src/reader/reader.test.tsx:120` |
+| Evidence | `packages/features/src/reader/model/chapter.ts:133-139`, `packages/features/src/reader/components/block-view.tsx:33`, `packages/features/src/reader/screens/reader-screen.tsx:117-121`, `supabase/migrations/20261103000000_init_schema.sql:115`, `packages/features/src/notifications/model/notification.ts:92-99`, `packages/features/src/reader/reader.test.tsx:123` |
 | Status | Verified |
 
 ### BR-READ-008 — Previous / next chapter
@@ -133,7 +133,7 @@
 | Expected behavior | Links "Previous chapter" (`rel="prev"`) and "Next chapter" (`rel="next"`). A missing neighbour renders a disabled placeholder (`aria-disabled`, 50 % opacity) so the layout does not jump. The nav is at the very end of the article, below the comments (U-READ-01). No keyboard shortcuts. |
 | Exceptions | Story query returned nothing → no nav or TOC (defensive; the server already 404s). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/model/chapter.ts:121-131`, `packages/features/src/reader/components/chapter-nav.tsx:9-47`, `packages/features/src/reader/screens/reader-screen.tsx:125`, `packages/features/src/reader/reader.test.tsx:135,328` |
+| Evidence | `packages/features/src/reader/model/chapter.ts:121-131`, `packages/features/src/reader/components/chapter-nav.tsx:9-47`, `packages/features/src/reader/screens/reader-screen.tsx:169`, `packages/features/src/reader/reader.test.tsx:138,331` |
 | Status | Verified |
 
 ### BR-READ-009 — Table of contents
@@ -157,7 +157,7 @@
 | Expected behavior | Skeleton until both are loaded. Mature + not opted in → gate only (`BR-MAT-009`). Also never indexed (BR-STORY-008). |
 | Exceptions | If the story resolves to `null` while the chapter exists, the gate defaults to not mature (Inferred edge; the server 404s first). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/screens/reader-screen.tsx:45-46,67,71`, `packages/features/src/reader/reader.test.tsx:280-325` |
+| Evidence | `packages/features/src/reader/screens/reader-screen.tsx:64-65,86,101`, `packages/features/src/reader/reader.test.tsx:283-328` |
 | Status | Verified |
 
 ### BR-READ-011 — Chapter metadata and indexing
@@ -181,7 +181,7 @@
 | Expected behavior | As described |
 | Exceptions | — |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/screens/reader-screen.tsx:102-108`, `packages/features/src/reader/strings.en.ts:34` |
+| Evidence | `packages/features/src/reader/screens/reader-screen.tsx:102-108`, `packages/features/src/reader/strings.en.ts:58` |
 | Status | Verified |
 
 ### BR-READ-013 — Reader preference values and defaults
@@ -229,7 +229,7 @@
 | Expected behavior | 1. When the account copy exists, it **wins** and replaces the device copy. 2. Otherwise, a customised (non-default) device copy is uploaded. 3. After that, every device change is upserted 1.5 s after the last change (debounced), and flushed when leaving. Saves are best effort: failures are ignored and the next change retries. Guests: nothing. |
 | Exceptions | Guest customisation is overwritten on sign-in when the account already has a copy. Concurrent devices: last write wins (Inferred). |
 | Related screens | SCR-READ-01, settings screen (OBJ-SET) |
-| Evidence | `packages/features/src/reader/hooks/use-reader-preferences-sync.ts:16-71`, `packages/features/src/reader/api/preferences.api.ts:5-19`, `packages/features/src/settings/screens/settings-screen.tsx:91`, `packages/features/src/reader/preferences.test.tsx:257-324` |
+| Evidence | `packages/features/src/reader/hooks/use-reader-preferences-sync.ts:16-71`, `packages/features/src/reader/api/preferences.api.ts:5-19`, `packages/features/src/settings/screens/settings-screen.tsx:117`, `packages/features/src/reader/preferences.test.tsx:257-324` |
 | Status | Verified (WBS 2.7 cross-device runtime check) |
 
 ### BR-READ-017 — Account copy storage constraints
@@ -253,7 +253,7 @@
 | Expected behavior | About 66 characters per line at any size (WBS 2.4 acceptance). |
 | Exceptions | — |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/design-tokens/src/tokens.css:69-71`, `packages/features/src/reader/screens/reader-screen.tsx:96` |
+| Evidence | `packages/design-tokens/src/tokens.css:69-71`, `packages/features/src/reader/screens/reader-screen.tsx:127` |
 | Status | Verified |
 
 ### BR-READ-019 — Reading time left

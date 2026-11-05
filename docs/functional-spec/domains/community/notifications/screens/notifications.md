@@ -10,7 +10,7 @@
 | Name | Notifications (page) + header notification bell (component C01) |
 | Route | `/notifications` |
 | Route files | `apps/web/src/app/(main)/notifications/page.tsx` (server: `requireUser("/notifications")`, metadata title "Thông báo", `robots: noindex`), `apps/web/src/app/(main)/notifications/notifications-view.tsx` |
-| Screen component | `packages/features/src/notifications/screens/notifications-screen.tsx`; bell `packages/features/src/notifications/components/notification-bell.tsx` (mounted in `packages/features/src/shell/components/site-header.tsx:20`, i.e. on every `(main)` page) |
+| Screen component | `packages/features/src/notifications/screens/notifications-screen.tsx`; bell `packages/features/src/notifications/components/notification-bell.tsx` (mounted in `packages/features/src/shell/components/site-header.tsx:25`, i.e. on every `(main)` page) |
 | Roles | Signed-in user only. Guest: proxy redirects to `/login?next=/notifications` (`apps/web/src/lib/auth/route-guard.ts:4-12`, `:42-44`) and `requireUser` re-checks; bell not rendered |
 | Navigation entry | Header bell only (not in bottom nav or user menu) |
 | Workflows | WF-NOTI-04, WF-NOTI-05, WF-NOTI-06, WF-NOTI-07; produced by WF-NOTI-01/02/03; filtered by WF-NOTI-08 |

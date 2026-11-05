@@ -10,7 +10,7 @@ with a planned Capacitor mobile shell that reuses the same screens (WBS Q1, Phas
 `apps/mobile/` only contains `.gitkeep`).
 
 Default language is Vietnamese; English is fully translated (WBS 6.10). Default content language and SEO target is
-Vietnamese (`<html lang="vi">`, `apps/web/src/app/layout.tsx:41`).
+Vietnamese (`<html lang="vi">`, `apps/web/src/app/layout.tsx:44`).
 
 ## 2. Actors and roles
 

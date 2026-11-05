@@ -39,7 +39,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | Same header on all (main) pages, including studio editor and reader |
 | Exceptions | No primary section links in the header on desktop (U-SHELL-01) |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/site-header.tsx:10-24`, `packages/features/src/search/components/search-box.tsx:13-17,67-72`, `packages/features/src/notifications/components/notification-bell.tsx:11-15` |
+| Evidence | `packages/features/src/shell/components/site-header.tsx:10-24`, `packages/features/src/search/components/search-box.tsx:13-17,67-72`, `packages/features/src/notifications/components/notification-bell.tsx:13-17` |
 | Status | Verified |
 
 ### BR-SHELL-003 — Account control (user menu)
@@ -63,7 +63,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | Landmark `<nav aria-label="Main navigation">`; items use the `touch-target` utility (≥ 44 px); respects bottom safe area |
 | Exceptions | Library/Write/Me are protected → guests are sent to sign-in (BR-AUTH-008) |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/main-shell.tsx:12-18,27`, `packages/ui/src/widgets/bottom-nav.tsx:22-74`, `packages/design-tokens/src/tokens.css:205` |
+| Evidence | `packages/features/src/shell/components/main-shell.tsx:12-18,27`, `packages/ui/src/widgets/bottom-nav.tsx:22-74`, `packages/design-tokens/src/tokens.css:1130` |
 | Status | Verified |
 
 ### BR-SHELL-005 — Route loading placeholder
@@ -123,7 +123,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | Next.js built-in fallback pages are shown (English, unbranded, without the app header or bottom nav) — Inferred from framework defaults |
 | Exceptions | Screens handle query errors themselves with `ErrorState` |
 | Related screens | All |
-| Evidence | `packages/features/src/_shared/error-boundary.tsx:20-45` (only export in `packages/features/src/_shared/index.ts:17`); file listing of `apps/web/src/app/**` (no error/not-found files); `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:49`, `apps/web/src/app/(main)/moderation/page.tsx:17` |
+| Evidence | `packages/features/src/_shared/error-boundary.tsx:20-45` (only export in `packages/features/src/_shared/index.ts:26`); file listing of `apps/web/src/app/**` (no error/not-found files); `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:48`, `apps/web/src/app/(main)/moderation/page.tsx:17` |
 | Status | Verified (absence); rendered result Inferred — F-SHELL-01 |
 
 ### BR-SHELL-010 — Shared widget contracts
@@ -147,7 +147,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | A Capacitor adapter will supply the same contract (WBS 7.1) |
 | Exceptions | `apps/mobile` is empty (`.gitkeep` only) — Phase 7 all ⬜ |
 | Related screens | All |
-| Evidence | `packages/features/src/_shared/platform.tsx:5-62`, `apps/web/src/lib/platform/next-adapter.tsx:23-34`, `apps/mobile/.gitkeep`, `docs/WBS.md:43-50,238-242` |
+| Evidence | `packages/features/src/_shared/platform.tsx:5-62`, `apps/web/src/lib/platform/next-adapter.tsx:32-43`, `apps/mobile/.gitkeep`, `docs/WBS.md:43-50,238-242` |
 | Status | Verified |
 
 ### BR-SHELL-012 — Adult-content sync lives in the shell
@@ -159,7 +159,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | Not run on `(auth)` pages |
 | Exceptions | — |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/main-shell.tsx:7,30` |
+| Evidence | `packages/features/src/shell/components/main-shell.tsx:9,45` |
 | Status | Verified |
 
 ### BR-SHELL-013 — Environment configuration

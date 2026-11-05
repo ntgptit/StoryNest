@@ -16,7 +16,7 @@
 | ID | Component | Notes / text (en; vi key `shell.*`) |
 | --- | --- | --- |
 | SCR-SHELL-01-C01 | Sticky header (`<header>`, safe-area top, blurred) | `app-shell.tsx`. Publishes the space it covers as `--app-header-offset` (sticky page bars use `top-below-header`). Hide-on-scroll on request, see C14 |
-| SCR-SHELL-01-C02 | Brand link "StoryNest" → `/` | `site-header.tsx:13-15` |
+| SCR-SHELL-01-C02 | Brand link "StoryNest" → `/` | `site-header.tsx:17-19` |
 | SCR-SHELL-01-C03 | Search slot (OBJ-SRCH) | < sm: icon link "open search" → `/search`; ≥ sm: combobox with suggestions |
 | SCR-SHELL-01-C04 | Adult-content button slot (OBJ-MAT) | `aria-pressed`, opens dialog |
 | SCR-SHELL-01-C05 | Language switcher | Shows current code "VI"/"EN"; `aria-label` "Switch to English" / "Switch to Tiếng Việt"; `size="sm"` (32 px high) |
@@ -88,7 +88,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | Toast "Could not sign out. Please try again." |
 | Navigation | `/` |
-| Evidence | `user-menu.tsx:40-48,77` |
+| Evidence | `user-menu.tsx:42-50,80` |
 
 | Field | SCR-SHELL-01-A04 Sign in |
 | --- | --- |
@@ -99,7 +99,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-AUTH-01 |
-| Evidence | `user-menu.tsx:30-36` |
+| Evidence | `user-menu.tsx:32-38` |
 
 | Field | SCR-SHELL-01-A05 Switch language |
 | --- | --- |
@@ -133,7 +133,7 @@ Below `sm` the SearchBox icon is a button (`aria-expanded`) that opens the same 
 | State | Status | Evidence / note |
 | --- | --- | --- |
 | Initial | Implemented | |
-| Loading (auth) | Implemented | Round skeleton for C07 (`user-menu.tsx:28`) |
+| Loading (auth) | Implemented | Round skeleton for C07 (`user-menu.tsx:30`) |
 | Loading (route) | Implemented | C10 (generic shape, U-SHELL-03) |
 | Empty | Not applicable | |
 | Populated | Implemented | |

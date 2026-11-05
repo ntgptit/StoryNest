@@ -22,20 +22,20 @@
 
 | ID | Component | Description | Source |
 | --- | --- | --- | --- |
-| SCR-STORY-01-C01 | Adult gate (SCR-MAT-01) | Wraps the whole page when `isMature`: "Mature story" + "Go back" / "I'm 18 or older, continue" (`BR-MAT-009`) | `story-screen.tsx:66`, `adult-content/components/adult-gate.tsx` |
+| SCR-STORY-01-C01 | Adult gate (SCR-MAT-01) | Wraps the whole page when `isMature`: "Mature story" + "Go back" / "I'm 18 or older, continue" (`BR-MAT-009`) | `story-screen.tsx:76`, `adult-content/components/adult-gate.tsx` |
 | SCR-STORY-01-C02 | Cover | `StoryCover`, eager-loaded, placeholder when there is no cover | `story-screen.tsx:69` |
-| SCR-STORY-01-C03 | Title (h1) | Story title | `story-screen.tsx:72` |
-| SCR-STORY-01-C04 | Author line | "Author" + display name linking to `/author/{username}`, or plain "Anonymous author" | `story-screen.tsx:73-85` |
-| SCR-STORY-01-C05 | Badges | Category (secondary), status (outline), "18+" (destructive) | `story-screen.tsx:87-91` |
-| SCR-STORY-01-C06 | Stats row | Reads / Votes / Comments / Followers (`StatPill`, locale-formatted) | `story-screen.tsx:93-103` |
+| SCR-STORY-01-C03 | Title (h1) | Story title | `story-screen.tsx:82` |
+| SCR-STORY-01-C04 | Author line | "Author" + display name linking to `/author/{username}`, or plain "Anonymous author" | `story-screen.tsx:83-95` |
+| SCR-STORY-01-C05 | Badges | Category (secondary), status (outline), "18+" (destructive) | `story-screen.tsx:97-101` |
+| SCR-STORY-01-C06 | Stats row | Reads / Votes / Comments / Followers (`StatPill`, locale-formatted) | `story-screen.tsx:103-113` |
 | SCR-STORY-01-C07 | Primary CTA | "Start reading" or "Continue reading · Chapter N" (large button-styled link) | `story-screen.tsx:105-109` |
 | SCR-STORY-01-C08 | Library actions | `StoryActions`: Follow / Following, Save to library / Saved (toggle buttons with `aria-pressed`), plus `AddToListButton`. Group label = "Sign in to follow or save stories" | `story/components/story-actions.tsx` (rules `BR-LIB-*`, `BR-LIST-*`) |
 | SCR-STORY-01-C09 | Report button | `ReportButton kind="story"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `story-screen.tsx:112-114` |
 | SCR-STORY-01-C10 | Synopsis | h2 "Synopsis". Text keeps line breaks; empty → "The author hasn't written a synopsis yet." Clamped to 6 lines with a fade and "Show more / Show less" (`ExpandableText`, Lucian #288): the toggle appears only when the text really overflows (measured), carries `aria-expanded`/`aria-controls`, and the full text stays in the DOM (SEO) | `story-screen.tsx`, `ui/widgets/expandable-text.tsx` |
-| SCR-STORY-01-C11 | Tag list | `#tag` badges linking to the home feed filtered by tag; aria-label "View stories tagged {name}" (`BR-TAX-*`) | `story-screen.tsx:125-135` |
-| SCR-STORY-01-C12 | Chapter list | h2 "Chapters" + "N chapters". Ordered list of rows: "Chapter N", title (truncated), "N words" | `story-screen.tsx:138-184` |
-| SCR-STORY-01-C13 | Similar stories | `SimilarStories` ("you may also like" with a reason) (`BR-REC-*`) | `story-screen.tsx:186` |
-| SCR-STORY-01-C14 | Skeletons | Page skeleton (cover + 3 lines) and chapter-list skeleton (3 rows), `aria-busy` | `story-screen.tsx:148-153,192-203` |
+| SCR-STORY-01-C11 | Tag list | `#tag` badges linking to the home feed filtered by tag; aria-label "View stories tagged {name}" (`BR-TAX-*`) | `story-screen.tsx:149-159` |
+| SCR-STORY-01-C12 | Chapter list | h2 "Chapters" + "N chapters". Ordered list of rows: "Chapter N", title (truncated), "N words" | `story-screen.tsx:162-208` |
+| SCR-STORY-01-C13 | Similar stories | `SimilarStories` ("you may also like" with a reason) (`BR-REC-*`) | `story-screen.tsx:210` |
+| SCR-STORY-01-C14 | Skeletons | Page skeleton (cover + 3 lines) and chapter-list skeleton (3 rows), `aria-busy` | `story-screen.tsx:172-177,244-255` |
 | SCR-STORY-01-C15 | JSON-LD + metadata | `Book` structured data, canonical, robots, OG (server only) | `page.tsx:18-39,55-63` |
 | SCR-STORY-01-C16 | Share button | "Share" next to Report; not shown for a private story. Opens the share dialog (`ShareDialog`, Lucian #254): the absolute story link (canonical origin via `PlatformAdapter.shareOrigin`) in a read-only field, "Copy" that turns into a check (`CopyLinkButton`, Lucian #008, announced politely), and "Share with another app" where `navigator.share` exists | `story-screen.tsx`, `features/share/components/share-button.tsx` |
 | SCR-STORY-01-C17 | Sticky reading bar | Once C07 has scrolled up out of view a compact bar rises at the bottom (above the mobile bottom nav, safe-area aware; `StickyActionBar`, Lucian #221): title, "Chapter N · title", a "Chapters" button that opens the TOC as a bottom sheet (`TocSheet`, continue chapter marked `aria-current="step"`) and the same Start/Continue link. It slips away when C07 is visible again; while hidden it is `inert` and `aria-hidden`. Not shown without published chapters | `story-screen.tsx`, `ui/widgets/sticky-action-bar.tsx`, `reader/components/toc-sheet.tsx` |
@@ -64,7 +64,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | → SCR-READ-01 `/story/{id}/{slug}/{chapterSlug}` |
-| Evidence | `story-screen.tsx:60-66,105-109`, `story.test.tsx:264,352-369` |
+| Evidence | `story-screen.tsx:60-66,105-109`, `story.test.tsx:266,354-371` |
 
 #### SCR-STORY-01-A03 — Open a chapter from the list
 | Field | Value |
@@ -76,7 +76,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | → SCR-READ-01 |
-| Evidence | `story-screen.tsx:163-182` |
+| Evidence | `story-screen.tsx:187-206` |
 
 #### SCR-STORY-01-A04 — Follow / unfollow
 | Field | Value |
@@ -112,7 +112,7 @@
 | Validation | `BR-LIST-*` |
 | Error behavior | `BR-LIST-*` |
 | Navigation | — |
-| Evidence | `story-actions.tsx:58` |
+| Evidence | `story-actions.tsx:66` |
 
 #### SCR-STORY-01-A07 — Report the story
 | Field | Value |
@@ -124,7 +124,7 @@
 | Validation | `BR-MOD-004…006`. Server refuses self-reports (22023) |
 | Error behavior | Shown to the author too, who then gets "You can't report your own content, or the information isn't valid." (F-STORY-01) |
 | Navigation | — |
-| Evidence | `story-screen.tsx:113`, `moderation/components/report-button.tsx:40-56`, `supabase/migrations/20261104002200_abuse_limits.sql:164` |
+| Evidence | `story-screen.tsx:129`, `moderation/components/report-button.tsx:40-56`, `supabase/migrations/20261104002200_abuse_limits.sql:164` |
 
 #### SCR-STORY-01-A08 — Open author / tag / similar story
 | Field | Value |
@@ -136,7 +136,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/author/{username}` (OBJ-AUTHOR), home feed filtered by tag (`homeHref({tagSlug})`, OBJ-TAX), another SCR-STORY-01 |
-| Evidence | `story-screen.tsx:76-84,129,186` |
+| Evidence | `story-screen.tsx:86-94,153,210` |
 
 #### SCR-STORY-01-A09 — Retry after error
 | Field | Value |
@@ -148,7 +148,7 @@
 | Validation | — |
 | Error behavior | Stays in the error state if it fails again |
 | Navigation | — |
-| Evidence | `story-screen.tsx:42-51,154-159`, `story.test.tsx:310` |
+| Evidence | `story-screen.tsx:51-60,178-183`, `story.test.tsx:312` |
 
 #### SCR-STORY-01-A11 — Share the story
 | Field | Value |
@@ -184,20 +184,20 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | Back → previous page |
-| Evidence | `adult-gate.tsx:17-34`, `story.test.tsx:207` |
+| Evidence | `adult-gate.tsx:17-34`, `story.test.tsx:209` |
 
 ## D. UI states
 
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
 | Initial | Implemented | SSR HTML with hydrated data; JSON-LD when indexable (`page.tsx:53-67`) |
-| Loading | Implemented | `StorySkeleton` when the story is pending; chapter-list skeleton (`story-screen.tsx:41,148-153`). Follow/Save, Vote count and CTA "continue" appear only after their queries resolve (no skeleton) |
+| Loading | Implemented | `StorySkeleton` when the story is pending; chapter-list skeleton (`story-screen.tsx:50,172-177`). Follow/Save, Vote count and CTA "continue" appear only after their queries resolve (no skeleton) |
 | Empty | Implemented | No published chapters → "This story has no published chapters yet." and no CTA. No synopsis → "The author hasn't written a synopsis yet." No tags → tag list omitted (`story-screen.tsx:123,125,160-161`) |
 | Populated | Implemented | Full layout (B) |
 | Validation error | Not applicable | No input on this screen (dialogs belong to LIST/MOD) |
 | Request error | Implemented | Story: "Couldn't load the story" / "Check your connection and try again." + "Try again". Chapters: "Couldn't load the chapter list" + "Try again", with the story still shown. Mutations: toast + rollback. **Missing**: a library-state load error hides the C08 buttons silently (U-STORY-01) |
-| Success | Implemented | Toasts for follow/unfollow/save/remove (`story-actions.tsx:34,50`) |
-| Disabled | Implemented | Follow/Save disabled while pending (`story-actions.tsx:30,46`) |
+| Success | Implemented | Toasts for follow/unfollow/save/remove (`story-actions.tsx:40,58`) |
+| Disabled | Implemented | Follow/Save disabled while pending (`story-actions.tsx:36,54`) |
 | Unauthorized | Implemented | Hidden story → 404 / "Story not found" + "This story doesn't exist, was taken down or is private." Guest actions → login redirect |
 | Offline | Missing | No offline detection. Network failures go to the request-error state or a "No connection" toast |
 | Unsaved changes | Not applicable | — |

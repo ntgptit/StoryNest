@@ -197,7 +197,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | Success → toast "Password changed." → `replace('/')` + `refresh()`. The user stays signed in |
 | Exceptions | Current password is never asked for (F-AUTH-05); whether Supabase "secure password change" (reauthentication) is on: Unknown |
 | Related screens | SCR-AUTH-04 |
-| Evidence | `packages/features/src/auth/api/auth.api.ts:46-50`, `packages/features/src/auth/screens/reset-password-screen.tsx:21-50`, `apps/web/src/app/(auth)/auth-pages.tsx:50-59`, `apps/web/src/lib/auth/route-guard.ts:14` |
+| Evidence | `packages/features/src/auth/api/auth.api.ts:46-50`, `packages/features/src/auth/screens/reset-password-screen.tsx:22-51`, `apps/web/src/app/(auth)/auth-pages.tsx:50-59`, `apps/web/src/lib/auth/route-guard.ts:14` |
 | Status | Verified |
 
 ### BR-AUTH-016 — Client session mirror
@@ -221,7 +221,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | `replace('/')` then `refresh()` so server components stop rendering member data. Other tabs update via the auth broadcast |
 | Exceptions | Failure → toast "Could not sign out. Please try again." |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/user-menu.tsx:40-48,77`, `packages/features/src/_shared/auth.tsx:87-91`, `node_modules/.pnpm/**/auth-js/dist/main/GoTrueClient.js` (`signOut(options = { scope: 'global' })`) |
+| Evidence | `packages/features/src/shell/components/user-menu.tsx:42-50,80`, `packages/features/src/_shared/auth.tsx:87-91`, `node_modules/.pnpm/**/auth-js/dist/main/GoTrueClient.js` (`signOut(options = { scope: 'global' })`) |
 | Status | Verified (scope from library source; see Q-AUTH-01) |
 
 ### BR-AUTH-018 — Auth mutations never auto-retry

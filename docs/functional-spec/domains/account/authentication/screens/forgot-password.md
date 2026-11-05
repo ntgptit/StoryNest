@@ -47,7 +47,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-AUTH-01 |
-| Evidence | `forgot-password-screen.tsx:30` |
+| Evidence | `forgot-password-screen.tsx:42` |
 
 ## D. UI states
 | State | Status | Evidence / note |

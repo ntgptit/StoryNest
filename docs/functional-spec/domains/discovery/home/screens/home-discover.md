@@ -19,16 +19,16 @@
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
 | SCR-HOME-01-C01 | Hero | `h1` "Where stories are written and read." + intro "Discover newly updated stories and follow the authors you love." Same for all roles | `apps/web/src/app/(main)/home-hero.tsx:6-12` |
-| SCR-HOME-01-C02 | "Recommended for you" block | Member + unfiltered only; up to 8 cards with a reason line; hidden while loading/empty/error | `discover-home.tsx:10-13`, `recommendation-list.tsx:76-92` |
-| SCR-HOME-01-C03 | Section heading | `h2` "Recently updated" (`title`) | `discover-screen.tsx:51-53` |
-| SCR-HOME-01-C04 | Shortcuts nav (`aria-label` "Shortcuts") | "From authors you follow" (member), "See rankings" (all) | `discover-screen.tsx:54-63` |
+| SCR-HOME-01-C02 | "Recommended for you" block | Member + unfiltered only; up to 8 cards with a reason line; hidden while loading/empty/error | `discover-home.tsx:10-13`, `recommendation-list.tsx:63-79` |
+| SCR-HOME-01-C03 | Section heading | `h2` "Recently updated" (`title`) | `discover-screen.tsx:50-52` |
+| SCR-HOME-01-C04 | Shortcuts nav (`aria-label` "Shortcuts") | "From authors you follow" (member), "See rankings" (all) | `discover-screen.tsx:53-62` |
 | SCR-HOME-01-C05 | Category chips (nav "Categories") | "All" + root categories as links; horizontally scrollable on mobile; skeleton while tree loads | `category-chips.tsx:31-38`, `discover-screen.tsx:66-70` |
 | SCR-HOME-01-C06 | Active-tag line | "Filtering by tag #name" + "Clear tag filter" (X icon) | `tag-filters.tsx:31-41` |
 | SCR-HOME-01-C07 | Popular tags (nav "Popular tags") | Up to 12 `#tag` chips, toggling | `tag-filters.tsx:43-61`, `model/popular-tags.ts:1` |
 | SCR-HOME-01-C08 | Story grid | 2/3/4 columns; `StoryCard` per story | `discover-screen.tsx:19,98-116` |
 | SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:110-115` |
 | SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:90-95` |
-| SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:74-83,117-124` |
+| SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:79-88,122-129` |
 
 ## C. User actions and system responses
 
@@ -118,7 +118,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-RANK-01 / SCR-AUTHOR-02 |
-| Evidence | `discover-screen.tsx:55-62` |
+| Evidence | `discover-screen.tsx:54-61` |
 
 | Field | SCR-HOME-01-A09 — Retry after failure |
 | --- | --- |
@@ -129,7 +129,7 @@
 | Validation | — |
 | Error behavior | Stays on error state if it fails again |
 | Navigation | — |
-| Evidence | `discover-screen.tsx:79-82`, `discovery.test.tsx:340` |
+| Evidence | `discover-screen.tsx:84-87`, `discovery.test.tsx:340` |
 
 ### C.x Browse interactions (Lucian batch 2 · browse)
 
@@ -147,7 +147,7 @@
 | Empty | Implemented | "No stories yet / Check back later, or try another category." or tag variant (`strings.en.ts:12-13`) |
 | Populated | Implemented | Grid + infinite footer |
 | Validation error | Not applicable | No input; bad params ignored or produce empty state |
-| Request error | Implemented | Full and inline error states (`discover-screen.tsx:74-83,117-124`) |
+| Request error | Implemented | Full and inline error states (`discover-screen.tsx:79-88,122-129`) |
 | Success | Not applicable | Read-only |
 | Disabled | Not applicable | "Load more" hidden while loading (`infinite-list.tsx:63`) |
 | Unauthorized | Not applicable | Public; member-only parts simply hidden |

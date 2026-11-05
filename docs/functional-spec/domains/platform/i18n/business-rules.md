@@ -63,7 +63,7 @@ No own screen: controls live in SCR-SHELL-01 (header) and SCR-SET-01.
 | Expected behavior | No hydration mismatch; an English reader briefly sees Vietnamese on every full page load; the HTML that crawlers and no-JS clients get is always `lang="vi"` |
 | Exceptions | — |
 | Related screens | All |
-| Evidence | `apps/web/src/app/layout.tsx:34`, `packages/features/src/_shared/language.tsx:13-36`, `docs/WBS.md:124` (documented limitation) |
+| Evidence | `apps/web/src/app/layout.tsx:35`, `packages/features/src/_shared/language.tsx:13-36`, `docs/WBS.md:124` (documented limitation) |
 | Status | Verified — U-I18N-01 |
 
 ### BR-I18N-005 — Switching re-mounts the page

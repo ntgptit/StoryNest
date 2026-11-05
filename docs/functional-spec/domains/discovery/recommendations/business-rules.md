@@ -11,7 +11,7 @@
 | Actors / roles | Guest (similar only), Member (similar + personal) |
 | Related entities | RPCs `similar_stories` (SECURITY DEFINER), `recommend_for_me` (SECURITY INVOKER); sources `story_tags`, `categories`, `chapter_read_events`, `user_follows`, `story_saves`, `story_follows`, `user_story_progress` |
 | Dependencies | BR-TAX-*, BR-PROG-*, BR-LIB-*, BR-AUTHOR-*, BR-STORY-*, BR-MAT-*, BR-MOD-* |
-| Own screen | **None.** Rendered by `SimilarStories` at the end of the story page (`packages/features/src/story/screens/story-screen.tsx:186`, inside `AdultGate`) and by `ForYouStories` above the home feed (`apps/web/src/app/(main)/discover-home.tsx:13`) |
+| Own screen | **None.** Rendered by `SimilarStories` at the end of the story page (`packages/features/src/story/screens/story-screen.tsx:210`, inside `AdultGate`) and by `ForYouStories` above the home feed (`apps/web/src/app/(main)/discover-home.tsx:15`) |
 | Code | `supabase/migrations/20261104001700_recommendations.sql`, `packages/features/src/recommendations/**` |
 
 ## 2. Rules
@@ -97,7 +97,7 @@
 | Expected behavior | Unknown reason code or missing detail → card shown **without** a sentence (never a wrong one) |
 | Exceptions | — |
 | Related screens | SCR-HOME-01, SCR-STORY-01 |
-| Evidence | `recommendations/model/recommendation.ts:42-63`, `recommendations/strings.en.ts:5-11`, `recommendations/recommendations.test.tsx:67,81` |
+| Evidence | `recommendations/model/recommendation.ts:42-63`, `recommendations/strings.en.ts:7-13`, `recommendations/recommendations.test.tsx:67,81` |
 | Status | Verified |
 
 ### BR-REC-008 — Not yet supported

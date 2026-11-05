@@ -24,7 +24,7 @@
 | Expected behavior | No row → "Author not found / The author doesn't exist or the account is no longer visible." Applies to suspended authors viewing their own page too |
 | Exceptions | Page responds HTTP 200 with a generic title even when not found (BR-AUTHOR-012) |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `supabase/migrations/20261104001600_author_follows.sql:29-51`, `author/api/author.api.ts:20-25`, `author/screens/author-screen.tsx:46-48`, `author/strings.en.ts:14-17`, `supabase/tests/220_author_follows.test.sql:54-62,77` |
+| Evidence | `supabase/migrations/20261104001600_author_follows.sql:29-51`, `author/api/author.api.ts:20-25`, `author/screens/author-screen.tsx:46-48`, `author/strings.en.ts:16-19`, `supabase/tests/220_author_follows.test.sql:54-62,77` |
 | Status | Verified (SQL test) |
 
 ### BR-AUTHOR-002 — Profile header content
@@ -60,7 +60,7 @@
 | Expected behavior | Empty → "No public stories yet / When the author publishes a story, it will appear here." |
 | Exceptions | — |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `author/screens/author-screen.tsx:61,93-131`, `discovery/api/discovery.api.ts:82`, `author/author.test.tsx:301,309` |
+| Evidence | `author/screens/author-screen.tsx:61,93-131`, `discovery/api/discovery.api.ts:84`, `author/author.test.tsx:302,310` |
 | Status | Verified |
 
 ### BR-AUTHOR-005 — Follow eligibility
@@ -84,7 +84,7 @@
 | Expected behavior | Toast "You're following the maximum of 1000 authors. Unfollow some before following more." |
 | Exceptions | — |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `20261104001600_author_follows.sql:57,75-78`, `author/model/author.ts:69-79`, `author/strings.en.ts:25-29`, `docs/WBS.md:209` |
+| Evidence | `20261104001600_author_follows.sql:57,75-78`, `author/model/author.ts:69-79`, `author/strings.en.ts:27-31`, `docs/WBS.md:209` |
 | Status | Verified (SQL test) |
 
 ### BR-AUTHOR-007 — Follow button behaviour
@@ -96,7 +96,7 @@
 | Expected behavior | Success → toast "You're now following this author." / "Unfollowed."; profile cache updated with returned count; followed-feed and all discovery queries invalidated |
 | Exceptions | Errors → toast: limit (PT409), "This author is no longer visible." (PT404), else "That didn't work. Please try again." |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `author/components/follow-author-button.tsx:14-44`, `author/hooks/use-author.ts:30-47`, `author/strings.en.ts:6-9,25-29`, `author/author.test.tsx:334-399` |
+| Evidence | `author/components/follow-author-button.tsx:14-44`, `author/hooks/use-author.ts:30-47`, `author/strings.en.ts:8-11,27-31`, `author/author.test.tsx:334-399` |
 | Status | Verified |
 
 ### BR-AUTHOR-008 — Following feed eligibility and order
@@ -144,7 +144,7 @@
 | Expected behavior | Skeleton while the session resolves |
 | Exceptions | — |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `author/keys.ts:2-9`, `author/hooks/use-author.ts:18-28`, `author/author.test.tsx:138,265` |
+| Evidence | `author/keys.ts:2-9`, `author/hooks/use-author.ts:18-28`, `author/author.test.tsx:139,266` |
 | Status | Verified |
 
 ### BR-AUTHOR-012 — Page metadata

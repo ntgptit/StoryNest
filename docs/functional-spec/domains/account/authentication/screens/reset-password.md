@@ -47,7 +47,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/forgot-password` |
-| Evidence | `reset-password-screen.tsx:44-49` |
+| Evidence | `reset-password-screen.tsx:45-50` |
 
 ## D. UI states
 | State | Status | Evidence / note |

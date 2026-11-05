@@ -60,17 +60,17 @@ that disappeared between the two requests (`discovery/model/order-by-ids.ts:1-8`
 
 | Destination | Header (desktop) | Header (mobile) | Bottom nav | User menu | In-page links | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
-| `/` Home | Brand link | Brand link | "Home" | — | — | `shell/components/site-header.tsx:13`, `main-shell.tsx:14` |
+| `/` Home | Brand link | Brand link | "Home" | — | — | `shell/components/site-header.tsx:17`, `main-shell.tsx:14` |
 | `/search` | SearchBox (combobox) | Search icon → `/search` | — | — | Tag/author results | `search/components/search-box.tsx:67-71` |
-| `/ranking` | — | — | — | — | Home section link "See rankings" only | `discovery/screens/discover-screen.tsx:60-62` → U-HOME-01 |
-| `/following` | — | — | — | — | Home section link "From authors you follow" (signed-in only) | `discover-screen.tsx:55-59` → U-HOME-01 |
-| `/author/[username]` | — | — | — | — | Story page author name, search Authors tab, moderation report card | `story/screens/story-screen.tsx:77`, `search/screens/search-screen.tsx:197`, `moderation/model/report.ts:122` |
+| `/ranking` | — | — | — | — | Home section link "See rankings" only | `discovery/screens/discover-screen.tsx:59-61` → U-HOME-01 |
+| `/following` | — | — | — | — | Home section link "From authors you follow" (signed-in only) | `discover-screen.tsx:54-58` → U-HOME-01 |
+| `/author/[username]` | — | — | — | — | Story page author name, search Authors tab, moderation report card | `story/screens/story-screen.tsx:87`, `search/screens/search-screen.tsx:225`, `moderation/model/report.ts:122` |
 
 ## Cross-domain dependencies
 
 | Depends on | What | Reference |
 | --- | --- | --- |
-| D-READING / OBJ-STORY | Story visibility (public/unlisted/private), status, soft delete; story page hosts SimilarStories and links tags/author | BR-STORY-*; `story/screens/story-screen.tsx:77,129,186` |
+| D-READING / OBJ-STORY | Story visibility (public/unlisted/private), status, soft delete; story page hosts SimilarStories and links tags/author | BR-STORY-*; `story/screens/story-screen.tsx:87,153,210` |
 | D-READING / OBJ-PROG | `chapter_read_events` (rankings, co-readers), `user_story_progress` (excluded from For-you) | BR-PROG-* |
 | D-COMMUNITY / OBJ-VOTE | `chapter_votes` in rankings (score = reads + 5 × votes) | BR-VOTE-* |
 | D-LIBRARY / OBJ-LIB | `story_saves`, `story_follows` feed "Recommended for you" | BR-LIB-* |

@@ -11,7 +11,7 @@
 | Route file | `apps/web/src/app/(main)/studio/page.tsx` (view `apps/web/src/app/(main)/studio/studio-view.tsx`) |
 | Screen component | `packages/features/src/studio/screens/studio-screen.tsx` (`StudioScreen`; embeds `components/my-invitations.tsx`) |
 | Roles | Any signed-in member; rows differ by role (owner / co-author / editor) |
-| Entry points | User menu "Studio" (`packages/features/src/shell/components/user-menu.tsx:64`), bottom nav "Write" (`packages/features/src/shell/components/main-shell.tsx:16`), notification "collaboration_invited" (`packages/features/src/notifications/model/notification.ts:102-103`), Cancel on SCR-STM-02/03, "Back to Studio" on SCR-STAT-01 |
+| Entry points | User menu "Studio" (`packages/features/src/shell/components/user-menu.tsx:66`), bottom nav "Write" (`packages/features/src/shell/components/main-shell.tsx:16`), notification "collaboration_invited" (`packages/features/src/notifications/model/notification.ts:102-103`), Cancel on SCR-STM-02/03, "Back to Studio" on SCR-STAT-01 |
 | Workflows | WF-STM-01, WF-STM-06, WF-TEAM-02; launches WF-STM-02/03, WF-CHM-*, WF-TEAM-01, WF-STAT-01 |
 | Rules | BR-STM-001..004, BR-STM-017, BR-STM-023, BR-TEAM-011 |
 

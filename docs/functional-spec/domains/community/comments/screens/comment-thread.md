@@ -27,13 +27,13 @@
 | SCR-CMT-01-C05 | Guest sign-in link | Outline button "Sign in to comment" → `/login?next=` | `comment-thread.tsx:57-61` |
 | SCR-CMT-01-C06 | Comment list | `ul` "Comment list"; skeleton ×2 while loading; empty text; ErrorState | `comment-thread.tsx:63-86` |
 | SCR-CMT-01-C07 | Comment item | `article` named by author; header (name, relative time, "(edited)", ⋯ menu); hidden note; body (`whitespace-pre-line`); action row | `comment-item.tsx:99-238` |
-| SCR-CMT-01-C08 | Item menu | ⋯ "Comment options": Edit, Delete (own visible); Hide comment / Unhide comment (manager) | `comment-item.tsx:109-129` |
-| SCR-CMT-01-C09 | Like button | Heart + "N likes", `aria-pressed` | `comment-item.tsx:157-169` |
-| SCR-CMT-01-C10 | Reply button & reply composer | "Reply" (`aria-expanded`), indented composer | `comment-item.tsx:170-202` |
-| SCR-CMT-01-C11 | Report button | `ReportButton kind="comment"` label "Report" (OBJ-MOD) | `comment-item.tsx:182-184` |
+| SCR-CMT-01-C08 | Item menu | ⋯ "Comment options": Edit, Delete (own visible); Hide comment / Unhide comment (manager) | `comment-item.tsx:111-131` |
+| SCR-CMT-01-C09 | Like button | Heart + "N likes", `aria-pressed` | `comment-item.tsx:161-173` |
+| SCR-CMT-01-C10 | Reply button & reply composer | "Reply" (`aria-expanded`), indented composer | `comment-item.tsx:174-206` |
+| SCR-CMT-01-C11 | Report button | `ReportButton kind="comment"` label "Report" (OBJ-MOD) | `comment-item.tsx:186-188` |
 | SCR-CMT-01-C12 | Replies toggle & list | "View N replies"/"Hide replies", `ul` "Replies", "Load more replies" | `comment-item.tsx:204-270` |
-| SCR-CMT-01-C13 | Placeholder | "This comment was deleted." | `comment-item.tsx:101-102` |
-| SCR-CMT-01-C14 | Delete confirm dialog | "Delete this comment?" destructive confirm | `comment-item.tsx:220-237` |
+| SCR-CMT-01-C13 | Placeholder | "This comment was deleted." | `comment-item.tsx:103-104` |
+| SCR-CMT-01-C14 | Delete confirm dialog | "Delete this comment?" destructive confirm | `comment-item.tsx:224-241` |
 | SCR-CMT-01-C15 | Load more | "Load more comments"/"Loading…" | `comment-thread.tsx:88-99` |
 | SCR-CMT-01-C16 | Spoiler cover | `||text||` in a body renders covered until pressed (BR-CMT-022); the composer's helper line shows the hint | `comment-item.tsx` (`CommentBody`), `comment-composer.tsx`, `packages/ui/src/widgets/spoiler-text.tsx` |
 
@@ -59,7 +59,7 @@
 | Validation | Empty / > 10,000 → inline message, no request |
 | Error behavior | Inline message by kind (BR-CMT-020); text & id kept |
 | Navigation | None |
-| Evidence | `comment-thread.tsx:44-60`, `comment-composer.tsx:44-63` |
+| Evidence | `comment-thread.tsx:44-60`, `comment-composer.tsx:45-64` |
 
 | Field | SCR-CMT-01-A03 Open a paragraph thread |
 | --- | --- |
@@ -70,7 +70,7 @@
 | Validation | — |
 | Error behavior | As A01 inside the sheet |
 | Navigation | None (URL unchanged) |
-| Evidence | `reader-blocks.tsx:36`, `:53`, `:64-76` |
+| Evidence | `reader-blocks.tsx:65`, `:53`, `:64-76` |
 
 | Field | SCR-CMT-01-A04 Reply |
 | --- | --- |
@@ -81,7 +81,7 @@
 | Validation | As A02 |
 | Error behavior | Inline in reply composer |
 | Navigation | None |
-| Evidence | `comment-item.tsx:189-202` |
+| Evidence | `comment-item.tsx:193-206` |
 
 | Field | SCR-CMT-01-A05 Show / hide replies, load more replies |
 | --- | --- |
@@ -92,7 +92,7 @@
 | Validation | — |
 | Error behavior | Red line "Couldn't load comments" (no retry) |
 | Navigation | None |
-| Evidence | `comment-item.tsx:204-218`, `:242-270` |
+| Evidence | `comment-item.tsx:208-222`, `:242-270` |
 
 | Field | SCR-CMT-01-A06 Like / unlike |
 | --- | --- |
@@ -103,7 +103,7 @@
 | Validation | — |
 | Error behavior | Toast with mapped message |
 | Navigation | None |
-| Evidence | `comment-item.tsx:69-78`, `use-comments.ts:146-177` |
+| Evidence | `comment-item.tsx:71-80`, `use-comments.ts:146-177` |
 
 | Field | SCR-CMT-01-A07 Edit own comment |
 | --- | --- |
@@ -114,7 +114,7 @@
 | Validation | As A02 + spam check server-side |
 | Error behavior | Inline in edit composer |
 | Navigation | None |
-| Evidence | `comment-item.tsx:138-151` |
+| Evidence | `comment-item.tsx:140-153` |
 
 | Field | SCR-CMT-01-A08 Delete own comment |
 | --- | --- |
@@ -125,7 +125,7 @@
 | Validation | — |
 | Error behavior | Error toast; dialog remains open |
 | Navigation | None |
-| Evidence | `comment-item.tsx:220-237`, `use-comments.ts:113-126` |
+| Evidence | `comment-item.tsx:224-241`, `use-comments.ts:113-126` |
 
 | Field | SCR-CMT-01-A09 Hide / unhide (story manager) |
 | --- | --- |
@@ -136,7 +136,7 @@
 | Validation | — |
 | Error behavior | Error toast (PT409 moderator-hidden / deleted) |
 | Navigation | None |
-| Evidence | `comment-item.tsx:80-87`, `:125-126` |
+| Evidence | `comment-item.tsx:82-89`, `:125-126` |
 
 | Field | SCR-CMT-01-A10 Report |
 | --- | --- |
@@ -147,7 +147,7 @@
 | Validation | OBJ-MOD |
 | Error behavior | OBJ-MOD |
 | Navigation | None |
-| Evidence | `comment-item.tsx:182-184` |
+| Evidence | `comment-item.tsx:186-188` |
 
 | Field | SCR-CMT-01-A11 Guest sign-in |
 | --- | --- |
@@ -158,21 +158,21 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/login` (returns to chapter top; `#comments`/paragraph not kept) |
-| Evidence | `comment-thread.tsx:38`, `comment-item.tsx:67-73` |
+| Evidence | `comment-thread.tsx:38`, `comment-item.tsx:69-75` |
 
 ## D. UI states
 
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
 | Initial | Implemented | Nothing (composer/sign-in hidden) while session loads; queries wait for `ready` — `comment-thread.tsx:43-61`, `use-comments.ts:47` |
-| Loading | Implemented | 2 skeleton rows `aria-busy`; replies "Loading…"; load-more "Loading…" — `comment-thread.tsx:70-75`, `comment-item.tsx:244` |
+| Loading | Implemented | 2 skeleton rows `aria-busy`; replies "Loading…"; load-more "Loading…" — `comment-thread.tsx:70-75`, `comment-item.tsx:265` |
 | Empty | Implemented | "No comments yet. Be the first." / "No comments on this paragraph yet." — `comment-thread.tsx:76-77` |
 | Populated | Implemented | List + paging — `comment-thread.tsx:78-99` |
 | Validation error | Implemented | Inline under textarea, `aria-invalid` — `comment-composer.tsx:73-88` |
 | Request error | Implemented | ErrorState + retry (list); inline (composer); toast (like/hide/delete); replies: text without retry — Recommended: add retry to reply list |
 | Success | Implemented | Toasts for post/edit/delete/hide/unhide; **no toast for a reply** (U-CMT-03) |
-| Disabled | Implemented | Composer disabled while sending; like disabled while pending — `comment-composer.tsx:76`, `comment-item.tsx:164` |
-| Unauthorized | Implemented | Guest sign-in link; no menu for non-owners; managers only see hide/unhide — `comment-item.tsx:61-66` |
+| Disabled | Implemented | Composer disabled while sending; like disabled while pending — `comment-composer.tsx:78`, `comment-item.tsx:168` |
+| Unauthorized | Implemented | Guest sign-in link; no menu for non-owners; managers only see hide/unhide — `comment-item.tsx:63-68` |
 | Offline | Implemented (generic) | Network errors mapped to "No connection…"; no offline queue — `model/comment.ts:144-145` |
 | Unsaved changes | Missing | Cancel on edit/reply or closing the sheet discards typed text without warning — Recommended for long comments |
 | Live updates | Not applicable (not in scope) | Others' new comments appear only after refetch (window focus/remount); see F-CMT-03 |

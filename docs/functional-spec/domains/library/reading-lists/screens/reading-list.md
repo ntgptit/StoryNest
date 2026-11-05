@@ -21,12 +21,12 @@
 | ID | Component | Where mounted | Description | Evidence |
 | --- | --- | --- | --- | --- |
 | SCR-LIST-01-C01 | Page header | This page | Title = list title; description if non-empty; owner actions "Edit" (outline) and "Delete list" (ghost, destructive) | `list-screen.tsx:87-108` |
-| SCR-LIST-01-C02 | Meta line | This page | Owner: visibility badge (lock / link / globe) + "Back to library"; visitor: "<name>'s list"; both: "N stories" | `list-screen.tsx:109-124` |
+| SCR-LIST-01-C02 | Meta line | This page | Owner: visibility badge (lock / link / globe) + "Back to library"; visitor: "<name>'s list"; both: "N stories" | `list-screen.tsx:153-168` |
 | SCR-LIST-01-C03 | Story grid | This page | `ul` "Stories in this list", 2/3/4 columns, `StoryCard` | `list-screen.tsx:133-186` |
 | SCR-LIST-01-C04 | Owner item controls | This page | ↑ "Move up: <title>", ↓ "Move down: <title>" (icon buttons), "Remove from list" | `list-screen.tsx:142-182` |
-| SCR-LIST-01-C05 | Empty / not-found / error | This page | EmptyState (owner/visitor variants), "List not found", ErrorState + retry; skeleton block while loading | `list-screen.tsx:54-67`, `:126-131` |
-| SCR-LIST-01-C06 | Delete confirm dialog | This page | "Delete this list?" destructive | `list-screen.tsx:207-225` |
-| SCR-LIST-01-C07 | List form dialog (`ListFormDialog`) | This page (edit mode, `list-screen.tsx:188-205`) and Library → Lists tab (create mode, `my-lists.tsx:84-100`) | Fields List name (Input), Description (Textarea + hint), Visibility (Select); description line shows the visibility hint; inline field errors; `role="alert"` failure; Cancel / "Create list" or "Save changes" / "Saving…" | `packages/features/src/lists/components/list-form-dialog.tsx:28-140` |
+| SCR-LIST-01-C05 | Empty / not-found / error | This page | EmptyState (owner/visitor variants), "List not found", ErrorState + retry; skeleton block while loading | `list-screen.tsx:74-87`, `:126-131` |
+| SCR-LIST-01-C06 | Delete confirm dialog | This page | "Delete this list?" destructive | `list-screen.tsx:254-272` |
+| SCR-LIST-01-C07 | List form dialog (`ListFormDialog`) | This page (edit mode, `list-screen.tsx:235-252`) and Library → Lists tab (create mode, `my-lists.tsx:84-100`) | Fields List name (Input), Description (Textarea + hint), Visibility (Select); description line shows the visibility hint; inline field errors; `role="alert"` failure; Cancel / "Create list" or "Save changes" / "Saving…" | `packages/features/src/lists/components/list-form-dialog.tsx:28-140` |
 | SCR-LIST-01-C08 | My lists (`MyLists`) | Library page, "Lists" tab (`packages/features/src/library/screens/library-screen.tsx:61-63`) | "New list" button; rows (title, "N stories · Updated …", visibility badge) linking to `/lists/{id}`; empty / error / skeleton | `packages/features/src/lists/components/my-lists.tsx:29-102` |
 | SCR-LIST-01-C11 | [owner] Drag to reorder (Lucian #255 / #317) | Under each story card, before the arrows | A grip (pointer and touch, hidden from assistive tech; the arrows stay the keyboard route) lifts the card; it takes the place of the card under the pointer and the others fly aside; the drop goes through the same `reorder_list_items` call as the arrows (optimistic, rolled back on refusal). Any order change flies the cards; nothing animates on load. Hint "Drag the handle under a story to reorder, or use the up and down buttons." | `list-screen.tsx`, `packages/ui/src/widgets/sortable-list.tsx` |
 | SCR-LIST-01-C10 | Share button & dialog (`ShareButton` → `ShareDialog`, Lucian #254 / #008) | This page: header actions (owner: before Edit; visitor of a public/unlisted list: alone) | Dialog "Share “<title>”" with the absolute list link (canonical origin) in a read-only field, "Copy" that turns into a check, and "Share with another app" where `navigator.share` exists. Owner only: an access row "Who can open the link" (lock / link / globe icon, spins on change) with a Select over private / unlisted / public and the existing visibility hint as explanation; a change goes through the same `useUpdateList` as the edit dialog. A visitor never sees the access row, and no one but the owner is offered the link of a private list | `list-screen.tsx` (`ListShareButton`), `packages/features/src/share/components/share-button.tsx`, `packages/ui/src/widgets/share-dialog.tsx` |
@@ -54,7 +54,7 @@
 | Validation | BR-LIST-003 inline |
 | Error behavior | Inline alert in dialog |
 | Navigation | None |
-| Evidence | `list-screen.tsx:188-205`, `list-form-dialog.tsx:52-68` |
+| Evidence | `list-screen.tsx:235-252`, `list-form-dialog.tsx:52-68` |
 
 | Field | SCR-LIST-01-A03 Move a story up/down |
 | --- | --- |
@@ -65,7 +65,7 @@
 | Validation | Server: exact set of ids |
 | Error behavior | Old order restored + toast |
 | Navigation | None |
-| Evidence | `list-screen.tsx:79-83`, `:144-163` |
+| Evidence | `list-screen.tsx:114-118`, `:144-163` |
 
 | Field | SCR-LIST-01-A04 Remove a story |
 | --- | --- |
@@ -76,7 +76,7 @@
 | Validation | — |
 | Error behavior | Error toast |
 | Navigation | None |
-| Evidence | `list-screen.tsx:164-180` |
+| Evidence | `list-screen.tsx:209-225` |
 
 | Field | SCR-LIST-01-A05 Delete the list |
 | --- | --- |
@@ -87,7 +87,7 @@
 | Validation | — |
 | Error behavior | Error toast; dialog stays |
 | Navigation | `/library` (Reading tab) |
-| Evidence | `list-screen.tsx:207-225` |
+| Evidence | `list-screen.tsx:254-272` |
 
 | Field | SCR-LIST-01-A06 Open a story |
 | --- | --- |
@@ -98,7 +98,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/story/{id}/{slug}` |
-| Evidence | `list-screen.tsx:136-141` |
+| Evidence | `list-screen.tsx:180-185` |
 
 | Field | SCR-LIST-01-A07 Back to library |
 | --- | --- |
@@ -109,7 +109,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/library` |
-| Evidence | `list-screen.tsx:119-123` |
+| Evidence | `list-screen.tsx:163-167` |
 
 | Field | SCR-LIST-01-A08 Create a list (C07 in My lists) |
 | --- | --- |
@@ -131,7 +131,7 @@
 | Validation | — |
 | Error behavior | Error toast |
 | Navigation | None |
-| Evidence | `add-to-list-button.tsx:101-110`, `:133-153` |
+| Evidence | `add-to-list-button.tsx:107-116`, `:133-153` |
 
 | Field | SCR-LIST-01-A10 Create and add (C09) |
 | --- | --- |
@@ -142,7 +142,7 @@
 | Validation | Empty → button disabled; > 120 → silently ignored |
 | Error behavior | Error toast; id kept |
 | Navigation | None |
-| Evidence | `add-to-list-button.tsx:112-129`, `:154-162` |
+| Evidence | `add-to-list-button.tsx:118-135`, `:154-162` |
 
 | Field | SCR-LIST-01-A11 Share a list / change who can open it |
 | --- | --- |

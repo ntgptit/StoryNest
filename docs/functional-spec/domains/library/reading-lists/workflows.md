@@ -25,7 +25,7 @@
 | Postconditions | `reading_lists` row |
 | Affected objects | OBJ-LIST |
 | Related screens | SCR-LIB-01 (Lists tab), SCR-LIST-01-C07 dialog |
-| Status | Verified — `packages/features/src/lists/components/my-lists.tsx:37-100`, `packages/features/src/lists/lists.test.tsx:356` |
+| Status | Verified — `packages/features/src/lists/components/my-lists.tsx:37-100`, `packages/features/src/lists/lists.test.tsx:358` |
 
 ### WF-LIST-02 — Add a story to lists / take it out
 | Field | Value |
@@ -40,7 +40,7 @@
 | Postconditions | `reading_list_items` row inserted/deleted; list `updated_at` touched on add |
 | Affected objects | OBJ-LIST, OBJ-STORY |
 | Related screens | Story page (OBJ-STORY), SCR-LIST-01-C09 |
-| Status | Verified — `packages/features/src/lists/components/add-to-list-button.tsx:59-165`, `packages/features/src/lists/lists.test.tsx:402-440` |
+| Status | Verified — `packages/features/src/lists/components/add-to-list-button.tsx:65-171`, `packages/features/src/lists/lists.test.tsx:404-442` |
 
 ### WF-LIST-03 — Create a list and add the story in one step
 | Field | Value |
@@ -55,7 +55,7 @@
 | Postconditions | List + item |
 | Affected objects | OBJ-LIST |
 | Related screens | Story page sheet |
-| Status | Verified — `packages/features/src/lists/components/add-to-list-button.tsx:112-129`, `packages/features/src/lists/lists.test.tsx:442` |
+| Status | Verified — `packages/features/src/lists/components/add-to-list-button.tsx:118-135`, `packages/features/src/lists/lists.test.tsx:444` |
 
 ### WF-LIST-04 — View a list
 | Field | Value |
@@ -85,7 +85,7 @@
 | Postconditions | Row updated, `updated_at` touched |
 | Affected objects | OBJ-LIST |
 | Related screens | SCR-LIST-01 |
-| Status | Verified — `packages/features/src/lists/screens/list-screen.tsx:188-205`, `packages/features/src/lists/lists.test.tsx:573` |
+| Status | Verified — `packages/features/src/lists/screens/list-screen.tsx:235-252`, `packages/features/src/lists/lists.test.tsx:585` |
 
 ### WF-LIST-06 — Reorder stories
 | Field | Value |

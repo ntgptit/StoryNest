@@ -9,7 +9,7 @@
 | Name | Search results; the header SearchBox (rendered by the shell on every page) is component C01 |
 | Route | `/search?q=<term>&tab=<stories|authors|tags>` |
 | Route file | `apps/web/src/app/(main)/search/page.tsx` (+ `search-view.tsx`) |
-| Screen component | `packages/features/src/search/screens/search-screen.tsx`; header box `packages/features/src/search/components/search-box.tsx` (mounted by `shell/components/site-header.tsx:17`) |
+| Screen component | `packages/features/src/search/screens/search-screen.tsx`; header box `packages/features/src/search/components/search-box.tsx` (mounted by `shell/components/site-header.tsx:21`) |
 | Roles | Guest, Member, Moderator (same results) |
 | Guard | None; `robots: { index: false }`; title "Tìm kiếm · StoryNest" (server, Vietnamese only) |
 | Workflows | WF-SRCH-01, WF-SRCH-02, WF-SRCH-03 |
@@ -19,16 +19,16 @@
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
 | SCR-SRCH-01-C01 | Header SearchBox | `form role=search`; input `role=combobox` "Search stories, authors or tags", placeholder "Search stories, authors, tags…"; listbox "Suggestions" with ≤ 5 titles + "See all results for “term”"; below `sm` an icon link "Open search" | `search-box.tsx:65-135`, `strings.en.ts:3-6,11-12` |
-| SCR-SRCH-01-C02 | Page header | `PageHeader` "Search" | `search-screen.tsx:63` |
-| SCR-SRCH-01-C03 | Search form | Input (aria-label as C01, `maxLength` 120) + "Search" button | `search-screen.tsx:64-78` |
-| SCR-SRCH-01-C04 | Hint / length message | `role=status` text when term not searchable | `search-screen.tsx:80-83` |
-| SCR-SRCH-01-C05 | Results heading | `h2` "Results for “term”" | `search-screen.tsx:86` |
+| SCR-SRCH-01-C02 | Page header | `PageHeader` "Search" | `search-screen.tsx:62` |
+| SCR-SRCH-01-C03 | Search form | Input (aria-label as C01, `maxLength` 120) + "Search" button | `search-screen.tsx:63-77` |
+| SCR-SRCH-01-C04 | Hint / length message | `role=status` text when term not searchable | `search-screen.tsx:79-82` |
+| SCR-SRCH-01-C05 | Results heading | `h2` "Results for “term”" | `search-screen.tsx:85` |
 | SCR-SRCH-01-C06 | Tabs | Stories / Authors / Tags (Radix tabs) | `search-screen.tsx:87-95` |
 | SCR-SRCH-01-C07 | Story results | Card grid + infinite list, end "No more results." | `search-screen.tsx:125-166` |
-| SCR-SRCH-01-C08 | Author results | List of rows (avatar, name, @username · N stories) + "Load more" button | `search-screen.tsx:168-209` |
-| SCR-SRCH-01-C09 | Tag results | List of "#name / N stories" rows (≤ 10) | `search-screen.tsx:211-231` |
+| SCR-SRCH-01-C08 | Author results | List of rows (avatar, name, @username · N stories) + "Load more" button | `search-screen.tsx:196-237` |
+| SCR-SRCH-01-C09 | Tag results | List of "#name / N stories" rows (≤ 10) | `search-screen.tsx:239-259` |
 | SCR-SRCH-01-C10 | Loading | Skeletons, `role=status` "Searching…" | `search-screen.tsx:105-113` |
-| SCR-SRCH-01-C11 | Empty / error | Per-tab empty texts; "Can't search right now" + "Try again" | `search-screen.tsx:115-123`, `strings.en.ts:17-22` |
+| SCR-SRCH-01-C11 | Empty / error | Per-tab empty texts; "Can't search right now" + "Try again" | `search-screen.tsx:149-157`, `strings.en.ts:17-22` |
 
 ## C. User actions and system responses
 
@@ -52,7 +52,7 @@
 | Validation | Enter with short term does nothing |
 | Error behavior | — |
 | Navigation | `/story/{id}/{slug}` or `/search?q=` |
-| Evidence | `search-box.tsx:45-63`, `search.test.tsx:441,460` |
+| Evidence | `search-box.tsx:45-63`, `search.test.tsx:463,482` |
 
 | Field | SCR-SRCH-01-A03 — Pick a suggestion / "See all" with the mouse |
 | --- | --- |
@@ -85,7 +85,7 @@
 | Validation | Short/long term → C04 message, no request |
 | Error behavior | — |
 | Navigation | Same screen |
-| Evidence | `search-screen.tsx:56-59`, `search-view.tsx:8-9`, `search.test.tsx:331,342` |
+| Evidence | `search-screen.tsx:55-58`, `search-view.tsx:8-9`, `search.test.tsx:353,364` |
 
 | Field | SCR-SRCH-01-A06 — Switch tab |
 | --- | --- |
@@ -129,7 +129,7 @@
 | Validation | — |
 | Error behavior | Stays on error |
 | Navigation | — |
-| Evidence | `search-screen.tsx:142,172,214`, `search.test.tsx:302` |
+| Evidence | `search-screen.tsx:173,200,242`, `search.test.tsx:324` |
 
 ### C.x Browse interactions (Lucian batch 2 · browse)
 
@@ -140,7 +140,7 @@
 ## D. UI states
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
-| Initial | Implemented | No/short term → hint "Enter at least 3 characters to search. Accents are optional." (`search-screen.tsx:80-83`) |
+| Initial | Implemented | No/short term → hint "Enter at least 3 characters to search. Accents are optional." (`search-screen.tsx:79-82`) |
 | Loading | Implemented | Skeleton grid/list with `role=status` "Searching…"; header list keeps previous suggestions |
 | Empty | Implemented | Per tab: "No matching stories / authors / tags" with advice (`strings.en.ts:17-21`) |
 | Populated | Implemented | Cards / rows |

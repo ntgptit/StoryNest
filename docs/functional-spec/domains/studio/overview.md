@@ -53,11 +53,11 @@ Header user menu "Studio" / bottom nav "Write"  ──►  /studio (SCR-STM-01)
 Notification "collaboration_invited" ──► /studio ; "collaboration_accepted/declined" ──► /studio/story/[id]/team
 ```
 
-Evidence: `packages/features/src/shell/components/main-shell.tsx:16`, `packages/features/src/shell/components/user-menu.tsx:64`,
+Evidence: `packages/features/src/shell/components/main-shell.tsx:16`, `packages/features/src/shell/components/user-menu.tsx:66`,
 `packages/features/src/studio/screens/studio-screen.tsx:61-97,120,127,150`,
-`packages/features/src/studio/screens/story-form-screen.tsx:93-98`,
+`packages/features/src/studio/screens/story-form-screen.tsx:102-107`,
 `packages/features/src/studio/screens/chapter-manager-screen.tsx:123-128,197-199`,
-`packages/features/src/analytics/screens/story-stats-screen.tsx:69-75`,
+`packages/features/src/analytics/screens/story-stats-screen.tsx:84-90`,
 `packages/features/src/notifications/model/notification.ts:102-112`.
 
 All studio routes are `robots: { index: false }` and server-render only a client view (no server prefetch: studio

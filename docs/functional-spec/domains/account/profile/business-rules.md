@@ -39,7 +39,7 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Expected behavior | Duplicate → `23505` → `AppError.kind = conflict` → field error "This username is already taken." |
 | Exceptions | Usernames created at sign-up are always lower-case and ≤ 20 chars (BR-AUTH-004); edited ones may be mixed-case and up to 30 |
 | Related screens | SCR-PRF-02 |
-| Evidence | `supabase/migrations/20261103000000_init_schema.sql:13-25`, `packages/features/src/_shared/errors.ts:61`, `packages/features/src/profile/model/messages.ts:19-22`, `packages/features/src/profile/screens/edit-profile-screen.tsx:79-84` |
+| Evidence | `supabase/migrations/20261103000000_init_schema.sql:13-25`, `packages/features/src/_shared/errors.ts:61`, `packages/features/src/profile/model/messages.ts:19-22`, `packages/features/src/profile/screens/edit-profile-screen.tsx:81-86` |
 | Status | Verified |
 
 ### BR-PRF-003 — Only the owner edits, only safe columns
@@ -75,7 +75,7 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Expected behavior | UPDATE … RETURNING profile columns → auth profile cache replaced (header name/avatar update without refetch) → toast "Profile saved." → `replace('/me')` + `refresh()` |
 | Exceptions | Conflict → field error (BR-PRF-002); forbidden → "You don't have permission to edit this profile."; notFound; network; generic banner |
 | Related screens | SCR-PRF-02, SCR-PRF-01 |
-| Evidence | `packages/features/src/profile/screens/edit-profile-screen.tsx:66-87,148`, `packages/features/src/profile/hooks/use-update-profile.ts:10-24`, `packages/features/src/profile/model/messages.ts:24-36`, `apps/web/src/app/(main)/me/edit/edit-profile-page.tsx:6-15` |
+| Evidence | `packages/features/src/profile/screens/edit-profile-screen.tsx:68-89,162`, `packages/features/src/profile/hooks/use-update-profile.ts:10-24`, `packages/features/src/profile/model/messages.ts:24-36`, `apps/web/src/app/(main)/me/edit/edit-profile-page.tsx:6-15` |
 | Status | Verified |
 
 ### BR-PRF-006 — Changing the username changes the public address
@@ -159,7 +159,7 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Expected behavior | `alt=""` (decorative; the name is next to it) |
 | Exceptions | No Supabase client → fallback only |
 | Related screens | SCR-SHELL-01, SCR-PRF-02 |
-| Evidence | `packages/features/src/_shared/avatar.tsx:13-41`, `packages/features/src/shell/model/initials.ts:1-11`, `packages/features/src/shell/components/user-menu.tsx:38,54` |
+| Evidence | `packages/features/src/_shared/avatar.tsx:13-41`, `packages/features/src/shell/model/initials.ts:1-11`, `packages/features/src/shell/components/user-menu.tsx:40,56` |
 | Status | Verified |
 
 ### BR-PRF-013 — "My profile" content

@@ -36,7 +36,7 @@
 | Expected behavior | Client: no request; results page shows "Enter at least 3 characters to search. Accents are optional." or "Search terms can be up to 100 characters."; header box shows no list and Enter does nothing. DB: `22023` |
 | Exceptions | Input `maxLength` is 120 so an overlong term can be typed and explained |
 | Related screens | SCR-SRCH-01 (incl. header SearchBox) |
-| Evidence | `20261104001300_search.sql:48-53`, `search/model/search.ts:3-4,21-33`, `search/screens/search-screen.tsx:70,80-83`, `search/components/search-box.tsx:48`, `search/strings.en.ts:7-8`, `search/search.test.tsx:84,93,247,275,283,412`, `supabase/tests/190_search.test.sql:91-96` |
+| Evidence | `20261104001300_search.sql:48-53`, `search/model/search.ts:3-4,21-33`, `search/screens/search-screen.tsx:69,79-82`, `search/components/search-box.tsx:97`, `search/strings.en.ts:8-9`, `search/search.test.tsx:84,93,247,275,283,434`, `supabase/tests/190_search.test.sql:91-96` |
 | Status | Verified |
 
 ### BR-SRCH-003 — Matching and relevance
@@ -72,7 +72,7 @@
 | Expected behavior | Row: avatar (or first letter), display name, "@username · N stories"; links to `/author/<username>` |
 | Exceptions | Suspended accounts never found (not even by themselves). Count may differ from the author page header, which never counts mature stories (U-AUTHOR-02) |
 | Related screens | SCR-SRCH-01 (Authors tab) → SCR-AUTHOR-01 |
-| Evidence | `20261104001300_search.sql:98-113`, `search/screens/search-screen.tsx:168-209`, `supabase/tests/190_search.test.sql:108-113,134` |
+| Evidence | `20261104001300_search.sql:98-113`, `search/screens/search-screen.tsx:196-237`, `supabase/tests/190_search.test.sql:108-113,134` |
 | Status | Verified (SQL test) |
 
 ### BR-SRCH-006 — Tag results
@@ -84,7 +84,7 @@
 | Expected behavior | Row "#name … N stories" links to `/?tag=<slug>` (home filter, any category dropped) |
 | Exceptions | Tag used only by private/mature stories is not discoverable |
 | Related screens | SCR-SRCH-01 (Tags tab) → SCR-HOME-01 |
-| Evidence | `20261104001300_search.sql:126-144`, `search/model/search.ts:10`, `search/screens/search-screen.tsx:211-231`, `supabase/tests/190_search.test.sql:117-119` |
+| Evidence | `20261104001300_search.sql:126-144`, `search/model/search.ts:10`, `search/screens/search-screen.tsx:239-259`, `supabase/tests/190_search.test.sql:117-119` |
 | Status | Verified (SQL test) |
 
 ### BR-SRCH-007 — Offset paging with a hard cap
@@ -96,7 +96,7 @@
 | Expected behavior | At most 17 pages (204 rows). After the cap the list shows the normal end message "No more results." |
 | Exceptions | The prepared "Only the first results are shown. Try a more specific search." (`capReached`) is never displayed → F-SRCH-01 |
 | Related screens | SCR-SRCH-01 |
-| Evidence | `20261104001300_search.sql:54-59`, `search/model/search.ts:5-7,49-54`, `search/api/search.api.ts:48-58,72-83`, `search/strings.en.ts:15-16`, `search/search.test.tsx:112,173` |
+| Evidence | `20261104001300_search.sql:54-59`, `search/model/search.ts:5-7,49-54`, `search/api/search.api.ts:48-58,72-83`, `search/strings.en.ts:16-17`, `search/search.test.tsx:112,173` |
 | Status | Verified |
 
 ### BR-SRCH-008 — The URL holds the search
@@ -108,7 +108,7 @@
 | Expected behavior | Search can be shared and survives reload; page open to guests; `robots: noindex`; `/search` disallowed in robots.txt |
 | Exceptions | — |
 | Related screens | SCR-SRCH-01 |
-| Evidence | `apps/web/src/app/(main)/search/page.tsx:7-19`, `search/search-view.tsx:7-9`, `search/model/search.ts:35-47`, `search/screens/search-screen.tsx:56-59,87`, `apps/web/src/app/robots.ts:18`, `search/search.test.tsx:98,105,331,342` |
+| Evidence | `apps/web/src/app/(main)/search/page.tsx:7-19`, `search/search-view.tsx:7-9`, `search/model/search.ts:35-47`, `search/screens/search-screen.tsx:56-59,87`, `apps/web/src/app/robots.ts:18`, `search/search.test.tsx:98,105,353,364` |
 | Status | Verified |
 
 ### BR-SRCH-009 — Header suggestions
