@@ -42,11 +42,27 @@ export const en = {
     removeCategory: (name: string) => `Remove category filter ${name}`,
     removeTag: (name: string) => `Remove tag filter #${name}`,
   },
+  length: {
+    title: "Length",
+    open: "Filter by length",
+    minThumb: "Shortest",
+    maxThumb: "Longest",
+    any: "Any length",
+    range: (from: string, to: string | null) => (to === null ? `${from}+ words` : `${from} – ${to} words`),
+    bucket: (from: string, to: string | null) =>
+      to === null ? `${from} words or more` : `${from} to under ${to} words`,
+    results: (n: string) => `${n} stories`,
+    apply: "Apply",
+    clear: "Remove length filter",
+    active: (label: string) => `Length: ${label}`,
+    note: "Total words of the published chapters.",
+  },
   loosen: {
     label: "Loosen the filters",
     hint: "Try removing a filter:",
     withoutTag: (name: string) => `Remove tag #${name}`,
     withoutCategory: (name: string) => `Remove category ${name}`,
+    withoutLength: "Remove length filter",
     count: (n: string) => `${n} stor${n === "1" ? "y" : "ies"}`,
   },
 };

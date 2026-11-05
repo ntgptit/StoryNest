@@ -11,6 +11,7 @@ import { Skeleton } from "@storynest/ui/components/skeleton";
 import { Switch } from "@storynest/ui/components/switch";
 import { cn } from "@storynest/ui/lib/utils";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
+import { BranchGraph } from "@storynest/ui/widgets/branch-graph";
 import { ChangeStepper, FoldRow, FoldToggle } from "@storynest/ui/widgets/diff-folds";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
@@ -102,6 +103,16 @@ function HistoryContent({
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(versions[0]?.id ?? null);
   const selected = versions.find((version) => version.id === selectedId) ?? null;
+  const byId = new Map(versions.map((version) => [version.id, version]));
+  const numberOf = (id: string | null) => (id === null ? null : (byId.get(id)?.number ?? null));
+  const liveId = versions.find((version) => version.live)?.id ?? null;
+  const oldestFirst = [...versions].sort((a, b) => a.number - b.number);
+  // A branch starts at every version that has more than one child.
+  const children = new Map<string, number>();
+  for (const version of versions) {
+    if (version.parentId !== null) children.set(version.parentId, (children.get(version.parentId) ?? 0) + 1);
+  }
+  const extraBranches = [...children.values()].reduce((sum, count) => sum + Math.max(0, count - 1), 0);
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -117,6 +128,29 @@ function HistoryContent({
         <EmptyState icon={History} title={t.empty.title} description={t.empty.description} />
       ) : (
         <>
+          <section aria-labelledby="branch-graph-title" className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 id="branch-graph-title" className="text-sm font-semibold">
+                {t.graph.label}
+              </h2>
+              <span className="text-xs text-muted-foreground">{t.graph.branches(extraBranches)}</span>
+            </div>
+            <BranchGraph
+              label={t.graph.label}
+              nodes={oldestFirst.map((version) => ({
+                id: version.id,
+                parentId: version.parentId,
+                label: String(version.number),
+                name: t.graph.node(version.number, version.live, numberOf(version.parentId)),
+              }))}
+              mainId={liveId ?? versions[0]?.id ?? null}
+              liveId={liveId}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
+            <p className="text-xs text-muted-foreground">{t.graph.hint}</p>
+          </section>
+
           <ol aria-label={t.listLabel} className="flex flex-col gap-2">
             {versions.map((version) => (
               <li key={version.id}>
@@ -129,6 +163,9 @@ function HistoryContent({
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-semibold">{t.versionLabel(version.number)}</span>
                     {version.live ? <Badge>{t.live}</Badge> : null}
+                    {version.parentId !== null && numberOf(version.parentId) !== version.number - 1 ? (
+                      <Badge variant="outline">{t.graph.from(numberOf(version.parentId) ?? 0)}</Badge>
+                    ) : null}
                   </span>
                   <span className="truncate text-sm">{version.title || t.untitled}</span>
                   <span className="text-xs text-muted-foreground">
@@ -286,7 +323,7 @@ function VersionViewer({
         cancelLabel={t.restore.cancel}
         onConfirm={async () => {
           try {
-            await restore.mutateAsync({ title: version.title, blocks: blocks.data });
+            await restore.mutateAsync({ versionId: version.id });
             setRestored(true);
             toast.success(t.restore.done);
           } catch (error) {

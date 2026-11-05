@@ -3,6 +3,10 @@ export const storyKeys = {
   all: ["story"] as const,
   detail: (storyId: string) => ["story", "detail", storyId] as const,
   chapters: (storyId: string) => ["story", "chapters", storyId] as const,
+  /** When the next scheduled chapter is due (public RPC next_chapter_at). */
+  nextChapter: (storyId: string) => ["story", "next-chapter", storyId] as const,
   /** Whether I follow / saved this story. The user is part of the key: another account must never see my state. */
   library: (storyId: string, userId: string | null) => ["story", "library", storyId, userId ?? "guest"] as const,
+  /** The rating summary and my stars (the user is part of the key). */
+  rating: (storyId: string, userId: string | null) => ["story", "rating", storyId, userId ?? "guest"] as const,
 };

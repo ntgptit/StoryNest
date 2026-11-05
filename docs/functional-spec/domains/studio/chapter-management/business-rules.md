@@ -212,3 +212,15 @@
 | Related screens | SCR-CHM-01, SCR-STM-01 |
 | Evidence | `packages/features/src/studio/hooks/use-chapter-management.ts:31-131` |
 | Status | Verified |
+
+### BR-CHM-016 — Story parts (volumes) and the parts tree (batch 4, Lucian 102)
+| Field | Value |
+| --- | --- |
+| Description | A story has optional parts (`story_parts`, title 1..120 chars, at most 100 per story); a chapter may be in one part of the same story (`chapters.part_id`, composite FK `fk_chapter_part`) |
+| Preconditions | Add / rename: owner, co-author or editor (active account for add). Delete: owner or co-author. Move a chapter: team (existing `chapters_update` + column grant) |
+| Conditions | Reading order stays `chapters.sort_order`; screens head each run of consecutive chapters of one part with the part's name (`partRuns`). Deleting a part sets its chapters' `part_id` to null (`ON DELETE SET NULL (part_id)`). Publishing RPCs never read `part_id` |
+| Expected behavior | The chapter manager shows a tree (folders = parts, files = chapters, empty parts listed after) with a part picker per chapter, add / rename / delete part. Readers see part names in the story page list and the reader contents |
+| Exceptions | 101st part → PT409 "A story can have at most 100 parts"; part of another story → 23503; blank title refused client-side before sending |
+| Related screens | SCR-CHM-01, SCR-STORY-01, SCR-READ-01 |
+| Evidence | `supabase/migrations/20261106040000_story_parts.sql` (rollback block at its top); `supabase/tests/500_story_parts.test.sql`; `packages/features/src/_shared/parts.ts`; `packages/features/src/studio/components/parts-panel.tsx`; `packages/features/src/studio/chapter-management.test.tsx` (parts tree) |
+| Status | Verified (SQL test, unit test); not run on a real Supabase project |

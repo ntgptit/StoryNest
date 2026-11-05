@@ -21,6 +21,18 @@ export const en = {
     tags: { title: "No matching tags", description: "Try a different keyword." },
   },
   error: { title: "Can't search right now", description: "Check your connection and try again.", retry: "Try again" },
+  trending: {
+    title: "Trending",
+    open: "Show trending searches",
+    close: "Hide trending searches",
+    list: "Most searched terms of the last 7 days",
+    isNew: "new",
+    up: (places: number) => `up ${places}`,
+    down: (places: number) => `down ${places}`,
+    same: "same place",
+    pick: (term: string) => `Search for “${term}”`,
+    note: "Terms searched by at least 3 people in the last 7 days. Nobody's searches are stored.",
+  },
   storiesCount: (n: number) => `${n} ${n === 1 ? "story" : "stories"}`,
   tagStoriesCount: (n: number) => `${n} ${n === 1 ? "story" : "stories"}`,
 };

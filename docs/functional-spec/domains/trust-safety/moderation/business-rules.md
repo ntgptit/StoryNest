@@ -267,6 +267,18 @@
 | Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:355-356`, `moderation/components/report-button.tsx:71-73`, `packages/features/src/studio/screens/studio-screen.tsx:154-200`, `docs/WBS.md:219` ("Chưa làm: … thông báo cho người bị gỡ/khóa hoặc người báo cáo") |
 | Status | Verified (code) / Documented (not done) |
 
+### BR-MOD-022 — Announcements are written by moderators only
+| Field | Value |
+| --- | --- |
+| Description | The moderation console has an "Announcements" section under the report queue: a form (where: banner / home popup, language: all / Tiếng Việt / English, title, optional text and link, start and end) and the list of every announcement with its state (Scheduled / Showing / Ended), "End now" for a showing one and "Delete" (confirmed) |
+| Preconditions | Moderator (JWT `app_metadata.role = 'moderator'`, `is_moderator()`, as for the queue) with an active account |
+| Conditions | Table `announcements` (RLS on): SELECT for `anon`/`authenticated` only while active, everything for moderators; INSERT/UPDATE/DELETE only for active moderators; column grants exclude `created_by` (set from `auth.uid()` by default), `created_at`, `updated_at`. CHECKs: kind banner|popup, title 1–80, body ≤ 280, link an internal path (not `//`) or `https://…` (≤ 500), locale vi|en|NULL, `ends_at > starts_at`. The form applies the same rules first (`announcementFormSchema`) |
+| Expected behavior | Writes take effect for readers at once on the server; readers' cached lists refresh within 5 minutes. A refused write (42501) shows "Only moderators can change announcements."; a CHECK failure "The announcement was refused. Check the dates and the link." |
+| Exceptions | No audit row in `moderation_actions` (its action CHECK has no announcement actions); the writer is kept in `created_by`. "End now" uses the moderator's clock |
+| Related screens | SCR-MOD-01 (C12) |
+| Evidence | `supabase/migrations/20261106050000_announcements.sql`, `supabase/tests/550_announcements.test.sql`, `packages/validation/src/announcement.ts`, `packages/features/src/announcements/components/announcement-manager.tsx`, `moderation/screens/moderation-screen.tsx`. Rollback (top of the migration): `DROP FUNCTION public.active_announcements(text, text); DROP TABLE public.announcements;` |
+| Status | Verified (SQL test, unit); not run against a real Supabase project |
+
 ## 3. Open questions
 - **Q-MOD-01** — Scope of suspension: should stories/comments of a suspended account vanish from every list, the
   story page and the sitemap? Should sign-in be blocked? Evidence BR-MOD-016.

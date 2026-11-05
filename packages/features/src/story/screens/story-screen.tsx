@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, FileQuestion, Heart, List, MessageCircle, Users } from "lucide-react";
+import { BookOpen, CalendarDays, FileQuestion, Heart, List, MessageCircle, Users } from "lucide-react";
 import { useRef, useState } from "react";
 import { VISIBILITY } from "@storynest/validation";
 import { Badge } from "@storynest/ui/components/badge";
@@ -14,6 +14,10 @@ import { StatPill } from "@storynest/ui/widgets/stat-pill";
 import { AccordionList } from "@storynest/ui/widgets/accordion-list";
 import { cn } from "@storynest/ui/lib/utils";
 import { StoryCover } from "@storynest/ui/widgets/story-cover";
+import { NextChapterCountdown } from "@storynest/ui/widgets/next-chapter-countdown";
+import { TreeFolder } from "@storynest/ui/widgets/part-tree";
+import { hasParts, partRuns } from "../../_shared/parts.ts";
+import { updateDaysText } from "../../_shared/update-days.ts";
 import { formatCount } from "@storynest/utils";
 import { AppLink } from "../../_shared/platform.tsx";
 import { progressText, resolveContinueChapter, useStoryProgress } from "../../progress/index.ts";
@@ -24,8 +28,9 @@ import { ReportButton } from "../../moderation/index.ts";
 import { discoveryText, homeHref, statusLabel, storyHref } from "../../discovery/index.ts";
 import { TocSheet } from "../../reader/index.ts";
 import { ShareButton, shareText } from "../../share/index.ts";
-import { useStory, useStoryChapters } from "../hooks/use-story.ts";
+import { useNextChapterAt, useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
+import { StoryRatingPanel } from "../components/story-rating.tsx";
 import { chapterHref, type ChapterListItem, type StoryDetail } from "../model/story-detail.ts";
 import { chapterRanges, isLongStory, rangeIndexOf } from "../model/chapter-ranges.ts";
 import { storyText } from "../strings.ts";
@@ -47,6 +52,7 @@ export function StoryScreen({
 }) {
   const story = useStory(storyId);
   const chapters = useStoryChapters(storyId);
+  const nextChapter = useNextChapterAt(storyId);
   const progress = useStoryProgress(storyId);
   const readRef = useRef<HTMLDivElement>(null);
 
@@ -74,12 +80,25 @@ export function StoryScreen({
   const readFrom = continueChapter ?? firstChapter;
   const coverUrl = data.coverStorageKey && coverUrlFor ? coverUrlFor(data.coverStorageKey) : null;
   const readLabel = continueChapter ? progressText.continueReading(continueChapter.number) : storyText.startReading;
+  const updateDays = updateDaysText(data.updateDays, locale);
+  const lastPublished = chapterItems.reduce<string | null>(
+    (latest, chapter) =>
+      chapter.publishedAt !== null && (latest === null || chapter.publishedAt > latest) ? chapter.publishedAt : latest,
+    null,
+  );
 
   return (
     <AdultGate isMature={data.isMature}>
       <article className="flex flex-col gap-8">
         <header className="grid gap-6 sm:grid-cols-[12rem_1fr]">
-          <StoryCover title={data.title} coverUrl={coverUrl} eager morphTarget className="mx-auto w-40 sm:w-full" />
+          <StoryCover
+            title={data.title}
+            coverUrl={coverUrl}
+            placeholder={data.coverBlurhash}
+            eager
+            morphTarget
+            className="mx-auto w-40 sm:w-full"
+          />
 
           <div className="flex flex-col gap-3">
             <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{data.title}</h1>
@@ -115,6 +134,13 @@ export function StoryScreen({
               <StatPill icon={Users} value={data.stats.followers} label={storyText.stats.followers} locale={locale} />
             </div>
 
+            {updateDays === "" ? null : (
+              <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <CalendarDays aria-hidden className="size-4 shrink-0" />
+                {storyText.updateDays(updateDays)}
+              </p>
+            )}
+
             {readFrom ? (
               <div ref={readRef} className="w-fit">
                 <AppLink href={chapterHref(data, readFrom)} className={buttonVariants({ size: "lg" })}>
@@ -124,6 +150,7 @@ export function StoryScreen({
             ) : null}
 
             <StoryActions storyId={data.id} />
+            <StoryRatingPanel storyId={data.id} locale={locale} />
             <div className="flex flex-wrap items-center gap-2">
               {/* A private story only opens for its owner and co-authors: a link to it is no use to anyone else. */}
               {data.visibility === VISIBILITY.PRIVATE ? null : (
@@ -171,6 +198,21 @@ export function StoryScreen({
               <span className="text-sm text-muted-foreground">{storyText.chapterCount(chapterItems.length)}</span>
             ) : null}
           </div>
+
+          {nextChapter.data ? (
+            <NextChapterCountdown
+              target={nextChapter.data}
+              start={lastPublished}
+              headline={storyText.nextChapter.headline}
+              dueLabel={storyText.nextChapter.due}
+              format={(left) => storyText.nextChapter.format(left.days, left.hours, left.minutes, left.seconds)}
+              whenLabel={storyText.nextChapter.when(
+                new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(
+                  new Date(nextChapter.data),
+                ),
+              )}
+            />
+          ) : null}
 
           {chapters.isPending ? (
             <div className="flex flex-col gap-2" aria-busy>
@@ -237,12 +279,33 @@ function ChapterList({
   chapters,
   locale,
   className,
+  flat = false,
 }: {
   story: Pick<StoryDetail, "id" | "slug">;
   chapters: readonly ChapterListItem[];
   locale: string;
   className?: string;
+  /** Inside a part folder: the plain list, never grouped again. */
+  flat?: boolean;
 }) {
+  // Parts (Lucian 102): each run of chapters in the same part sits in a folder under the part's name.
+  if (!flat && hasParts(chapters, (chapter) => chapter.part ?? null)) {
+    return (
+      <ul className={cn("flex flex-col gap-1 p-1", className)}>
+        {partRuns(chapters, (chapter) => chapter.part ?? null).map((run) => (
+          <li key={run.key}>
+            {run.part === null ? (
+              <ChapterList story={story} chapters={run.items} locale={locale} flat />
+            ) : (
+              <TreeFolder label={run.part.title} meta={storyText.chapterCount(run.items.length)}>
+                <ChapterList story={story} chapters={run.items} locale={locale} flat />
+              </TreeFolder>
+            )}
+          </li>
+        ))}
+      </ul>
+    );
+  }
   return (
     <ol className={cn("divide-y", className)}>
       {chapters.map((chapter) => (

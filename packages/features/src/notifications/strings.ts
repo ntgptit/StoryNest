@@ -35,11 +35,17 @@ const vi = {
       `"${storyTitle}" vừa đăng chương ${chapterNumber}: ${chapterTitle}`,
     commentReplied: (actor: string, excerpt: string) =>
       excerpt === "" ? `${actor} đã trả lời bình luận của bạn` : `${actor} đã trả lời bình luận của bạn: "${excerpt}"`,
+    commentMentioned: (actor: string, excerpt: string) =>
+      excerpt === "" ? `${actor} đã nhắc đến bạn trong một bình luận` : `${actor} đã nhắc đến bạn: "${excerpt}"`,
     collaborationInvited: (actor: string, storyTitle: string) => `${actor} mời bạn cộng tác truyện "${storyTitle}"`,
     collaborationAccepted: (actor: string, storyTitle: string) =>
       `${actor} đã chấp nhận lời mời cộng tác truyện "${storyTitle}"`,
     collaborationDeclined: (actor: string, storyTitle: string) =>
       `${actor} đã từ chối lời mời cộng tác truyện "${storyTitle}"`,
+    reviewRequested: (actor: string, chapterTitle: string, storyTitle: string) =>
+      `${actor} gửi duyệt chương "${chapterTitle}" của "${storyTitle}"`,
+    reviewApproved: (actor: string, chapterTitle: string) => `${actor} đã thông qua chương "${chapterTitle}"`,
+    reviewChangesRequested: (actor: string, chapterTitle: string) => `${actor} trả lại chương "${chapterTitle}" để sửa`,
   },
   errors: {
     network: "Không có kết nối. Kiểm tra mạng và thử lại.",

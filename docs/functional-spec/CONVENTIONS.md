@@ -70,7 +70,7 @@ Object codes (single registry — do not invent new ones without adding them her
 | --- | --- | --- |
 | `D-ACCOUNT` Account & Identity | `domains/account` | `AUTH` authentication, `PRF` profile & avatar, `SET` account settings & language |
 | `D-DISCOVERY` Discovery | `domains/discovery` | `HOME` home/discover feed, `TAX` categories & tags, `SRCH` search, `RANK` rankings, `REC` recommendations, `AUTHOR` author page, author follow & following feed |
-| `D-READING` Reading | `domains/reading` | `STORY` public story page, `READ` chapter reader & reader preferences, `PROG` reading progress & read counting |
+| `D-READING` Reading | `domains/reading` | `STORY` public story page, `READ` chapter reader & reader preferences, `PROG` reading progress & read counting, `HAB` reading habits (streak, daily goal, level, badges) |
 | `D-COMMUNITY` Community & Engagement | `domains/community` | `VOTE` chapter votes, `CMT` comments (incl. author moderation), `NOTI` notifications |
 | `D-LIBRARY` Library | `domains/library` | `LIB` library, story follow & save, `LIST` reading lists |
 | `D-STUDIO` Authoring (Studio) | `domains/studio` | `STM` story management (studio list, create/edit, cover, tags, slug, delete/restore), `CHM` chapter management, `EDT` chapter editor, autosave & publishing, `HIST` version history & preview, `TEAM` collaboration, `STAT` author analytics |

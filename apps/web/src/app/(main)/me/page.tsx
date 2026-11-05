@@ -4,11 +4,12 @@ import { requireUser } from "@/lib/auth/require-user";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { appText } from "@/lib/strings";
 
+import { MeHabits } from "./me-habits";
 import { MeView } from "./me-view";
 
 export const metadata: Metadata = { title: appText.pageTitle.profile, robots: { index: false } };
 
-/** Profile view with a link to the editor. Protected twice: proxy redirect + requireUser here. */
+/** Profile, a link to the editor and the reader's own habits. Protected twice: proxy redirect + requireUser here. */
 export default async function MePage() {
   const user = await requireUser("/me");
   const supabase = await createSupabaseServerClient();
@@ -22,6 +23,8 @@ export default async function MePage() {
     <MeView
       email={user.email ?? null}
       profile={profile ? { displayName: profile.display_name, username: profile.username, bio: profile.bio } : null}
-    />
+    >
+      <MeHabits name={profile?.display_name ?? undefined} />
+    </MeView>
   );
 }

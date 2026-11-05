@@ -185,3 +185,15 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Related screens | All |
 | Evidence | `apps/web/next.config.ts:4-7`, `apps/web/src/app/layout.tsx:35-38`, `docs/WBS.md:252` (WP 8.3 "header bảo mật/CSP") |
 | Status | Verified (absence) — F-SHELL-02 |
+
+### BR-SHELL-015 — Rolling announcement banner (Lucian 073, batch 4 · platform4)
+| Field | Value |
+| --- | --- |
+| Description | A strip at the top of every page (inside the sticky header, under the desktop navigation) shows the active `announcements` of kind `banner` for the interface language; they roll upward one after another (3.8 s each, short time bars fill), pause while the pointer is over the strip or focus is inside it, and the arrow moves on |
+| Preconditions | At least one active banner: `starts_at <= now() < ends_at` on the server clock, `locale` NULL or equal to the interface language |
+| Conditions | Read through `active_announcements('banner', locale)` (SECURITY INVOKER, RLS applies; guests included). The list is cached 5 minutes |
+| Expected behavior | × folds the strip away and remembers the closed ids on this device (`localStorage["storynest.announcements.bannerClosed"]`, pruned to what still shows); a banner published later shows again. Right after closing, a bell brings it back until the reader moves to another page. A banner link opens inside the app for an internal path, in a new tab (`noopener noreferrer`) for an https address. Nothing rolls on first render; under reduced motion it never rolls by itself |
+| Exceptions | Without a data client (dev without Supabase) or with no active banner nothing is rendered. Blocked storage: the strip simply shows again on the next page load |
+| Related screens | SCR-SHELL-01 (C21) |
+| Evidence | `packages/features/src/announcements/components/announcement-banner.tsx`, `packages/ui/src/widgets/rolling-banner.tsx`, `packages/features/src/shell/components/main-shell.tsx`, `supabase/migrations/20261106050000_announcements.sql`, `supabase/tests/550_announcements.test.sql`, `announcements/announcements.test.tsx`, `ui/src/widgets/platform4-widgets.test.tsx`. Rollback (top of the migration): `DROP FUNCTION public.active_announcements(text, text); DROP TABLE public.announcements;` |
+| Status | Verified (SQL test, unit); not run against a real Supabase project |

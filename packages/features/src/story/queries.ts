@@ -3,7 +3,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { DataClient } from "../_shared/client.ts";
 import { toAppError } from "../_shared/errors.ts";
-import { getStory, listStoryChapters } from "./api/story.api.ts";
+import { getNextChapterAt, getStory, listStoryChapters } from "./api/story.api.ts";
 import { storyKeys } from "./keys.ts";
 import type { ChapterListItem, StoryDetail } from "./model/story-detail.ts";
 
@@ -20,6 +20,14 @@ export function storyChaptersQueryOptions(getClient: () => DataClient, storyId: 
     queryKey: storyKeys.chapters(storyId),
     queryFn: (): Promise<ChapterListItem[]> =>
       listStoryChapters(getClient(), storyId).catch((error: unknown) => Promise.reject(toAppError(error))),
+  };
+}
+
+export function nextChapterQueryOptions(getClient: () => DataClient, storyId: string) {
+  return {
+    queryKey: storyKeys.nextChapter(storyId),
+    queryFn: (): Promise<string | null> =>
+      getNextChapterAt(getClient(), storyId).catch((error: unknown) => Promise.reject(toAppError(error))),
   };
 }
 

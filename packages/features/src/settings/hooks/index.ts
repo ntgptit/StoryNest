@@ -1,1 +1,1 @@
-export { useAccountSettings, useSaveSettings } from "./use-settings.ts";
+export { useAccountSettings, useNotificationTypes, useSaveNotificationType, useSaveSettings } from "./use-settings.ts";

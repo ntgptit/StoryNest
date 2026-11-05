@@ -111,3 +111,6 @@ F-STM-04, U-STM-01, U-STM-03, U-STM-05, U-STM-06.
 
 ## G. Open questions
 None.
+
+## Batch 4 · authoring4
+Update schedule (batch 4, Lucian 109): the same day painter is in the create form (BR-STM-028).

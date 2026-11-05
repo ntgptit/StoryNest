@@ -6,9 +6,13 @@ import { notificationText } from "../strings.ts";
 export const NOTIFICATION_TYPE = {
   CHAPTER_PUBLISHED: "chapter_published",
   COMMENT_REPLIED: "comment_replied",
+  COMMENT_MENTIONED: "comment_mentioned",
   COLLABORATION_INVITED: "collaboration_invited",
   COLLABORATION_ACCEPTED: "collaboration_accepted",
   COLLABORATION_DECLINED: "collaboration_declined",
+  CHAPTER_REVIEW_REQUESTED: "chapter_review_requested",
+  CHAPTER_REVIEW_APPROVED: "chapter_review_approved",
+  CHAPTER_REVIEW_CHANGES_REQUESTED: "chapter_review_changes_requested",
 } as const;
 
 export interface NotificationRow {
@@ -26,6 +30,7 @@ export interface AppNotification {
   id: string;
   type: string;
   storyId: string | null;
+  chapterId: string | null;
   read: boolean;
   /** The server's timestamp text: it is also the paging cursor, so it keeps its microseconds. */
   createdAt: string;
@@ -43,6 +48,7 @@ export function toNotification(row: NotificationRow): AppNotification {
     id: row.id,
     type: row.event_type,
     storyId: row.story_id,
+    chapterId: row.chapter_id,
     read: row.read_at !== null,
     createdAt: row.created_at,
     actorName: name,
@@ -87,14 +93,18 @@ export function describeNotification(n: AppNotification): NotificationView {
         href: n.storyId && storySlug && chapterSlug ? `/story/${n.storyId}/${storySlug}/${chapterSlug}` : null,
       };
     }
-    case NOTIFICATION_TYPE.COMMENT_REPLIED: {
+    case NOTIFICATION_TYPE.COMMENT_REPLIED:
+    case NOTIFICATION_TYPE.COMMENT_MENTIONED: {
       const storySlug = text(n.payload, "story_slug");
       const chapterSlug = text(n.payload, "chapter_slug");
       const blockId = text(n.payload, "block_id");
       // A paragraph's thread opens from the paragraph; a chapter's comments are at the end of the chapter.
       const target = blockId ? blockAnchor(blockId) : COMMENTS_ANCHOR;
       return {
-        text: t.commentReplied(actor, text(n.payload, "excerpt") ?? ""),
+        text: (n.type === NOTIFICATION_TYPE.COMMENT_MENTIONED ? t.commentMentioned : t.commentReplied)(
+          actor,
+          text(n.payload, "excerpt") ?? "",
+        ),
         href:
           n.storyId && storySlug && chapterSlug ? `/story/${n.storyId}/${storySlug}/${chapterSlug}#${target}` : null,
       };
@@ -111,6 +121,18 @@ export function describeNotification(n: AppNotification): NotificationView {
         text: t.collaborationDeclined(actor, storyTitle),
         href: n.storyId ? `/studio/story/${n.storyId}/team` : null,
       };
+    case NOTIFICATION_TYPE.CHAPTER_REVIEW_REQUESTED:
+    case NOTIFICATION_TYPE.CHAPTER_REVIEW_APPROVED:
+    case NOTIFICATION_TYPE.CHAPTER_REVIEW_CHANGES_REQUESTED: {
+      // The sign-off lives in the chapter editor (Lucian 180); the link opens it.
+      const chapterTitle = text(n.payload, "chapter_title") ?? "";
+      const href = n.storyId && n.chapterId ? `/studio/story/${n.storyId}/chapter/${n.chapterId}` : null;
+      if (n.type === NOTIFICATION_TYPE.CHAPTER_REVIEW_REQUESTED)
+        return { text: t.reviewRequested(actor, chapterTitle, storyTitle), href };
+      if (n.type === NOTIFICATION_TYPE.CHAPTER_REVIEW_APPROVED)
+        return { text: t.reviewApproved(actor, chapterTitle), href };
+      return { text: t.reviewChangesRequested(actor, chapterTitle), href };
+    }
     default:
       return { text: notificationText.generic, href: null };
   }
@@ -127,6 +149,7 @@ export function notificationGroup(type: string): Exclude<NotificationFilter, "al
     case NOTIFICATION_TYPE.CHAPTER_PUBLISHED:
       return NOTIFICATION_FILTER.CHAPTERS;
     case NOTIFICATION_TYPE.COMMENT_REPLIED:
+    case NOTIFICATION_TYPE.COMMENT_MENTIONED:
       return NOTIFICATION_FILTER.REPLIES;
     case NOTIFICATION_TYPE.COLLABORATION_INVITED:
     case NOTIFICATION_TYPE.COLLABORATION_ACCEPTED:

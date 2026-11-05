@@ -4,7 +4,7 @@ import { AppError, unwrap } from "../../_shared/errors.ts";
 import { sortChapters, toStudioChapter, type StudioChapter, type StudioChapterRow } from "../model/studio-chapter.ts";
 
 const CHAPTER_COLUMNS =
-  "id, slug, sort_order, status, scheduled_for, deleted_at, updated_at, draft:chapter_drafts(title)";
+  "id, slug, sort_order, status, scheduled_for, deleted_at, updated_at, part_id, draft:chapter_drafts(title)";
 
 /** Every chapter of the story the caller works on (drafts, archived and deleted too), in studio order. */
 export async function listStudioChapters(client: DataClient, storyId: string): Promise<StudioChapter[]> {

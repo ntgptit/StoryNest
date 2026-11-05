@@ -32,6 +32,49 @@ export type Database = {
         }
         Relationships: []
       }
+      announcements: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          kind: string
+          link_url: string | null
+          locale: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          kind: string
+          link_url?: string | null
+          locale?: string | null
+          starts_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          kind?: string
+          link_url?: string | null
+          locale?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_users: {
         Row: {
           account_status: string
@@ -129,6 +172,7 @@ export type Database = {
       }
       chapter_drafts: {
         Row: {
+          base_version_id: string | null
           body: NonNullable<Json>
           chapter_id: string
           revision: number
@@ -138,6 +182,7 @@ export type Database = {
         }
         ComputedFields: never
         Insert: {
+          base_version_id?: string | null
           body?: NonNullable<Json>
           chapter_id: string
           revision?: number
@@ -146,6 +191,7 @@ export type Database = {
           updated_by: string
         }
         Update: {
+          base_version_id?: string | null
           body?: NonNullable<Json>
           chapter_id?: string
           revision?: number
@@ -166,6 +212,115 @@ export type Database = {
             referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_chapter_draft_base"
+            columns: ["base_version_id", "chapter_id"]
+            referencedRelation: "chapter_versions"
+            referencedColumns: ["id", "chapter_id"]
+          },
+        ]
+      }
+      chapter_edit_locks: {
+        Row: {
+          acquired_at: string
+          chapter_id: string
+          expires_at: string
+          holder_id: string
+          requested_at: string | null
+          requested_by: string | null
+        }
+        ComputedFields: never
+        Insert: {
+          acquired_at?: string
+          chapter_id: string
+          expires_at: string
+          holder_id: string
+          requested_at?: string | null
+          requested_by?: string | null
+        }
+        Update: {
+          acquired_at?: string
+          chapter_id?: string
+          expires_at?: string
+          holder_id?: string
+          requested_at?: string | null
+          requested_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_edit_locks_chapter_id_fkey"
+            columns: ["chapter_id"]
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_edit_locks_holder_id_fkey"
+            columns: ["holder_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_edit_locks_requested_by_fkey"
+            columns: ["requested_by"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chapter_highlights: {
+        Row: {
+          block_id: string
+          block_text_md5: string
+          chapter_id: string
+          created_at: string
+          end_offset: number
+          id: string
+          start_offset: number
+          style: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          block_id: string
+          block_text_md5: string
+          chapter_id: string
+          created_at?: string
+          end_offset: number
+          id?: string
+          start_offset: number
+          style: string
+          user_id: string
+        }
+        Update: {
+          block_id?: string
+          block_text_md5?: string
+          chapter_id?: string
+          created_at?: string
+          end_offset?: number
+          id?: string
+          start_offset?: number
+          style?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_highlights_block_id_chapter_id_fkey"
+            columns: ["block_id", "chapter_id"]
+            referencedRelation: "chapter_blocks"
+            referencedColumns: ["id", "chapter_id"]
+          },
+          {
+            foreignKeyName: "chapter_highlights_chapter_id_fkey"
+            columns: ["chapter_id"]
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_highlights_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
         ]
       }
       chapter_read_events: {
@@ -177,6 +332,7 @@ export type Database = {
           is_anonymous: boolean
           read_day: string
           reader_id: string
+          source: string | null
           story_id: string
         }
         ComputedFields: never
@@ -188,6 +344,7 @@ export type Database = {
           is_anonymous: boolean
           read_day: string
           reader_id: string
+          source?: string | null
           story_id: string
         }
         Update: {
@@ -198,6 +355,7 @@ export type Database = {
           is_anonymous?: boolean
           read_day?: string
           reader_id?: string
+          source?: string | null
           story_id?: string
         }
         Relationships: [
@@ -211,6 +369,62 @@ export type Database = {
             foreignKeyName: "chapter_read_events_story_id_fkey"
             columns: ["story_id"]
             referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chapter_reviews: {
+        Row: {
+          chapter_id: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string
+          request_note: string
+          requested_at: string
+          requested_by: string
+          requested_revision: number
+          status: string
+        }
+        ComputedFields: never
+        Insert: {
+          chapter_id: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string
+          request_note?: string
+          requested_at?: string
+          requested_by: string
+          requested_revision: number
+          status?: string
+        }
+        Update: {
+          chapter_id?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string
+          request_note?: string
+          requested_at?: string
+          requested_by?: string
+          requested_revision?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_reviews_chapter_id_fkey"
+            columns: ["chapter_id"]
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_reviews_decided_by_fkey"
+            columns: ["decided_by"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_reviews_requested_by_fkey"
+            columns: ["requested_by"]
+            referencedRelation: "app_users"
             referencedColumns: ["id"]
           },
         ]
@@ -300,6 +514,7 @@ export type Database = {
           created_at: string
           created_by: string
           id: string
+          parent_version_id: string | null
           published_at: string | null
           title: string
           version_no: number
@@ -311,6 +526,7 @@ export type Database = {
           created_at?: string
           created_by: string
           id?: string
+          parent_version_id?: string | null
           published_at?: string | null
           title: string
           version_no: number
@@ -321,6 +537,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           id?: string
+          parent_version_id?: string | null
           published_at?: string | null
           title?: string
           version_no?: number
@@ -338,6 +555,12 @@ export type Database = {
             columns: ["created_by"]
             referencedRelation: "app_users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_chapter_version_parent"
+            columns: ["parent_version_id", "chapter_id"]
+            referencedRelation: "chapter_versions"
+            referencedColumns: ["id", "chapter_id"]
           },
         ]
       }
@@ -379,6 +602,7 @@ export type Database = {
           deleted_at: string | null
           first_published_at: string | null
           id: string
+          part_id: string | null
           published_version_id: string | null
           scheduled_for: string | null
           slug: string
@@ -393,6 +617,7 @@ export type Database = {
           deleted_at?: string | null
           first_published_at?: string | null
           id?: string
+          part_id?: string | null
           published_version_id?: string | null
           scheduled_for?: string | null
           slug: string
@@ -406,6 +631,7 @@ export type Database = {
           deleted_at?: string | null
           first_published_at?: string | null
           id?: string
+          part_id?: string | null
           published_version_id?: string | null
           scheduled_for?: string | null
           slug?: string
@@ -420,6 +646,12 @@ export type Database = {
             columns: ["story_id"]
             referencedRelation: "stories"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_chapter_part"
+            columns: ["part_id", "story_id"]
+            referencedRelation: "story_parts"
+            referencedColumns: ["id", "story_id"]
           },
           {
             foreignKeyName: "fk_chapter_published_version"
@@ -484,6 +716,41 @@ export type Database = {
           },
           {
             foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comment_reactions: {
+        Row: {
+          comment_id: string
+          created_at: string
+          reaction: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          comment_id: string
+          created_at?: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_reactions_user_id_fkey"
             columns: ["user_id"]
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -679,6 +946,35 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          event_type: string
+          in_app: boolean
+          updated_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          event_type: string
+          in_app?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          event_type?: string
+          in_app?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           actor_id: string | null
@@ -796,6 +1092,44 @@ export type Database = {
         }
         Relationships: []
       }
+      ranking_snapshots: {
+        Row: {
+          day: string
+          period: string
+          rank_position: number
+          reads: number
+          score: number
+          story_id: string
+          votes: number
+        }
+        ComputedFields: never
+        Insert: {
+          day: string
+          period: string
+          rank_position: number
+          reads: number
+          score: number
+          story_id: string
+          votes: number
+        }
+        Update: {
+          day?: string
+          period?: string
+          rank_position?: number
+          reads?: number
+          score?: number
+          story_id?: string
+          votes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ranking_snapshots_story_id_fkey"
+            columns: ["story_id"]
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ranking_state: {
         Row: {
           duration_ms: number
@@ -891,9 +1225,80 @@ export type Database = {
           },
         ]
       }
+      search_log_quota: {
+        Row: {
+          key: string
+          used: number
+          window_start: string
+        }
+        ComputedFields: never
+        Insert: {
+          key: string
+          used?: number
+          window_start: string
+        }
+        Update: {
+          key?: string
+          used?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
+      search_log_seen: {
+        Row: {
+          day: string
+          key: string
+        }
+        ComputedFields: never
+        Insert: {
+          day: string
+          key: string
+        }
+        Update: {
+          day?: string
+          key?: string
+        }
+        Relationships: []
+      }
+      search_term_blocklist: {
+        Row: {
+          created_at: string
+          term: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          term: string
+        }
+        Update: {
+          created_at?: string
+          term?: string
+        }
+        Relationships: []
+      }
+      search_term_daily: {
+        Row: {
+          day: string
+          searchers: number
+          term: string
+        }
+        ComputedFields: never
+        Insert: {
+          day: string
+          searchers?: number
+          term: string
+        }
+        Update: {
+          day?: string
+          searchers?: number
+          term?: string
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           category_id: number | null
+          cover_blurhash: string | null
           cover_storage_key: string | null
           created_at: string
           deleted_at: string | null
@@ -906,12 +1311,14 @@ export type Database = {
           status: string
           synopsis: string
           title: string
+          update_days: number
           updated_at: string
           visibility: string
         }
         ComputedFields: never
         Insert: {
           category_id?: number | null
+          cover_blurhash?: string | null
           cover_storage_key?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -924,11 +1331,13 @@ export type Database = {
           status?: string
           synopsis?: string
           title: string
+          update_days?: number
           updated_at?: string
           visibility?: string
         }
         Update: {
           category_id?: number | null
+          cover_blurhash?: string | null
           cover_storage_key?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -941,6 +1350,7 @@ export type Database = {
           status?: string
           synopsis?: string
           title?: string
+          update_days?: number
           updated_at?: string
           visibility?: string
         }
@@ -1079,6 +1489,76 @@ export type Database = {
           },
         ]
       }
+      story_parts: {
+        Row: {
+          created_at: string
+          id: string
+          story_id: string
+          title: string
+          updated_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          id?: string
+          story_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          story_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_parts_story_id_fkey"
+            columns: ["story_id"]
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_ratings: {
+        Row: {
+          created_at: string
+          stars: number
+          story_id: string
+          updated_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          stars: number
+          story_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          stars?: number
+          story_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_ratings_story_id_fkey"
+            columns: ["story_id"]
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_ratings_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       story_saves: {
         Row: {
           saved_at: string
@@ -1115,30 +1595,45 @@ export type Database = {
         Row: {
           comments: number
           followers: number
+          published_chapters: number
+          rating_avg: number | null
+          rating_count: number
+          rating_sum: number
           reads: number
           saves: number
           story_id: string
           updated_at: string
           votes: number
+          word_count: number
         }
         ComputedFields: never
         Insert: {
           comments?: number
           followers?: number
+          published_chapters?: number
+          rating_avg?: never
+          rating_count?: number
+          rating_sum?: number
           reads?: number
           saves?: number
           story_id: string
           updated_at?: string
           votes?: number
+          word_count?: number
         }
         Update: {
           comments?: number
           followers?: number
+          published_chapters?: number
+          rating_avg?: never
+          rating_count?: number
+          rating_sum?: number
           reads?: number
           saves?: number
           story_id?: string
           updated_at?: string
           votes?: number
+          word_count?: number
         }
         Relationships: [
           {
@@ -1210,6 +1705,45 @@ export type Database = {
           },
         ]
       }
+      term_stopwords: {
+        Row: {
+          term: string
+        }
+        ComputedFields: never
+        Insert: {
+          term: string
+        }
+        Update: {
+          term?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          code: string
+          earned_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          code: string
+          earned_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          earned_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_chapter_progress: {
         Row: {
           chapter_id: string
@@ -1260,6 +1794,79 @@ export type Database = {
           },
           {
             foreignKeyName: "user_chapter_progress_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_finished_chapters: {
+        Row: {
+          chapter_id: string
+          finished_at: string
+          story_id: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          chapter_id: string
+          finished_at?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string
+          finished_at?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_finished_chapters_chapter_id_fkey"
+            columns: ["chapter_id"]
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_finished_chapters_story_id_fkey"
+            columns: ["story_id"]
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_finished_chapters_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_finished_stories: {
+        Row: {
+          finished_at: string
+          story_id: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          finished_at?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          finished_at?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_finished_stories_story_id_fkey"
+            columns: ["story_id"]
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_finished_stories_user_id_fkey"
             columns: ["user_id"]
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1324,9 +1931,86 @@ export type Database = {
           },
         ]
       }
+      user_reading_days: {
+        Row: {
+          chapters_finished: number
+          chapters_read: number
+          read_day: string
+          updated_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          chapters_finished?: number
+          chapters_read?: number
+          read_day: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapters_finished?: number
+          chapters_read?: number
+          read_day?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reading_days_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_reading_stats: {
+        Row: {
+          chapters_finished: number
+          chapters_read: number
+          current_streak: number
+          last_read_day: string | null
+          longest_streak: number
+          reading_days: number
+          stories_finished: number
+          updated_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          chapters_finished?: number
+          chapters_read?: number
+          current_streak?: number
+          last_read_day?: string | null
+          longest_streak?: number
+          reading_days?: number
+          stories_finished?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapters_finished?: number
+          chapters_read?: number
+          current_streak?: number
+          last_read_day?: string | null
+          longest_streak?: number
+          reading_days?: number
+          stories_finished?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reading_stats_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_settings: {
         Row: {
           age_confirmed: boolean
+          daily_chapter_goal: number
           language_code: string
           notify_chapter_published: boolean
           notify_collaboration_answers: boolean
@@ -1338,6 +2022,7 @@ export type Database = {
         ComputedFields: never
         Insert: {
           age_confirmed?: boolean
+          daily_chapter_goal?: number
           language_code?: string
           notify_chapter_published?: boolean
           notify_collaboration_answers?: boolean
@@ -1348,6 +2033,7 @@ export type Database = {
         }
         Update: {
           age_confirmed?: boolean
+          daily_chapter_goal?: number
           language_code?: string
           notify_chapter_published?: boolean
           notify_collaboration_answers?: boolean
@@ -1421,6 +2107,29 @@ export type Database = {
       }
     }
     Functions: {
+      active_announcements: {
+        Args: { p_kind?: string; p_locale?: string }
+        Returns: {
+          body: string
+          ends_at: string
+          id: string
+          kind: string
+          link_url: string
+          locale: string
+          starts_at: string
+          title: string
+        }[]
+      }
+      add_chapter_highlight: {
+        Args: {
+          p_block_id: string
+          p_chapter_id: string
+          p_end: number
+          p_start: number
+          p_style: string
+        }
+        Returns: string
+      }
       add_story_to_list: {
         Args: { p_list_id: string; p_story_id: string }
         Returns: number
@@ -1440,6 +2149,16 @@ export type Database = {
           votes: number
         }[]
       }
+      author_comment_terms: {
+        Args: { p_limit?: number; p_months?: number; p_story_id: string }
+        Returns: {
+          commenters: number
+          mentions: number
+          month: string
+          rank_position: number
+          term: string
+        }[]
+      }
       author_follower_count: { Args: { p_user_id: string }; Returns: number }
       author_profile: {
         Args: { p_username: string }
@@ -1454,8 +2173,46 @@ export type Database = {
           username: string
         }[]
       }
+      author_read_sources: {
+        Args: { p_days?: number; p_story_id: string }
+        Returns: {
+          continued: number
+          followed: number
+          readers: number
+          source: string
+          suppressed: boolean
+        }[]
+      }
+      author_reader_cohorts: {
+        Args: { p_story_id: string; p_weeks?: number }
+        Returns: {
+          active_readers: number
+          cohort_size: number
+          cohort_week: string
+          suppressed: boolean
+          week_offset: number
+        }[]
+      }
+      author_reader_split: {
+        Args: { p_days?: number; p_story_id: string }
+        Returns: {
+          anonymous_readers: number
+          anonymous_reads: number
+          signed_in_readers: number
+          signed_in_reads: number
+        }[]
+      }
       author_story_daily: {
         Args: { p_days?: number; p_story_id: string }
+        Returns: {
+          comments: number
+          day: string
+          reads: number
+          votes: number
+        }[]
+      }
+      author_story_daily_range: {
+        Args: { p_from: string; p_story_id: string; p_to: string }
         Returns: {
           comments: number
           day: string
@@ -1479,6 +2236,23 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: undefined
       }
+      claim_edit_lock: {
+        Args: { p_chapter_id: string }
+        Returns: {
+          acquired_at: string
+          chapter_id: string
+          expires_at: string
+          holder_id: string
+          requested_at: string | null
+          requested_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chapter_edit_locks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       close_reports_for: {
         Args: { p_actor: string; p_target_id: string }
         Returns: undefined
@@ -1500,6 +2274,11 @@ export type Database = {
         Returns: boolean
       }
       comment_looks_like_spam: { Args: { p_body: string }; Returns: boolean }
+      comment_mentioned_usernames: {
+        Args: { p_body: string }
+        Returns: string[]
+      }
+      comment_reaction_counts: { Args: { p_comment_id: string }; Returns: Json }
       comment_reply_count: { Args: { p_comment_id: string }; Returns: number }
       comment_to_card: {
         Args: {
@@ -1516,6 +2295,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      comment_tokens: { Args: { p_text: string }; Returns: string[] }
       counter_drift: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1535,12 +2315,64 @@ export type Database = {
         }
         Returns: string
       }
+      decide_chapter_review: {
+        Args: { p_approve: boolean; p_chapter_id: string; p_note?: string }
+        Returns: undefined
+      }
+      decline_edit_request: {
+        Args: { p_chapter_id: string }
+        Returns: {
+          acquired_at: string
+          chapter_id: string
+          expires_at: string
+          holder_id: string
+          requested_at: string | null
+          requested_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chapter_edit_locks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_comment: { Args: { p_comment_id: string }; Returns: undefined }
       edit_comment: {
         Args: { p_body: string; p_comment_id: string }
         Returns: undefined
       }
       enforce_rate_limit: { Args: { p_action: string }; Returns: undefined }
+      get_story_rating: {
+        Args: { p_story_id: string }
+        Returns: {
+          chapters_needed: number
+          chapters_read: number
+          my_stars: number
+          rating_avg: number
+          rating_count: number
+        }[]
+      }
+      habits_mark_story_finished: {
+        Args: { p_story_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      hand_over_edit_lock: {
+        Args: { p_chapter_id: string }
+        Returns: {
+          acquired_at: string
+          chapter_id: string
+          expires_at: string
+          holder_id: string
+          requested_at: string | null
+          requested_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chapter_edit_locks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       invite_collaborator: {
         Args: { p_role: string; p_story_id: string; p_username: string }
         Returns: string
@@ -1580,6 +2412,18 @@ export type Database = {
         Returns: {
           story_id: string
           updated_at: string
+        }[]
+      }
+      list_my_highlights: {
+        Args: { p_chapter_id: string }
+        Returns: {
+          block_id: string
+          created_at: string
+          end_offset: number
+          id: string
+          stale: boolean
+          start_offset: number
+          style: string
         }[]
       }
       list_my_invitations: {
@@ -1636,6 +2480,10 @@ export type Database = {
           status: string
         }[]
       }
+      log_search: {
+        Args: { p_anon_id?: string; p_query: string }
+        Returns: boolean
+      }
       moderate: {
         Args: {
           p_action: string
@@ -1660,6 +2508,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      next_chapter_at: { Args: { p_story_id: string }; Returns: string }
       notification_enabled: {
         Args: { p_event_type: string; p_user_id: string }
         Returns: boolean
@@ -1691,6 +2540,7 @@ export type Database = {
       publish_due_chapters: { Args: { p_limit?: number }; Returns: number }
       purge_outbox: { Args: { p_retention?: string }; Returns: number }
       purge_read_events: { Args: { p_retention?: string }; Returns: number }
+      purge_search_log: { Args: Record<PropertyKey, never>; Returns: number }
       ranking_freshness: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1698,6 +2548,22 @@ export type Database = {
           lag_seconds: number
           refreshed_at: string
           row_count: number
+        }[]
+      }
+      ranking_history: {
+        Args: {
+          p_days?: number
+          p_include_mature?: boolean
+          p_limit?: number
+          p_period: string
+        }
+        Returns: {
+          day: string
+          rank_position: number
+          reads: number
+          score: number
+          story_id: string
+          votes: number
         }[]
       }
       recommend_for_me: {
@@ -1723,10 +2589,15 @@ export type Database = {
         Returns: number
       }
       record_chapter_read: {
-        Args: { p_anon_id?: string; p_chapter_id: string }
+        Args: { p_anon_id?: string; p_chapter_id: string; p_source?: string }
         Returns: boolean
       }
       refresh_rankings: { Args: Record<PropertyKey, never>; Returns: number }
+      refresh_reading_habits: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      release_edit_lock: { Args: { p_chapter_id: string }; Returns: undefined }
       reorder_chapters: {
         Args: { p_chapter_ids: string[]; p_story_id: string }
         Returns: undefined
@@ -1735,6 +2606,31 @@ export type Database = {
         Args: { p_list_id: string; p_story_ids: string[] }
         Returns: undefined
       }
+      request_chapter_review: {
+        Args: {
+          p_chapter_id: string
+          p_expected_revision: number
+          p_note?: string
+        }
+        Returns: undefined
+      }
+      request_edit_lock: {
+        Args: { p_chapter_id: string }
+        Returns: {
+          acquired_at: string
+          chapter_id: string
+          expires_at: string
+          holder_id: string
+          requested_at: string | null
+          requested_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chapter_edit_locks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       resolve_report: {
         Args: { p_reason: string; p_report_id: string; p_status: string }
         Returns: undefined
@@ -1742,6 +2638,10 @@ export type Database = {
       respond_invitation: {
         Args: { p_accept: boolean; p_invitation_id: string }
         Returns: undefined
+      }
+      restore_chapter_version: {
+        Args: { p_expected_revision: number; p_version_id: string }
+        Returns: number
       }
       save_reading_progress: {
         Args: {
@@ -1817,9 +2717,21 @@ export type Database = {
         Args: { p_comment_id: string; p_liked: boolean }
         Returns: number
       }
+      set_comment_reaction: {
+        Args: { p_comment_id: string; p_on: boolean; p_reaction: string }
+        Returns: Json
+      }
       set_story_follow: {
         Args: { p_followed: boolean; p_story_id: string }
         Returns: number
+      }
+      set_story_rating: {
+        Args: { p_stars: number; p_story_id: string }
+        Returns: {
+          my_stars: number
+          rating_avg: number
+          rating_count: number
+        }[]
       }
       set_story_save: {
         Args: { p_saved: boolean; p_story_id: string }
@@ -1850,7 +2762,42 @@ export type Database = {
           story_id: string
         }[]
       }
+      snapshot_rankings: {
+        Args: { p_day?: string; p_keep?: number }
+        Returns: number
+      }
+      story_length_histogram: {
+        Args: {
+          p_category_ids?: number[]
+          p_include_mature?: boolean
+          p_language?: string
+          p_tag_slug?: string
+        }
+        Returns: {
+          bucket: number
+          max_words: number
+          min_words: number
+          stories: number
+        }[]
+      }
+      story_rating_summary: {
+        Args: { p_story_id: string }
+        Returns: {
+          my_stars: number
+          rating_avg: number
+          rating_count: number
+        }[]
+      }
       story_role: { Args: { p_story_id: string }; Returns: string }
+      story_role_rights: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          capability: string
+          co_author: boolean
+          editor: boolean
+          owner: boolean
+        }[]
+      }
       submit_report: {
         Args: {
           p_description?: string
@@ -1876,8 +2823,19 @@ export type Database = {
           votes: number
         }[]
       }
+      trending_searches: {
+        Args: { p_limit?: number }
+        Returns: {
+          previous_rank: number
+          rank_change: number
+          rank_position: number
+          searchers: number
+          term: string
+        }[]
+      }
       unarchive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       unpublish_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
+      utf16_length: { Args: { p_text: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
@@ -1899,6 +2857,8 @@ export type Database = {
         like_count: number | null
         liked_by_me: boolean | null
         reply_count: number | null
+        reactions: Json | null
+        my_reactions: string[] | null
       }
       moderation_report: {
         id: string | null

@@ -1,11 +1,13 @@
 "use client";
 
+import { BookOpen, MessageCircle, Users } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Label } from "@storynest/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@storynest/ui/components/select";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { Switch } from "@storynest/ui/components/switch";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
+import { ExpandingSettings } from "@storynest/ui/widgets/expanding-settings";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { useAuth } from "../../_shared/auth.tsx";
@@ -14,19 +16,51 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useAdultContent } from "../../adult-content/index.ts";
 import { ReaderSettingsSheet, useReaderPreferencesSync } from "../../reader/index.ts";
-import { useAccountSettings, useSaveSettings } from "../hooks/use-settings.ts";
+import { DailyGoalSetting, readingHabitsText } from "../../reading-habits/index.ts";
+import {
+  useAccountSettings,
+  useNotificationTypes,
+  useSaveNotificationType,
+  useSaveSettings,
+} from "../hooks/use-settings.ts";
 import { useSiteTheme } from "../hooks/use-site-theme.ts";
 import { isSiteTheme, SITE_THEMES } from "../model/site-theme.ts";
-import { withLanguage, withNotification, type AccountSettings, type NotificationKey } from "../model/settings.ts";
+import {
+  DEFAULT_NOTIFICATION_TYPES,
+  NOTIFICATION_GROUP_TYPES,
+  hasTypeSwitches,
+  withAllNotificationsOff,
+  withLanguage,
+  withNotification,
+  type AccountSettings,
+  type NotificationKey,
+} from "../model/settings.ts";
 import { settingsText } from "../strings.ts";
 
 const t = settingsText;
 
-const NOTIFICATION_ROWS: readonly { key: NotificationKey; text: { label: string; description: string } }[] = [
-  { key: "chapterPublished", text: t.notifications.chapterPublished },
-  { key: "commentReplied", text: t.notifications.commentReplied },
-  { key: "collaborationAnswers", text: t.notifications.collaborationAnswers },
+const NOTIFICATION_ROWS: readonly {
+  key: NotificationKey;
+  icon: ReactNode;
+  text: { label: string; description: string };
+}[] = [
+  { key: "chapterPublished", icon: <BookOpen />, text: t.notifications.chapterPublished },
+  { key: "commentReplied", icon: <MessageCircle />, text: t.notifications.commentReplied },
+  { key: "collaborationAnswers", icon: <Users />, text: t.notifications.collaborationAnswers },
 ];
+
+/** What each channel does for a notification: in the app it follows the switches; email and push do not exist. */
+function Channels() {
+  const c = t.notifications.channels;
+  return (
+    <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+      <dt className="font-medium">{c.inApp}</dt>
+      <dd className="text-muted-foreground">{c.inAppOn}</dd>
+      <dt className="font-medium">{c.other}</dt>
+      <dd className="text-muted-foreground">{c.unavailable}</dd>
+    </dl>
+  );
+}
 
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
@@ -63,6 +97,73 @@ function SwitchRow({
       </div>
       <Switch id={id} checked={checked} disabled={disabled} onCheckedChange={onCheckedChange} />
     </div>
+  );
+}
+
+/**
+ * The notification switches (Lucian 023, BR-SET-011, BR-SET-012): one group switch per kind of notification; a group that is on
+ * unfolds its finer options, a switch per event type where the group has several, and what each channel does.
+ */
+function NotificationSettings({
+  settings,
+  onChange,
+}: {
+  settings: AccountSettings;
+  onChange: (next: AccountSettings) => void;
+}) {
+  const types = useNotificationTypes();
+  const saveType = useSaveNotificationType();
+  const toast = useAppToast();
+  const typeValues = types.data ?? DEFAULT_NOTIFICATION_TYPES;
+
+  return (
+    <ExpandingSettings
+      summary={(on) => t.notifications.summary(on, NOTIFICATION_ROWS.length)}
+      turnAllOff={{
+        label: t.notifications.turnAllOff,
+        onTurnAllOff: () => onChange(withAllNotificationsOff(settings)),
+      }}
+      items={NOTIFICATION_ROWS.map(({ key, icon, text }) => ({
+        id: key,
+        icon,
+        label: text.label,
+        description: text.description,
+        checked: settings.notifications[key],
+        onCheckedChange: (on: boolean) => onChange(withNotification(settings, key, on)),
+        details: (
+          <div className="flex flex-col gap-3">
+            {hasTypeSwitches(key)
+              ? NOTIFICATION_GROUP_TYPES[key].map((type) => {
+                  const typeText = t.notifications.types[type as keyof typeof t.notifications.types];
+                  return typeText ? (
+                    <SwitchRow
+                      key={type}
+                      id={`settings-notify-type-${type}`}
+                      label={typeText.label}
+                      description={typeText.description}
+                      checked={typeValues[type]}
+                      disabled={types.isPending || types.isError}
+                      onCheckedChange={(on) =>
+                        saveType.mutate({ type, on }, { onError: () => toast.error(t.saveFailed) })
+                      }
+                    />
+                  ) : null;
+                })
+              : null}
+            {key === "collaborationAnswers" ? (
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-medium">{t.notifications.invitedAlwaysOn.label}</span>
+                  <p className="text-xs text-muted-foreground">{t.notifications.invitedAlwaysOn.description}</p>
+                </div>
+                <span className="shrink-0 text-xs font-medium text-muted-foreground">{t.notifications.alwaysOn}</span>
+              </div>
+            ) : null}
+            <Channels />
+          </div>
+        ),
+      }))}
+    />
   );
 }
 
@@ -155,16 +256,7 @@ function SettingsForm() {
           </Section>
 
           <Section title={t.notifications.title} description={t.notifications.description}>
-            {NOTIFICATION_ROWS.map(({ key, text }) => (
-              <SwitchRow
-                key={key}
-                id={`settings-notify-${key}`}
-                label={text.label}
-                description={text.description}
-                checked={settings.data.notifications[key]}
-                onCheckedChange={(on) => change(withNotification(settings.data, key, on))}
-              />
-            ))}
+            <NotificationSettings settings={settings.data} onChange={change} />
           </Section>
         </>
       )}
@@ -175,6 +267,10 @@ function SettingsForm() {
         <div>
           <ReaderSettingsSheet />
         </div>
+      </Section>
+
+      <Section title={readingHabitsText.goal.title} description={readingHabitsText.goal.description}>
+        <DailyGoalSetting />
       </Section>
 
       <Section title={t.adult.title}>

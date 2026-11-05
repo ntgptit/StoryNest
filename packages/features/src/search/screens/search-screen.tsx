@@ -15,7 +15,15 @@ import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
 import { useNavigation, AppLink } from "../../_shared/platform.tsx";
 import { authorHref } from "../../author/index.ts";
 import { STORY_GRID, StoryListFrame, StoryTile, homeHref, useStoryView } from "../../discovery/index.ts";
-import { useSearchAuthors, useSearchStories, useSearchTags } from "../hooks/use-search.ts";
+import { TrendingTerms } from "@storynest/ui/widgets/trending-terms";
+import { markReadSource } from "../../progress/index.ts";
+import {
+  useLogSearch,
+  useSearchAuthors,
+  useSearchStories,
+  useSearchTags,
+  useTrendingSearches,
+} from "../hooks/use-search.ts";
 import {
   SEARCH_MAX_LENGTH,
   SEARCH_MIN_LENGTH,
@@ -51,6 +59,7 @@ export function SearchScreen({
   const term = normalizeTerm(rawTerm);
   const [draft, setDraft] = useState(rawTerm);
   const state = termState(term);
+  useLogSearch(state === "ok" ? term : "");
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -77,9 +86,17 @@ export function SearchScreen({
       </form>
 
       {state !== "ok" ? (
-        <p role="status" className="text-sm text-muted-foreground">
-          {state === "long" ? t.tooLong(SEARCH_MAX_LENGTH) : t.hint(SEARCH_MIN_LENGTH)}
-        </p>
+        <>
+          <p role="status" className="text-sm text-muted-foreground">
+            {state === "long" ? t.tooLong(SEARCH_MAX_LENGTH) : t.hint(SEARCH_MIN_LENGTH)}
+          </p>
+          <Trending
+            onPick={(picked) => {
+              setDraft(picked);
+              navigation.replace(searchHref(picked, tab));
+            }}
+          />
+        </>
       ) : (
         <>
           <h2 className="text-lg font-semibold tracking-tight">{t.resultsFor(term)}</h2>
@@ -123,7 +140,8 @@ function ResultTabs({
         </Tabs>
         {tab === "stories" ? storyView.toggle : null}
       </div>
-      <div className="overflow-x-clip">
+      {/* A story opened from the results is a read from search (an in-app source, see markReadSource). */}
+      <div className="overflow-x-clip" onClickCapture={() => markReadSource("search")}>
         <div key={swipe.panelKey} {...swipe.panelProps}>
           {tab === "stories" ? (
             <StoryResults term={term} locale={locale} coverUrlFor={coverUrlFor} storyView={storyView} />
@@ -133,6 +151,33 @@ function ResultTabs({
         </div>
       </div>
     </>
+  );
+}
+
+/** The trending searches (Lucian 322) under an empty search box; nothing at all while there are none. */
+function Trending({ onPick }: { onPick: (term: string) => void }) {
+  const trending = useTrendingSearches();
+  const items = trending.data ?? [];
+  if (items.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-1">
+      <TrendingTerms
+        items={items}
+        onPick={onPick}
+        text={{
+          title: t.trending.title,
+          open: t.trending.open,
+          close: t.trending.close,
+          list: t.trending.list,
+          isNew: t.trending.isNew,
+          up: t.trending.up,
+          down: t.trending.down,
+          same: t.trending.same,
+          pick: t.trending.pick,
+        }}
+      />
+      <p className="text-xs text-muted-foreground">{t.trending.note}</p>
+    </div>
   );
 }
 

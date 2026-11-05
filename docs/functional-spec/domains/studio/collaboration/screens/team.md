@@ -28,6 +28,7 @@ Note: `MyInvitations` (invitee side) is **not** on this screen; it is mounted on
 | SCR-TEAM-01-C06 | Confirm dialog "Remove this collaborator?" | `team-screen.tsx:180-200` |
 | SCR-TEAM-01-C07 | Skeletons, error state with retry, "Story not found", "Only the owner can manage this" | `team-screen.tsx:42-64,76-91` |
 | SCR-TEAM-01-C08 | Username combobox (Lucian 034) | From 3 characters (a leading @ ignored, 250 ms pause) up to 5 authors from the existing author search (`search_authors`: people with a public story) with avatar, name and @username, typed part marked. Arrow keys move, Enter/press picks, Tab accepts the faint completion, Escape closes; "Searching…" / "No author matches. You can still invite by the exact username." Enter without a highlighted row submits what was typed, so any exact username still works | `team-screen.tsx` (`useAuthorSuggestions`), `packages/ui/src/widgets/autocomplete-input.tsx` |
+| SCR-TEAM-01-C09 | Role permission matrix (Lucian 184, read-only, batch 4 · platform4) | Below the invite form: "What each role can do" / "Taken from the database's permission rules. These rights are fixed and cannot be changed per story." Table Right × Owner / Co-author / Editor from `story_role_rights()`; skeleton while loading, "Could not load the rights table." + "Try again" (BR-TEAM-014) | `team-screen.tsx` (`RoleRightsSection`), `packages/ui/src/widgets/role-matrix.tsx` |
 
 ## C. User actions & system responses
 

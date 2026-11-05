@@ -10,6 +10,8 @@ import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { STORY_GRID as GRID, StoryTile } from "../../discovery/index.ts";
+import { markReadSource } from "../../progress/index.ts";
+import { RankingHistory } from "../components/ranking-history.tsx";
 import { useRankingFreshness, useTopStories } from "../hooks/use-ranking.ts";
 import { RANKING_PERIODS, rankingHref, type RankedStory, type RankingPeriod } from "../model/ranking.ts";
 import { rankingText } from "../strings.ts";
@@ -49,6 +51,7 @@ export function RankingScreen({
           {t.updated(formatRelativeTime(freshness.data.refreshedAt, locale))}
         </p>
       ) : null}
+      <RankingHistory period={period} locale={locale} />
 
       {ranking.isError && items.length === 0 ? (
         <ErrorState
@@ -66,19 +69,22 @@ export function RankingScreen({
       ) : items.length === 0 ? (
         <EmptyState icon={Trophy} title={t.empty.title} description={t.empty.description} />
       ) : (
-        <InfiniteList
-          items={items}
-          getKey={(item) => item.story.id}
-          listClassName={GRID}
-          renderItem={(item) => <RankedCard item={item} locale={locale} coverUrlFor={coverUrlFor} />}
-          revealAppended
-          hasMore={ranking.hasNextPage}
-          isLoadingMore={ranking.isFetchingNextPage}
-          onLoadMore={() => void ranking.fetchNextPage()}
-          loadMoreLabel={t.loadMore}
-          loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
-          endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfList}</p>}
-        />
+        // A story opened from the ranking is a read from the ranking (an in-app source, see markReadSource).
+        <div className="contents" onClickCapture={() => markReadSource("ranking")}>
+          <InfiniteList
+            items={items}
+            getKey={(item) => item.story.id}
+            listClassName={GRID}
+            renderItem={(item) => <RankedCard item={item} locale={locale} coverUrlFor={coverUrlFor} />}
+            revealAppended
+            hasMore={ranking.hasNextPage}
+            isLoadingMore={ranking.isFetchingNextPage}
+            onLoadMore={() => void ranking.fetchNextPage()}
+            loadMoreLabel={t.loadMore}
+            loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
+            endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfList}</p>}
+          />
+        </div>
       )}
     </section>
   );

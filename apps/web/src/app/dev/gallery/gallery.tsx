@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookOpen, Eye, Globe, Heart, Home, Library, Link2, Lock, MessageSquare, Search, User } from "lucide-react";
 import { Bold, CalendarClock, Italic, Minus, Monitor, Smartphone, Tablet, TextSearch } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AppLink, useAppToast, useNavigation } from "@storynest/features";
@@ -154,6 +154,33 @@ import { ChoicePills } from "@storynest/ui/widgets/choice-pills";
 import { SizeShrink } from "@storynest/ui/widgets/size-shrink";
 import { SwipeToReply } from "@storynest/ui/widgets/swipe-to-reply";
 import { UploadVeil } from "@storynest/ui/widgets/upload-veil";
+// Batch 4 · habits4
+import { ReadingHabitsView, toReadingHabits, type DayRow, type StatsRow } from "@storynest/features";
+import { EventPopup } from "@storynest/ui/widgets/event-popup";
+import { ExpandingSettings } from "@storynest/ui/widgets/expanding-settings";
+import { RoleMatrix } from "@storynest/ui/widgets/role-matrix";
+import { RollingBanner } from "@storynest/ui/widgets/rolling-banner";
+import { MessageCircle, Users } from "lucide-react";
+import { BarRace, type RaceFrame } from "@storynest/ui/widgets/bar-race";
+import { CohortGrid, type CohortRow } from "@storynest/ui/widgets/cohort-grid";
+import { DateRangeCalendar, type DateRange } from "@storynest/ui/widgets/date-range-calendar";
+import { FlowSankey } from "@storynest/ui/widgets/flow-sankey";
+import { RangeHistogram, type HistogramBucket } from "@storynest/ui/widgets/range-histogram";
+import { SlopeChart, type SlopeItem } from "@storynest/ui/widgets/slope-chart";
+import { TrendingTerms, type TrendingTerm } from "@storynest/ui/widgets/trending-terms";
+import { WaffleChart } from "@storynest/ui/widgets/waffle-chart";
+import { WordCloud, type CloudPeriod } from "@storynest/ui/widgets/word-cloud";
+import { HandDrawnMarks, PEN_STYLES, type PenStyle } from "@storynest/ui/widgets/hand-drawn-marks";
+import { MentionTextarea, type MentionCandidate } from "@storynest/ui/widgets/mention-textarea";
+import { ReactionBar } from "@storynest/ui/widgets/reaction-bar";
+import { StarRating } from "@storynest/ui/widgets/star-rating";
+import { encodeBlurhash } from "@storynest/utils";
+import { ApprovalLine } from "@storynest/ui/widgets/approval-line";
+import { BranchGraph } from "@storynest/ui/widgets/branch-graph";
+import { ControlHandoff } from "@storynest/ui/widgets/control-handoff";
+import { NextChapterCountdown } from "@storynest/ui/widgets/next-chapter-countdown";
+import { TreeFolder } from "@storynest/ui/widgets/part-tree";
+import { WeekdayPainter } from "@storynest/ui/widgets/weekday-painter";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -3165,6 +3192,968 @@ function Community3SwipeExample() {
   );
 }
 
+const habits4Day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+
+function habits4Start(): { stats: StatsRow; days: DayRow[]; earned: { code: string; earned_at: string }[] } {
+  const days = [-6, -5, -4, -3, -2, -1].map((offset) => ({
+    read_day: habits4Day(offset),
+    chapters_read: 1 + ((offset + 7) % 3),
+    chapters_finished: (offset + 7) % 2,
+  }));
+  return {
+    stats: {
+      current_streak: 6,
+      longest_streak: 6,
+      last_read_day: habits4Day(-1),
+      reading_days: 6,
+      chapters_read: 14,
+      chapters_finished: 9,
+      stories_finished: 0,
+    },
+    days,
+    earned: [{ code: "first_chapter", earned_at: new Date(Date.now() - 6 * 86_400_000).toISOString() }],
+  };
+}
+
+/** Reading habits with local data: the buttons stand in for reading (in the app the server records it). */
+function Habits4Example() {
+  const [state, setState] = useState(habits4Start);
+  const goal = 3;
+  const today = habits4Day(0);
+  const earn = (earned: { code: string; earned_at: string }[], code: string, when: boolean) =>
+    when && !earned.some((e) => e.code === code) ? [...earned, { code, earned_at: new Date().toISOString() }] : earned;
+  const act = (kind: "read" | "finish" | "story") =>
+    setState((s) => {
+      const row = s.days.find((d) => d.read_day === today) ?? {
+        read_day: today,
+        chapters_read: 0,
+        chapters_finished: 0,
+      };
+      const firstToday = kind === "read" && row.chapters_read === 0;
+      const nextRow = {
+        ...row,
+        chapters_read: row.chapters_read + (kind === "read" ? 1 : 0),
+        chapters_finished: row.chapters_finished + (kind === "finish" ? 1 : 0),
+      };
+      const streak = s.stats.current_streak + (firstToday ? 1 : 0);
+      const stats: StatsRow = {
+        ...s.stats,
+        current_streak: streak,
+        longest_streak: Math.max(s.stats.longest_streak, streak),
+        last_read_day: firstToday ? today : s.stats.last_read_day,
+        reading_days: s.stats.reading_days + (firstToday ? 1 : 0),
+        chapters_read: s.stats.chapters_read + (kind === "read" ? 1 : 0),
+        chapters_finished: s.stats.chapters_finished + (kind === "finish" ? 1 : 0),
+        stories_finished: s.stats.stories_finished + (kind === "story" ? 1 : 0),
+      };
+      let earned = earn(s.earned, "daily_goal", nextRow.chapters_read >= goal);
+      earned = earn(earned, "streak_7", stats.longest_streak >= 7);
+      earned = earn(earned, "first_story", stats.stories_finished >= 1);
+      return { stats, days: [...s.days.filter((d) => d.read_day !== today), nextRow], earned };
+    });
+  const habits = toReadingHabits(
+    { stats: state.stats, days: state.days, achievements: state.earned, goal },
+    new Date(),
+  );
+  return (
+    <div id="habits4" className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => act("read")}>
+          Read a chapter
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => act("finish")}>
+          Finish a chapter
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => act("story")}>
+          Finish a story
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setState(habits4Start())}>
+          Reset
+        </Button>
+      </div>
+      <ReadingHabitsView habits={habits} locale="vi" name="Demo An" settingsHref="/settings" />
+    </div>
+  );
+}
+
+function Platform4BannerExample() {
+  const [closed, setClosed] = useState(false);
+  return (
+    <div id="platform4-banner" className="flex max-w-xl flex-col overflow-hidden rounded-lg border">
+      <RollingBanner
+        items={[
+          { id: "a", title: "Autumn writing contest", body: "Entries open until 30 November", href: "/ranking" },
+          { id: "b", title: "New: reading lists", body: "Collect stories and share them" },
+          { id: "c", title: "Maintenance on Sunday", body: "02:00 to 03:00, reading stays available" },
+        ]}
+        labels={{
+          region: "Announcements",
+          roleDescription: "rotating banner",
+          tag: "New",
+          next: "Next announcement",
+          close: "Close announcements",
+          reopen: "Show announcements again",
+        }}
+        closed={closed}
+        reopenable
+        onClose={() => setClosed(true)}
+        onReopen={() => setClosed(false)}
+        renderLink={(_item, children, className) => (
+          <a href="#platform4-banner" className={className}>
+            {children}
+          </a>
+        )}
+      />
+      <p className="p-3 text-sm text-muted-foreground">The page moves up when the strip folds away.</p>
+    </div>
+  );
+}
+
+function Platform4PopupExample() {
+  const [open, setOpen] = useState(false);
+  const [seen, setSeen] = useState(false);
+  return (
+    <div id="platform4-popup" className="flex flex-col gap-2">
+      <Button
+        className="w-fit"
+        onClick={() => {
+          setSeen(true);
+          setOpen(true);
+        }}
+      >
+        Open the event popup
+      </Button>
+      <EventPopup
+        slides={[
+          {
+            id: "a",
+            eyebrow: "Until 30 Nov",
+            title: "Autumn writing contest",
+            body: "Win a cover by our illustrators.",
+            href: "/ranking",
+          },
+          { id: "b", eyebrow: "Until 15 Dec", title: "Reading marathon", body: "Read 10 chapters, earn a badge." },
+          { id: "c", eyebrow: "Until 1 Jan", title: "New ranking", body: "Weekly top stories by category." },
+        ]}
+        open={open}
+        giftVisible={seen}
+        onHide={() => setOpen(false)}
+        onReopen={() => setOpen(true)}
+        labels={{
+          dialog: "Events",
+          dontShowToday: "Don't show today",
+          close: "Close",
+          reopen: "Show events again",
+          seeYouTomorrow: "See you tomorrow",
+          position: (index, count) => `${index} / ${count}`,
+          open: "View details",
+        }}
+        renderLink={(_slide, children, className) => (
+          <a href="#platform4-popup" className={className}>
+            {children}
+          </a>
+        )}
+      />
+    </div>
+  );
+}
+
+function Platform4SettingsExample() {
+  const [values, setValues] = useState({ chapters: true, replies: false, answers: true });
+  const [types, setTypes] = useState({ accepted: true, declined: false });
+  const channels = <p className="text-xs text-muted-foreground">In the app: on · Email and push: not available yet.</p>;
+  return (
+    <div id="platform4-settings" className="max-w-md rounded-xl border p-4">
+      <ExpandingSettings
+        summary={(on) => (on === 0 ? "All off" : `${on} of 3 on`)}
+        turnAllOff={{
+          label: "Turn all off",
+          onTurnAllOff: () => setValues({ chapters: false, replies: false, answers: false }),
+        }}
+        items={[
+          {
+            id: "chapters",
+            icon: <BookOpen />,
+            label: "New chapters",
+            description: "A story you follow has a new chapter.",
+            checked: values.chapters,
+            onCheckedChange: (on) => setValues((v) => ({ ...v, chapters: on })),
+            details: channels,
+          },
+          {
+            id: "replies",
+            icon: <MessageCircle />,
+            label: "Replies to comments",
+            description: "Someone replies to your comment.",
+            checked: values.replies,
+            onCheckedChange: (on) => setValues((v) => ({ ...v, replies: on })),
+            details: channels,
+          },
+          {
+            id: "answers",
+            icon: <Users />,
+            label: "Answers to invitations",
+            description: "Someone you invited accepts or declines.",
+            checked: values.answers,
+            onCheckedChange: (on) => setValues((v) => ({ ...v, answers: on })),
+            details: (
+              <div className="flex flex-col gap-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="platform4-accepted">Accepted</Label>
+                  <Switch
+                    id="platform4-accepted"
+                    checked={types.accepted}
+                    onCheckedChange={(on) => setTypes((v) => ({ ...v, accepted: on }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="platform4-declined">Declined</Label>
+                  <Switch
+                    id="platform4-declined"
+                    checked={types.declined}
+                    onCheckedChange={(on) => setTypes((v) => ({ ...v, declined: on }))}
+                  />
+                </div>
+                {channels}
+              </div>
+            ),
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
+function Platform4MatrixExample() {
+  const rights: [string, boolean, boolean, boolean][] = [
+    ["See the story and unpublished chapters", true, true, true],
+    ["Edit the story details", true, true, false],
+    ["Write and edit drafts", true, true, true],
+    ["Publish and schedule", true, true, true],
+    ["Unpublish chapters", true, true, false],
+    ["Invite and remove collaborators", true, false, false],
+  ];
+  return (
+    <div id="platform4-matrix" className="max-w-md rounded-xl border bg-card p-3">
+      <RoleMatrix
+        caption="Rights of the owner, co-authors and editors"
+        labels={{ right: "Right", allowed: "Allowed", notAllowed: "Not allowed" }}
+        columns={[
+          { key: "owner", label: "Owner" },
+          { key: "co_author", label: "Co-author" },
+          { key: "editor", label: "Editor" },
+        ]}
+        rows={rights.map(([label, owner, coAuthor, editor]) => ({
+          key: label,
+          label,
+          allowed: { owner, co_author: coAuthor, editor },
+        }))}
+      />
+    </div>
+  );
+}
+
+// Batch 4 · insights4 (Lucian 030, 161, 326, 399, 246, 359, 322, 024, 153). Sample data only.
+function Insights4RangeExample() {
+  const [applied, setApplied] = useState<DateRange | null>({ from: "2026-10-20", to: "2026-11-02" });
+  return (
+    <div id="insights4-range" className="flex flex-col gap-2">
+      <DateRangeCalendar
+        value={applied}
+        min="2026-08-08"
+        max="2026-11-05"
+        maxSpanDays={90}
+        locale="en"
+        onApply={setApplied}
+        text={{
+          fromLabel: "From",
+          toLabel: "To",
+          placeholder: "Pick a day",
+          previousMonth: "Previous month",
+          nextMonth: "Next month",
+          gridLabel: "Days of the month",
+          apply: "Apply",
+          pickStart: "Pick the first day",
+          pickEnd: "Now pick the last day",
+          summary: (days, from, to) => `${days} days · ${from} – ${to}`,
+        }}
+      />
+      <p className="text-sm text-muted-foreground">Applied: {applied ? `${applied.from} – ${applied.to}` : "none"}</p>
+    </div>
+  );
+}
+
+const insights4Cohorts: CohortRow[] = [
+  { key: "w1", label: "9/14", sizeText: "42 readers", cells: [1, 0.62, 0.48, 0.4, 0.36] },
+  { key: "w2", label: "9/21", sizeText: "35 readers", cells: [1, 0.57, 0.46, 0.37] },
+  { key: "w3", label: "9/28", sizeText: "Fewer than 5", cells: [null, null, null], suppressed: true },
+  { key: "w4", label: "10/5", sizeText: "28 readers", cells: [1, 0.71] },
+  { key: "w5", label: "10/12", sizeText: "19 readers", cells: [1] },
+];
+
+function Insights4CohortExample() {
+  return (
+    <div id="insights4-cohorts">
+      <CohortGrid
+        rows={insights4Cohorts}
+        weeks={5}
+        text={{
+          label: "Share of readers still reading, by starting week",
+          week: (n) => (n === 0 ? "Start" : `+${n}`),
+          idle: "Pick a cell to see its share.",
+          cell: (row, offset, percent) => `Started ${row.label} (${row.sizeText}) · week ${offset}: ${percent}`,
+          hidden: (row) => `Week of ${row.label}: fewer than 5 readers, hidden`,
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4Windows = { 7: [38, 62], 30: [55, 45], 90: [61, 39] } as const;
+
+function Insights4WaffleExample() {
+  const [days, setDays] = useState<7 | 30 | 90>(30);
+  const [signedIn, guests] = insights4Windows[days];
+  return (
+    <div id="insights4-waffle" className="flex flex-col gap-3">
+      <div className="flex gap-1">
+        {([7, 30, 90] as const).map((d) => (
+          <Button key={d} size="sm" variant={d === days ? "default" : "outline"} onClick={() => setDays(d)}>
+            {d} days
+          </Button>
+        ))}
+      </div>
+      <WaffleChart
+        segments={[
+          { key: "in", label: "Signed in", value: signedIn, tone: 1 },
+          { key: "guest", label: "Guests", value: guests, tone: 2 },
+        ]}
+        text={{
+          label: `Reads of the last ${days} days by reader type`,
+          legend: "Reader type",
+          share: (segment, percent) => `${segment.label}: ${percent}%`,
+          empty: "No reads yet",
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4Months: CloudPeriod[] = [
+  {
+    key: "09",
+    label: "Sep",
+    words: [
+      { term: "plot", count: 9 },
+      { term: "slow", count: 4 },
+      { term: "hay", count: 7 },
+      { term: "villain", count: 3 },
+      { term: "cliffhanger", count: 2 },
+    ],
+  },
+  {
+    key: "10",
+    label: "Oct",
+    words: [
+      { term: "plot", count: 6 },
+      { term: "hay", count: 12 },
+      { term: "twist", count: 8 },
+      { term: "ending", count: 5 },
+      { term: "villain", count: 2 },
+      { term: "chương", count: 4 },
+    ],
+  },
+  {
+    key: "11",
+    label: "Nov",
+    words: [
+      { term: "hay", count: 10 },
+      { term: "twist", count: 3 },
+      { term: "ending", count: 11 },
+      { term: "romance", count: 6 },
+      { term: "chương", count: 5 },
+      { term: "update", count: 4 },
+    ],
+  },
+];
+
+function Insights4CloudExample() {
+  return (
+    <div id="insights4-cloud">
+      <WordCloud
+        periods={insights4Months}
+        text={{
+          periods: "Month",
+          cloud: (period) => `Frequent words in comments, ${period.label}`,
+          word: (word, change) =>
+            `“${word.term}”: ${word.count} comments${change === null ? " · new" : ` · ${change >= 0 ? "+" : ""}${change}`}`,
+          idle: "Pick a word to see how many comments mention it.",
+          empty: "No words this month.",
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4Titles = ["The Lantern Keeper", "Library of Ashes", "Studio Nights", "Salt Roads", "Paper Moon"];
+const insights4Frames: RaceFrame[] = [
+  [40, 32, 28, 15, 9],
+  [44, 41, 30, 22, 10],
+  [46, 52, 31, 30, 18],
+  [47, 60, 33, 41, 26],
+  [49, 64, 35, 50, 39],
+].map((scores, day) => ({
+  key: `d${day}`,
+  label: `Nov ${day + 1}`,
+  bars: scores
+    .map((value, i) => ({ id: `s${i}`, label: insights4Titles[i] ?? "", value }))
+    .sort((a, b) => b.value - a.value),
+}));
+
+function Insights4RaceExample() {
+  return (
+    <div id="insights4-race">
+      <BarRace
+        frames={insights4Frames}
+        rows={4}
+        text={{
+          label: "Ranks by day",
+          play: "Play",
+          pause: "Pause",
+          scrubber: "Day",
+          bar: (rank, bar, value) => `${rank}. ${bar.label}, ${value} points`,
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4Slope: SlopeItem[] = (() => {
+  const first = insights4Frames[0]?.bars ?? [];
+  const last = insights4Frames.at(-1)?.bars ?? [];
+  return last.map((bar, i) => {
+    const before = first.findIndex((b) => b.id === bar.id);
+    return {
+      id: bar.id,
+      label: bar.label,
+      from: before < 0 ? null : { rank: before + 1, score: first[before]?.value ?? 0 },
+      to: { rank: i + 1, score: bar.value },
+    };
+  });
+})();
+
+function Insights4SlopeExample() {
+  return (
+    <div id="insights4-slope">
+      <SlopeChart
+        items={insights4Slope}
+        text={{
+          label: "Today's ranks against 4 days ago",
+          fromLabel: "Nov 1",
+          toLabel: "Nov 5",
+          modes: "Axis",
+          rank: "Rank",
+          score: "Score",
+          item: (item) => `${item.label}: #${item.from?.rank ?? "new"} → #${item.to.rank}`,
+          idle: "Pick a story to see how far it moved.",
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4TrendA: TrendingTerm[] = [
+  { term: "rồng lửa", rank: 1, change: 2 },
+  { term: "kiếm hiệp", rank: 2, change: null },
+  { term: "tiên hiệp", rank: 3, change: -1 },
+  { term: "học đường", rank: 4, change: 0 },
+  { term: "trinh thám", rank: 5, change: 1 },
+];
+const insights4TrendB: TrendingTerm[] = [
+  { term: "kiếm hiệp", rank: 1, change: null },
+  { term: "rồng lửa", rank: 2, change: 1 },
+  { term: "tiên hiệp", rank: 3, change: -1 },
+  { term: "trinh thám", rank: 4, change: 2 },
+  { term: "học đường", rank: 5, change: -1 },
+];
+
+function Insights4TrendingExample() {
+  const [refreshed, setRefreshed] = useState(false);
+  const [picked, setPicked] = useState<string | null>(null);
+  return (
+    <div id="insights4-trending" className="flex max-w-md flex-col gap-2">
+      <TrendingTerms
+        items={refreshed ? insights4TrendB : insights4TrendA}
+        onPick={setPicked}
+        text={{
+          title: "Trending",
+          open: "Show trending searches",
+          close: "Hide trending searches",
+          list: "Most searched terms of the last 7 days",
+          isNew: "new",
+          up: (n) => `up ${n}`,
+          down: (n) => `down ${n}`,
+          same: "same place",
+          pick: (term) => `Search for “${term}”`,
+        }}
+      />
+      <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={() => setRefreshed((r) => !r)}>
+          Refresh the list
+        </Button>
+        {picked ? <span className="text-sm text-muted-foreground">Searching: {picked}</span> : null}
+      </div>
+    </div>
+  );
+}
+
+const insights4Buckets: HistogramBucket[] = [
+  { key: "0", label: "under 2k words", edge: "0", count: 14 },
+  { key: "1", label: "2k to 10k words", edge: "2k", count: 38 },
+  { key: "2", label: "10k to 30k words", edge: "10k", count: 52 },
+  { key: "3", label: "30k to 60k words", edge: "30k", count: 31 },
+  { key: "4", label: "60k to 100k words", edge: "60k", count: 18 },
+  { key: "5", label: "100k to 200k words", edge: "100k", count: 9 },
+  { key: "6", label: "200k to 400k words", edge: "200k", count: 4 },
+  { key: "7", label: "400k words or more", edge: "400k", count: 2 },
+];
+
+function Insights4HistogramExample() {
+  const [range, setRange] = useState<[number, number]>([1, 4]);
+  return (
+    <div id="insights4-histogram" className="max-w-md">
+      <RangeHistogram
+        buckets={insights4Buckets}
+        value={range}
+        onChange={setRange}
+        text={{
+          minThumb: "Shortest",
+          maxThumb: "Longest",
+          range: (from, to) => `${from.edge} – ${to.label.split(" to ").at(-1) ?? to.label}`,
+          results: (n) => `${n} stories`,
+        }}
+      />
+    </div>
+  );
+}
+
+function Insights4FlowExample() {
+  return (
+    <div id="insights4-flow" className="max-w-md">
+      <FlowSankey
+        sources={[
+          { key: "search", label: "Search", entered: 132, middle: 61, outcome: 18 },
+          { key: "discover", label: "Discover", entered: 96, middle: 40, outcome: 9 },
+          { key: "ranking", label: "Rankings", entered: 54, middle: 30, outcome: 11 },
+        ]}
+        text={{
+          stages: ["Readers", "Read on", "Followed"],
+          sources: "Source",
+          all: (readers, followed) => `${readers} readers → ${followed} followed the story`,
+          one: (source, percent) => `${source.label}: ${source.entered} → ${source.outcome} · ${percent}`,
+        }}
+      />
+    </div>
+  );
+}
+
+const COMMUNITY4_REACTIONS = [
+  { value: "thumbs_up", emoji: "👍", label: "Thumbs up" },
+  { value: "laugh", emoji: "😂", label: "Laugh" },
+  { value: "wow", emoji: "😮", label: "Wow" },
+  { value: "sad", emoji: "😢", label: "Sad" },
+  { value: "fire", emoji: "🔥", label: "Fire" },
+  { value: "clap", emoji: "👏", label: "Clap" },
+] as const;
+type Community4Reaction = (typeof COMMUNITY4_REACTIONS)[number]["value"];
+
+function Community4ReactionsExample() {
+  const [counts, setCounts] = useState<Partial<Record<Community4Reaction, number>>>({ laugh: 3, fire: 1 });
+  const [mine, setMine] = useState<Community4Reaction[]>([]);
+  return (
+    <article id="community4-reactions" className="flex max-w-md flex-col gap-2 rounded-lg border bg-card p-3 text-sm">
+      <span className="font-medium">Mai</span>
+      <p>The twist at the end of chapter 12 — I did not see it coming.</p>
+      <ReactionBar<Community4Reaction>
+        options={COMMUNITY4_REACTIONS}
+        counts={counts}
+        mine={mine}
+        onToggle={(value, on) => {
+          setMine((m) => (on ? [...m, value] : m.filter((x) => x !== value)));
+          setCounts((c) => ({ ...c, [value]: Math.max(0, (c[value] ?? 0) + (on ? 1 : -1)) }));
+        }}
+        label="Reactions"
+        addLabel="Add a reaction"
+        pickerLabel="Pick a reaction"
+        chipLabel={(o, n, me) => `${o.label}, ${n} ${n === 1 ? "person" : "people"}${me ? ", including you" : ""}`}
+      />
+    </article>
+  );
+}
+
+const COMMUNITY4_PEOPLE: MentionCandidate[] = [
+  { username: "mai_lan", name: "Mai Lan" },
+  { username: "minh_tran", name: "Minh Trần" },
+  { username: "an_nguyen", name: "An Nguyễn" },
+  { username: "binh", name: "Bình" },
+];
+
+function Community4MentionsExample() {
+  const [text, setText] = useState("");
+  const [query, setQuery] = useState<string | null>(null);
+  const shown =
+    query === null || query === ""
+      ? []
+      : COMMUNITY4_PEOPLE.filter((p) => p.username.startsWith(query.toLowerCase())).slice(0, 6);
+  return (
+    <div id="community4-mentions" className="flex max-w-md flex-col gap-2">
+      <MentionTextarea
+        aria-label="Write a comment"
+        placeholder="Share your thoughts… Type @ to mention someone"
+        value={text}
+        onValueChange={setText}
+        candidates={shown}
+        onQueryChange={setQuery}
+        listLabel="People"
+        emptyLabel={query ? "Nobody by that name" : "Type the name of someone to mention"}
+        notifyLabel="Mentioning"
+      />
+    </div>
+  );
+}
+
+function Community4MarksExample() {
+  const [style, setStyle] = useState<PenStyle>("underline");
+  const [drawn, setDrawn] = useState(0);
+  const text = "The lantern flickered once, and the whole valley held its breath.";
+  const marks = [
+    { id: `m1-${drawn}`, start: 4, end: 11, style },
+    { id: `m2-${drawn}`, start: 42, end: 48, style },
+  ];
+  return (
+    <div id="community4-marks" className="flex max-w-md flex-col gap-3">
+      <p className="relative font-reader text-lg leading-relaxed">
+        {text}
+        <HandDrawnMarks marks={marks} drawIds={drawn > 0 ? marks.map((m) => m.id) : []} />
+      </p>
+      <div role="group" aria-label="Pen" className="flex flex-wrap gap-1">
+        {PEN_STYLES.map((s) => (
+          <Button
+            key={s}
+            size="sm"
+            variant={s === style ? "secondary" : "ghost"}
+            aria-pressed={s === style}
+            onClick={() => {
+              setStyle(s);
+              setDrawn((n) => n + 1);
+            }}
+          >
+            {s}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Community4RatingExample() {
+  const [stars, setStars] = useState(0);
+  const words = ["Tap a star to rate", "Poor", "Fair", "Good", "Great", "Excellent"] as const;
+  return (
+    <section id="community4-rating" className="flex max-w-md flex-col gap-2 rounded-xl border p-3">
+      <div className="flex items-baseline justify-between text-sm">
+        <span className="font-semibold">Rating</span>
+        <span className="text-muted-foreground">4.3 · 128 ratings</span>
+      </div>
+      <StarRating
+        value={stars}
+        onChange={setStars}
+        label="Your rating"
+        words={words}
+        valueText={(n) => (n === 0 ? words[0] : `${n} star${n === 1 ? "" : "s"}, ${words[n]}`)}
+      />
+    </section>
+  );
+}
+
+const authoring4Parts = [
+  { id: "p1", title: "Book one: The fog", chapters: ["Arrival", "The lighthouse", "Low tide"] },
+  { id: "p2", title: "Book two: The island", chapters: ["Ferry", "Salt"] },
+];
+
+function Authoring4PartsExample() {
+  const [picked, setPicked] = useState("The lighthouse");
+  return (
+    <ul id="authoring4-parts" className="flex max-w-sm flex-col rounded-xl border p-2">
+      <li className="px-3 py-2 text-sm">Prologue (no part)</li>
+      {authoring4Parts.map((part) => (
+        <li key={part.id}>
+          <TreeFolder label={part.title} meta={`${part.chapters.length} chapters`} defaultOpen={part.id === "p1"}>
+            <ul>
+              {part.chapters.map((title) => (
+                <li key={title}>
+                  <button
+                    type="button"
+                    aria-pressed={picked === title}
+                    onClick={() => setPicked(title)}
+                    className="flex min-h-11 w-full items-center rounded-md px-3 text-left text-sm aria-pressed:bg-accent aria-pressed:font-medium"
+                  >
+                    {title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </TreeFolder>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const authoring4Days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const authoring4DayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function Authoring4ScheduleExample() {
+  const [days, setDays] = useState([true, false, false, true, false, false, false]);
+  const chosen = authoring4Days.filter((_, i) => days[i]);
+  return (
+    <div id="authoring4-schedule">
+      <WeekdayPainter
+        value={days}
+        onChange={setDays}
+        dayLabels={authoring4Days}
+        dayNames={authoring4DayNames}
+        summary={chosen.length === 0 ? "No schedule set" : `Updates on ${chosen.join(", ")}`}
+        label="Update schedule"
+      />
+    </div>
+  );
+}
+
+function Authoring4CountdownExample() {
+  // Times are set after mount: the server render and the first client render must match.
+  const [times, setTimes] = useState<{ start: string; target: string } | null>(null);
+  useEffect(() => {
+    const now = Date.now();
+    setTimes({
+      start: new Date(now - 20 * 3600_000).toISOString(),
+      target: new Date(now + 4 * 3600_000).toISOString(),
+    });
+  }, []);
+  return (
+    <div id="authoring4-countdown" className="flex flex-col gap-3">
+      {times ? (
+        <NextChapterCountdown
+          key={times.target}
+          target={times.target}
+          start={times.start}
+          headline="Next chapter in"
+          dueLabel="A new chapter is on its way"
+          format={(l) =>
+            l.days > 0 ? `${l.days} d ${l.hours} h ${l.minutes} min` : `${l.hours} h ${l.minutes} min ${l.seconds} s`
+          }
+          whenLabel="Goes live Thursday 20:00"
+        />
+      ) : null}
+      <Button
+        type="button"
+        variant="outline"
+        className="w-fit"
+        onClick={() => {
+          const now = Date.now();
+          setTimes({ start: new Date(now - 60_000).toISOString(), target: new Date(now + 5_000).toISOString() });
+        }}
+      >
+        Due in 5 seconds
+      </Button>
+    </div>
+  );
+}
+
+function Authoring4BranchExample() {
+  const [nodes, setNodes] = useState<{ id: string; parentId: string | null }[]>([
+    { id: "1", parentId: null },
+    { id: "2", parentId: "1" },
+    { id: "3", parentId: "2" },
+  ]);
+  const [base, setBase] = useState("3");
+  const [live, setLive] = useState("3");
+  const [selected, setSelected] = useState("3");
+  return (
+    <div id="authoring4-branch" className="flex max-w-xl flex-col gap-3">
+      <BranchGraph
+        label="Version branch graph"
+        nodes={nodes.map((n) => ({
+          id: n.id,
+          parentId: n.parentId,
+          label: n.id,
+          name: `Version ${n.id}${n.id === live ? ", live" : ""}`,
+        }))}
+        mainId={live}
+        liveId={live}
+        selectedId={selected}
+        onSelect={setSelected}
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" onClick={() => setBase(selected)}>
+          Restore version {selected}
+        </Button>
+        <Button
+          type="button"
+          onClick={() => {
+            const id = String(nodes.length + 1);
+            setNodes([...nodes, { id, parentId: base }]);
+            setBase(id);
+            setLive(id);
+            setSelected(id);
+          }}
+        >
+          Publish (from version {base})
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function Authoring4ApprovalExample() {
+  const [stage, setStage] = useState<"asked" | "approved" | "sent-back">("asked");
+  return (
+    <div id="authoring4-approval">
+      <ApprovalLine
+        title="Chapter 12 · The lighthouse"
+        steps={[
+          { key: "draft", label: "Drafted", name: "Binh", state: "done" },
+          {
+            key: "review",
+            label: "Review",
+            name: stage === "asked" ? "" : "An",
+            state: stage === "asked" ? "empty" : stage === "approved" ? "done" : "rejected",
+          },
+          {
+            key: "approved",
+            label: "Approved",
+            name: stage === "approved" ? "An" : "",
+            state: stage === "approved" ? "done" : "empty",
+          },
+        ]}
+        status={
+          stage === "asked"
+            ? "Binh asked for a review of save 14."
+            : stage === "approved"
+              ? "An approved save 14."
+              : "An sent save 14 back for changes."
+        }
+      >
+        {stage === "asked" ? (
+          <>
+            <Button type="button" size="sm" onClick={() => setStage("approved")}>
+              Approve
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setStage("sent-back")}>
+              Send back
+            </Button>
+          </>
+        ) : (
+          <Button type="button" size="sm" variant="ghost" onClick={() => setStage("asked")}>
+            Ask again
+          </Button>
+        )}
+      </ApprovalLine>
+    </div>
+  );
+}
+
+// A tiny local picture so the demo needs no network; the hash was computed from it with encodeBlurhash.
+const authoring4CoverSvg = encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(251,146,60)"/><stop offset="1" stop-color="rgb(76,29,149)"/></linearGradient></defs><rect width="200" height="300" fill="url(#g)"/><circle cx="130" cy="110" r="34" fill="rgb(254,243,199)"/><path d="M0 220 L60 170 L110 200 L160 150 L200 180 V300 H0Z" fill="rgb(46,16,101)"/></svg>', // token-check-ignore: colours of a sample picture, not UI colours
+);
+const authoring4CoverUrl = `data:image/svg+xml,${authoring4CoverSvg}`;
+
+function Authoring4BlurExample() {
+  const [hash, setHash] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(null);
+  const [round, setRound] = useState(0);
+  useEffect(() => {
+    // Compute the placeholder in the browser, as the cover upload does.
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 24;
+      canvas.height = 36;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+      context.drawImage(image, 0, 0, 24, 36);
+      setHash(encodeBlurhash(context.getImageData(0, 0, 24, 36).data, 24, 36, 4, 3));
+    };
+    image.src = authoring4CoverUrl;
+  }, []);
+  return (
+    <div id="authoring4-blur" className="flex flex-wrap items-end gap-4">
+      <div className="w-32">
+        {hash ? (
+          <StoryCover key={round} title="Fog" coverUrl={src ?? "data:,"} placeholder={hash} />
+        ) : (
+          <StoryCover title="Fog" />
+        )}
+      </div>
+      <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+        <span className="font-mono">{hash ?? "computing…"}</span>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={!hash}
+          onClick={() => {
+            setSrc(null);
+            setRound((r) => r + 1);
+            window.setTimeout(() => setSrc(authoring4CoverUrl), 1500);
+          }}
+        >
+          Load slowly
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function Authoring4HandoffExample() {
+  const names = ["You", "Binh", "An"];
+  const [holder, setHolder] = useState(0);
+  const [asked, setAsked] = useState<number | null>(1);
+  return (
+    <div id="authoring4-handoff" className="max-w-sm">
+      <ControlHandoff
+        label="Who is editing"
+        editingLabel="editing"
+        askedLabel="asked to edit"
+        people={names.map((name, i) => ({ id: name, name, editing: i === holder, asked: i === asked }))}
+        status={asked === null ? `${names[holder]} has the edit control.` : `${names[asked]} asked to edit.`}
+      >
+        {asked !== null ? (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                setHolder(asked);
+                setAsked(null);
+              }}
+            >
+              Hand over to {names[asked]}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setAsked(null)}>
+              Keep editing
+            </Button>
+          </>
+        ) : (
+          <Button type="button" size="sm" variant="outline" onClick={() => setAsked((holder + 1) % names.length)}>
+            Someone asks
+          </Button>
+        )}
+      </ControlHandoff>
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -3450,6 +4439,46 @@ export function Gallery() {
         <Community3ReportExample />
         <Community3UploadExample />
         <Community3SwipeExample />
+      </Section>
+
+      <Section title="Batch 4 · habits4">
+        <Habits4Example />
+      </Section>
+
+      <Section title="Batch 4 · platform4">
+        <Platform4BannerExample />
+        <Platform4PopupExample />
+        <Platform4SettingsExample />
+        <Platform4MatrixExample />
+      </Section>
+
+      <Section title="Batch 4 · insights4">
+        <Insights4RangeExample />
+        <Insights4CohortExample />
+        <Insights4WaffleExample />
+        <Insights4CloudExample />
+        <Insights4RaceExample />
+        <Insights4SlopeExample />
+        <Insights4TrendingExample />
+        <Insights4HistogramExample />
+        <Insights4FlowExample />
+      </Section>
+
+      <Section title="Batch 4 · community4">
+        <Community4ReactionsExample />
+        <Community4MentionsExample />
+        <Community4MarksExample />
+        <Community4RatingExample />
+      </Section>
+
+      <Section title="Batch 4 · authoring4">
+        <Authoring4PartsExample />
+        <Authoring4ScheduleExample />
+        <Authoring4CountdownExample />
+        <Authoring4BranchExample />
+        <Authoring4ApprovalExample />
+        <Authoring4BlurExample />
+        <Authoring4HandoffExample />
       </Section>
     </AppShell>
   );

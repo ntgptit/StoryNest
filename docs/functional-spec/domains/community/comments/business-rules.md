@@ -307,3 +307,27 @@ Rule summary
 | Related screens | SCR-CMT-01 |
 | Evidence | `packages/features/src/comments/model/spoiler.ts`, `packages/features/src/comments/components/comment-item.tsx` (`CommentBody`), `packages/features/src/comments/components/comment-composer.tsx`, `packages/ui/src/widgets/spoiler-text.tsx`, `packages/features/src/comments/comments.test.tsx` ("spoilers in comments") |
 | Status | Verified (unit + component tests) |
+
+### BR-CMT-023 — Emoji reactions next to the like (batch 4 · community4, Lucian 077)
+| Field | Value |
+| --- | --- |
+| Description | A reader can give a comment one or more reactions from a fixed set: thumbs_up 👍, laugh 😂, wow 😮, sad 😢, fire 🔥, clap 👏 (`comment_reactions`, one row per comment × reader × reaction). The like stays separate (`comment_likes`, `set_comment_like` unchanged) and the heart is not in the set, so a like is never counted twice; reactions are an addition, not a migration of likes. |
+| Preconditions | Signed-in **active** account; the comment is listable for the caller (`comment_listable`). |
+| Conditions | `set_comment_reaction(comment, reaction, on)` is idempotent (on twice = once, off twice = nothing) and returns the comment's counts. Adding counts against `abuse_limits.reaction_rate_burst` (60 reactions still standing that were added in 600 s; moderators and calls without a user exempt). |
+| Expected behavior | Cards of `list_comments` / `list_replies` carry `reactions` (jsonb counts, only codes with ≥ 1) and `my_reactions`; a placeholder carries none. The UI shows a chip per reaction with a count (pressed when mine) and a smiley that opens the picker; changes show at once and the server's counts replace the guess; a refusal restores the previous state with a toast. Guests see the counts; pressing sends them to sign in. |
+| Exceptions | 42501 not signed in / not active; PT404 comment not found or not visible; 22023 unknown reaction or null flag; PT429 (HINT reaction_rate_burst). Rows are private (RLS own read, no client write grant). A soft-deleted comment keeps its rows (not shown); a hard delete cascades. |
+| Related screens | SCR-CMT-01 |
+| Evidence | `supabase/migrations/20261106010000_comment_reactions.sql`, `supabase/tests/350_comment_reactions.test.sql`, `packages/ui/src/widgets/reaction-bar.tsx`, `packages/features/src/comments/comments.test.tsx` ("reactions and mentions") |
+| Status | Verified (SQL + unit/component tests; not run on a real Supabase project) |
+
+### BR-CMT-024 — @mentions in comments (batch 4 · community4, Lucian 268)
+| Field | Value |
+| --- | --- |
+| Description | Typing `@` in the comment box offers people (public `app_users` read, username prefix, case ignored, at most 6) and inserts `@username `. When a NEW comment or reply containing mentions is inserted, the server notifies the mentioned accounts (`comment_mentioned`, BR-NOTI-018). |
+| Preconditions | The comment is posted (any path: a trigger on INSERT writes the outbox event `comment.mentioned`). |
+| Conditions | A mention is `@` at the start or after a character that is not a letter, digit, `_` or `@`, then 3–30 of `[A-Za-z0-9_]`, not followed by such a character (so `me@site.com` is not one). Distinct names in order, capped by `abuse_limits.comment_max_mentions` (10); later names are ignored and the comment still posts. Edits never notify. |
+| Expected behavior | Mentions are drawn with a soft mark in the comment body and behind the composer text; the people picked so far show under "Mentioning". Plain text only: no link, nothing is parsed as HTML. |
+| Exceptions | The list is advisory: it may offer someone who will not be told (e.g. cannot read a private story). |
+| Related screens | SCR-CMT-01 |
+| Evidence | `supabase/migrations/20261106010100_comment_mentions.sql`, `supabase/tests/360_comment_mentions.test.sql`, `packages/ui/src/widgets/mention-textarea.tsx`, `packages/features/src/comments/api/comments.api.ts` (`searchMentionCandidates`) |
+| Status | Verified (SQL + unit/component tests; not run on a real Supabase project) |

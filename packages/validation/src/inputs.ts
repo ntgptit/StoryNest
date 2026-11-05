@@ -5,6 +5,7 @@ import { z } from "zod";
 import { chapterBodySchema } from "./chapter-body.ts";
 import { visibilitySchema, storyStatusSchema } from "./enums.ts";
 import { APP_LIMITS, DB_LIMITS } from "./limits.ts";
+import { blurhashSchema, updateDaysSchema } from "./authoring.ts";
 
 const uuid = z.uuid();
 const nonBlank = (max: number) => z.string().trim().min(1).max(max);
@@ -47,6 +48,10 @@ export const storyCreateSchema = z.strictObject({
   visibility: visibilitySchema.default("private"),
   is_mature: z.boolean().default(false),
   cover_storage_key: z.string().trim().min(1).max(APP_LIMITS.storageKey).nullable().optional(),
+  /** Weekly update schedule, a bit mask of ISO weekdays (Monday = bit 0). */
+  update_days: updateDaysSchema.optional(),
+  /** BlurHash of the cover, written together with cover_storage_key. */
+  cover_blurhash: blurhashSchema.nullable().optional(),
 });
 export const storyUpdateSchema = storyCreateSchema.omit({ id: true }).partial();
 

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { AppLink } from "../../_shared/platform.tsx";
 import type { Category } from "../model/categories.ts";
 import { homeHref } from "../model/home-href.ts";
+import type { WordRange } from "../model/story-length.ts";
 import { discoveryText } from "../strings.ts";
 
 const CHIP =
@@ -18,10 +19,12 @@ export function CategoryChips({
   categories,
   activeSlug,
   tagSlug,
+  words,
 }: {
   categories: readonly Category[];
   activeSlug?: string | undefined;
   tagSlug?: string | undefined;
+  words?: WordRange | undefined;
 }) {
   const row = useRef<HTMLElement | null>(null);
   useEffect(() => {
@@ -48,8 +51,8 @@ export function CategoryChips({
   return (
     <nav ref={row} aria-label={discoveryText.categoriesLabel} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ul className="flex gap-2">
-        {chip(homeHref({ tagSlug }), discoveryText.allCategories, !activeSlug)}
-        {categories.map((c) => chip(homeHref({ categorySlug: c.slug, tagSlug }), c.name, c.slug === activeSlug))}
+        {chip(homeHref({ tagSlug, words }), discoveryText.allCategories, !activeSlug)}
+        {categories.map((c) => chip(homeHref({ categorySlug: c.slug, tagSlug, words }), c.name, c.slug === activeSlug))}
       </ul>
     </nav>
   );

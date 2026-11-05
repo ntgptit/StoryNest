@@ -36,6 +36,8 @@
 | SCR-CMT-01-C14 | Delete confirm dialog | "Delete this comment?" destructive confirm | `comment-item.tsx:220-237` |
 | SCR-CMT-01-C15 | Load more | "Load more comments"/"Loading…" | `comment-thread.tsx:88-99` |
 | SCR-CMT-01-C16 | Spoiler cover | `||text||` in a body renders covered until pressed (BR-CMT-022); the composer's helper line shows the hint | `comment-item.tsx` (`CommentBody`), `comment-composer.tsx`, `packages/ui/src/widgets/spoiler-text.tsx` |
+| SCR-CMT-01-C17 | Reactions (Lucian 077, batch 4 · community4) | Under a visible comment: a chip per reaction that has any (emoji + count, `aria-pressed` when mine, named "Laugh, 3 people, including you") and a smiley "Add a reaction" that opens a picker (dialog, 6 emoji, arrow keys, Esc/outside press closes, focus returns). A chip pops only when the reader changes it (BR-CMT-023) | `comment-item.tsx`, `ui/widgets/reaction-bar.tsx` |
+| SCR-CMT-01-C18 | Mention list (Lucian 268, batch 4 · community4) | The composer is a combobox: `@` opens a listbox under the @ ("Type the name of someone to mention" until a letter is typed; "Nobody by that name"), ↑/↓, Enter/Tab or press inserts `@username `, Esc closes; mentions get a soft mark; "Mentioning" shows the picked people. In a body, mentions are marked spans (BR-CMT-024) | `comment-composer.tsx`, `ui/widgets/mention-textarea.tsx` |
 
 ## C. User actions & system responses
 

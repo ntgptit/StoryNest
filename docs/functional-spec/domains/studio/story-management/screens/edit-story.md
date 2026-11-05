@@ -126,3 +126,6 @@ F-STM-01, F-STM-02, F-STM-03, F-STM-05, F-STM-06, U-STM-01, U-STM-02, U-STM-03, 
 
 ## G. Open questions
 Q-TEAM-02, Q-STM-01.
+
+## Batch 4 · authoring4
+Update schedule (batch 4, Lucian 109): WeekdayPainter field "Update schedule" above the 18+ switch (BR-STM-028). Cover upload also stores a BlurHash and the cover preview blurs up (BR-STM-029). Rollback: top of `20261106040100_story_update_days.sql` and `20261106040500_cover_blurhash.sql`.

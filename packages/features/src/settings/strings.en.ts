@@ -39,9 +39,26 @@ export const en = {
   notifications: {
     title: "Notifications",
     description:
-      "Choose which in-app notifications you want. Collaboration invitations sent to you are always delivered.",
+      "Choose which in-app notifications you want. Switch one on to see its finer options. Collaboration invitations sent to you are always delivered.",
+    summary: (on: number, total: number) => (on === 0 ? "All off" : `${on} of ${total} on`),
+    turnAllOff: "Turn all off",
+    channels: {
+      inApp: "In the app",
+      inAppOn: "On",
+      other: "Email and push",
+      unavailable: "Not available yet: StoryNest does not send email or push notifications.",
+    },
+    types: {
+      collaboration_accepted: { label: "Accepted", description: "Someone you invited accepts." },
+      collaboration_declined: { label: "Declined", description: "Someone you invited declines." },
+    },
+    invitedAlwaysOn: { label: "Invitations to you", description: "Always delivered: they need your answer." },
+    alwaysOn: "Always on",
     chapterPublished: { label: "New chapters", description: "A story you follow has a new chapter." },
-    commentReplied: { label: "Replies to comments", description: "Someone replies to your comment." },
+    commentReplied: {
+      label: "Replies and mentions",
+      description: "Someone replies to your comment or @mentions you in a comment.",
+    },
     collaborationAnswers: {
       label: "Answers to invitations",
       description: "Someone you invited to collaborate accepts or declines.",

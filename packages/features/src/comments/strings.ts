@@ -24,6 +24,12 @@ const vi = {
     count: (used: string, max: string) => `${used}/${max}`,
     guest: "Đăng nhập để bình luận",
     spoilerHint: "Viết ||nội dung|| để che đoạn tiết lộ.",
+    mentions: {
+      list: "Gợi ý người dùng",
+      empty: "Không có ai tên như vậy",
+      typeName: "Gõ tên người bạn muốn nhắc",
+      notify: "Sẽ nhắc",
+    },
   },
   item: {
     anonymous: "Người dùng",
@@ -56,6 +62,21 @@ const vi = {
     cancel: "Hủy",
     menu: "Tùy chọn bình luận",
     spoiler: "Tiết lộ nội dung, chạm để xem",
+    reactions: {
+      group: "Cảm xúc",
+      add: "Thêm cảm xúc",
+      picker: "Chọn cảm xúc",
+      guest: "Đăng nhập để bày tỏ cảm xúc",
+      names: {
+        thumbs_up: "Đồng tình",
+        laugh: "Buồn cười",
+        wow: "Ngạc nhiên",
+        sad: "Buồn",
+        fire: "Tuyệt",
+        clap: "Vỗ tay",
+      },
+      chip: (name: string, count: number, mine: boolean) => `${name}, ${count} người${mine ? ", có bạn" : ""}`,
+    },
   },
   inline: {
     open: (count: number) => (count > 0 ? `Bình luận đoạn này (${count})` : "Bình luận đoạn này"),

@@ -23,6 +23,7 @@ import { ChapterRow } from "../components/chapter-row.tsx";
 import { StudioCrumbs } from "../components/studio-crumbs.tsx";
 import { RenameSlugDialog } from "../components/rename-slug-dialog.tsx";
 import { ScheduledChapters } from "../components/scheduled-chapters.tsx";
+import { PartsPanel } from "../components/parts-panel.tsx";
 import {
   useArchiveChapter,
   useCreateChapter,
@@ -59,7 +60,7 @@ type Pending = {
 
 /**
  * Chapter list of one story: add, reorder (move buttons or drag), rename the slug, archive and delete/restore (one row,
- * from its context menu, or several selected ones at once), and the scheduled ones.
+ * from its context menu, or several selected ones at once), the scheduled ones, and the parts tree (Lucian 102).
  */
 export function ChapterManagerScreen({ storyId, locale = currentLocale() }: { storyId: string; locale?: string }) {
   const story = useStoryForEdit(storyId);
@@ -300,6 +301,8 @@ function ChapterManager({
           ) : null}
         </div>
       )}
+
+      <PartsPanel storyId={storyId} chapters={chapters} canManage={canManage} />
 
       <AddChapterForm storyId={storyId} />
 

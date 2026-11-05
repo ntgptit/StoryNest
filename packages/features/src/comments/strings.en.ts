@@ -21,6 +21,12 @@ export const en = {
     count: (used: string, max: string) => `${used}/${max}`,
     guest: "Sign in to comment",
     spoilerHint: "Write ||text|| to hide a spoiler.",
+    mentions: {
+      list: "People",
+      empty: "Nobody by that name",
+      typeName: "Type the name of someone to mention",
+      notify: "Mentioning",
+    },
   },
   item: {
     anonymous: "User",
@@ -53,6 +59,15 @@ export const en = {
     cancel: "Cancel",
     menu: "Comment options",
     spoiler: "Spoiler, tap to show",
+    reactions: {
+      group: "Reactions",
+      add: "Add a reaction",
+      picker: "Pick a reaction",
+      guest: "Sign in to react",
+      names: { thumbs_up: "Thumbs up", laugh: "Laugh", wow: "Wow", sad: "Sad", fire: "Fire", clap: "Clap" },
+      chip: (name: string, count: number, mine: boolean) =>
+        `${name}, ${count} ${count === 1 ? "person" : "people"}${mine ? ", including you" : ""}`,
+    },
   },
   inline: {
     open: (count: number) => (count > 0 ? `Comment on this paragraph (${count})` : "Comment on this paragraph"),

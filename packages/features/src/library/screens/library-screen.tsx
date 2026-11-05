@@ -15,6 +15,7 @@ import type { AppError } from "../../_shared/errors.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { MyLists } from "../../lists/index.ts";
+import { ReadingStreakChip } from "../../reading-habits/index.ts";
 import { STORY_GRID, StoryTile, storyHref } from "../../discovery/index.ts";
 import {
   isUndoable,
@@ -56,7 +57,7 @@ export function LibraryScreen({
   const swipe = useSwipeTabs({ values: SHELF_TABS, value: tab, onValueChange: setTab });
   return (
     <section aria-label={t.title} className="flex flex-col gap-6">
-      <PageHeader title={t.title} description={t.description} />
+      <PageHeader title={t.title} description={t.description} actions={<ReadingStreakChip />} />
       <Tabs value={tab} onValueChange={(value) => setTab(value as ShelfTab)}>
         {/* Four tabs can be wider than a phone: the row scrolls instead of the page. */}
         <div className="-mx-4 overflow-x-auto px-4 pb-1.5 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">

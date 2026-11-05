@@ -110,3 +110,15 @@
 | Related screens | SCR-RANK-01 |
 | Evidence | `ranking/screens/ranking-screen.tsx:93-123`, `ranking/strings.en.ts:8-9`, `packages/ui/src/widgets/story-card.tsx:60-66` |
 | Status | Verified |
+
+### BR-RANK-009 — Daily ranking snapshots and the last week
+| Field | Value |
+| --- | --- |
+| Description | Once a day `snapshot_rankings(day?, keep 1..200 = 100)` (service role) copies the top `keep` eligible stories of each period from `story_rankings` into `ranking_snapshots` (day, period, story, rank, score, reads, votes), replacing that day's rows and deleting snapshots older than 90 days. `ranking_history(period, days 1..30 = 7, include_mature, limit 1..20 = 10)` (anon + authenticated) returns the top stories of each snapshot day. The ranking page shows it above the list as a bar race (Lucian #246: play / pause, day slider, bars swap rows) or "Ups and downs", a slope chart of today's ranks against the first day (Lucian #359: risers in `--chart-2`, fallers in `--destructive`, new entries as dots, Rank / Score axis) |
+| Preconditions | BR-RANK-001; the snapshot job runs |
+| Conditions | The table is closed to API roles (RLS, no grant). The history re-applies the discovery rules live (public, not draft, not deleted, owner active, mature only when asked) and re-numbers ranks within what the caller may see, so a story made private disappears from every past day at once. Fewer than two days → the line "The ranking history is recorded once a day…"; none → nothing |
+| Expected behavior | Nothing plays by itself; the slider and Play animate bar rows and widths (0.55 s); the slope chart moves ends only when the axis is switched |
+| Exceptions | **Not scheduled by the migration.** Run once where pg_cron exists: `SELECT cron.schedule('storynest-snapshot-rankings', '57 23 * * *', 'SELECT public.refresh_rankings(); SELECT public.snapshot_rankings();');` (or call both daily from an Edge Function with the service role). Missing days are absent, not zero |
+| Related screens | SCR-RANK-01 |
+| Evidence | `supabase/migrations/20261106030400_ranking_snapshots.sql`; `supabase/tests/460_ranking_history.test.sql`; `packages/ui/src/widgets/bar-race.tsx`, `slope-chart.tsx`; `packages/features/src/ranking/components/ranking-history.tsx`, `model/history.ts`. Rollback: `DROP FUNCTION public.ranking_history(text, integer, boolean, integer); DROP FUNCTION public.snapshot_rankings(date, integer); DROP TABLE public.ranking_snapshots;` (and `cron.unschedule('storynest-snapshot-rankings')` if scheduled) |
+| Status | Verified on local PostgreSQL; not run against Supabase |

@@ -13,7 +13,7 @@
 | Roles | Guest, Member (adds For-you block and Following shortcut), Moderator (same as member) |
 | Guard | None (public). Indexed (no `robots` override in `page.tsx`) |
 | Workflows | WF-HOME-01, WF-HOME-02, WF-HOME-03, WF-HOME-04, WF-REC-02 |
-| Rules | BR-HOME-001…012, BR-TAX-003/004, BR-REC-005…008 |
+| Rules | BR-HOME-001…013, BR-PROG-016, BR-TAX-003/004, BR-REC-005…008 |
 
 ## B. Components
 | ID | Component | Description | Evidence |
@@ -25,10 +25,12 @@
 | SCR-HOME-01-C05 | Category chips (nav "Categories") | "All" + root categories as links; horizontally scrollable on mobile; skeleton while tree loads | `category-chips.tsx:31-38`, `discover-screen.tsx:66-70` |
 | SCR-HOME-01-C06 | Active-tag line | "Filtering by tag #name" + "Clear tag filter" (X icon) | `tag-filters.tsx:31-41` |
 | SCR-HOME-01-C07 | Popular tags (nav "Popular tags") | Up to 12 `#tag` chips, toggling | `tag-filters.tsx:43-61`, `model/popular-tags.ts:1` |
+| SCR-HOME-01-C13 | Length filter | `sm`+: button "Filter by length" / "Length: 2k – 30k words" unfolding a histogram of stories per length bucket with two thumbs ("Shortest", "Longest"), rolling "n stories", note, Apply, and "Remove length filter"; phone: section "Length" in the filter sheet (counts in the footer) and an active chip; empty result: "Remove length filter · n stories" | `discovery/screens/length-filter.tsx`, `filter-sheet.tsx`, `ui/widgets/range-histogram.tsx` (Lucian #024) (BR-HOME-014) |
 | SCR-HOME-01-C08 | Story grid | 2/3/4 columns; `StoryCard` per story | `discover-screen.tsx:19,98-116` |
 | SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:110-115` |
 | SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:90-95` |
 | SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:74-83,117-124` |
+| SCR-HOME-01-C12 | Event popup (Lucian 311, batch 4 · platform4) | Unfiltered home only: dialog "Events" with the active popup announcements as sliding cards ("Until …", title, text, "View details"), "Don't show today" / "Close", then a gift button "Show events again" (BR-HOME-013) | `announcements/components/home-event-popup.tsx`, `packages/ui/src/widgets/event-popup.tsx` |
 
 ## C. User actions and system responses
 

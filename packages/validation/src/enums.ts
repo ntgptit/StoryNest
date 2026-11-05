@@ -26,6 +26,23 @@ export const MODERATION_ACTIONS = [
 export const MODERATION_TARGET_KINDS = ["comment", "story", "user", "report"] as const;
 export const HIDE_SOURCES = ["author", "moderator"] as const;
 export const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"] as const;
+/** announcements.kind: a line in the rolling banner of every page, or a card in the home page popup. */
+export const ANNOUNCEMENT_KINDS = ["banner", "popup"] as const;
+/**
+ * notification_preferences.event_type: the notification types a reader may switch off one by one (in-app only).
+ * collaboration_invited is deliberately absent: an invitation addressed to the reader is always delivered.
+ */
+export const NOTIFICATION_PREFERENCE_TYPES = [
+  "chapter_published",
+  "comment_replied",
+  "collaboration_accepted",
+  "collaboration_declined",
+] as const;
+/** Emoji reactions on a comment (comment_reactions.reaction). The like is separate (comment_likes) and not one of them. */
+export const COMMENT_REACTIONS = ["thumbs_up", "laugh", "wow", "sad", "fire", "clap"] as const;
+/** Pen styles of a personal highlight (chapter_highlights.style). */
+export const HIGHLIGHT_STYLES = ["underline", "circle", "box", "strike"] as const;
+export const REVIEW_STATUSES = ["pending", "approved", "changes_requested"] as const;
 
 export const accountStatusSchema = z.enum(ACCOUNT_STATUSES);
 export const storyStatusSchema = z.enum(STORY_STATUSES);
@@ -40,6 +57,11 @@ export const reportReasonSchema = z.enum(REPORT_REASONS);
 export const moderationActionSchema = z.enum(MODERATION_ACTIONS);
 export const moderationTargetKindSchema = z.enum(MODERATION_TARGET_KINDS);
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
+export const announcementKindSchema = z.enum(ANNOUNCEMENT_KINDS);
+export const notificationPreferenceTypeSchema = z.enum(NOTIFICATION_PREFERENCE_TYPES);
+export const commentReactionSchema = z.enum(COMMENT_REACTIONS);
+export const highlightStyleSchema = z.enum(HIGHLIGHT_STYLES);
+export const reviewStatusSchema = z.enum(REVIEW_STATUSES);
 
 // Named constants for the values code compares or filters on, so no query or condition spells a literal like
 // "published". `satisfies` makes the compiler reject a value that is not in the enum; validation.test.ts checks
@@ -119,7 +141,36 @@ export type ModerationTargetKind = z.infer<typeof moderationTargetKindSchema>;
 export const HIDE_SOURCE = { AUTHOR: "author", MODERATOR: "moderator" } as const satisfies Record<string, HideSource>;
 
 export type HideSource = z.infer<typeof hideSourceSchema>;
+export type AnnouncementKind = z.infer<typeof announcementKindSchema>;
+export type NotificationPreferenceType = z.infer<typeof notificationPreferenceTypeSchema>;
+export const ANNOUNCEMENT_KIND = { BANNER: "banner", POPUP: "popup" } as const satisfies Record<
+  string,
+  AnnouncementKind
+>;
+export const COMMENT_REACTION = {
+  THUMBS_UP: "thumbs_up",
+  LAUGH: "laugh",
+  WOW: "wow",
+  SAD: "sad",
+  FIRE: "fire",
+  CLAP: "clap",
+} as const satisfies Record<string, CommentReaction>;
+export const HIGHLIGHT_STYLE = {
+  UNDERLINE: "underline",
+  CIRCLE: "circle",
+  BOX: "box",
+  STRIKE: "strike",
+} as const satisfies Record<string, HighlightStyle>;
+export type CommentReaction = z.infer<typeof commentReactionSchema>;
+export type HighlightStyle = z.infer<typeof highlightStyleSchema>;
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
+export type ReviewStatus = z.infer<typeof reviewStatusSchema>;
+/** State of a chapter review sign-off (chapter_reviews.status). */
+export const REVIEW_STATUS = {
+  PENDING: "pending",
+  APPROVED: "approved",
+  CHANGES_REQUESTED: "changes_requested",
+} as const satisfies Record<string, ReviewStatus>;
 export type CommentStatus = z.infer<typeof commentStatusSchema>;
 export type InvitationStatus = z.infer<typeof invitationStatusSchema>;
 export type CollaboratorRole = z.infer<typeof collaboratorRoleSchema>;
@@ -127,3 +178,26 @@ export type StoryStatus = z.infer<typeof storyStatusSchema>;
 export type Visibility = z.infer<typeof visibilitySchema>;
 export type ChapterStatus = z.infer<typeof chapterStatusSchema>;
 export type BlockType = z.infer<typeof blockTypeSchema>;
+
+/** Periods of the rankings and of their daily snapshots (ranking_snapshots.period, top_stories, ranking_history). */
+export const RANKING_PERIODS = ["day", "week", "month", "all"] as const;
+export const rankingPeriodSchema = z.enum(RANKING_PERIODS);
+export type RankingPeriod = z.infer<typeof rankingPeriodSchema>;
+
+/**
+ * The in-app surface a read came from (chapter_read_events.source, record_chapter_read's p_source). Coarse on purpose:
+ * which StoryNest screen the reader opened the story from, never a referrer or another site.
+ */
+export const READ_SOURCES = [
+  "story_page",
+  "next_chapter",
+  "library",
+  "search",
+  "discover",
+  "ranking",
+  "notification",
+  "profile",
+  "other",
+] as const;
+export const readSourceSchema = z.enum(READ_SOURCES);
+export type ReadSource = z.infer<typeof readSourceSchema>;

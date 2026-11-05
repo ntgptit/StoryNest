@@ -2,10 +2,27 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_STATUSES,
+  REVIEW_STATUSES,
+  REVIEW_STATUS,
+  isBlurhashFormat,
+  blurhashSchema,
+  listToUpdateDays,
+  updateDaysToList,
+  updateDaysSchema,
+  storyPartCreateSchema,
+  requestChapterReviewArgsSchema,
+  ACHIEVEMENT_CODE,
+  ACHIEVEMENT_CODES,
+  ACHIEVEMENT_THRESHOLDS,
+  DAILY_GOAL,
   BLOCK_TYPES,
   CHAPTER_STATUSES,
   COLLABORATOR_ROLES,
   COMMENT_STATUSES,
+  COMMENT_REACTIONS,
+  COMMENT_REACTION,
+  HIGHLIGHT_STYLES,
+  HIGHLIGHT_STYLE,
   STORY_LANGUAGES,
   HIDE_SOURCES,
   MODERATION_ACTIONS,
@@ -18,6 +35,8 @@ import {
   INVITATION_STATUSES,
   DB_LIMITS,
   REPORT_STATUSES,
+  RANKING_PERIODS,
+  READ_SOURCES,
   STORY_ERROR,
   CHAPTER_ERROR,
   chapterFormSchema,
@@ -58,6 +77,13 @@ import {
   signInSchema,
   signUpSchema,
   profileFormSchema,
+  ANNOUNCEMENT_ERROR,
+  ANNOUNCEMENT_KIND,
+  ANNOUNCEMENT_KINDS,
+  NOTIFICATION_PREFERENCE_TYPES,
+  announcementFormSchema,
+  isAllowedAnnouncementLink,
+  toAnnouncementPayload,
 } from "./index.ts";
 
 type Contract = { enums: Record<string, string[]>; maxLengths: Record<string, number> };
@@ -81,6 +107,15 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["moderation_actions.action", MODERATION_ACTIONS],
     ["moderation_actions.target_kind", MODERATION_TARGET_KINDS],
     ["content_reports.status", REPORT_STATUSES],
+    ["chapter_reviews.status", REVIEW_STATUSES],
+    ["user_achievements.code", ACHIEVEMENT_CODES],
+    ["announcements.kind", ANNOUNCEMENT_KINDS],
+    ["announcements.locale", STORY_LANGUAGES],
+    ["notification_preferences.event_type", NOTIFICATION_PREFERENCE_TYPES],
+    ["ranking_snapshots.period", RANKING_PERIODS],
+    ["chapter_read_events.source", READ_SOURCES],
+    ["comment_reactions.reaction", COMMENT_REACTIONS],
+    ["chapter_highlights.style", HIGHLIGHT_STYLES],
   ];
   it.each(cases)("%s", (column, values) => {
     expect(contract.enums[column], `${column} missing from contract`).toBeDefined();
@@ -101,6 +136,11 @@ describe("named enum constants", () => {
     ["REPORT_REASON", REPORT_REASON, REPORT_REASONS],
     ["MODERATION_ACTION", MODERATION_ACTION, MODERATION_ACTIONS],
     ["MODERATION_TARGET_KIND", MODERATION_TARGET_KIND, MODERATION_TARGET_KINDS],
+    ["REVIEW_STATUS", REVIEW_STATUS, REVIEW_STATUSES],
+    ["ACHIEVEMENT_CODE", ACHIEVEMENT_CODE, ACHIEVEMENT_CODES],
+    ["ANNOUNCEMENT_KIND", ANNOUNCEMENT_KIND, ANNOUNCEMENT_KINDS],
+    ["COMMENT_REACTION", COMMENT_REACTION, COMMENT_REACTIONS],
+    ["HIGHLIGHT_STYLE", HIGHLIGHT_STYLE, HIGHLIGHT_STYLES],
   ] as const)("%s has exactly one constant per enum value", (_name, constants, values) => {
     expect(sorted(Object.values(constants))).toEqual(sorted(values));
   });
@@ -117,6 +157,12 @@ describe("length limits match the varchar columns", () => {
     ["chapter_versions.title", DB_LIMITS.chapterTitle],
     ["reading_lists.title", DB_LIMITS.readingListTitle],
     ["content_reports.reason", DB_LIMITS.reportReason],
+    ["story_parts.title", DB_LIMITS.storyPartTitle],
+    ["chapter_reviews.request_note", DB_LIMITS.reviewNote],
+    ["chapter_reviews.decision_note", DB_LIMITS.reviewNote],
+    ["announcements.title", DB_LIMITS.announcementTitle],
+    ["announcements.body", DB_LIMITS.announcementBody],
+    ["announcements.link_url", DB_LIMITS.announcementLink],
   ];
   it.each(cases)("%s", (column, max) => expect(contract.maxLengths[column]).toBe(max));
 });
@@ -440,5 +486,108 @@ describe("chapter form schemas", () => {
 
   it("rejects unknown fields", () => {
     expect(chapterFormSchema.safeParse({ title: "a", slug: "a", sort_order: 1 }).success).toBe(false);
+  });
+});
+
+describe("reading habits match the migration", () => {
+  const sql = readFileSync(
+    new URL("../../../supabase/migrations/20261106020000_reading_habits.sql", import.meta.url),
+    "utf8",
+  );
+  it("daily goal bounds and default", () => {
+    expect(sql).toContain(
+      `daily_chapter_goal smallint NOT NULL DEFAULT ${DAILY_GOAL.default} CHECK (daily_chapter_goal BETWEEN ${DAILY_GOAL.min} AND ${DAILY_GOAL.max})`,
+    );
+    expect(sql).toContain(`c_default_goal constant integer := ${DAILY_GOAL.default};`);
+  });
+  it("badge thresholds", () => {
+    expect(sql).toContain(`c_streak_7 constant integer := ${ACHIEVEMENT_THRESHOLDS.streak_7.target};`);
+    expect(sql).toContain(`c_streak_30 constant integer := ${ACHIEVEMENT_THRESHOLDS.streak_30.target};`);
+    expect(sql).toContain(`c_stories_10 constant integer := ${ACHIEVEMENT_THRESHOLDS.stories_10.target};`);
+    expect(sql).toContain(`('first_chapter', v_finished >= ${ACHIEVEMENT_THRESHOLDS.first_chapter.target})`);
+    expect(sql).toContain(`('first_story', v_stories >= ${ACHIEVEMENT_THRESHOLDS.first_story.target})`);
+  });
+});
+
+describe("announcement form", () => {
+  const valid = {
+    kind: "banner",
+    title: "  Writing contest  ",
+    body: "",
+    link: "/ranking",
+    locale: "",
+    startsAt: "2026-11-05T10:00:00.000Z",
+    endsAt: "2026-11-12T10:00:00.000Z",
+  } as const;
+  const codes = (input: unknown) => {
+    const result = announcementFormSchema.safeParse(input);
+    return result.success ? [] : result.error.issues.map((issue) => issue.message);
+  };
+
+  it("turns a valid form into the row payload (empty fields are NULL)", () => {
+    expect(toAnnouncementPayload(announcementFormSchema.parse(valid))).toEqual({
+      kind: "banner",
+      title: "Writing contest",
+      body: null,
+      link_url: "/ranking",
+      locale: null,
+      starts_at: "2026-11-05T10:00:00.000Z",
+      ends_at: "2026-11-12T10:00:00.000Z",
+    });
+  });
+
+  it("applies the same rules as the CHECK constraints", () => {
+    expect(codes({ ...valid, title: "   " })).toEqual([ANNOUNCEMENT_ERROR.titleRequired]);
+    expect(codes({ ...valid, title: "a".repeat(81) })).toEqual([ANNOUNCEMENT_ERROR.titleTooLong]);
+    expect(codes({ ...valid, body: "a".repeat(281) })).toEqual([ANNOUNCEMENT_ERROR.bodyTooLong]);
+    expect(codes({ ...valid, endsAt: valid.startsAt })).toEqual([ANNOUNCEMENT_ERROR.endBeforeStart]);
+    expect(codes({ ...valid, startsAt: "soon" })).toEqual([ANNOUNCEMENT_ERROR.startInvalid]);
+    expect(codes({ ...valid, locale: "fr" })).toHaveLength(1);
+    for (const link of ["//evil.example", "/\\evil", "javascript:alert(1)", "http://example.com", "ranking"]) {
+      expect(isAllowedAnnouncementLink(link), link).toBe(false);
+      expect(codes({ ...valid, link }), link).toEqual([ANNOUNCEMENT_ERROR.linkInvalid]);
+    }
+    for (const link of ["/", "/ranking", "/story/abc?x=1", "https://example.com/contest"]) {
+      expect(isAllowedAnnouncementLink(link), link).toBe(true);
+    }
+  });
+});
+
+describe("authoring4 inputs", () => {
+  it("update days round-trip through the bit mask (Monday = bit 0)", () => {
+    expect(listToUpdateDays(["mon", "thu"])).toBe(9);
+    expect(updateDaysToList(9)).toEqual(["mon", "thu"]);
+    expect(updateDaysToList(127)).toHaveLength(7);
+    expect(updateDaysSchema.safeParse(128).success).toBe(false);
+    expect(updateDaysSchema.safeParse(-1).success).toBe(false);
+  });
+
+  it("checks a BlurHash like chk_story_cover_blurhash", () => {
+    expect(isBlurhashFormat("LEHV6nWB2yk8pyo0adR*.7kCMdnj")).toBe(true);
+    expect(isBlurhashFormat("00TI:j")).toBe(true);
+    expect(isBlurhashFormat("LEHV6nWB2yk8pyo0adR*.7kCMdn")).toBe(false);
+    expect(isBlurhashFormat('LEHV6nWB2yk8pyo0adR*.7kCMd"j')).toBe(false);
+    expect(isBlurhashFormat("~" + "0".repeat(43))).toBe(false);
+    expect(isBlurhashFormat("00000")).toBe(false);
+    expect(blurhashSchema.safeParse("nope").success).toBe(false);
+  });
+
+  it("story payloads accept the schedule and the hash", () => {
+    const parsed = storyCreateSchema.parse({ title: "T", slug: "t", update_days: 9, cover_blurhash: "00TI:j" });
+    expect(parsed.update_days).toBe(9);
+    expect(storyCreateSchema.safeParse({ title: "T", slug: "t", cover_blurhash: "bad" }).success).toBe(false);
+  });
+
+  it("parts and review notes follow the column lengths", () => {
+    const story = "31000000-0000-4000-8000-000000000001";
+    expect(storyPartCreateSchema.safeParse({ story_id: story, title: "  Book one " }).success).toBe(true);
+    expect(storyPartCreateSchema.safeParse({ story_id: story, title: "   " }).success).toBe(false);
+    expect(storyPartCreateSchema.safeParse({ story_id: story, title: "a".repeat(121) }).success).toBe(false);
+    expect(
+      requestChapterReviewArgsSchema.safeParse({ p_chapter_id: story, p_expected_revision: 1, p_note: "n".repeat(501) })
+        .success,
+    ).toBe(false);
+    expect(REVIEW_STATUS.CHANGES_REQUESTED).toBe("changes_requested");
+    expect(REVIEW_STATUSES).toContain("approved");
   });
 });

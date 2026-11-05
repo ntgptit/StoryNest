@@ -16,9 +16,14 @@ import { getRemoteLanguage, saveRemoteLanguage } from "./api/language.api.ts";
 import { getSettings, saveSettings } from "./api/settings.api.ts";
 import { useAccountSettings } from "./hooks/use-settings.ts";
 import { settingsKeys } from "./keys.ts";
+import { getNotificationTypes, saveNotificationType } from "./api/notification-preferences.api.ts";
 import {
+  DEFAULT_NOTIFICATION_TYPES,
   DEFAULT_SETTINGS,
+  NOTIFICATION_GROUP_TYPES,
   SETTINGS_COLUMNS,
+  toNotificationTypes,
+  withAllNotificationsOff,
   toRow,
   toSettings,
   withLanguage,
@@ -95,7 +100,15 @@ describe("settings model", () => {
   });
 });
 
-function fakeClient(options: { row?: SettingsRow | null; selectError?: unknown; upsertError?: unknown } = {}) {
+function fakeClient(
+  options: {
+    row?: SettingsRow | null;
+    selectError?: unknown;
+    upsertError?: unknown;
+    types?: { event_type: string; in_app: boolean }[];
+    typeUpsertError?: unknown;
+  } = {},
+) {
   const upsert = vi.fn(async (_row: unknown, _options?: unknown) => ({
     data: null,
     error: options.upsertError ?? null,
@@ -103,8 +116,16 @@ function fakeClient(options: { row?: SettingsRow | null; selectError?: unknown; 
   const select = vi.fn(() => ({
     maybeSingle: async () => ({ data: options.row ?? null, error: options.selectError ?? null }),
   }));
-  const from = vi.fn(() => ({ select, upsert }));
-  return { from, select, upsert };
+  // notification_preferences: the per-type switches (a plain list of the reader's rows).
+  const typeUpsert = vi.fn(async (_row: unknown, _options?: unknown) => ({
+    data: null,
+    error: options.typeUpsertError ?? null,
+  }));
+  const typeSelect = vi.fn(async (_columns: string) => ({ data: options.types ?? [], error: null }));
+  const from = vi.fn((table: string) =>
+    table === "notification_preferences" ? { select: typeSelect, upsert: typeUpsert } : { select, upsert },
+  );
+  return { from, select, upsert, typeSelect, typeUpsert };
 }
 
 describe("settings api", () => {
@@ -122,6 +143,43 @@ describe("settings api", () => {
     expect(c.upsert).toHaveBeenCalledWith({ user_id: "u1", ...ROW }, { onConflict: "user_id" });
     const payload = c.upsert.mock.calls[0]?.[0] as unknown as Record<string, unknown>;
     expect(Object.keys(payload).sort()).toEqual(["user_id", ...Object.keys(ROW)].sort()); // no adult-content columns
+  });
+});
+
+describe("per-type notification switches", () => {
+  it("are on unless a row says otherwise, and ignore types this client does not know", () => {
+    expect(toNotificationTypes([])).toEqual(DEFAULT_NOTIFICATION_TYPES);
+    expect(
+      toNotificationTypes([
+        { event_type: "collaboration_declined", in_app: false },
+        { event_type: "email_digest", in_app: false },
+      ]),
+    ).toEqual({ ...DEFAULT_NOTIFICATION_TYPES, collaboration_declined: false });
+  });
+
+  it("cover exactly the types the database accepts, each under one group", () => {
+    const grouped = Object.values(NOTIFICATION_GROUP_TYPES).flat().sort();
+    expect(grouped).toEqual(Object.keys(DEFAULT_NOTIFICATION_TYPES).sort());
+    expect(grouped).not.toContain("collaboration_invited");
+  });
+
+  it("turn all off switches the three groups off and keeps the language", () => {
+    const off = withAllNotificationsOff({ ...DEFAULT_SETTINGS, language: "en" });
+    expect(off).toEqual({
+      language: "en",
+      notifications: { chapterPublished: false, commentReplied: false, collaborationAnswers: false },
+    });
+  });
+
+  it("are read and saved through notification_preferences", async () => {
+    const c = fakeClient({ types: [{ event_type: "collaboration_accepted", in_app: false }] });
+    expect((await getNotificationTypes(c as unknown as DataClient)).collaboration_accepted).toBe(false);
+    expect(c.from).toHaveBeenCalledWith("notification_preferences");
+    await saveNotificationType(c as unknown as DataClient, "u1", "collaboration_declined", false);
+    expect(c.typeUpsert).toHaveBeenCalledWith(
+      { user_id: "u1", event_type: "collaboration_declined", in_app: false },
+      { onConflict: "user_id,event_type" },
+    );
   });
 });
 
@@ -186,6 +244,49 @@ describe("SettingsScreen", () => {
     );
     await waitFor(() =>
       expect(screen.getByLabelText(t.notifications.commentReplied.label).getAttribute("aria-checked")).toBe("true"),
+    );
+  });
+
+  it("unfolds a switch per type under a group with several, and saves one type on its own", async () => {
+    const c = fakeClient({ row: ROW, types: [{ event_type: "collaboration_declined", in_app: false }] });
+    renderScreen(c);
+    const group = await screen.findByLabelText(t.notifications.collaborationAnswers.label);
+    expect(group.getAttribute("aria-expanded")).toBe("true");
+    const declined = await screen.findByLabelText(t.notifications.types.collaboration_declined.label);
+    await waitFor(() => expect(declined.getAttribute("aria-checked")).toBe("false"));
+    expect(screen.getByText(t.notifications.invitedAlwaysOn.label)).toBeTruthy();
+    expect(screen.getAllByText(t.notifications.channels.unavailable).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByLabelText(t.notifications.types.collaboration_accepted.label));
+    await waitFor(() => expect(c.typeUpsert).toHaveBeenCalledTimes(1));
+    expect(c.typeUpsert).toHaveBeenCalledWith(
+      { user_id: expect.any(String), event_type: "collaboration_accepted", in_app: false },
+      { onConflict: "user_id,event_type" },
+    );
+    expect(c.upsert).not.toHaveBeenCalled();
+  });
+
+  it("puts a type switch back when its save is refused", async () => {
+    const c = fakeClient({ row: ROW, typeUpsertError: { message: "no", code: "42501" } });
+    renderScreen(c);
+    const accepted = await screen.findByLabelText(t.notifications.types.collaboration_accepted.label);
+    await waitFor(() => expect((accepted as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(accepted);
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("error", t.saveFailed));
+    await waitFor(() => expect(accepted.getAttribute("aria-checked")).toBe("true"));
+  });
+
+  it("turns every group off with one save", async () => {
+    const c = fakeClient({ row: ROW });
+    renderScreen(c);
+    fireEvent.click(await screen.findByRole("button", { name: t.notifications.turnAllOff }));
+    await waitFor(() => expect(c.upsert).toHaveBeenCalledTimes(1));
+    expect(c.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        notify_chapter_published: false,
+        notify_comment_replied: false,
+        notify_collaboration_answers: false,
+      }),
+      { onConflict: "user_id" },
     );
   });
 

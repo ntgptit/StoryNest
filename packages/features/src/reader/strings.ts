@@ -41,6 +41,17 @@ const vi = {
     text: (quote: string, source: string, url: string) => `“${quote}”\n— ${source}\n${url}`,
     source: (story: string, chapter: string) => `${story}, ${chapter}`,
   },
+  highlight: {
+    group: "Đánh dấu riêng của bạn",
+    pens: { underline: "Gạch chân", circle: "Khoanh tròn", box: "Đóng khung", strike: "Gạch ngang" },
+    remove: "Bỏ đánh dấu",
+    added: "Đã đánh dấu. Chỉ bạn nhìn thấy.",
+    removed: "Đã bỏ đánh dấu.",
+    failed: "Không lưu được đánh dấu. Thử lại.",
+    limit: "Chương này đã có quá nhiều đánh dấu của bạn.",
+    stale: (count: number) => `${count} đánh dấu cũ không còn khớp vì tác giả đã sửa đoạn văn.`,
+    clearStale: "Xóa đánh dấu cũ",
+  },
   settings: {
     open: "Hiển thị",
     title: "Tùy chọn đọc",

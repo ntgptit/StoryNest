@@ -39,6 +39,7 @@
 | SCR-STORY-01-C15 | JSON-LD + metadata | `Book` structured data, canonical, robots, OG (server only) | `page.tsx:18-39,55-63` |
 | SCR-STORY-01-C16 | Share button | "Share" next to Report; not shown for a private story. Opens the share dialog (`ShareDialog`, Lucian #254): the absolute story link (canonical origin via `PlatformAdapter.shareOrigin`) in a read-only field, "Copy" that turns into a check (`CopyLinkButton`, Lucian #008, announced politely), and "Share with another app" where `navigator.share` exists | `story-screen.tsx`, `features/share/components/share-button.tsx` |
 | SCR-STORY-01-C17 | Sticky reading bar | Once C07 has scrolled up out of view a compact bar rises at the bottom (above the mobile bottom nav, safe-area aware; `StickyActionBar`, Lucian #221): title, "Chapter N · title", a "Chapters" button that opens the TOC as a bottom sheet (`TocSheet`, continue chapter marked `aria-current="step"`) and the same Start/Continue link. It slips away when C07 is visible again; while hidden it is `inert` and `aria-hidden`. Not shown without published chapters | `story-screen.tsx`, `ui/widgets/sticky-action-bar.tsx`, `reader/components/toc-sheet.tsx` |
+| SCR-STORY-01-C18 | Rating (Lucian 016, batch 4 · community4) | Under the library actions: "Rating", the average and count, and for a signed-in reader a five-star slider (preview on hover, newly lit stars pop with a sparkle, arrows/Home/End/0–5, word for the score); disabled with a hint until a chapter was read; guests get a sign-in link (BR-STORY-017) | `story-screen.tsx`, `components/story-rating.tsx`, `ui/widgets/star-rating.tsx` |
 
 ## C. User actions & system responses
 
@@ -236,3 +237,6 @@ F-STORY-01 (report shown to author), F-STORY-02 (unbounded chapter list), F-STOR
 
 - Q-STORY-01 — Should stories of suspended authors stay readable? (BR-STORY-016)
 - Q-READ-01 — Should "Chapter N" be the position among published chapters or `sort_order`? (BR-STORY-011)
+
+## Batch 4 · authoring4
+Batch 4 authoring4: cover blur-up from `cover_blurhash` (BR-STM-029); "Updates on …" line under the counters (BR-STM-028); next chapter countdown above the chapter list (BR-STORY-018); chapters grouped into part folders (BR-CHM-016). The reader contents sheet heads part runs with the part name. Rollback: top of `20261106040200_next_chapter_countdown.sql`.

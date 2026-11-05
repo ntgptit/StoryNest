@@ -22,6 +22,10 @@ export const STORY_COLUMNS = [
 // own alias. Rows come back with an extra `tagFilter` field that the mapper ignores.
 const TAG_FILTER_COLUMN = "tagFilter:story_tags!inner(tag:tags!inner(slug))";
 const TAG_FILTER_PATH = "tagFilter.tag.slug";
+// The length filter joins story_stats a second time, inner, under its own alias (the card's `stats` embed stays a left
+// join). A story without a stats row (never published a chapter) has no length and is left out while it is on.
+const LENGTH_FILTER_COLUMN = "lengthFilter:story_stats!inner(word_count)";
+const LENGTH_FILTER_PATH = "lengthFilter.word_count";
 
 export interface StoryPage {
   items: StorySummary[];
@@ -62,7 +66,9 @@ type StoryFilterOptions = LatestStoriesFilter & { categories?: readonly Category
  */
 function filteredStories(client: DataClient, options: StoryFilterOptions, countOnly = false) {
   const base = countOnly ? "id" : STORY_COLUMNS;
-  const columns = options.tagSlug ? `${base}, ${TAG_FILTER_COLUMN}` : base;
+  const columns = [base, options.tagSlug ? TAG_FILTER_COLUMN : null, options.words ? LENGTH_FILTER_COLUMN : null]
+    .filter(Boolean)
+    .join(", ");
   let query = client
     .from("stories")
     .select(columns, countOnly ? { count: "exact", head: true } : undefined)
@@ -81,6 +87,10 @@ function filteredStories(client: DataClient, options: StoryFilterOptions, countO
   }
 
   if (options.tagSlug) query = query.eq(TAG_FILTER_PATH, options.tagSlug);
+  if (options.words) {
+    query = query.gte(LENGTH_FILTER_PATH, options.words.min);
+    if (options.words.max !== null) query = query.lt(LENGTH_FILTER_PATH, options.words.max);
+  }
   if (options.authorId) query = query.eq("owner_id", options.authorId);
   return query;
 }
@@ -132,4 +142,46 @@ export async function listLatestStories(
 export async function listPopularTags(client: DataClient, limit: number): Promise<PopularTag[]> {
   const rows = unwrap(await client.rpc("popular_tags", { p_limit: limit }).returns<PopularTagRow[]>()) ?? [];
   return rows.map(toPopularTag);
+}
+
+/** One bucket of the length histogram: stories with min_words <= length < max_words (null = no upper bound). */
+export interface LengthBucket {
+  minWords: number;
+  maxWords: number | null;
+  stories: number;
+}
+
+interface LengthBucketRow {
+  bucket: number | null;
+  min_words: number | string | null;
+  max_words: number | string | null;
+  stories: number | string | null;
+}
+
+/**
+ * How many stories the home feed would list in each length bucket, for every filter but the length itself (the
+ * histogram behind the range filter). Same rules as the feed: public, not draft, not deleted, mature only when asked.
+ */
+export async function getLengthHistogram(client: DataClient, options: StoryFilterOptions): Promise<LengthBucket[]> {
+  const ids = options.categorySlug ? categoryIdsFor(options.categorySlug, options.categories ?? []) : null;
+  if (ids && ids.length === 0) return [];
+  const rows =
+    unwrap(
+      await client
+        .rpc("story_length_histogram", {
+          p_include_mature: options.includeMature ?? false,
+          ...(options.language ? { p_language: options.language } : {}),
+          ...(ids ? { p_category_ids: ids } : {}),
+          ...(options.tagSlug ? { p_tag_slug: options.tagSlug } : {}),
+        })
+        .returns<LengthBucketRow[]>(),
+    ) ?? [];
+  return rows
+    .filter((row) => row.bucket !== null && row.min_words !== null)
+    .sort((a, b) => Number(a.bucket) - Number(b.bucket))
+    .map((row) => ({
+      minWords: Number(row.min_words),
+      maxWords: row.max_words === null ? null : Number(row.max_words),
+      stories: Number(row.stories ?? 0),
+    }));
 }
