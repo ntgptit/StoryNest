@@ -4,7 +4,7 @@
 // so a paragraph edited on both sides is one choice, not a removal plus an addition. The result is a body the editor
 // loads as an ordinary edit; saving it still goes through the revision check like any other save.
 import type { ChapterBlock, ChapterBody } from "@storynest/validation";
-import { bodyToReaderBlocks, diffBlocks, DIFF_STATUS } from "../../history/index.ts";
+import { bodyToReaderBlocks, diffBlocks, DIFF_STATUS } from "../../_shared/block-diff.ts";
 
 export type MergeSide = "mine" | "server";
 
