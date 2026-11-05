@@ -1,11 +1,11 @@
-import { B, browser, ctxFor, record, shot, results, sleep } from "./pw.mjs";
+import { B, browser, ctxFor, record, shot, results, sleep, openSchedule } from "./pw.mjs";
 import { as } from "./lib.mjs";
 const b = await browser();
 const { storyA, ch3 } = results._data;
 try {
   const a = await (await ctxFor(b, "author")).newPage();
   await a.goto(`${B}/studio/story/${storyA}/chapter/${ch3}`, { waitUntil: "networkidle" }); await sleep(1500);
-  await a.getByRole("button", { name: "Hẹn giờ…" }).click();
+  await openSchedule(a);
   const local = await a.evaluate((ms) => { const d = new Date(ms); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }, Date.now() + 3 * 60000);
   await a.getByLabel("Thời điểm đăng").fill(local);
   await a.getByRole("dialog").getByRole("button", { name: "Hẹn giờ", exact: true }).click();

@@ -51,7 +51,10 @@ try {
   await r.reload({ waitUntil: "networkidle" });
   await r.getByText("[QA] Bình luận chương từ người đọc.").scrollIntoViewIfNeeded();
   await r.getByRole("button", { name: "Thích" }).first().click(); await sleep(1000);
-  await r.getByRole("button", { name: "Sửa" }).first().click();
+  // Edit sits in the comment's options menu (aria-label "Tùy chọn bình luận" in Vietnamese).
+  const mine = r.getByRole("article").filter({ hasText: "[QA] Bình luận chương từ người đọc." }).first();
+  await mine.getByRole("button", { name: "Tùy chọn bình luận" }).click();
+  await r.getByRole("menuitem", { name: "Sửa" }).click();
   const ed = r.locator("textarea").filter({ hasText: "[QA] Bình luận chương" }).first();
   await ed.fill("[QA] Bình luận chương từ người đọc (đã sửa)."); await r.getByRole("button", { name: "Lưu", exact: true }).first().click();
   const te = await toast(r); await sleep(1000);

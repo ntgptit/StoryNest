@@ -28,3 +28,14 @@ export async function ctxFor(b, role, size = { width: 1280, height: 900 }) {
 }
 export async function shot(p, name) { await p.screenshot({ path: `${OUT}shots/${name}.png`, fullPage: false }); }
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Opens the schedule dialog. Since PR #60 "Hẹn giờ…" is an option of the publish split button ("Cách đăng khác"). Returns false when the menu has no schedule option. */
+export async function openSchedule(p) {
+  const more = p.getByRole("button", { name: "Cách đăng khác" });
+  if (!(await more.count())) return false;
+  await more.click();
+  const item = p.getByText("Hẹn giờ…", { exact: true }).first();
+  if (!(await item.isVisible().catch(() => false))) return false;
+  await item.click();
+  return true;
+}

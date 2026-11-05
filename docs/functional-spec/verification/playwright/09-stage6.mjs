@@ -1,4 +1,4 @@
-import { B, browser, ctxFor, record, shot, results, save, sleep } from "./pw.mjs";
+import { B, browser, ctxFor, record, shot, results, save, sleep, openSchedule } from "./pw.mjs";
 import { as } from "./lib.mjs";
 const b = await browser();
 const { storyA, ch1 } = results._data;
@@ -36,7 +36,7 @@ try {
   await mgr(); await a.getByRole("listitem").filter({ hasText: "Chương thử ba" }).first().getByRole("link", { name: /Soạn nội dung/ }).click(); await a.waitForURL(/\/chapter\/[0-9a-f-]{36}$/);
   const ch3 = a.url().split("/").pop(); results._data.ch3 = ch3; save();
   await a.getByRole("textbox", { name: "Nội dung chương" }).click(); await a.keyboard.type("Nội dung chương ba (QA, hẹn giờ)."); await a.getByRole("button", { name: "Lưu nháp" }).click(); await sleep(2500);
-  await a.getByRole("button", { name: "Hẹn giờ…" }).click();
+  await openSchedule(a);
   const when = new Date(Date.now() + 2.5 * 60000);
   const local = await a.evaluate((ms) => { const d = new Date(ms); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }, when.getTime());
   await a.getByLabel("Thời điểm đăng").fill(local); await a.getByRole("dialog").getByRole("button", { name: "Hẹn giờ", exact: true }).click(); const tSch = await toast(a);
@@ -44,7 +44,7 @@ try {
   // AUT-10: schedule on published ch1
   await a.goto(`${B}/studio/story/${storyA}/chapter/${ch1}`, { waitUntil: "networkidle" });
   let tPub = "no schedule button on published chapter";
-  if (await a.getByRole("button", { name: "Hẹn giờ…" }).count()) { await a.getByRole("button", { name: "Hẹn giờ…" }).click(); await a.getByLabel("Thời điểm đăng").fill(local); await a.getByRole("dialog").getByRole("button", { name: "Hẹn giờ", exact: true }).click(); tPub = await a.getByText(/thay đổi ở nơi khác|không hợp lệ|Đã hẹn giờ/).first().innerText({ timeout: 10000 }).catch(() => "(no message)"); }
+  if (await openSchedule(a)) { await a.getByLabel("Thời điểm đăng").fill(local); await a.getByRole("dialog").getByRole("button", { name: "Hẹn giờ", exact: true }).click(); tPub = await a.getByText(/thay đổi ở nơi khác|không hợp lệ|Đã hẹn giờ/).first().innerText({ timeout: 10000 }).catch(() => "(no message)"); }
   await shot(a, "aut-10-schedule-published");
   record("VER-AUT-10", /thay đổi ở nơi khác/.test(tPub) ? "CONFIRMED" : "CHECK", `Schedule offered on the published chapter → "${tPub}" (F-EDT-01)`);
   // wait for cron
