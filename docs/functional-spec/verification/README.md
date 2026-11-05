@@ -148,6 +148,19 @@ each run).
 Not re-run after the last edit: the lookup in `06a-stage4.mjs` (RDR-08 part) is now limited to this story's chapter
 (it failed on the shared comment text with several QA stories present); `07` records VER-RDR-07/08 anyway and passed.
 
+## After PR #62 and #63 (batch 3 UI, batch 4 backend)
+
+Merged into this branch before PR #61 was merged. Their screen-table rows (written for the new code) were kept; the
+Lucian trial stays **DEC-025**. 811 citations that only moved were re-pointed with `check-citations.mjs`. **239
+citations point at code that #62/#63 edited and were not re-read.** The new migrations (24) and features
+(announcements, edit locks, notification preferences, story role rights, …) are covered by those PRs' own spec rows,
+not by the Phase 1–9 audits, and no runtime re-run was done on them. To list the open citations:
+
+```text
+node docs/functional-spec/verification/check-citations.mjs --base e17014b --head origin/main \
+  --written-with-head "e17014b..origin/main,8ab3b3d"
+```
+
 ## Cleanup
 
 Kept for repeatable runs until the Product Owner asks for removal. [cleanup.sql](cleanup.sql) removes only rows tied

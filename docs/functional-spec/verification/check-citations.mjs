@@ -33,7 +33,10 @@ const baseTracked = new Set(git("ls-tree", "-r", "--name-only", BASE).split("\n"
 // Citations written by a commit in this range already describe the --head code (for example documents merged from main
 // together with that code); everything else in --docs-rev is checked.
 const SKIP_RANGE = flag("--written-with-head", "");
-const writtenWithHead = new Set(SKIP_RANGE ? git("rev-list", SKIP_RANGE).split("\n").filter(Boolean) : []);
+// Comma-separated: ranges ("a..b") and single commits.
+const writtenWithHead = new Set(
+  SKIP_RANGE.split(",").filter(Boolean).flatMap((part) => (part.includes("..") ? git("rev-list", part).split("\n").filter(Boolean) : [git("rev-parse", part).trim()])),
+);
 const ancestors = SKIP_RANGE
   ? new Set(git("rev-list", DOCS_REV).split("\n").filter((c) => c && !writtenWithHead.has(c)))
   : new Set(git("rev-list", BASE).split("\n").filter(Boolean));
