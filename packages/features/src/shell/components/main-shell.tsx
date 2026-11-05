@@ -1,28 +1,25 @@
 "use client";
 
-import { Home, Library, PenLine, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { AppShell } from "@storynest/ui/widgets/app-shell";
-import { BottomNav, type BottomNavItem } from "@storynest/ui/widgets/bottom-nav";
+import { BottomNav } from "@storynest/ui/widgets/bottom-nav";
 import { AdultContentSync } from "../../adult-content/index.ts";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
+import { navItems } from "../model/nav-items.ts";
 import { shellText } from "../strings.ts";
+import { DesktopNav } from "./desktop-nav.tsx";
 import { SiteHeader } from "./site-header.tsx";
 
-// A function, not a constant: the labels are read when the shell renders, so they follow the language.
-const navItems = (): readonly BottomNavItem[] => [
-  { href: "/", label: shellText.nav.home, icon: Home },
-  { href: "/library", label: shellText.nav.library, icon: Library },
-  { href: "/studio", label: shellText.nav.studio, icon: PenLine },
-  { href: "/me", label: shellText.nav.me, icon: User },
-];
-
-/** The frame of every regular page: header with the account menu, content column, mobile bottom navigation. */
+/**
+ * The frame of every regular page: header with the account menu, desktop navigation row (md and up), content column,
+ * mobile bottom navigation. Both navigations are built from the same `navItems()`.
+ */
 export function MainShell({ children }: { children: ReactNode }) {
   const { pathname } = useNavigation();
   return (
     <AppShell
       header={<SiteHeader />}
+      navigation={<DesktopNav pathname={pathname} />}
       bottomNav={
         <BottomNav items={navItems()} pathname={pathname} LinkComponent={AppLink} label={shellText.mainNavigation} />
       }

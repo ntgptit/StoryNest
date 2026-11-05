@@ -7,6 +7,7 @@
     "./lib/utils": "./src/lib/utils.ts",
     "./lib/use-trigger-count": "./src/lib/use-trigger-count.ts",
     "./lib/crop-math": "./src/lib/crop-math.ts",
+    "./lib/use-hide-on-scroll": "./src/lib/use-hide-on-scroll.ts",
     "./components/*": "./src/components/*.tsx",
     "./widgets/*": "./src/widgets/*.tsx"
   },

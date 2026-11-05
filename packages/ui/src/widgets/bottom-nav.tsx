@@ -19,7 +19,7 @@ export interface BottomNavItem {
   match?: (pathname: string) => boolean;
 }
 
-export function isNavItemActive(item: BottomNavItem, pathname: string): boolean {
+export function isNavItemActive(item: Pick<BottomNavItem, "href" | "match">, pathname: string): boolean {
   if (item.match) return item.match(pathname);
   if (item.href === "/") return pathname === "/";
   return pathname === item.href || pathname.startsWith(`${item.href}/`);

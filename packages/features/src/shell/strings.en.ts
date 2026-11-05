@@ -18,6 +18,15 @@ export const en = {
     names: { vi: "Tiếng Việt", en: "English" },
   },
   nav: { home: "Home", library: "Library", studio: "Write", me: "Me" },
+  desktopNav: {
+    browse: "Browse",
+    ranking: "Rankings",
+    following: "Following",
+    categories: "Categories",
+    allStories: "All stories",
+    popularTags: "Popular tags",
+    periods: "Time period",
+  },
   me: {
     title: "Your profile",
     edit: "Edit profile",

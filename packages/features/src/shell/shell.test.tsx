@@ -184,11 +184,13 @@ describe("language switcher", () => {
     const back = await within(screen.getByRole("banner")).findByRole("button", { name: "Switch to Tiếng Việt" });
     expect(back.textContent).toBe("EN");
     expect(await screen.findByText("Sign in")).toBeTruthy();
-    expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeTruthy();
-    expect(screen.getByText("Library")).toBeTruthy();
+    // Bottom nav (mobile) and desktop nav row: only one of them is displayed at a time, both follow the language.
+    expect(screen.getAllByRole("navigation", { name: "Main navigation" })).toHaveLength(2);
+    expect(screen.getAllByText("Library")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Browse" })).toBeTruthy();
     fireEvent.click(back);
     expect(await screen.findByText("Đăng nhập")).toBeTruthy();
-    expect(screen.getByRole("navigation", { name: "Điều hướng chính" })).toBeTruthy();
+    expect(screen.getAllByRole("navigation", { name: "Điều hướng chính" })).toHaveLength(2);
   });
 });
 
@@ -204,8 +206,9 @@ describe("MainShell", () => {
     );
     expect(screen.getByText("page content")).toBeTruthy();
     expect(screen.getByRole("banner").textContent).toContain("StoryNest");
-    const nav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe("Tôi");
+    const navs = screen.getAllByRole("navigation", { name: "Điều hướng chính" });
+    expect(navs).toHaveLength(2);
+    for (const nav of navs) expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe("Tôi");
     expect(await screen.findByText("Đăng nhập")).toBeTruthy();
   });
 
@@ -245,5 +248,151 @@ describe("MainShell", () => {
       } as unknown as DataClient,
     );
     await waitFor(() => expect(from).toHaveBeenCalledWith("user_settings"));
+  });
+});
+
+describe("DesktopNav", () => {
+  const categories = [
+    { id: 2, slug: "ngon-tinh", name: "Ngôn tình", parent_id: null, sort_order: 2 },
+    { id: 1, slug: "kiem-hiep", name: "Kiếm hiệp", parent_id: null, sort_order: 1 },
+    { id: 3, slug: "co-dai", name: "Cổ đại", parent_id: 2, sort_order: 1 },
+  ];
+  const tags = [{ tag_id: 1, slug: "he-thong", display_name: "Hệ thống", stories_count: 4 }];
+
+  /** Guest client that also answers the categories list and the popular-tags RPC. */
+  function browsingClient(): DataClient {
+    const base = fakeClient({ session: null }).client;
+    const from = (table: string) =>
+      table === "categories"
+        ? { select: () => ({ order: () => ({ order: async () => ({ data: categories, error: null }) }) }) }
+        : (base.from as unknown as (t: string) => unknown)(table);
+    const rpc = () => ({ returns: async () => ({ data: tags, error: null }) });
+    return { ...base, from, rpc } as unknown as DataClient;
+  }
+
+  /** Member client: profile, empty account settings and a Realtime stub for the bell. */
+  function memberClient(): DataClient {
+    const base = fakeClient({ session, profile }).client;
+    const from = (table: string) =>
+      table === "user_settings"
+        ? { select: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }
+        : { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: profile, error: null }) }) }) };
+    const channel = () => {
+      const stub = { on: () => stub, subscribe: () => stub };
+      return stub;
+    };
+    return { ...base, from, channel, removeChannel: vi.fn() } as unknown as DataClient;
+  }
+
+  const shell = (client: DataClient, pathname: string) =>
+    setup(
+      <MainShell>
+        <p>page</p>
+      </MainShell>,
+      client,
+      pathname,
+    );
+
+  const desktopNav = () => {
+    const nav = screen
+      .getAllByRole("navigation", { name: "Điều hướng chính" })
+      .find((element) => within(element).queryByRole("button", { name: "Khám phá" }));
+    if (!nav) throw new Error("desktop nav not rendered");
+    return within(nav);
+  };
+
+  const panelOf = (trigger: HTMLElement) => {
+    const panel = document.getElementById(trigger.getAttribute("aria-controls") ?? "");
+    if (!panel) throw new Error("panel not open");
+    return within(panel);
+  };
+
+  it("lists the bottom-nav sections plus Browse and Rankings, and marks the current page", () => {
+    shell(fakeClient({ session: null }).client, "/library");
+    const nav = desktopNav();
+    const names = nav.getAllByRole("listitem").map((item) => item.firstElementChild?.textContent);
+    expect(names).toEqual(["Trang chủ", "Khám phá", "Xếp hạng", "Thư viện", "Viết", "Tôi"]);
+    expect(nav.getByRole("link", { name: "Thư viện" }).getAttribute("aria-current")).toBe("page");
+    expect(nav.getByRole("link", { name: "Trang chủ" }).getAttribute("aria-current")).toBeNull();
+    expect(nav.queryByRole("link", { name: "Theo dõi" })).toBeNull();
+  });
+
+  it("shows Following to members only", async () => {
+    shell(memberClient(), "/following");
+    const link = await desktopNav().findByRole("link", { name: "Theo dõi" });
+    expect(link.getAttribute("href")).toBe("/following");
+    expect(link.getAttribute("aria-current")).toBe("page");
+  });
+
+  it("opens Rankings with a click, offers every period, and closes with Escape back on the trigger", () => {
+    shell(fakeClient({ session: null }).client, "/ranking");
+    const trigger = desktopNav().getByRole("button", { name: "Xếp hạng" });
+    expect(trigger.hasAttribute("data-active")).toBe(true);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    const panel = panelOf(trigger);
+    expect(panel.getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
+      ["Hôm nay", "/ranking?period=day"],
+      ["Tuần này", "/ranking"],
+      ["Tháng này", "/ranking?period=month"],
+      ["Mọi lúc", "/ranking?period=all"],
+    ]);
+    fireEvent.keyDown(panel.getByRole("link", { name: "Tháng này" }), { key: "Escape" });
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("a second click closes a clicked-open panel, a press outside closes it too", () => {
+    shell(fakeClient({ session: null }).client, "/");
+    const trigger = desktopNav().getByRole("button", { name: "Xếp hạng" });
+    fireEvent.click(trigger);
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(trigger);
+    fireEvent.pointerDown(screen.getByText("page"));
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("Browse lists the root categories in order and popular tags as home-feed filters", async () => {
+    shell(browsingClient(), "/");
+    const trigger = desktopNav().getByRole("button", { name: "Khám phá" });
+    fireEvent.click(trigger);
+    const panel = panelOf(trigger);
+    const list = within(await panel.findByRole("list", { name: "Thể loại" }));
+    await waitFor(() => expect(list.getAllByRole("link")).toHaveLength(3));
+    expect(list.getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
+      ["Tất cả truyện", "/"],
+      ["Kiếm hiệp", "/?category=kiem-hiep"],
+      ["Ngôn tình", "/?category=ngon-tinh"],
+    ]);
+    const tag = await panel.findByRole("link", { name: "#Hệ thống" });
+    expect(tag.getAttribute("href")).toBe("/?tag=he-thong");
+    fireEvent.click(tag); // following a link closes the menu
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("glides from panel to panel when the mouse moves between items, without closing", () => {
+    shell(browsingClient(), "/");
+    const nav = desktopNav();
+    const browse = nav.getByRole("button", { name: "Khám phá" });
+    const ranking = nav.getByRole("button", { name: "Xếp hạng" });
+    fireEvent.pointerEnter(browse, { pointerType: "mouse" });
+    expect(browse.getAttribute("aria-expanded")).toBe("true");
+    const surface = document.querySelector('[data-slot="mega-nav-surface"]');
+    expect(document.querySelector('[data-slot="mega-nav-panel"]')?.className).toContain("animate-mega-fade");
+    fireEvent.pointerEnter(ranking, { pointerType: "mouse" });
+    expect(browse.getAttribute("aria-expanded")).toBe("false");
+    expect(ranking.getAttribute("aria-expanded")).toBe("true");
+    // The same surface element stays (so its size and position can transition); the content slides in from the right.
+    expect(document.querySelector('[data-slot="mega-nav-surface"]')).toBe(surface);
+    expect(document.querySelector('[data-slot="mega-nav-panel"]')?.className).toContain("animate-mega-from-end");
+  });
+
+  it("does not open on a touch hover", () => {
+    shell(fakeClient({ session: null }).client, "/");
+    const browse = desktopNav().getByRole("button", { name: "Khám phá" });
+    fireEvent.pointerEnter(browse, { pointerType: "touch" });
+    expect(browse.getAttribute("aria-expanded")).toBe("false");
   });
 });

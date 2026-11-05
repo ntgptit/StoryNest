@@ -17,7 +17,7 @@
 | Business rules | [BR-READ-001…018](../business-rules.md), [BR-PROG-*](../../reading-progress/business-rules.md), [BR-VOTE-*](../../../community/vote/business-rules.md), `BR-CMT-*`, `BR-MOD-004…006`, `BR-MAT-009` |
 | Workflows | [WF-READ-01…06](../workflows.md), [WF-PROG-01, 02, 04](../../reading-progress/workflows.md), [WF-VOTE-01, 02](../../../community/vote/workflows.md) |
 | Entry points | SCR-STORY-01 (CTA, chapter list), TOC / prev / next, library "Continue with chapter N" (SCR-LIB-01), notifications, external links |
-| Layout | Main shell. A sticky top toolbar (h-12, translucent) with a 2px progress bar, and a centred article column `max-width: 66ch` with the reader font, size and line height |
+| Layout | Main shell. A sticky top toolbar (h-12, translucent) with a 2px progress bar, always visible: right below the app header while it shows, at the top while the header is tucked away on scroll-down (SCR-SHELL-01-C14), and a centred article column `max-width: 66ch` with the reader font, size and line height |
 
 ## B. Components
 

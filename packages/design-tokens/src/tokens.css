@@ -455,6 +455,47 @@
   --color-crop-guide: var(--crop-guide);
 }
 
+/*
+ * Shell batch: app header and desktop navigation.
+ * - Hide-on-scroll header (AppShell, Lucian #212, MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt/#212): on pages
+ *   that ask for it (the reader) the header slides up on scroll-down and back on scroll-up. `header-tucked` moves it up
+ *   but keeps the status-bar strip (safe-area top) covered. AppShell publishes the space the header currently takes as
+ *   --app-header-offset; sticky bars below it use `top-below-header` so the header never covers them.
+ * - Morphing navigation menu (MegaNav, Lucian #354, MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt/#354): one
+ *   dropdown surface glides between top-level items (`ease-glide`); the new panel's content slides in from the side it
+ *   came from, the first open only fades in.
+ */
+@theme {
+  --ease-glide: cubic-bezier(0.3, 1.1, 0.4, 1);
+
+  --animate-mega-fade: mega-fade 0.25s ease-out;
+  --animate-mega-from-start: mega-from-start 0.45s var(--ease-glide);
+  --animate-mega-from-end: mega-from-end 0.45s var(--ease-glide);
+  @keyframes mega-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes mega-from-start {
+    from {
+      opacity: 0;
+      transform: translateX(-2.5rem);
+    }
+  }
+  @keyframes mega-from-end {
+    from {
+      opacity: 0;
+      transform: translateX(2.5rem);
+    }
+  }
+}
+@utility header-tucked {
+  translate: 0 calc(env(safe-area-inset-top) - 100%);
+}
+@utility top-below-header {
+  top: var(--app-header-offset, 0px);
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

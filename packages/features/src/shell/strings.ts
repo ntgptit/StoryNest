@@ -21,6 +21,16 @@ const vi = {
     names: { vi: "Tiếng Việt", en: "English" },
   },
   nav: { home: "Trang chủ", library: "Thư viện", studio: "Viết", me: "Tôi" },
+  // Desktop navigation row (from md up): the bottom-nav items plus browsing, ranking and following.
+  desktopNav: {
+    browse: "Khám phá",
+    ranking: "Xếp hạng",
+    following: "Theo dõi",
+    categories: "Thể loại",
+    allStories: "Tất cả truyện",
+    popularTags: "Thẻ phổ biến",
+    periods: "Khoảng thời gian",
+  },
   me: {
     title: "Hồ sơ của bạn",
     edit: "Chỉnh sửa hồ sơ",

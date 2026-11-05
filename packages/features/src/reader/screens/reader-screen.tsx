@@ -2,6 +2,7 @@
 
 import { ArrowLeft, FileQuestion } from "lucide-react";
 import { Skeleton } from "@storynest/ui/components/skeleton";
+import { useAutoHideHeader } from "@storynest/ui/widgets/app-shell";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { ReadingProgress } from "@storynest/ui/widgets/reading-progress";
@@ -25,6 +26,9 @@ import { readerText } from "../strings.ts";
 /**
  * Chapter reader: sticky toolbar (back to the story, table of contents, scroll progress), the chapter blocks in a
  * readable column (~66 characters), and previous/next navigation.
+ *
+ * While reading, the app header gets out of the way: it slides up on scroll-down and back on scroll-up. The toolbar
+ * always stays visible, right below the header while it shows and at the top of the screen while it is tucked away.
  */
 export function ReaderScreen({
   storyId,
@@ -41,6 +45,7 @@ export function ReaderScreen({
   const chapters = useStoryChapters(storyId);
   useApplyReaderPreferences();
   useReaderPreferencesSync();
+  useAutoHideHeader();
 
   // The story says whether this is adult content, and that must be known before a single block is shown.
   if (chapter.isPending || story.isPending) return <ReaderSkeleton />;
@@ -71,7 +76,7 @@ export function ReaderScreen({
     <AdultGate isMature={storyData?.isMature ?? false}>
       <div className="flex flex-col">
         <ReadingTracker key={data.id} chapterId={data.id} blockIds={data.blocks.map((b) => b.id)} />
-        <div className="sticky top-0 z-10 -mx-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="sticky top-below-header z-10 -mx-4 border-b transition-[top] duration-380 ease-soft motion-reduce:transition-none bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <div className="mx-auto flex h-12 max-w-3xl items-center justify-between gap-2 px-4">
             {storyData ? (
               <AppLink
