@@ -10,4 +10,6 @@ export const commentKeys = {
   counts: (chapterId: string) => ["comments", chapterId, "counts"] as const,
   canModerate: (chapterId: string, userId: string | null) =>
     ["comments", chapterId, "can-moderate", userId ?? "guest"] as const,
+  /** Not per chapter: the people the @ list offers for a typed name. */
+  mentions: (query: string) => ["comment-mentions", query] as const,
 };

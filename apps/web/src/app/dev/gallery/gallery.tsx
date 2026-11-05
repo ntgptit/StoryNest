@@ -170,6 +170,10 @@ import { SlopeChart, type SlopeItem } from "@storynest/ui/widgets/slope-chart";
 import { TrendingTerms, type TrendingTerm } from "@storynest/ui/widgets/trending-terms";
 import { WaffleChart } from "@storynest/ui/widgets/waffle-chart";
 import { WordCloud, type CloudPeriod } from "@storynest/ui/widgets/word-cloud";
+import { HandDrawnMarks, PEN_STYLES, type PenStyle } from "@storynest/ui/widgets/hand-drawn-marks";
+import { MentionTextarea, type MentionCandidate } from "@storynest/ui/widgets/mention-textarea";
+import { ReactionBar } from "@storynest/ui/widgets/reaction-bar";
+import { StarRating } from "@storynest/ui/widgets/star-rating";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -3746,6 +3750,125 @@ function Insights4FlowExample() {
   );
 }
 
+const COMMUNITY4_REACTIONS = [
+  { value: "thumbs_up", emoji: "👍", label: "Thumbs up" },
+  { value: "laugh", emoji: "😂", label: "Laugh" },
+  { value: "wow", emoji: "😮", label: "Wow" },
+  { value: "sad", emoji: "😢", label: "Sad" },
+  { value: "fire", emoji: "🔥", label: "Fire" },
+  { value: "clap", emoji: "👏", label: "Clap" },
+] as const;
+type Community4Reaction = (typeof COMMUNITY4_REACTIONS)[number]["value"];
+
+function Community4ReactionsExample() {
+  const [counts, setCounts] = useState<Partial<Record<Community4Reaction, number>>>({ laugh: 3, fire: 1 });
+  const [mine, setMine] = useState<Community4Reaction[]>([]);
+  return (
+    <article id="community4-reactions" className="flex max-w-md flex-col gap-2 rounded-lg border bg-card p-3 text-sm">
+      <span className="font-medium">Mai</span>
+      <p>The twist at the end of chapter 12 — I did not see it coming.</p>
+      <ReactionBar<Community4Reaction>
+        options={COMMUNITY4_REACTIONS}
+        counts={counts}
+        mine={mine}
+        onToggle={(value, on) => {
+          setMine((m) => (on ? [...m, value] : m.filter((x) => x !== value)));
+          setCounts((c) => ({ ...c, [value]: Math.max(0, (c[value] ?? 0) + (on ? 1 : -1)) }));
+        }}
+        label="Reactions"
+        addLabel="Add a reaction"
+        pickerLabel="Pick a reaction"
+        chipLabel={(o, n, me) => `${o.label}, ${n} ${n === 1 ? "person" : "people"}${me ? ", including you" : ""}`}
+      />
+    </article>
+  );
+}
+
+const COMMUNITY4_PEOPLE: MentionCandidate[] = [
+  { username: "mai_lan", name: "Mai Lan" },
+  { username: "minh_tran", name: "Minh Trần" },
+  { username: "an_nguyen", name: "An Nguyễn" },
+  { username: "binh", name: "Bình" },
+];
+
+function Community4MentionsExample() {
+  const [text, setText] = useState("");
+  const [query, setQuery] = useState<string | null>(null);
+  const shown =
+    query === null || query === ""
+      ? []
+      : COMMUNITY4_PEOPLE.filter((p) => p.username.startsWith(query.toLowerCase())).slice(0, 6);
+  return (
+    <div id="community4-mentions" className="flex max-w-md flex-col gap-2">
+      <MentionTextarea
+        aria-label="Write a comment"
+        placeholder="Share your thoughts… Type @ to mention someone"
+        value={text}
+        onValueChange={setText}
+        candidates={shown}
+        onQueryChange={setQuery}
+        listLabel="People"
+        emptyLabel={query ? "Nobody by that name" : "Type the name of someone to mention"}
+        notifyLabel="Mentioning"
+      />
+    </div>
+  );
+}
+
+function Community4MarksExample() {
+  const [style, setStyle] = useState<PenStyle>("underline");
+  const [drawn, setDrawn] = useState(0);
+  const text = "The lantern flickered once, and the whole valley held its breath.";
+  const marks = [
+    { id: `m1-${drawn}`, start: 4, end: 11, style },
+    { id: `m2-${drawn}`, start: 42, end: 48, style },
+  ];
+  return (
+    <div id="community4-marks" className="flex max-w-md flex-col gap-3">
+      <p className="relative font-reader text-lg leading-relaxed">
+        {text}
+        <HandDrawnMarks marks={marks} drawIds={drawn > 0 ? marks.map((m) => m.id) : []} />
+      </p>
+      <div role="group" aria-label="Pen" className="flex flex-wrap gap-1">
+        {PEN_STYLES.map((s) => (
+          <Button
+            key={s}
+            size="sm"
+            variant={s === style ? "secondary" : "ghost"}
+            aria-pressed={s === style}
+            onClick={() => {
+              setStyle(s);
+              setDrawn((n) => n + 1);
+            }}
+          >
+            {s}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Community4RatingExample() {
+  const [stars, setStars] = useState(0);
+  const words = ["Tap a star to rate", "Poor", "Fair", "Good", "Great", "Excellent"] as const;
+  return (
+    <section id="community4-rating" className="flex max-w-md flex-col gap-2 rounded-xl border p-3">
+      <div className="flex items-baseline justify-between text-sm">
+        <span className="font-semibold">Rating</span>
+        <span className="text-muted-foreground">4.3 · 128 ratings</span>
+      </div>
+      <StarRating
+        value={stars}
+        onChange={setStars}
+        label="Your rating"
+        words={words}
+        valueText={(n) => (n === 0 ? words[0] : `${n} star${n === 1 ? "" : "s"}, ${words[n]}`)}
+      />
+    </section>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -4054,6 +4177,13 @@ export function Gallery() {
         <Insights4TrendingExample />
         <Insights4HistogramExample />
         <Insights4FlowExample />
+      </Section>
+
+      <Section title="Batch 4 · community4">
+        <Community4ReactionsExample />
+        <Community4MentionsExample />
+        <Community4MarksExample />
+        <Community4RatingExample />
       </Section>
     </AppShell>
   );

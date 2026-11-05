@@ -330,3 +330,15 @@
 | Related screens | SCR-READ-01 |
 | Evidence | `packages/features/src/reader/hooks/use-read-aloud.ts`, `packages/features/src/reader/model/read-aloud.ts`, `packages/features/src/reader/reader.test.tsx` |
 | Status | Verified (unit + component tests) |
+
+### BR-READ-025 — Personal highlights (hand-drawn marks, batch 4 · community4, Lucian 392)
+| Field | Value |
+| --- | --- |
+| Description | A signed-in reader selects words inside one paragraph or heading and marks them with a pen: underline, circle, box or strike. Marks are private (RLS: own rows only; guests have no grant) and drawn over the text, stroke by stroke when made. |
+| Preconditions | Active account; the chapter is readable; the block is a paragraph/heading of the CURRENT published version. |
+| Conditions | Keyed by chapter + block + range `[start, end)` in UTF-16 code units of the block text (the unit of `marks`); ≤ 2000 units; at most `abuse_limits.highlights_per_chapter` (500) per reader and chapter. The same range again only changes the style (`add_chapter_highlight` returns the same id). |
+| Expected behavior | **Re-publish rule**: the server stores md5 of the block text at creation. A highlight is live while the current published version has that block with identical text (formatting, moving the paragraph and edits elsewhere keep it); otherwise `list_my_highlights` marks it `stale`: it is not drawn but kept, and becomes live again if the identical text returns. The reader sees "N old marks no longer match…" with "Delete old marks". "Remove mark" in the selection toolbar deletes the marks under the selection (direct DELETE of own rows). |
+| Exceptions | 42501 not signed in / not active; PT404 chapter not readable; 22023 unknown or non-text block, range outside the text, unknown style, limit (HINT highlight_limit). Rollback: see the migration header. |
+| Related screens | SCR-READ-01 |
+| Evidence | `supabase/migrations/20261106010200_chapter_highlights.sql`, `supabase/tests/370_chapter_highlights.test.sql`, `packages/ui/src/widgets/hand-drawn-marks.tsx`, `packages/features/src/reader/components/reader-blocks.tsx`, `packages/features/src/reader/highlights.test.tsx` |
+| Status | Verified (SQL + unit tests); the toolbar integration in the reader is not covered by a component test |

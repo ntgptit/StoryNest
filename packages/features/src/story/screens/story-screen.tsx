@@ -26,6 +26,7 @@ import { TocSheet } from "../../reader/index.ts";
 import { ShareButton, shareText } from "../../share/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
+import { StoryRatingPanel } from "../components/story-rating.tsx";
 import { chapterHref, type ChapterListItem, type StoryDetail } from "../model/story-detail.ts";
 import { chapterRanges, isLongStory, rangeIndexOf } from "../model/chapter-ranges.ts";
 import { storyText } from "../strings.ts";
@@ -124,6 +125,7 @@ export function StoryScreen({
             ) : null}
 
             <StoryActions storyId={data.id} />
+            <StoryRatingPanel storyId={data.id} locale={locale} />
             <div className="flex flex-wrap items-center gap-2">
               {/* A private story only opens for its owner and co-authors: a link to it is no use to anyone else. */}
               {data.visibility === VISIBILITY.PRIVATE ? null : (

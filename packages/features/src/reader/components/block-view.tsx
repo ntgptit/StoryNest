@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { HandDrawnMarks, type PenMark } from "@storynest/ui/widgets/hand-drawn-marks";
 import { HighlightSweep } from "@storynest/ui/widgets/highlight-sweep";
 import { ImageLightbox } from "@storynest/ui/widgets/image-lightbox";
 import { cn } from "@storynest/ui/lib/utils";
@@ -13,6 +14,8 @@ const DIM =
 /**
  * One block of a chapter. Every block has a stable anchor id, the target of deep links and paragraph comments; text
  * blocks also carry `data-block-id` (what the quote toolbar reads from a selection). An image opens full screen.
+ * `marks` are the reader's own highlights on a text block, drawn as pen marks over the text (Lucian 392); the
+ * trailing button is left out of the text the ranges count (`data-marks-skip`).
  */
 export function BlockView({
   block,
@@ -20,6 +23,8 @@ export function BlockView({
   trailing,
   highlight = 0,
   dimmed = false,
+  marks,
+  drawIds,
 }: {
   block: ReaderBlock;
   imageUrlFor?: ((key: string) => string) | undefined;
@@ -29,7 +34,13 @@ export function BlockView({
   highlight?: number;
   /** Focus mode: this block is not the one being read. */
   dimmed?: boolean;
+  /** The reader's highlights in this block (text blocks only). */
+  marks?: readonly PenMark[] | undefined;
+  /** Highlights to draw stroke by stroke (just made). */
+  drawIds?: readonly string[] | undefined;
 }) {
+  const pen = marks && marks.length > 0 ? <HandDrawnMarks marks={marks} drawIds={drawIds} /> : null;
+  const tail = trailing ? <span data-marks-skip="">{trailing}</span> : null;
   const id = blockAnchor(block.id);
   const dim = dimmed ? true : undefined;
   switch (block.type) {
@@ -39,12 +50,13 @@ export function BlockView({
           id={id}
           data-block-id={block.id}
           data-dimmed={dim}
-          className={cn("scroll-mt-below-reader-bar whitespace-pre-line", DIM)}
+          className={cn("relative scroll-mt-below-reader-bar whitespace-pre-line", DIM)}
         >
           <HighlightSweep play={highlight}>
             <RichText text={block.text} marks={block.marks} />
           </HighlightSweep>
-          {trailing}
+          {tail}
+          {pen}
         </p>
       );
     case "heading":
@@ -53,12 +65,13 @@ export function BlockView({
           id={id}
           data-block-id={block.id}
           data-dimmed={dim}
-          className={cn("scroll-mt-below-reader-bar pt-4 text-xl font-semibold tracking-tight", DIM)}
+          className={cn("relative scroll-mt-below-reader-bar pt-4 text-xl font-semibold tracking-tight", DIM)}
         >
           <HighlightSweep play={highlight}>
             <RichText text={block.text} marks={block.marks} />
           </HighlightSweep>
-          {trailing}
+          {tail}
+          {pen}
         </h2>
       );
     case "image": {

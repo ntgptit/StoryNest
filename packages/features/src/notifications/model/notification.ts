@@ -6,6 +6,7 @@ import { notificationText } from "../strings.ts";
 export const NOTIFICATION_TYPE = {
   CHAPTER_PUBLISHED: "chapter_published",
   COMMENT_REPLIED: "comment_replied",
+  COMMENT_MENTIONED: "comment_mentioned",
   COLLABORATION_INVITED: "collaboration_invited",
   COLLABORATION_ACCEPTED: "collaboration_accepted",
   COLLABORATION_DECLINED: "collaboration_declined",
@@ -87,14 +88,18 @@ export function describeNotification(n: AppNotification): NotificationView {
         href: n.storyId && storySlug && chapterSlug ? `/story/${n.storyId}/${storySlug}/${chapterSlug}` : null,
       };
     }
-    case NOTIFICATION_TYPE.COMMENT_REPLIED: {
+    case NOTIFICATION_TYPE.COMMENT_REPLIED:
+    case NOTIFICATION_TYPE.COMMENT_MENTIONED: {
       const storySlug = text(n.payload, "story_slug");
       const chapterSlug = text(n.payload, "chapter_slug");
       const blockId = text(n.payload, "block_id");
       // A paragraph's thread opens from the paragraph; a chapter's comments are at the end of the chapter.
       const target = blockId ? blockAnchor(blockId) : COMMENTS_ANCHOR;
       return {
-        text: t.commentReplied(actor, text(n.payload, "excerpt") ?? ""),
+        text: (n.type === NOTIFICATION_TYPE.COMMENT_MENTIONED ? t.commentMentioned : t.commentReplied)(
+          actor,
+          text(n.payload, "excerpt") ?? "",
+        ),
         href:
           n.storyId && storySlug && chapterSlug ? `/story/${n.storyId}/${storySlug}/${chapterSlug}#${target}` : null,
       };
@@ -127,6 +132,7 @@ export function notificationGroup(type: string): Exclude<NotificationFilter, "al
     case NOTIFICATION_TYPE.CHAPTER_PUBLISHED:
       return NOTIFICATION_FILTER.CHAPTERS;
     case NOTIFICATION_TYPE.COMMENT_REPLIED:
+    case NOTIFICATION_TYPE.COMMENT_MENTIONED:
       return NOTIFICATION_FILTER.REPLIES;
     case NOTIFICATION_TYPE.COLLABORATION_INVITED:
     case NOTIFICATION_TYPE.COLLABORATION_ACCEPTED:

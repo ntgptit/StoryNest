@@ -5,4 +5,6 @@ export const storyKeys = {
   chapters: (storyId: string) => ["story", "chapters", storyId] as const,
   /** Whether I follow / saved this story. The user is part of the key: another account must never see my state. */
   library: (storyId: string, userId: string | null) => ["story", "library", storyId, userId ?? "guest"] as const,
+  /** The rating summary and my stars (the user is part of the key). */
+  rating: (storyId: string, userId: string | null) => ["story", "rating", storyId, userId ?? "guest"] as const,
 };

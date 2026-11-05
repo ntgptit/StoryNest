@@ -20,7 +20,7 @@
 | SCR-SET-01-C01 | Page header | "Settings" / "Saved in your account, used on every device." |
 | SCR-SET-01-C02 | Settings skeleton / error state | Error: "Could not load your settings" / "Check your connection and try again." / "Try again" |
 | SCR-SET-01-C03 | Language section + select | "Language" / "Choose the interface language. Anything not translated yet is shown in Vietnamese." / label "Interface language", options "Tiếng Việt", "English" |
-| SCR-SET-01-C04 | Notifications section (expanding settings, Lucian 023) | Badge "n of 3 on" / "All off"; three group switches with icons (gray when off): "New chapters" – "A story you follow has a new chapter."; "Replies to comments" – "Someone replies to your comment."; "Answers to invitations" – "Someone you invited to collaborate accepts or declines." A group that is on unfolds: per-type switches "Accepted" / "Declined" and "Invitations to you · Always on" (answers group only), then "In the app: On · Email and push: Not available yet". "Turn all off" button (BR-SET-011, BR-SET-012) |
+| SCR-SET-01-C04 | Notifications section (expanding settings, Lucian 023) | Badge "n of 3 on" / "All off"; three group switches with icons (gray when off): "New chapters" – "A story you follow has a new chapter."; "Replies to comments" – "Someone replies to your comment."; "Answers to invitations" – "Someone you invited to collaborate accepts or declines." A group that is on unfolds: per-type switches "Accepted" / "Declined" and "Invitations to you · Always on" (answers group only), then "In the app: On · Email and push: Not available yet". "Turn all off" button (BR-SET-011, BR-SET-012) The replies group is labelled "Replies and mentions" and also covers @mention notifications (BR-NOTI-018, batch 4 · community4). |
 | SCR-SET-01-C05 | Reading section | "Reading" / "Font size, line spacing, font and background of the reading page." + `ReaderSettingsSheet` trigger (OBJ-READ) |
 | SCR-SET-01-C06 | Adult content section + switch | "Adult content (18+)" / "Show 18+ stories" / "Hidden by default. Turning it on means you confirm you are 18 or older." (OBJ-MAT) |
 | SCR-SET-01-C07 | Age confirmation dialog | "Show adult stories?" / "Only turn this on if you are 18 or older. 18+ stories will appear in the lists." / "I am 18 or older, show 18+ stories" / "Keep hidden" |
@@ -138,7 +138,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 
 ## E. Acceptance criteria
 - SCR-SET-01-AC01 Given a member without a settings row, when opening `/settings`, then Vietnamese is selected and all three notification switches are on.
-- SCR-SET-01-AC02 Given the member turns "Replies to comments" off, when someone replies to their comment, then no notification row is created and none appears later when turned back on.
+- SCR-SET-01-AC02 Given the member turns "Replies and mentions" off, when someone replies to their comment, then no notification row is created and none appears later when turned back on.
 - SCR-SET-01-AC03 Given the save fails, when toggling a switch, then it returns to its previous position and the failure toast is shown.
 - SCR-SET-01-AC04 Given the member picks English, then the page re-renders in English without reload and another device shows English after sign-in.
 - SCR-SET-01-AC05 Given the 18+ switch is off, when turned on, then the confirmation dialog appears and 18+ stays hidden unless confirmed.

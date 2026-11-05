@@ -55,3 +55,13 @@ export const TREND_LIMITS = {
 
 /** Lower edges (words) of the Discover length buckets of story_length_histogram; the last bucket is open-ended. */
 export const STORY_LENGTH_EDGES = [0, 2_000, 10_000, 30_000, 60_000, 100_000, 200_000, 400_000] as const;
+// Limits a server function enforces (CHECKs or abuse_limits defaults); the client checks them first for a quick answer.
+export const SERVER_LIMITS = {
+  /** Longest highlight range, in UTF-16 code units (chapter_highlights CHECK). */
+  highlightLength: 2_000,
+  /** Star rating range (story_ratings CHECK). */
+  ratingMin: 1,
+  ratingMax: 5,
+  /** People one comment can notify by @mention (abuse_limits.comment_max_mentions default). */
+  mentionsPerComment: 10,
+} as const;

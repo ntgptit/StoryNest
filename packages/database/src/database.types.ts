@@ -211,6 +211,62 @@ export type Database = {
           },
         ]
       }
+      chapter_highlights: {
+        Row: {
+          block_id: string
+          block_text_md5: string
+          chapter_id: string
+          created_at: string
+          end_offset: number
+          id: string
+          start_offset: number
+          style: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          block_id: string
+          block_text_md5: string
+          chapter_id: string
+          created_at?: string
+          end_offset: number
+          id?: string
+          start_offset: number
+          style: string
+          user_id: string
+        }
+        Update: {
+          block_id?: string
+          block_text_md5?: string
+          chapter_id?: string
+          created_at?: string
+          end_offset?: number
+          id?: string
+          start_offset?: number
+          style?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_highlights_block_id_chapter_id_fkey"
+            columns: ["block_id", "chapter_id"]
+            referencedRelation: "chapter_blocks"
+            referencedColumns: ["id", "chapter_id"]
+          },
+          {
+            foreignKeyName: "chapter_highlights_chapter_id_fkey"
+            columns: ["chapter_id"]
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chapter_highlights_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chapter_read_events: {
         Row: {
           aggregated_at: string | null
@@ -530,6 +586,41 @@ export type Database = {
           },
           {
             foreignKeyName: "comment_likes_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comment_reactions: {
+        Row: {
+          comment_id: string
+          created_at: string
+          reaction: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          comment_id: string
+          created_at?: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_reactions_user_id_fkey"
             columns: ["user_id"]
             referencedRelation: "app_users"
             referencedColumns: ["id"]
@@ -1262,6 +1353,44 @@ export type Database = {
           },
         ]
       }
+      story_ratings: {
+        Row: {
+          created_at: string
+          stars: number
+          story_id: string
+          updated_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          created_at?: string
+          stars: number
+          story_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          stars?: number
+          story_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_ratings_story_id_fkey"
+            columns: ["story_id"]
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_ratings_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       story_saves: {
         Row: {
           saved_at: string
@@ -1299,6 +1428,9 @@ export type Database = {
           comments: number
           followers: number
           published_chapters: number
+          rating_avg: number | null
+          rating_count: number
+          rating_sum: number
           reads: number
           saves: number
           story_id: string
@@ -1311,6 +1443,9 @@ export type Database = {
           comments?: number
           followers?: number
           published_chapters?: number
+          rating_avg?: never
+          rating_count?: number
+          rating_sum?: number
           reads?: number
           saves?: number
           story_id: string
@@ -1322,6 +1457,9 @@ export type Database = {
           comments?: number
           followers?: number
           published_chapters?: number
+          rating_avg?: never
+          rating_count?: number
+          rating_sum?: number
           reads?: number
           saves?: number
           story_id?: string
@@ -1814,6 +1952,16 @@ export type Database = {
           title: string
         }[]
       }
+      add_chapter_highlight: {
+        Args: {
+          p_block_id: string
+          p_chapter_id: string
+          p_end: number
+          p_start: number
+          p_style: string
+        }
+        Returns: string
+      }
       add_story_to_list: {
         Args: { p_list_id: string; p_story_id: string }
         Returns: number
@@ -1941,6 +2089,11 @@ export type Database = {
         Returns: boolean
       }
       comment_looks_like_spam: { Args: { p_body: string }; Returns: boolean }
+      comment_mentioned_usernames: {
+        Args: { p_body: string }
+        Returns: string[]
+      }
+      comment_reaction_counts: { Args: { p_comment_id: string }; Returns: Json }
       comment_reply_count: { Args: { p_comment_id: string }; Returns: number }
       comment_to_card: {
         Args: {
@@ -1983,6 +2136,16 @@ export type Database = {
         Returns: undefined
       }
       enforce_rate_limit: { Args: { p_action: string }; Returns: undefined }
+      get_story_rating: {
+        Args: { p_story_id: string }
+        Returns: {
+          chapters_needed: number
+          chapters_read: number
+          my_stars: number
+          rating_avg: number
+          rating_count: number
+        }[]
+      }
       habits_mark_story_finished: {
         Args: { p_story_id: string; p_user_id: string }
         Returns: undefined
@@ -2026,6 +2189,18 @@ export type Database = {
         Returns: {
           story_id: string
           updated_at: string
+        }[]
+      }
+      list_my_highlights: {
+        Args: { p_chapter_id: string }
+        Returns: {
+          block_id: string
+          created_at: string
+          end_offset: number
+          id: string
+          stale: boolean
+          start_offset: number
+          style: string
         }[]
       }
       list_my_invitations: {
@@ -2288,9 +2463,21 @@ export type Database = {
         Args: { p_comment_id: string; p_liked: boolean }
         Returns: number
       }
+      set_comment_reaction: {
+        Args: { p_comment_id: string; p_on: boolean; p_reaction: string }
+        Returns: Json
+      }
       set_story_follow: {
         Args: { p_followed: boolean; p_story_id: string }
         Returns: number
+      }
+      set_story_rating: {
+        Args: { p_stars: number; p_story_id: string }
+        Returns: {
+          my_stars: number
+          rating_avg: number
+          rating_count: number
+        }[]
       }
       set_story_save: {
         Args: { p_saved: boolean; p_story_id: string }
@@ -2337,6 +2524,14 @@ export type Database = {
           max_words: number
           min_words: number
           stories: number
+        }[]
+      }
+      story_rating_summary: {
+        Args: { p_story_id: string }
+        Returns: {
+          my_stars: number
+          rating_avg: number
+          rating_count: number
         }[]
       }
       story_role: { Args: { p_story_id: string }; Returns: string }
@@ -2386,6 +2581,7 @@ export type Database = {
       }
       unarchive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       unpublish_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
+      utf16_length: { Args: { p_text: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
@@ -2407,6 +2603,8 @@ export type Database = {
         like_count: number | null
         liked_by_me: boolean | null
         reply_count: number | null
+        reactions: Json | null
+        my_reactions: string[] | null
       }
       moderation_report: {
         id: string | null

@@ -42,6 +42,22 @@ const vi = {
   error: { title: "Không tải được truyện", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   chaptersError: { title: "Không tải được danh sách chương", retry: "Thử lại" },
   peek: { open: "Mở truyện", close: "Đóng xem nhanh" },
+  rating: {
+    title: "Đánh giá",
+    none: "Chưa có đánh giá",
+    summary: (average: string, count: string, _n: number) => `${average} · ${count} lượt đánh giá`,
+    yours: "Đánh giá của bạn",
+    words: ["Chạm vào sao để đánh giá", "Tệ", "Tạm", "Được", "Hay", "Tuyệt vời"],
+    valueText: (n: number, word: string) => `${n} sao, ${word}`,
+    needRead: (n: number) => `Đọc ít nhất ${n} chương để đánh giá truyện này.`,
+    guest: "Đăng nhập để đánh giá",
+    saved: "Đã lưu đánh giá.",
+    removed: "Đã bỏ đánh giá.",
+    ownStory: "Bạn không thể đánh giá truyện của chính mình.",
+    readFirst: "Hãy đọc truyện trước khi đánh giá.",
+    network: "Không có kết nối. Kiểm tra mạng và thử lại.",
+    failed: "Không lưu được đánh giá. Thử lại.",
+  },
 } as const;
 
 export const storyText = defineText("story", vi, en);

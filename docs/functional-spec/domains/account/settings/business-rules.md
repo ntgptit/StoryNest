@@ -69,7 +69,7 @@ Screen: [SCR-SET-01 Settings](screens/settings.md).
 ### BR-SET-005 — Notification switches
 | Field | Value |
 | --- | --- |
-| Description | Three in-app notification types can be switched off: "New chapters" (a followed story has a new chapter → `chapter_published`), "Replies to comments" (`comment_replied`), "Answers to invitations" (`collaboration_accepted`, `collaboration_declined`) |
+| Description | Three in-app notification types can be switched off: "New chapters" (a followed story has a new chapter → `chapter_published`), "Replies and mentions" (`comment_replied`, and since batch 4 · community4 also `comment_mentioned`, BR-NOTI-018), "Answers to invitations" (`collaboration_accepted`, `collaboration_declined`) |
 | Preconditions | — |
 | Conditions | `collaboration_invited` (invitations addressed to the member) has no switch and is always delivered; any other or future event type defaults to enabled |
 | Expected behavior | Text: "Choose which in-app notifications you want. Collaboration invitations sent to you are always delivered." |

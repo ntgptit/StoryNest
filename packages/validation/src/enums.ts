@@ -38,6 +38,10 @@ export const NOTIFICATION_PREFERENCE_TYPES = [
   "collaboration_accepted",
   "collaboration_declined",
 ] as const;
+/** Emoji reactions on a comment (comment_reactions.reaction). The like is separate (comment_likes) and not one of them. */
+export const COMMENT_REACTIONS = ["thumbs_up", "laugh", "wow", "sad", "fire", "clap"] as const;
+/** Pen styles of a personal highlight (chapter_highlights.style). */
+export const HIGHLIGHT_STYLES = ["underline", "circle", "box", "strike"] as const;
 
 export const accountStatusSchema = z.enum(ACCOUNT_STATUSES);
 export const storyStatusSchema = z.enum(STORY_STATUSES);
@@ -54,6 +58,8 @@ export const moderationTargetKindSchema = z.enum(MODERATION_TARGET_KINDS);
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
 export const announcementKindSchema = z.enum(ANNOUNCEMENT_KINDS);
 export const notificationPreferenceTypeSchema = z.enum(NOTIFICATION_PREFERENCE_TYPES);
+export const commentReactionSchema = z.enum(COMMENT_REACTIONS);
+export const highlightStyleSchema = z.enum(HIGHLIGHT_STYLES);
 
 // Named constants for the values code compares or filters on, so no query or condition spells a literal like
 // "published". `satisfies` makes the compiler reject a value that is not in the enum; validation.test.ts checks
@@ -139,6 +145,22 @@ export const ANNOUNCEMENT_KIND = { BANNER: "banner", POPUP: "popup" } as const s
   string,
   AnnouncementKind
 >;
+export const COMMENT_REACTION = {
+  THUMBS_UP: "thumbs_up",
+  LAUGH: "laugh",
+  WOW: "wow",
+  SAD: "sad",
+  FIRE: "fire",
+  CLAP: "clap",
+} as const satisfies Record<string, CommentReaction>;
+export const HIGHLIGHT_STYLE = {
+  UNDERLINE: "underline",
+  CIRCLE: "circle",
+  BOX: "box",
+  STRIKE: "strike",
+} as const satisfies Record<string, HighlightStyle>;
+export type CommentReaction = z.infer<typeof commentReactionSchema>;
+export type HighlightStyle = z.infer<typeof highlightStyleSchema>;
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
 export type CommentStatus = z.infer<typeof commentStatusSchema>;
 export type InvitationStatus = z.infer<typeof invitationStatusSchema>;

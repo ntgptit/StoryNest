@@ -27,6 +27,12 @@ export interface BlockSelection {
   /** Value of the block's id attribute. */
   blockId: string;
   text: string;
+  /**
+   * Where `text` (trimmed) sits in the block's own text, in UTF-16 code units: [start, end). Text inside
+   * `[data-marks-skip]` elements of the block (buttons after the text) is not counted.
+   */
+  start: number;
+  end: number;
   rect: SelectionRect;
 }
 
@@ -38,6 +44,23 @@ const MIN_TOP_PX = 120;
 const EDGE_PX = 8;
 /** Selection events arrive in bursts while a handle is dragged: wait for a short pause before reading it. */
 const SETTLE_MS = 120;
+
+/** Text length of `block` before the boundary (`node`, `offset`), leaving out `[data-marks-skip]` parts. */
+function textOffset(block: Element, node: Node, offset: number): number {
+  const before = document.createRange();
+  before.setStart(block, 0);
+  before.setEnd(node, offset);
+  let passed = 0;
+  const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+  for (let current = walker.nextNode(); current; current = walker.nextNode()) {
+    if (current.parentElement?.closest("[data-marks-skip], svg")) continue;
+    const text = current as Text;
+    if (text === node) return passed + offset;
+    if (!before.intersectsNode(text)) break;
+    passed += text.data.length;
+  }
+  return passed;
+}
 
 function blockOf(node: Node | null, attribute: string): Element | null {
   const element = node instanceof Element ? node : (node?.parentElement ?? null);
@@ -90,10 +113,16 @@ export function useBlockSelection(
         setSelection(null);
         return;
       }
-      const rect = current.getRangeAt(0).getBoundingClientRect();
+      const range = current.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const raw = range.toString();
+      const lead = raw.length - raw.trimStart().length;
+      const start = textOffset(block, range.startContainer, range.startOffset) + lead;
       setSelection({
         blockId: block.getAttribute(attribute) ?? "",
         text,
+        start,
+        end: start + text.length,
         rect: { top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width },
       });
     };

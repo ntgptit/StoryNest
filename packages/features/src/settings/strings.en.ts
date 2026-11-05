@@ -55,7 +55,10 @@ export const en = {
     invitedAlwaysOn: { label: "Invitations to you", description: "Always delivered: they need your answer." },
     alwaysOn: "Always on",
     chapterPublished: { label: "New chapters", description: "A story you follow has a new chapter." },
-    commentReplied: { label: "Replies to comments", description: "Someone replies to your comment." },
+    commentReplied: {
+      label: "Replies and mentions",
+      description: "Someone replies to your comment or @mentions you in a comment.",
+    },
     collaborationAnswers: {
       label: "Answers to invitations",
       description: "Someone you invited to collaborate accepts or declines.",

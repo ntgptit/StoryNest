@@ -35,6 +35,8 @@ const vi = {
       `"${storyTitle}" vừa đăng chương ${chapterNumber}: ${chapterTitle}`,
     commentReplied: (actor: string, excerpt: string) =>
       excerpt === "" ? `${actor} đã trả lời bình luận của bạn` : `${actor} đã trả lời bình luận của bạn: "${excerpt}"`,
+    commentMentioned: (actor: string, excerpt: string) =>
+      excerpt === "" ? `${actor} đã nhắc đến bạn trong một bình luận` : `${actor} đã nhắc đến bạn: "${excerpt}"`,
     collaborationInvited: (actor: string, storyTitle: string) => `${actor} mời bạn cộng tác truyện "${storyTitle}"`,
     collaborationAccepted: (actor: string, storyTitle: string) =>
       `${actor} đã chấp nhận lời mời cộng tác truyện "${storyTitle}"`,

@@ -53,6 +53,12 @@
             "deactivated",
             "suspended"
         ],
+        "chapter_highlights.style": [
+            "box",
+            "circle",
+            "strike",
+            "underline"
+        ],
         "ranking_snapshots.period": [
             "all",
             "day",
@@ -91,6 +97,14 @@
             "ranking",
             "search",
             "story_page"
+        ],
+        "comment_reactions.reaction": [
+            "clap",
+            "fire",
+            "laugh",
+            "sad",
+            "thumbs_up",
+            "wow"
         ],
         "user_settings.language_code": [
             "en",

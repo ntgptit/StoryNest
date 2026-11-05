@@ -3,7 +3,7 @@
 import { Heart, MoreHorizontal } from "lucide-react";
 import { Fragment, useState } from "react";
 import { formatCount, formatRelativeTime } from "@storynest/utils";
-import { COMMENT_STATUS, HIDE_SOURCE } from "@storynest/validation";
+import { COMMENT_REACTIONS, COMMENT_STATUS, HIDE_SOURCE, type CommentReaction } from "@storynest/validation";
 import { Button } from "@storynest/ui/components/button";
 import {
   DropdownMenu,
@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@storynest/ui/components/dropdown-menu";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
+import { splitMentions } from "@storynest/ui/widgets/mention-textarea";
+import { ReactionBar, type ReactionOption } from "@storynest/ui/widgets/reaction-bar";
 import { SpoilerText } from "@storynest/ui/widgets/spoiler-text";
 import { SwipeToReply } from "@storynest/ui/widgets/swipe-to-reply";
 import { ReportButton } from "../../moderation/index.ts";
@@ -26,13 +28,21 @@ import {
   useReplyList,
   useSetCommentHidden,
   useToggleCommentLike,
+  useToggleCommentReaction,
 } from "../hooks/use-comments.ts";
 import { commentErrorMessage, isPlaceholder, type Comment } from "../model/comment.ts";
+import { REACTION_EMOJI } from "../model/reactions.ts";
 import { splitSpoilers } from "../model/spoiler.ts";
 import { commentText } from "../strings.ts";
 import { CommentComposer } from "./comment-composer.tsx";
 
 const t = commentText.item;
+
+const REACTION_OPTIONS: readonly ReactionOption<CommentReaction>[] = COMMENT_REACTIONS.map((value) => ({
+  value,
+  emoji: REACTION_EMOJI[value],
+  label: t.reactions.names[value],
+}));
 
 /** One comment with its actions. A top-level comment can be replied to and shows its replies below; a reply cannot. */
 export function CommentItem({
@@ -51,6 +61,7 @@ export function CommentItem({
   const navigation = useNavigation();
   const toast = useAppToast();
   const like = useToggleCommentLike(chapterId);
+  const react = useToggleCommentReaction(chapterId);
   const edit = useEditComment(chapterId);
   const remove = useDeleteComment(chapterId);
   const post = usePostComment(chapterId);
@@ -80,6 +91,12 @@ export function CommentItem({
       { onError: (error) => toast.error(commentErrorMessage(error)) },
     );
   };
+
+  const toggleReaction = (reaction: CommentReaction, on: boolean) =>
+    react.mutate(
+      { commentId: comment.id, reaction, on },
+      { onError: (error) => toast.error(commentErrorMessage(error)) },
+    );
 
   const changeHidden = (hidden: boolean) =>
     setHidden.mutate(
@@ -193,6 +210,20 @@ export function CommentItem({
                 <ReportButton kind="comment" targetId={comment.id} label={t.report} />
               ) : null}
             </div>
+            {comment.status === COMMENT_STATUS.VISIBLE ? (
+              <ReactionBar
+                options={REACTION_OPTIONS}
+                counts={comment.reactions}
+                mine={comment.myReactions}
+                onToggle={toggleReaction}
+                label={t.reactions.group}
+                addLabel={userId === null ? t.reactions.guest : t.reactions.add}
+                pickerLabel={t.reactions.picker}
+                chipLabel={(option, count, mine) => t.reactions.chip(option.label, count, mine)}
+                disabled={userId === null}
+                onDisabledPress={() => navigation.push(loginHref)}
+              />
+            ) : null}
           </div>
         </SwipeToReply>
       )}
@@ -250,7 +281,10 @@ export function CommentItem({
   );
 }
 
-/** A comment's text as plain text nodes, with `||spoiler||` parts covered until pressed (render only). */
+/**
+ * A comment's text as plain text nodes, with `||spoiler||` parts covered until pressed and @mentions marked (render
+ * only: no link, the text is never parsed as HTML).
+ */
 function CommentBody({ body }: { body: string }) {
   return (
     <>
@@ -260,7 +294,17 @@ function CommentBody({ body }: { body: string }) {
             {segment.text}
           </SpoilerText>
         ) : (
-          <Fragment key={index}>{segment.text}</Fragment>
+          <Fragment key={index}>
+            {splitMentions(segment.text).map((part, at) =>
+              part.mention ? (
+                <span key={at} className="rounded-sm bg-mention font-medium">
+                  {part.text}
+                </span>
+              ) : (
+                <Fragment key={at}>{part.text}</Fragment>
+              ),
+            )}
+          </Fragment>
         ),
       )}
     </>

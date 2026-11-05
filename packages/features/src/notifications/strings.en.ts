@@ -36,6 +36,8 @@ export const en = {
       `"${storyTitle}" just published chapter ${chapterNumber}: ${chapterTitle}`,
     commentReplied: (actor: string, excerpt: string) =>
       excerpt === "" ? `${actor} replied to your comment` : `${actor} replied to your comment: "${excerpt}"`,
+    commentMentioned: (actor: string, excerpt: string) =>
+      excerpt === "" ? `${actor} mentioned you in a comment` : `${actor} mentioned you: "${excerpt}"`,
     collaborationInvited: (actor: string, storyTitle: string) => `${actor} invited you to co-author "${storyTitle}"`,
     collaborationAccepted: (actor: string, storyTitle: string) =>
       `${actor} accepted your invitation to co-author "${storyTitle}"`,

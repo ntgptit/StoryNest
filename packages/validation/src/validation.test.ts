@@ -10,6 +10,10 @@ import {
   CHAPTER_STATUSES,
   COLLABORATOR_ROLES,
   COMMENT_STATUSES,
+  COMMENT_REACTIONS,
+  COMMENT_REACTION,
+  HIGHLIGHT_STYLES,
+  HIGHLIGHT_STYLE,
   STORY_LANGUAGES,
   HIDE_SOURCES,
   MODERATION_ACTIONS,
@@ -100,6 +104,8 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["notification_preferences.event_type", NOTIFICATION_PREFERENCE_TYPES],
     ["ranking_snapshots.period", RANKING_PERIODS],
     ["chapter_read_events.source", READ_SOURCES],
+    ["comment_reactions.reaction", COMMENT_REACTIONS],
+    ["chapter_highlights.style", HIGHLIGHT_STYLES],
   ];
   it.each(cases)("%s", (column, values) => {
     expect(contract.enums[column], `${column} missing from contract`).toBeDefined();
@@ -122,6 +128,8 @@ describe("named enum constants", () => {
     ["MODERATION_TARGET_KIND", MODERATION_TARGET_KIND, MODERATION_TARGET_KINDS],
     ["ACHIEVEMENT_CODE", ACHIEVEMENT_CODE, ACHIEVEMENT_CODES],
     ["ANNOUNCEMENT_KIND", ANNOUNCEMENT_KIND, ANNOUNCEMENT_KINDS],
+    ["COMMENT_REACTION", COMMENT_REACTION, COMMENT_REACTIONS],
+    ["HIGHLIGHT_STYLE", HIGHLIGHT_STYLE, HIGHLIGHT_STYLES],
   ] as const)("%s has exactly one constant per enum value", (_name, constants, values) => {
     expect(sorted(Object.values(constants))).toEqual(sorted(values));
   });

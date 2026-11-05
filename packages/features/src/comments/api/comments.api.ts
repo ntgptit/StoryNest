@@ -1,3 +1,4 @@
+import type { CommentReaction } from "@storynest/validation";
 import type { DataClient } from "../../_shared/client.ts";
 import { unwrap } from "../../_shared/errors.ts";
 import {
@@ -6,7 +7,9 @@ import {
   type CommentCardRow,
   type CommentCursor,
   type CommentPage,
+  readReactions,
 } from "../model/comment.ts";
+import { MENTION_SUGGESTIONS, likePrefix, type MentionSuggestion } from "../model/mention.ts";
 
 /**
  * One page of top-level comments of a chapter (`blockId` null) or of one paragraph. The server is asked for one row
@@ -83,6 +86,40 @@ export async function deleteComment(client: DataClient, commentId: string): Prom
 /** Sets my like to exactly `liked` and returns the comment's like count afterwards. */
 export async function setCommentLike(client: DataClient, commentId: string, liked: boolean): Promise<number> {
   return Number(unwrap(await client.rpc("set_comment_like", { p_comment_id: commentId, p_liked: liked })) ?? 0);
+}
+
+/** Sets my `reaction` on a comment to exactly `on` and returns the comment's reaction counts afterwards. */
+export async function setCommentReaction(
+  client: DataClient,
+  commentId: string,
+  reaction: CommentReaction,
+  on: boolean,
+): Promise<Partial<Record<CommentReaction, number>>> {
+  const counts = unwrap(
+    await client.rpc("set_comment_reaction", { p_comment_id: commentId, p_reaction: reaction, p_on: on }),
+  );
+  return readReactions(counts);
+}
+
+/**
+ * People whose username starts with `query` (case ignored), for the @ list. Reads the public profiles (RLS shows only
+ * active accounts); an empty query asks nothing.
+ */
+export async function searchMentionCandidates(client: DataClient, query: string): Promise<MentionSuggestion[]> {
+  if (query === "") return [];
+  const rows =
+    unwrap(
+      await client
+        .from("app_users")
+        .select("username, display_name")
+        .ilike("username", likePrefix(query))
+        .order("username", { ascending: true })
+        .limit(MENTION_SUGGESTIONS),
+    ) ?? [];
+  return rows.map((row) => ({
+    username: String(row.username),
+    name: row.display_name?.trim() || String(row.username),
+  }));
 }
 
 /** Hides a comment on my story (or shows it again). Returns the card status afterwards. */

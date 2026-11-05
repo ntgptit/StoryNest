@@ -37,6 +37,18 @@ export const en = {
     text: (quote: string, source: string, url: string) => `“${quote}”\n— ${source}\n${url}`,
     source: (story: string, chapter: string) => `${story}, ${chapter}`,
   },
+  highlight: {
+    group: "Your private marks",
+    pens: { underline: "Underline", circle: "Circle", box: "Box", strike: "Strike" },
+    remove: "Remove mark",
+    added: "Marked. Only you can see it.",
+    removed: "Mark removed.",
+    failed: "Couldn't save the mark. Try again.",
+    limit: "You have too many marks in this chapter.",
+    stale: (count: number) =>
+      `${count} old mark${count === 1 ? " no longer matches" : "s no longer match"} because the author edited the paragraph.`,
+    clearStale: "Delete old marks",
+  },
   settings: {
     open: "Display",
     title: "Reading options",

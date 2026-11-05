@@ -54,7 +54,10 @@ const vi = {
     invitedAlwaysOn: { label: "Lời mời gửi cho bạn", description: "Luôn được gửi vì cần bạn trả lời." },
     alwaysOn: "Luôn bật",
     chapterPublished: { label: "Chương mới", description: "Truyện bạn theo dõi có chương mới." },
-    commentReplied: { label: "Trả lời bình luận", description: "Có người trả lời bình luận của bạn." },
+    commentReplied: {
+      label: "Trả lời và nhắc tên",
+      description: "Có người trả lời bình luận của bạn hoặc nhắc @tên bạn trong bình luận.",
+    },
     collaborationAnswers: {
       label: "Phản hồi lời mời",
       description: "Người được bạn mời cộng tác nhận hoặc từ chối.",
