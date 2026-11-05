@@ -129,6 +129,10 @@ import { UnsavedChangesBar } from "@storynest/ui/widgets/unsaved-changes-bar";
 import { CoverStack } from "@storynest/ui/widgets/cover-stack";
 import { InlineEditTitle } from "@storynest/ui/widgets/inline-edit-title";
 import { PadlockIcon } from "@storynest/ui/widgets/padlock-icon";
+// Batch 3 · studio3
+import { Breadcrumbs } from "@storynest/ui/widgets/breadcrumbs";
+import { InlineAlert } from "@storynest/ui/widgets/inline-alert";
+import { SubmitButton } from "@storynest/ui/widgets/submit-button";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -2462,6 +2466,106 @@ function Browse3RevealExample() {
   );
 }
 
+// Batch 3 · studio3: inline alerts (072), submit button states (001), breadcrumbs with a story switcher (103, 037).
+function Studio3AlertsExample() {
+  const [shown, setShown] = useState(true);
+  const heading = useRef<HTMLHeadingElement>(null);
+  return (
+    <div className="flex max-w-md flex-col gap-3" id="studio3-alerts">
+      <h3 ref={heading} tabIndex={-1} className="text-sm font-semibold outline-none">
+        Publish
+      </h3>
+      <InlineAlert
+        title="Unsaved text from this device"
+        actions={
+          <>
+            <Button size="sm">Restore</Button>
+            <Button size="sm" variant="ghost">
+              Discard
+            </Button>
+          </>
+        }
+      >
+        Kept 3 minutes ago, after the connection dropped.
+      </InlineAlert>
+      <InlineAlert tone="danger" title="The draft was changed elsewhere">
+        Reload to get the new draft; unsaved changes here will be lost.
+      </InlineAlert>
+      {shown ? (
+        <InlineAlert
+          tone="danger"
+          onDismiss={() => setShown(false)}
+          dismissLabel="Dismiss the error"
+          focusAfterDismiss={heading}
+        >
+          The draft or the chapter state changed elsewhere. Reload and try again.
+        </InlineAlert>
+      ) : (
+        <Button size="sm" variant="outline" className="w-fit" onClick={() => setShown(true)}>
+          Show the error again
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function Studio3SubmitExample() {
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(0);
+  return (
+    <form
+      id="studio3-submit"
+      className="flex items-center gap-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setBusy(true);
+        setTimeout(() => {
+          setBusy(false);
+          setSaved((count) => count + 1);
+        }, 1200);
+      }}
+    >
+      <SubmitButton label="Save changes" busyLabel="Saving…" doneLabel="Saved" busy={busy} succeeded={saved} />
+    </form>
+  );
+}
+
+function Studio3CrumbsExample() {
+  const toast = useAppToast();
+  const [story, setStory] = useState("a");
+  const stories = [
+    { id: "a", label: "The lantern keeper of the northern ferry crossing", description: "Owner" },
+    { id: "b", label: "Salt and paper", description: "Co-author" },
+    { id: "c", label: "Night market", description: "Editor" },
+  ];
+  const current = stories.find((item) => item.id === story)!;
+  return (
+    <div id="studio3-crumbs" className="max-w-xl">
+      <Breadcrumbs
+        label="Location in Studio"
+        LinkComponent={AppLink}
+        items={[
+          { label: "Studio", href: "/dev/gallery" },
+          {
+            label: current.label,
+            href: "/dev/gallery",
+            switcher: {
+              label: "Switch to another story",
+              value: story,
+              options: stories,
+              onSelect: (id) => {
+                setStory(id);
+                toast.info(`Would open /studio/story/${id}/chapters`);
+              },
+            },
+          },
+          { label: "Chapters" },
+        ]}
+      />
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -2718,6 +2822,12 @@ export function Gallery() {
         <Browse3PadlockExample />
         <Browse3CoverStackExample />
         <Browse3RevealExample />
+      </Section>
+
+      <Section title="Batch 3 · studio3">
+        <Studio3AlertsExample />
+        <Studio3SubmitExample />
+        <Studio3CrumbsExample />
       </Section>
     </AppShell>
   );

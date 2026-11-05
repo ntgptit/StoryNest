@@ -14,11 +14,16 @@ const vi = {
   error: { title: "Không tải được danh sách truyện", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   listLabel: "Truyện của tôi",
   create: "Viết truyện mới",
+  crumbs: {
+    label: "Vị trí trong Studio",
+    switchStory: "Chuyển sang truyện khác",
+    chapters: "Chương",
+    team: "Cộng tác viên",
+  },
   chaptersLink: "Quản lý chương",
   chapters: {
     title: "Quản lý chương",
     description: (storyTitle: string) => `Thứ tự, đường dẫn và trạng thái các chương của "${storyTitle}".`,
-    backToStory: "Về thông tin truyện",
     listLabel: "Danh sách chương",
     add: {
       title: "Thêm chương",
@@ -151,7 +156,6 @@ const vi = {
     title: "Cộng tác viên",
     description: (storyTitle: string) =>
       `Mời người khác cùng viết "${storyTitle}". Họ chỉ tham gia sau khi chấp nhận lời mời.`,
-    backToStory: "Về thông tin truyện",
     onlyOwner: {
       title: "Chỉ chủ sở hữu quản lý được",
       description: "Bạn không có quyền mời hay gỡ cộng tác viên của truyện này.",
@@ -252,6 +256,7 @@ const vi = {
     submitCreate: "Tạo truyện",
     submitSave: "Lưu thay đổi",
     submitting: "Đang lưu…",
+    done: "Đã lưu",
     cancel: "Hủy",
     created: "Đã tạo truyện.",
     saved: "Đã lưu thay đổi.",

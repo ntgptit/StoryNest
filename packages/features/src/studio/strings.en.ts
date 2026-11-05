@@ -17,11 +17,16 @@ export const en = {
   },
   listLabel: "My stories",
   create: "Write a new story",
+  crumbs: {
+    label: "Location in Studio",
+    switchStory: "Switch to another story",
+    chapters: "Chapters",
+    team: "Collaborators",
+  },
   chaptersLink: "Manage chapters",
   chapters: {
     title: "Manage chapters",
     description: (storyTitle: string) => `Order, URL slugs and status of the chapters in "${storyTitle}".`,
-    backToStory: "Back to story details",
     listLabel: "Chapter list",
     add: {
       title: "Add chapter",
@@ -156,7 +161,6 @@ export const en = {
     title: "Collaborators",
     description: (storyTitle: string) =>
       `Invite others to write "${storyTitle}" with you. They only join after accepting the invitation.`,
-    backToStory: "Back to story details",
     onlyOwner: {
       title: "Only the owner can manage this",
       description: "You don't have permission to invite or remove collaborators on this story.",
@@ -258,6 +262,7 @@ export const en = {
     submitCreate: "Create story",
     submitSave: "Save changes",
     submitting: "Saving…",
+    done: "Saved",
     cancel: "Cancel",
     created: "Story created.",
     saved: "Changes saved.",

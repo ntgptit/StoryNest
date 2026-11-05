@@ -19,6 +19,7 @@ import {
   minLocalDateTime,
   publishErrorMessage,
   publishReadiness,
+  scheduleCountdown,
   scheduleInstant,
 } from "./model/publishing.ts";
 import { checkBody, checkTitle } from "./model/draft-form.ts";
@@ -114,6 +115,15 @@ describe("publishing model", () => {
 
   it("formats an instant in the reader's locale", () => {
     expect(formatLocalDateTime("2026-11-05T13:30:00Z", "vi")).toMatch(/2026/);
+  });
+
+  it("counts down to a scheduled time in words, and says it is due once under a minute is left", () => {
+    const now = Date.parse("2026-11-05T10:00:00Z");
+    expect(scheduleCountdown("2026-11-05T13:00:00Z", "en", now)).toBe(t.countdown("in 3 hours"));
+    expect(scheduleCountdown("2026-11-07T10:00:00Z", "en", now)).toBe(t.countdown("in 2 days"));
+    expect(scheduleCountdown("2026-11-05T10:00:30Z", "en", now)).toBe(t.dueNow);
+    expect(scheduleCountdown("2026-11-05T09:00:00Z", "en", now)).toBe(t.dueNow);
+    expect(scheduleCountdown("not a date", "en", now)).toBe(t.dueNow);
   });
 });
 
@@ -327,6 +337,34 @@ describe("PublishPanel", () => {
     release();
     await waitFor(() => expect(screen.getByText(t.state.published)).toBeTruthy());
     expect(t1.rpcCalls.filter((c) => c.name === "publish_chapter")).toHaveLength(1);
+  });
+
+  it("names the running step on the button while it publishes, then gives the label back", async () => {
+    let release: () => void = () => undefined;
+    const t1 = fakeClient({ gate: new Promise<void>((resolve) => (release = resolve)) });
+    setup(t1);
+    fireEvent.click(await button(t.publish));
+    const busy = await button(t.phase.publishing);
+    expect(busy.getAttribute("aria-busy")).toBe("true");
+    release();
+    expect(await button(t.republish)).toBeTruthy();
+  });
+
+  it("shows a scheduled chapter's countdown next to its state", async () => {
+    const soon = new Date(Date.now() + 3 * 3_600_000 + 60_000).toISOString();
+    setup(fakeClient({ status: "scheduled", scheduledFor: soon }));
+    expect(within(await panel()).getByText(scheduleCountdown(soon, "vi"))).toBeTruthy();
+  });
+
+  it("a refusal can be dismissed: the alert folds away and focus goes to the panel heading", async () => {
+    const t1 = fakeClient({ rpc: () => ({ data: null, error: { code: "PT409", message: "x", status: 409 } }) });
+    setup(t1);
+    fireEvent.click(await button(t.publish));
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain(t.errors.conflict);
+    fireEvent.click(within(alert).getByRole("button", { name: t.dismissError }));
+    await waitFor(() => expect(screen.queryByText(t.errors.conflict)).toBeNull());
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: t.title }));
   });
 
   it.each([

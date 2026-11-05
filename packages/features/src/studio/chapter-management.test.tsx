@@ -114,6 +114,8 @@ function fakeClient(options: {
   hold?: { current: Promise<void> | null };
   rpc?: (name: string, args: Record<string, unknown>) => Result;
   update?: Result;
+  /** Rows of the studio list (useMyStories: the user's own stories); without it that read gets the chapter rows. */
+  myStories?: unknown[];
 }) {
   const rpcCalls: { name: string; args: Record<string, unknown> }[] = [];
   const updates: { values: unknown; calls: Call[] }[] = [];
@@ -160,7 +162,11 @@ function fakeClient(options: {
       const result =
         updateValues !== undefined
           ? (options.update ?? { data: [{ id: "x" }], error: null })
-          : { data: chapters, error: null };
+          : options.myStories && table === "stories"
+            ? { data: options.myStories, error: null }
+            : options.myStories && table === "story_collaborators"
+              ? { data: [], error: null }
+              : { data: chapters, error: null };
       const gate = updateValues === undefined ? options.hold?.current : null;
       return gate ? gate.then(() => resolve(result)) : resolve(result);
     };
@@ -265,6 +271,32 @@ const itemFor = (title: string) =>
     .find((li) => li.textContent?.includes(title)) as HTMLElement;
 
 describe("ChapterManagerScreen", () => {
+  it("shows Studio > story > Chapters, and the switcher opens the chapters of another of my stories", async () => {
+    const story = (id: string, title: string) => ({
+      id,
+      slug: title,
+      title,
+      status: "ongoing",
+      visibility: "private",
+      is_mature: false,
+      cover_storage_key: null,
+      updated_at: "2026-11-01T00:00:00Z",
+      chapters: [{ count: 1 }],
+    });
+    const OTHER = "5eed0000-0000-4000-8000-00000000d0ff";
+    renderManager(fakeClient({ myStories: [story(STORY_ID, "Truyện thử"), story(OTHER, "Truyện khác")] }));
+    const nav = await screen.findByRole("navigation", { name: studioText.crumbs.label });
+    expect(within(nav).getByRole("link", { name: studioText.title }).getAttribute("href")).toBe("/studio");
+    expect(within(nav).getByRole("link", { name: "Truyện thử" }).getAttribute("href")).toBe(
+      `/studio/story/${STORY_ID}`,
+    );
+    expect(within(nav).getByText(studioText.crumbs.chapters).closest("[aria-current]")).toBeTruthy();
+    const trigger = await within(nav).findByRole("button", { name: studioText.crumbs.switchStory });
+    fireEvent.pointerDown(trigger, { button: 0, pointerType: "mouse" });
+    fireEvent.click(await screen.findByRole("menuitemradio", { name: /Truyện khác/ }));
+    expect(push).toHaveBeenCalledWith(`/studio/story/${OTHER}/chapters`);
+  });
+
   it("lists the chapters with status, slug and position, deleted ones last", async () => {
     renderManager(
       fakeClient({

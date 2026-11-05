@@ -14,7 +14,7 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { AutocompleteInput, type AutocompleteOption } from "@storynest/ui/widgets/autocomplete-input";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
-import { AppLink } from "../../_shared/platform.tsx";
+import { StudioCrumbs } from "../components/studio-crumbs.tsx";
 import {
   SUGGESTION_COUNT,
   SUGGESTION_DELAY_MS,
@@ -100,13 +100,10 @@ function Team({ storyId, storyTitle }: { storyId: string; storyTitle: string }) 
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <PageHeader title={t.title} description={t.description(storyTitle)} />
-      <AppLink
-        href={`/studio/story/${storyId}`}
-        className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
-      >
-        {t.backToStory}
-      </AppLink>
+      <div className="flex flex-col gap-2">
+        <StudioCrumbs storyId={storyId} storyTitle={storyTitle} page="team" />
+        <PageHeader title={t.title} description={t.description(storyTitle)} />
+      </div>
 
       <section aria-label={t.currentTitle} className="flex flex-col gap-2">
         <h2 className="text-base font-semibold">{t.currentTitle}</h2>
