@@ -9,6 +9,7 @@ import { AppLink } from "../../_shared/platform.tsx";
 import { usePopularTags, useStoryCount } from "../hooks/use-latest-stories.ts";
 import type { Category } from "../model/categories.ts";
 import { homeHref } from "../model/home-href.ts";
+import type { WordRange } from "../model/story-length.ts";
 import { discoveryText } from "../strings.ts";
 
 const t = discoveryText.loosen;
@@ -22,21 +23,25 @@ export function LoosenFilters({
   categories,
   categorySlug,
   tagSlug,
+  words,
   locale,
 }: {
   categories: readonly Category[] | undefined;
   categorySlug?: string | undefined;
   tagSlug?: string | undefined;
+  words?: WordRange | undefined;
   locale: string;
 }) {
   const popular = usePopularTags();
   const categoryName = categorySlug ? (categories?.find((c) => c.slug === categorySlug)?.name ?? categorySlug) : "";
   const tagName = tagSlug ? (popular.data?.find((tag) => tag.slug === tagSlug)?.name ?? tagSlug) : "";
-  const withoutTag = { categorySlug, tagSlug: undefined };
-  const withoutCategory = { categorySlug: undefined, tagSlug };
+  const withoutTag = { categorySlug, tagSlug: undefined, words };
+  const withoutCategory = { categorySlug: undefined, tagSlug, words };
+  const withoutLength = { categorySlug, tagSlug, words: undefined };
   const tagCount = useStoryCount(withoutTag, categories, Boolean(tagSlug));
   const categoryCount = useStoryCount(withoutCategory, categories, Boolean(categorySlug));
-  if (!categorySlug && !tagSlug) return null;
+  const lengthCount = useStoryCount(withoutLength, categories, Boolean(words));
+  if (!categorySlug && !tagSlug && !words) return null;
 
   const chip = (href: string, label: string, count: number | undefined) => (
     <li>
@@ -59,6 +64,7 @@ export function LoosenFilters({
       <ul className="flex flex-wrap justify-center gap-2">
         {tagSlug ? chip(homeHref(withoutTag), t.withoutTag(tagName), tagCount.data) : null}
         {categorySlug ? chip(homeHref(withoutCategory), t.withoutCategory(categoryName), categoryCount.data) : null}
+        {words ? chip(homeHref(withoutLength), t.withoutLength, lengthCount.data) : null}
       </ul>
     </nav>
   );

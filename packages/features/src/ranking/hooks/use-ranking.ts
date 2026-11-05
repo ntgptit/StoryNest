@@ -4,7 +4,13 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { useShowMature } from "../../adult-content/index.ts";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
-import { getRankingFreshness, listTopStories, type RankingPage } from "../api/ranking.api.ts";
+import {
+  getRankingFreshness,
+  getRankingHistory,
+  listTopStories,
+  type RankingHistory,
+  type RankingPage,
+} from "../api/ranking.api.ts";
 import { rankingKeys } from "../keys.ts";
 import type { RankingFreshness, RankingPeriod } from "../model/ranking.ts";
 
@@ -37,5 +43,19 @@ export function useRankingFreshness() {
     queryKey: rankingKeys.freshness(),
     queryFn: () => getRankingFreshness(getClient()).catch((e: unknown) => Promise.reject(toAppError(e))),
     staleTime: FRESHNESS_STALE_MS,
+  });
+}
+
+const HISTORY_STALE_MS = 10 * 60_000; // snapshots are taken once a day
+
+/** The last week of daily ranking snapshots. Failing quietly is fine: the ranking works without the history. */
+export function useRankingHistory(period: RankingPeriod) {
+  const getClient = useDataClientGetter();
+  const includeMature = useShowMature();
+  return useQuery<RankingHistory, AppError>({
+    queryKey: rankingKeys.history(period, includeMature),
+    queryFn: () =>
+      getRankingHistory(getClient(), period, includeMature).catch((e: unknown) => Promise.reject(toAppError(e))),
+    staleTime: HISTORY_STALE_MS,
   });
 }

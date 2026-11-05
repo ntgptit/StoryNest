@@ -1,4 +1,6 @@
 // TanStack Query keys of the discovery feature. Server prefetch and client hooks must build keys here so they match.
+import type { WordRange } from "./model/story-length.ts";
+
 export interface LatestStoriesFilter {
   /** Category slug; a root category includes its sub-categories. Omit for all. */
   categorySlug?: string | undefined;
@@ -9,6 +11,8 @@ export interface LatestStoriesFilter {
   /** Only the stories of this author (user id). Omit for all. */
   authorId?: string | undefined;
   includeMature?: boolean | undefined;
+  /** Story length in words (story_stats.word_count). Omit for any length. */
+  words?: WordRange | undefined;
   pageSize?: number | undefined;
 }
 
@@ -26,6 +30,7 @@ export const discoveryKeys = {
         tagSlug: filter.tagSlug ?? null,
         authorId: filter.authorId ?? null,
         includeMature: filter.includeMature ?? false,
+        words: filter.words ?? null,
         pageSize: filter.pageSize ?? DEFAULT_PAGE_SIZE,
       },
     ] as const,
@@ -39,6 +44,19 @@ export const discoveryKeys = {
         language: filter.language ?? null,
         tagSlug: filter.tagSlug ?? null,
         authorId: filter.authorId ?? null,
+        includeMature: filter.includeMature ?? false,
+        words: filter.words ?? null,
+      },
+    ] as const,
+  /** Story counts per length bucket for the filters other than the length itself. */
+  lengths: (filter: LatestStoriesFilter) =>
+    [
+      "discovery",
+      "lengths",
+      {
+        categorySlug: filter.categorySlug ?? null,
+        language: filter.language ?? null,
+        tagSlug: filter.tagSlug ?? null,
         includeMature: filter.includeMature ?? false,
       },
     ] as const,

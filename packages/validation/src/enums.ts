@@ -147,3 +147,26 @@ export type StoryStatus = z.infer<typeof storyStatusSchema>;
 export type Visibility = z.infer<typeof visibilitySchema>;
 export type ChapterStatus = z.infer<typeof chapterStatusSchema>;
 export type BlockType = z.infer<typeof blockTypeSchema>;
+
+/** Periods of the rankings and of their daily snapshots (ranking_snapshots.period, top_stories, ranking_history). */
+export const RANKING_PERIODS = ["day", "week", "month", "all"] as const;
+export const rankingPeriodSchema = z.enum(RANKING_PERIODS);
+export type RankingPeriod = z.infer<typeof rankingPeriodSchema>;
+
+/**
+ * The in-app surface a read came from (chapter_read_events.source, record_chapter_read's p_source). Coarse on purpose:
+ * which StoryNest screen the reader opened the story from, never a referrer or another site.
+ */
+export const READ_SOURCES = [
+  "story_page",
+  "next_chapter",
+  "library",
+  "search",
+  "discover",
+  "ranking",
+  "notification",
+  "profile",
+  "other",
+] as const;
+export const readSourceSchema = z.enum(READ_SOURCES);
+export type ReadSource = z.infer<typeof readSourceSchema>;

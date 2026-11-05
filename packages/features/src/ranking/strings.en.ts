@@ -15,6 +15,33 @@ export const en = {
     description: "Check your connection and try again.",
     retry: "Try again",
   },
+  history: {
+    title: "Ranks over the last 7 days",
+    race: "Race",
+    slope: "Ups and downs",
+    views: "View",
+    raceLabel: "Ranks by day",
+    play: "Play",
+    pause: "Pause",
+    scrubber: "Day",
+    bar: (rank: number, title: string, score: string) => `${rank}. ${title}, ${score} points`,
+    fromLabel: "7 days ago",
+    toLabel: "Today",
+    slopeLabel: "Today's ranks against the first day of the range",
+    modes: "Axis",
+    rank: "Rank",
+    score: "Score",
+    move: (title: string, from: number | null, to: number) =>
+      from === null
+        ? `${title}: new, now #${to}`
+        : from === to
+          ? `${title}: stays #${to}`
+          : `${title}: #${from} → #${to}`,
+    idle: "Pick a story to see how far it moved.",
+    untitled: "Story",
+    building: "The ranking history is recorded once a day; it needs at least two days to compare.",
+    note: "The ranking is captured once a day; score = reads + 5 × votes within the period picked.",
+  },
   featured: {
     title: "Featured this week",
     seeAll: "See the ranking",

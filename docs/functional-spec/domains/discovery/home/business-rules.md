@@ -170,3 +170,15 @@
 | Related screens | SCR-HOME-01 (C12) |
 | Evidence | `packages/features/src/announcements/components/home-event-popup.tsx`, `packages/features/src/announcements/model/announcement.ts` (`isPopupSnoozed`, `snoozePopupToday`), `packages/ui/src/widgets/event-popup.tsx`, `apps/web/src/app/(main)/discover-home.tsx`, `announcements/announcements.test.tsx`. Rollback (top of the migration): `DROP FUNCTION public.active_announcements(text, text); DROP TABLE public.announcements;` |
 | Status | Verified (unit, SQL test); not run against a real Supabase project |
+
+### BR-HOME-014 — Length filter
+| Field | Value |
+| --- | --- |
+| Description | `story_stats.word_count` (sum of the published versions' `word_count` of the published, not deleted chapters) and `story_stats.published_chapters` are kept by triggers (chapter publish / re-publish / unpublish / archive / delete; a story_stats row created later starts with the computed length). The feed filters by a word range through `story_stats!inner(word_count)` (gte min, lt max). The range picker (Lucian #024) is a histogram of `story_length_histogram(include_mature, language, category_ids, tag_slug)` over fixed buckets 0, 2k, 10k, 30k, 60k, 100k, 200k, 400k+ (`STORY_LENGTH_EDGES`), with two thumbs and the rolling count of stories in range |
+| Preconditions | BR-HOME-001 |
+| Conditions | The range lives in the URL as `words=min-max` (`max` empty = no upper bound; only bucket edges accepted, anything else is no filter) and combines with category and tag; every chip and link keeps it. A story without a stats row is left out while the filter is on. Clients cannot write the two columns (no write grant on story_stats) |
+| Expected behavior | From `sm` up: a "Filter by length" button unfolds the histogram with Apply and "Remove length filter". On a phone: a "Length" section in the filter sheet; the footer count includes it. An empty result offers "Remove length filter" with its count (BR-HOME loosen) |
+| Exceptions | Words are whitespace-separated (a Vietnamese syllable is one word), as counted by publish_chapter |
+| Related screens | SCR-HOME-01 (C13) |
+| Evidence | `supabase/migrations/20261106030600_story_length.sql`; `supabase/tests/480_story_length.test.sql`; `packages/ui/src/widgets/range-histogram.tsx`; `packages/features/src/discovery/model/story-length.ts`, `screens/length-filter.tsx`, `api/discovery.api.ts` (`LENGTH_FILTER_COLUMN`, `getLengthHistogram`). Rollback: `DROP FUNCTION public.story_length_histogram(boolean, text, bigint[], text); DROP TRIGGER chapters_story_length ON public.chapters; DROP TRIGGER story_stats_init_length ON public.story_stats; DROP FUNCTION public.sync_story_length(), public.story_stats_init_length(), private.refresh_story_length(uuid), private.story_length(uuid); DROP INDEX public.idx_story_stats_word_count; ALTER TABLE public.story_stats DROP COLUMN word_count, DROP COLUMN published_chapters;` |
+| Status | Verified on local PostgreSQL; not run against Supabase |

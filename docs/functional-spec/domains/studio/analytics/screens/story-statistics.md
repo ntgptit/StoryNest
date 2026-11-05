@@ -13,7 +13,7 @@
 | Roles | Owner, co-author; editor and non-members see no-access / not-found states |
 | Entry points | SCR-STM-01 row "Stats" (owner, co-author). Not linked from SCR-STM-03, SCR-CHM-01 or SCR-TEAM-01 |
 | Workflows | WF-STAT-01, WF-STAT-02 |
-| Rules | BR-STAT-001..015, BR-STM-023 |
+| Rules | BR-STAT-001..020, BR-STM-023 |
 
 ## B. Components
 | ID | Component | Notes / evidence |
@@ -25,6 +25,11 @@
 | SCR-STAT-01-C08 | Section "Reads over the last 90 days": weeks × weekdays heatmap (Monday first, Mon/Wed/Fri labelled, month labels above the weeks), status line (summary, or the picked day's reads, likes, comments and publish note), legend "Reads per day" with the whole-number range of each shade, "Show reads by week as a table" toggle, note (UTC days, reads are not distinct readers, always 90 days); "No reads in the last 90 days." when every day has 0 reads | `components/reads-heatmap.tsx`, `ui/widgets/calendar-heatmap.tsx` (BR-STAT-013) |
 | SCR-STAT-01-C07 | Section "Read-through by chapter": funnel of the published chapters in reading order (bar width = reads ÷ most-read chapter, change from the chapter before, biggest drop in `--chart-1`), status line (live region) with the summary; first 8 steps + "Show all n chapters"; note that steps are reads, not distinct readers; hidden when no chapter is published; "No reads yet to draw the funnel." when every chapter has 0 reads | `components/read-through-funnel.tsx`, `ui/widgets/funnel-steps.tsx` (BR-STAT-011) |
 | SCR-STAT-01-C09 | Section "Chapters compared" (only with at least two chapters that have reads): axis choice "Likes per 100 reads" / "Retention" (`aria-pressed` buttons), optional "Fade chapters under n reads" toggle, scatter of reads (across) against the chosen axis with 0 and max ticks, status line (live region) with "n chapters plotted[, n faded]. Press a dot to see its figures." plus how many are left out; note that reads are not distinct readers | `components/chapter-scatter.tsx`, `ui/widgets/scatter-picker.tsx` (BR-STAT-015) |
+| SCR-STAT-01-C10 | Range tab "Custom": month calendar (From / To fields, month switch, Monday-first grid limited to the last 90 UTC days, summary "n days · d – d", Apply), then the applied range as a link that reopens it | `ui/widgets/date-range-calendar.tsx` (Lucian #030), `components/audience-insights.tsx` (BR-STAT-016) |
+| SCR-STAT-01-C11 | Section "New readers by week": cohort table (8 weekly rows, "Start", "+1"… columns, shaded share cells, dashed hidden cohorts), status line, note | `ui/widgets/cohort-grid.tsx` (Lucian #161, BR-STAT-017) |
+| SCR-STAT-01-C12 | Section "Signed in or guests": 10 × 10 waffle, legend buttons with rolling percentages, line "n accounts and n guest browsers read it." | `ui/widgets/waffle-chart.tsx` (Lucian #326, BR-STAT-018) |
+| SCR-STAT-01-C13 | Section "Where readers come from": Sankey Readers → Read on → Followed, source buttons, status line, hidden-sources line | `ui/widgets/flow-sankey.tsx` (Lucian #153, BR-STAT-020) |
+| SCR-STAT-01-C14 | Section "What readers say": month switch and word cloud, status line, note (no comment text, two commenters minimum) | `ui/widgets/word-cloud.tsx` (Lucian #399, BR-STAT-019) |
 | SCR-STAT-01-C05 | Section "By chapter": table (Chapter, Reads + bar, Likes, Comments, Retention), horizontal scroll on narrow screens, note; empty "No chapters have been published yet." | `story-stats-screen.tsx` |
 | SCR-STAT-01-C06 | States: auth skeleton; sign-in prompt; no access; not found; error + "Try again" | `story-stats-screen.tsx:30-60,77-86` |
 

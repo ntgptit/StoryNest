@@ -19,6 +19,7 @@ import {
   type TagHit,
   type TagRow,
 } from "../model/search.ts";
+import { TRENDING_LIMIT, toTrendingSearches, type TrendingRow, type TrendingSearch } from "../model/trending.ts";
 
 export interface OffsetPage<T> {
   items: T[];
@@ -87,4 +88,25 @@ export async function searchAuthors(
 export async function searchTags(client: DataClient, term: string, limit = TAG_RESULT_LIMIT): Promise<TagHit[]> {
   const rows = unwrap(await client.rpc("search_tags", { p_query: term, p_limit: limit }).returns<TagRow[]>()) ?? [];
   return rows.map(toTagHit);
+}
+
+/** The most searched terms of the last 7 days, with how many places each moved since the week before. */
+export async function getTrendingSearches(
+  client: DataClient,
+  limit: number = TRENDING_LIMIT,
+): Promise<TrendingSearch[]> {
+  const rows = unwrap(await client.rpc("trending_searches", { p_limit: limit }).returns<TrendingRow[]>()) ?? [];
+  return toTrendingSearches(rows);
+}
+
+/**
+ * Counts a search of `term` toward the trend: by account when signed in, else by the browser's anonymous id. The
+ * server keeps no searcher (only a daily count per term), counts one search per searcher, term and day, ignores terms
+ * that find nothing public, and rate limits. Resolves to whether it was counted.
+ */
+export async function logSearch(client: DataClient, term: string, anonymousId: string | null): Promise<boolean> {
+  const counted = unwrap(
+    await client.rpc("log_search", { p_query: term, ...(anonymousId ? { p_anon_id: anonymousId } : {}) }),
+  );
+  return counted === true;
 }

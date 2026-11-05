@@ -53,6 +53,12 @@
             "deactivated",
             "suspended"
         ],
+        "ranking_snapshots.period": [
+            "all",
+            "day",
+            "month",
+            "week"
+        ],
         "reading_lists.visibility": [
             "private",
             "public",
@@ -74,6 +80,17 @@
             "restore_story",
             "review_report",
             "suspend_user"
+        ],
+        "chapter_read_events.source": [
+            "discover",
+            "library",
+            "next_chapter",
+            "notification",
+            "other",
+            "profile",
+            "ranking",
+            "search",
+            "story_page"
         ],
         "user_settings.language_code": [
             "en",

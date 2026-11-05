@@ -25,6 +25,18 @@ const vi = {
     tags: { title: "Không thấy thẻ phù hợp", description: "Thử một từ khóa khác." },
   },
   error: { title: "Không tìm được lúc này", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
+  trending: {
+    title: "Đang được tìm",
+    open: "Xem các từ khóa đang được tìm nhiều",
+    close: "Ẩn các từ khóa đang được tìm",
+    list: "Từ khóa được tìm nhiều trong 7 ngày qua",
+    isNew: "mới",
+    up: (places: number) => `lên ${places} bậc`,
+    down: (places: number) => `xuống ${places} bậc`,
+    same: "giữ hạng",
+    pick: (term: string) => `Tìm “${term}”`,
+    note: "Từ khóa được ít nhất 3 người tìm trong 7 ngày qua. Không lưu ai đã tìm gì.",
+  },
   storiesCount: (n: number) => `${n} truyện`,
   tagStoriesCount: (n: number) => `${n} truyện`,
 } as const;

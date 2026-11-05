@@ -32,6 +32,7 @@
 | [BR-PROG-013](#br-prog-013--anonymous-reader-id) | Anonymous reader id | Verified |
 | [BR-PROG-014](#br-prog-014--read-aggregation) | Read aggregation | Verified |
 | [BR-PROG-015](#br-prog-015--retention-and-account-deletion) | Retention and account deletion | Verified |
+| [BR-PROG-016](#br-prog-016--in-app-read-source) | In-app read source | Verified (local PostgreSQL only) |
 
 ---
 
@@ -214,3 +215,15 @@
 | Related screens | — |
 | Evidence | `supabase/migrations/20261104000100_chapter_reads.sql:26-28,105-115,130`, `supabase/migrations/20261103000000_init_schema.sql:258-280`, `supabase/tests/70_reads.test.sql:104` |
 | Status | Verified |
+
+### BR-PROG-016 — In-app read source
+| Field | Value |
+| --- | --- |
+| Description | `record_chapter_read(chapter_id, anon_id?, source?)` takes an optional coarse source stored on `chapter_read_events.source`: story_page, next_chapter, library, search, discover, ranking, notification, profile, other (`READ_SOURCES`). The client marks the screen a story was opened from (`markReadSource`, sessionStorage of this tab, 30-minute expiry) — today search results, the home feed and the ranking list — and the read recorder sends the fresh mark with the next read |
+| Preconditions | BR-PROG-010..012 |
+| Conditions | **The counting rules do not change**: same checks and errors, same dedupe (the first read of the day keeps its source; a repeat with another source counts nothing and changes nothing), same return value, same aggregation. An unknown value is stored as NULL instead of refusing the read |
+| Expected behavior | No referrer, no other site's URL, no campaign or third-party id is read or stored: only one of nine fixed words chosen by the app's own navigation. Aggregated for authors in BR-STAT-020 |
+| Exceptions | Library, notifications, profile, story page and next-chapter links do not mark yet (reads from them carry the last fresh mark or none) |
+| Related screens | SCR-READ-01 (recorder), SCR-SRCH-01, SCR-HOME-01, SCR-RANK-01 |
+| Evidence | `supabase/migrations/20261106030700_read_sources.sql`; `supabase/tests/490_read_sources.test.sql`; `packages/features/src/progress/model/read-source.ts`, `api/progress.api.ts`, `hooks/use-read-recorder.ts`. Rollback: `DROP FUNCTION public.author_read_sources(uuid, integer); DROP FUNCTION public.record_chapter_read(uuid, uuid, text); ALTER TABLE public.chapter_read_events DROP COLUMN source;` then re-create the two-argument `record_chapter_read` from `20261104000100_chapter_reads.sql` with its grants |
+| Status | Verified on local PostgreSQL; not run against Supabase |

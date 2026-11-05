@@ -6,4 +6,5 @@ export const searchKeys = {
   authors: (term: string, mature: boolean) => ["search", "authors", term, mature] as const,
   tags: (term: string) => ["search", "tags", term] as const,
   suggestions: (term: string, mature: boolean) => ["search", "suggestions", term, mature] as const,
+  trending: () => ["search", "trending"] as const,
 };

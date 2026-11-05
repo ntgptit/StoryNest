@@ -146,3 +146,15 @@
 | Related screens | SCR-SRCH-01 |
 | Evidence | `20261104001300_search.sql:11-13,147-151` |
 | Status | Verified |
+
+### BR-SRCH-012 — Trending searches
+| Field | Value |
+| --- | --- |
+| Description | A submitted search (state ok, BR-SRCH-002) is counted once per page session by `log_search(query, anon_id?)`; under an empty search box the search page shows "Trending" (Lucian #322): a line that rolls through the top terms every 2.5 s and unfolds into the top 10 with up / down / new markers; picking a term searches it. `trending_searches(limit 1..20 = 10)` ranks the normalised terms of the last 7 UTC days by searchers and compares with the 7 days before (`previous_rank`, `rank_change`) |
+| Preconditions | — |
+| Conditions | Counted per searcher (account, or the anonymous reader id for guests), term and UTC day: a repeat counts nothing. Only a term that finds a public story title, a tag or an active author with a public story is counted (random text, a phone number or a private title never enters the log). Rate limit `abuse_limits.search_log_rate_hour` = 30 calls per searcher per hour (PT429, ignored by the client). A term needs **at least 3 searchers** in a window to be listed; `search_term_blocklist` removes a term at once |
+| Expected behavior | **Nobody's searches are stored**: `search_term_daily` holds term, day and a count; `search_log_seen` holds a one-way sha256(searcher, term, day) for the dedupe and `search_log_quota` a sha256(searcher, hour) counter, sharing no key; all three are closed to API roles. The line does not roll under reduced motion, while open, hovered or focused |
+| Exceptions | Anonymous ids are client-chosen, so a script can still push a term that matches public content (bounded by the quota, the 3-searcher floor and the blocklist). `purge_search_log()` (service role) is **not scheduled**: run daily, e.g. `SELECT cron.schedule('storynest-purge-search-log', '23 4 * * *', 'SELECT public.purge_search_log()');` |
+| Related screens | SCR-SRCH-01 |
+| Evidence | `supabase/migrations/20261106030500_trending_searches.sql`; `supabase/tests/470_trending_searches.test.sql`; `packages/ui/src/widgets/trending-terms.tsx`; `packages/features/src/search/hooks/use-search.ts` (`useLogSearch`, `useTrendingSearches`); `search/search.test.tsx`. Rollback: `DROP FUNCTION public.purge_search_log(); DROP FUNCTION public.trending_searches(integer); DROP FUNCTION public.log_search(text, uuid); DROP TABLE public.search_term_blocklist, public.search_log_quota, public.search_log_seen, public.search_term_daily; DELETE FROM public.abuse_limits WHERE code = 'search_log_rate_hour';` |
+| Status | Verified on local PostgreSQL; not run against Supabase |

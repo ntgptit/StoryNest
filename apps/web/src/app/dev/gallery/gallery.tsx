@@ -161,6 +161,15 @@ import { ExpandingSettings } from "@storynest/ui/widgets/expanding-settings";
 import { RoleMatrix } from "@storynest/ui/widgets/role-matrix";
 import { RollingBanner } from "@storynest/ui/widgets/rolling-banner";
 import { MessageCircle, Users } from "lucide-react";
+import { BarRace, type RaceFrame } from "@storynest/ui/widgets/bar-race";
+import { CohortGrid, type CohortRow } from "@storynest/ui/widgets/cohort-grid";
+import { DateRangeCalendar, type DateRange } from "@storynest/ui/widgets/date-range-calendar";
+import { FlowSankey } from "@storynest/ui/widgets/flow-sankey";
+import { RangeHistogram, type HistogramBucket } from "@storynest/ui/widgets/range-histogram";
+import { SlopeChart, type SlopeItem } from "@storynest/ui/widgets/slope-chart";
+import { TrendingTerms, type TrendingTerm } from "@storynest/ui/widgets/trending-terms";
+import { WaffleChart } from "@storynest/ui/widgets/waffle-chart";
+import { WordCloud, type CloudPeriod } from "@storynest/ui/widgets/word-cloud";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -3433,6 +3442,310 @@ function Platform4MatrixExample() {
   );
 }
 
+// Batch 4 · insights4 (Lucian 030, 161, 326, 399, 246, 359, 322, 024, 153). Sample data only.
+function Insights4RangeExample() {
+  const [applied, setApplied] = useState<DateRange | null>({ from: "2026-10-20", to: "2026-11-02" });
+  return (
+    <div id="insights4-range" className="flex flex-col gap-2">
+      <DateRangeCalendar
+        value={applied}
+        min="2026-08-08"
+        max="2026-11-05"
+        maxSpanDays={90}
+        locale="en"
+        onApply={setApplied}
+        text={{
+          fromLabel: "From",
+          toLabel: "To",
+          placeholder: "Pick a day",
+          previousMonth: "Previous month",
+          nextMonth: "Next month",
+          gridLabel: "Days of the month",
+          apply: "Apply",
+          pickStart: "Pick the first day",
+          pickEnd: "Now pick the last day",
+          summary: (days, from, to) => `${days} days · ${from} – ${to}`,
+        }}
+      />
+      <p className="text-sm text-muted-foreground">Applied: {applied ? `${applied.from} – ${applied.to}` : "none"}</p>
+    </div>
+  );
+}
+
+const insights4Cohorts: CohortRow[] = [
+  { key: "w1", label: "9/14", sizeText: "42 readers", cells: [1, 0.62, 0.48, 0.4, 0.36] },
+  { key: "w2", label: "9/21", sizeText: "35 readers", cells: [1, 0.57, 0.46, 0.37] },
+  { key: "w3", label: "9/28", sizeText: "Fewer than 5", cells: [null, null, null], suppressed: true },
+  { key: "w4", label: "10/5", sizeText: "28 readers", cells: [1, 0.71] },
+  { key: "w5", label: "10/12", sizeText: "19 readers", cells: [1] },
+];
+
+function Insights4CohortExample() {
+  return (
+    <div id="insights4-cohorts">
+      <CohortGrid
+        rows={insights4Cohorts}
+        weeks={5}
+        text={{
+          label: "Share of readers still reading, by starting week",
+          week: (n) => (n === 0 ? "Start" : `+${n}`),
+          idle: "Pick a cell to see its share.",
+          cell: (row, offset, percent) => `Started ${row.label} (${row.sizeText}) · week ${offset}: ${percent}`,
+          hidden: (row) => `Week of ${row.label}: fewer than 5 readers, hidden`,
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4Windows = { 7: [38, 62], 30: [55, 45], 90: [61, 39] } as const;
+
+function Insights4WaffleExample() {
+  const [days, setDays] = useState<7 | 30 | 90>(30);
+  const [signedIn, guests] = insights4Windows[days];
+  return (
+    <div id="insights4-waffle" className="flex flex-col gap-3">
+      <div className="flex gap-1">
+        {([7, 30, 90] as const).map((d) => (
+          <Button key={d} size="sm" variant={d === days ? "default" : "outline"} onClick={() => setDays(d)}>
+            {d} days
+          </Button>
+        ))}
+      </div>
+      <WaffleChart
+        segments={[
+          { key: "in", label: "Signed in", value: signedIn, tone: 1 },
+          { key: "guest", label: "Guests", value: guests, tone: 2 },
+        ]}
+        text={{
+          label: `Reads of the last ${days} days by reader type`,
+          legend: "Reader type",
+          share: (segment, percent) => `${segment.label}: ${percent}%`,
+          empty: "No reads yet",
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4Months: CloudPeriod[] = [
+  {
+    key: "09",
+    label: "Sep",
+    words: [
+      { term: "plot", count: 9 },
+      { term: "slow", count: 4 },
+      { term: "hay", count: 7 },
+      { term: "villain", count: 3 },
+      { term: "cliffhanger", count: 2 },
+    ],
+  },
+  {
+    key: "10",
+    label: "Oct",
+    words: [
+      { term: "plot", count: 6 },
+      { term: "hay", count: 12 },
+      { term: "twist", count: 8 },
+      { term: "ending", count: 5 },
+      { term: "villain", count: 2 },
+      { term: "chương", count: 4 },
+    ],
+  },
+  {
+    key: "11",
+    label: "Nov",
+    words: [
+      { term: "hay", count: 10 },
+      { term: "twist", count: 3 },
+      { term: "ending", count: 11 },
+      { term: "romance", count: 6 },
+      { term: "chương", count: 5 },
+      { term: "update", count: 4 },
+    ],
+  },
+];
+
+function Insights4CloudExample() {
+  return (
+    <div id="insights4-cloud">
+      <WordCloud
+        periods={insights4Months}
+        text={{
+          periods: "Month",
+          cloud: (period) => `Frequent words in comments, ${period.label}`,
+          word: (word, change) =>
+            `“${word.term}”: ${word.count} comments${change === null ? " · new" : ` · ${change >= 0 ? "+" : ""}${change}`}`,
+          idle: "Pick a word to see how many comments mention it.",
+          empty: "No words this month.",
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4Titles = ["The Lantern Keeper", "Library of Ashes", "Studio Nights", "Salt Roads", "Paper Moon"];
+const insights4Frames: RaceFrame[] = [
+  [40, 32, 28, 15, 9],
+  [44, 41, 30, 22, 10],
+  [46, 52, 31, 30, 18],
+  [47, 60, 33, 41, 26],
+  [49, 64, 35, 50, 39],
+].map((scores, day) => ({
+  key: `d${day}`,
+  label: `Nov ${day + 1}`,
+  bars: scores
+    .map((value, i) => ({ id: `s${i}`, label: insights4Titles[i] ?? "", value }))
+    .sort((a, b) => b.value - a.value),
+}));
+
+function Insights4RaceExample() {
+  return (
+    <div id="insights4-race">
+      <BarRace
+        frames={insights4Frames}
+        rows={4}
+        text={{
+          label: "Ranks by day",
+          play: "Play",
+          pause: "Pause",
+          scrubber: "Day",
+          bar: (rank, bar, value) => `${rank}. ${bar.label}, ${value} points`,
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4Slope: SlopeItem[] = (() => {
+  const first = insights4Frames[0]?.bars ?? [];
+  const last = insights4Frames.at(-1)?.bars ?? [];
+  return last.map((bar, i) => {
+    const before = first.findIndex((b) => b.id === bar.id);
+    return {
+      id: bar.id,
+      label: bar.label,
+      from: before < 0 ? null : { rank: before + 1, score: first[before]?.value ?? 0 },
+      to: { rank: i + 1, score: bar.value },
+    };
+  });
+})();
+
+function Insights4SlopeExample() {
+  return (
+    <div id="insights4-slope">
+      <SlopeChart
+        items={insights4Slope}
+        text={{
+          label: "Today's ranks against 4 days ago",
+          fromLabel: "Nov 1",
+          toLabel: "Nov 5",
+          modes: "Axis",
+          rank: "Rank",
+          score: "Score",
+          item: (item) => `${item.label}: #${item.from?.rank ?? "new"} → #${item.to.rank}`,
+          idle: "Pick a story to see how far it moved.",
+        }}
+      />
+    </div>
+  );
+}
+
+const insights4TrendA: TrendingTerm[] = [
+  { term: "rồng lửa", rank: 1, change: 2 },
+  { term: "kiếm hiệp", rank: 2, change: null },
+  { term: "tiên hiệp", rank: 3, change: -1 },
+  { term: "học đường", rank: 4, change: 0 },
+  { term: "trinh thám", rank: 5, change: 1 },
+];
+const insights4TrendB: TrendingTerm[] = [
+  { term: "kiếm hiệp", rank: 1, change: null },
+  { term: "rồng lửa", rank: 2, change: 1 },
+  { term: "tiên hiệp", rank: 3, change: -1 },
+  { term: "trinh thám", rank: 4, change: 2 },
+  { term: "học đường", rank: 5, change: -1 },
+];
+
+function Insights4TrendingExample() {
+  const [refreshed, setRefreshed] = useState(false);
+  const [picked, setPicked] = useState<string | null>(null);
+  return (
+    <div id="insights4-trending" className="flex max-w-md flex-col gap-2">
+      <TrendingTerms
+        items={refreshed ? insights4TrendB : insights4TrendA}
+        onPick={setPicked}
+        text={{
+          title: "Trending",
+          open: "Show trending searches",
+          close: "Hide trending searches",
+          list: "Most searched terms of the last 7 days",
+          isNew: "new",
+          up: (n) => `up ${n}`,
+          down: (n) => `down ${n}`,
+          same: "same place",
+          pick: (term) => `Search for “${term}”`,
+        }}
+      />
+      <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={() => setRefreshed((r) => !r)}>
+          Refresh the list
+        </Button>
+        {picked ? <span className="text-sm text-muted-foreground">Searching: {picked}</span> : null}
+      </div>
+    </div>
+  );
+}
+
+const insights4Buckets: HistogramBucket[] = [
+  { key: "0", label: "under 2k words", edge: "0", count: 14 },
+  { key: "1", label: "2k to 10k words", edge: "2k", count: 38 },
+  { key: "2", label: "10k to 30k words", edge: "10k", count: 52 },
+  { key: "3", label: "30k to 60k words", edge: "30k", count: 31 },
+  { key: "4", label: "60k to 100k words", edge: "60k", count: 18 },
+  { key: "5", label: "100k to 200k words", edge: "100k", count: 9 },
+  { key: "6", label: "200k to 400k words", edge: "200k", count: 4 },
+  { key: "7", label: "400k words or more", edge: "400k", count: 2 },
+];
+
+function Insights4HistogramExample() {
+  const [range, setRange] = useState<[number, number]>([1, 4]);
+  return (
+    <div id="insights4-histogram" className="max-w-md">
+      <RangeHistogram
+        buckets={insights4Buckets}
+        value={range}
+        onChange={setRange}
+        text={{
+          minThumb: "Shortest",
+          maxThumb: "Longest",
+          range: (from, to) => `${from.edge} – ${to.label.split(" to ").at(-1) ?? to.label}`,
+          results: (n) => `${n} stories`,
+        }}
+      />
+    </div>
+  );
+}
+
+function Insights4FlowExample() {
+  return (
+    <div id="insights4-flow" className="max-w-md">
+      <FlowSankey
+        sources={[
+          { key: "search", label: "Search", entered: 132, middle: 61, outcome: 18 },
+          { key: "discover", label: "Discover", entered: 96, middle: 40, outcome: 9 },
+          { key: "ranking", label: "Rankings", entered: 54, middle: 30, outcome: 11 },
+        ]}
+        text={{
+          stages: ["Readers", "Read on", "Followed"],
+          sources: "Source",
+          all: (readers, followed) => `${readers} readers → ${followed} followed the story`,
+          one: (source, percent) => `${source.label}: ${source.entered} → ${source.outcome} · ${percent}`,
+        }}
+      />
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -3729,6 +4042,18 @@ export function Gallery() {
         <Platform4PopupExample />
         <Platform4SettingsExample />
         <Platform4MatrixExample />
+      </Section>
+
+      <Section title="Batch 4 · insights4">
+        <Insights4RangeExample />
+        <Insights4CohortExample />
+        <Insights4WaffleExample />
+        <Insights4CloudExample />
+        <Insights4RaceExample />
+        <Insights4SlopeExample />
+        <Insights4TrendingExample />
+        <Insights4HistogramExample />
+        <Insights4FlowExample />
       </Section>
     </AppShell>
   );

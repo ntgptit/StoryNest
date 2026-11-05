@@ -1510,6 +1510,61 @@
   }
 }
 
+/*
+ * Batch 4 · insights4 (adapted from Lucian UX/UI Prompt 030, 161, 326, 399, 246, 359, 322, 024, 153, MIT (c) 2026
+ * Seokwoooo, lucianlabs.dev/uxui-prompt), keeping the elements' timings: the picked date pops from 70% on a spring
+ * (0.4 s), a waffle cell flips in 0.45 s along a 22 ms diagonal, a new cloud word pops on the 0.75 s morph curve, a
+ * trending row that moved flashes for 0.9 s, the bars of the race glide on the 0.55 s rise curve and the chosen flow
+ * of the Sankey marches its dashes every 1.2 s. Each plays only on a change the reader made or asked for.
+ */
+@theme {
+  --ease-race: cubic-bezier(0.3, 1.2, 0.5, 1);
+  --animate-range-pick: range-pick 0.4s var(--ease-spring);
+  --animate-cell-flip: cell-flip 0.45s var(--ease-soft) both;
+  --animate-word-pop: word-pop 0.75s var(--ease-morph) both;
+  --animate-trend-flash: trend-flash 0.9s ease;
+  --animate-trend-roll: trend-roll 0.5s var(--ease-race) both;
+  --animate-flow-march: flow-march 1.2s linear infinite;
+  @keyframes range-pick {
+    from {
+      transform: scale(0.7);
+    }
+  }
+  @keyframes cell-flip {
+    0% {
+      transform: rotateY(0deg);
+    }
+    50% {
+      transform: rotateY(90deg);
+    }
+    100% {
+      transform: rotateY(0deg);
+    }
+  }
+  @keyframes word-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+  }
+  @keyframes trend-flash {
+    30% {
+      background-color: color-mix(in oklab, var(--primary) 14%, transparent);
+    }
+  }
+  @keyframes trend-roll {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+  @keyframes flow-march {
+    to {
+      stroke-dashoffset: -20;
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

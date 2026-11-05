@@ -17,7 +17,15 @@ import { ChapterScatter } from "../components/chapter-scatter.tsx";
 import { DailyChart } from "../components/daily-chart.tsx";
 import { ReadsHeatmap } from "../components/reads-heatmap.tsx";
 import { ReadThroughFunnel } from "../components/read-through-funnel.tsx";
-import { useChapterStats, useDailyStats } from "../hooks/use-analytics.ts";
+import { useChapterStats, useDailySeries, useDailyStats } from "../hooks/use-analytics.ts";
+import {
+  CommentTerms,
+  CustomRangePicker,
+  ReadSourcesFlow,
+  ReaderCohorts,
+  ReaderSplit,
+} from "../components/audience-insights.tsx";
+import { rangeDays, type DayRange } from "../model/insights.ts";
 import {
   barPercent,
   DEFAULT_RANGE,
@@ -55,8 +63,13 @@ export function StoryStatsScreen({ storyId, locale = currentLocale() }: { storyI
 
 function Stats({ storyId, locale }: { storyId: string; locale: string }) {
   const [days, setDays] = useState<RangeDays>(DEFAULT_RANGE);
+  // A custom range (Lucian 030) replaces the preset for the totals and the daily chart; the insights below that take
+  // a number of days use the longest window instead, since a cohort or a split of a few days says little.
+  const [custom, setCustom] = useState<DayRange | null>(null);
+  const [picking, setPicking] = useState(false);
   const chapters = useChapterStats(storyId);
-  const daily = useDailyStats(storyId, days);
+  const daily = useDailySeries(storyId, days, custom);
+  const windowDays = custom ? HEATMAP_DAYS : days;
   // The heatmap always shows the longest window the RPC allows (it shares the cache entry when 90 days is picked).
   const quarter = useDailyStats(storyId, HEATMAP_DAYS);
   // Only for the publish-day flags: the story's published chapters with first_published_at (RLS lets the owner and
@@ -107,10 +120,18 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-semibold">{t.totals.title}</h2>
               <Tabs
-                value={String(days)}
+                value={custom || picking ? "custom" : String(days)}
                 onValueChange={(value) => {
+                  if (value === "custom") {
+                    setPicking(true);
+                    return;
+                  }
                   const next = Number(value);
-                  if (isRangeDays(next)) setDays(next);
+                  if (isRangeDays(next)) {
+                    setDays(next);
+                    setCustom(null);
+                    setPicking(false);
+                  }
                 }}
               >
                 <TabsList aria-label={t.range.label}>
@@ -119,9 +140,31 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
                       {t.range.options[option]}
                     </TabsTrigger>
                   ))}
+                  <TabsTrigger value="custom" onClick={() => setPicking(true)}>
+                    {t.custom.tab}
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
+            {custom && !picking ? (
+              <button
+                type="button"
+                onClick={() => setPicking(true)}
+                className="self-start text-sm font-medium text-primary underline-offset-4 hover:underline"
+              >
+                {t.custom.applied(custom.from, custom.to, rangeDays(custom))}
+              </button>
+            ) : null}
+            {picking ? (
+              <CustomRangePicker
+                value={custom}
+                locale={locale}
+                onApply={(range) => {
+                  setCustom(range);
+                  setPicking(false);
+                }}
+              />
+            ) : null}
             {daily.isPending ? (
               <Skeleton className="h-20 w-full rounded-xl" aria-busy />
             ) : (
@@ -188,6 +231,11 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
               <p className="text-xs text-muted-foreground">{t.scatter.note}</p>
             </section>
           ) : null}
+
+          <ReaderCohorts storyId={storyId} locale={locale} />
+          <ReaderSplit storyId={storyId} days={windowDays} locale={locale} />
+          <ReadSourcesFlow storyId={storyId} days={windowDays} />
+          <CommentTerms storyId={storyId} locale={locale} />
 
           <section aria-label={t.chapters.title} className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">{t.chapters.title}</h2>

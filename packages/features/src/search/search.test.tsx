@@ -3,7 +3,9 @@ import { act, cleanup, fireEvent, render, renderHook, screen, waitFor, within } 
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
+import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
+import { withAuth } from "../_shared/test-auth.ts";
 import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx";
 import { orderByIds, type StoryListRow } from "../discovery/index.ts";
 import { searchAuthors, searchStories, searchTags } from "./api/search.api.ts";
@@ -254,10 +256,13 @@ describe("useSearchStories", () => {
 });
 
 function renderUi(client: DataClient, ui: ReactNode) {
+  const guest = withAuth(client, null);
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <DataProvider client={client}>
-        <PlatformProvider adapter={adapter}>{ui}</PlatformProvider>
+      <DataProvider client={guest}>
+        <AuthProvider>
+          <PlatformProvider adapter={adapter}>{ui}</PlatformProvider>
+        </AuthProvider>
       </DataProvider>
     </QueryClientProvider>,
   );
@@ -276,7 +281,8 @@ describe("SearchScreen", () => {
     const { client, calls } = fakeClient({});
     renderUi(client, <SearchScreen term="ab" tab="stories" />);
     expect(screen.getByRole("status").textContent).toBe(t.hint(SEARCH_MIN_LENGTH));
-    expect(calls).toEqual([]);
+    // Only the trending searches are asked for under an empty box: no search, no log.
+    expect(calls.filter((call) => call.name !== "trending_searches")).toEqual([]);
     expect(screen.queryByRole("tab")).toBeNull();
   });
 
@@ -284,7 +290,33 @@ describe("SearchScreen", () => {
     const { client, calls } = fakeClient({});
     renderUi(client, <SearchScreen term={"a".repeat(SEARCH_MAX_LENGTH + 1)} tab="stories" />);
     expect(screen.getByRole("status").textContent).toBe(t.tooLong(SEARCH_MAX_LENGTH));
-    expect(calls).toEqual([]);
+    expect(calls.filter((call) => call.name !== "trending_searches")).toEqual([]);
+  });
+
+  it("shows the trending searches under an empty box and searches a picked term", async () => {
+    const { client } = fakeClient({
+      rpc: (name) =>
+        name === "trending_searches"
+          ? {
+              data: [{ term: "rong lua", searchers: 5, rank_position: 1, previous_rank: null, rank_change: null }],
+              error: null,
+            }
+          : { data: [], error: null },
+    });
+    renderUi(client, <SearchScreen term="" tab="stories" />);
+    fireEvent.click(await screen.findByRole("button", { name: t.trending.open }));
+    fireEvent.click(screen.getByRole("button", { name: t.trending.pick("rong lua") }));
+    expect(replace).toHaveBeenCalledWith(searchHref("rong lua", "stories"));
+  });
+
+  it("counts a submitted term toward the trend once, as a guest with the anonymous id", async () => {
+    const { client, calls } = fakeClient({});
+    renderUi(client, <SearchScreen term="truyen hay" tab="stories" />);
+    await waitFor(() => expect(calls.some((call) => call.name === "log_search")).toBe(true));
+    const log = calls.filter((call) => call.name === "log_search");
+    expect(log).toHaveLength(1);
+    expect(log[0]?.args.p_query).toBe("truyen hay");
+    expect(typeof log[0]?.args.p_anon_id).toBe("string");
   });
 
   it("switches result tabs by swiping the results sideways on touch (the address changes, as with a click)", async () => {

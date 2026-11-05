@@ -22,6 +22,8 @@ import {
   INVITATION_STATUSES,
   DB_LIMITS,
   REPORT_STATUSES,
+  RANKING_PERIODS,
+  READ_SOURCES,
   STORY_ERROR,
   CHAPTER_ERROR,
   chapterFormSchema,
@@ -96,6 +98,8 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["announcements.kind", ANNOUNCEMENT_KINDS],
     ["announcements.locale", STORY_LANGUAGES],
     ["notification_preferences.event_type", NOTIFICATION_PREFERENCE_TYPES],
+    ["ranking_snapshots.period", RANKING_PERIODS],
+    ["chapter_read_events.source", READ_SOURCES],
   ];
   it.each(cases)("%s", (column, values) => {
     expect(contract.enums[column], `${column} missing from contract`).toBeDefined();

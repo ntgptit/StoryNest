@@ -27,3 +27,4 @@ export {
   storyListClassName,
   useStoryView,
 } from "./components/story-tile.tsx";
+export { parseWordsParam, type WordRange } from "./model/story-length.ts";

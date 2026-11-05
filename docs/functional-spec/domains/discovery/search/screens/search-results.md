@@ -13,7 +13,7 @@
 | Roles | Guest, Member, Moderator (same results) |
 | Guard | None; `robots: { index: false }`; title "Tìm kiếm · StoryNest" (server, Vietnamese only) |
 | Workflows | WF-SRCH-01, WF-SRCH-02, WF-SRCH-03 |
-| Rules | BR-SRCH-001…011 |
+| Rules | BR-SRCH-001…012, BR-PROG-016 |
 
 ## B. Components
 | ID | Component | Description | Evidence |
@@ -22,6 +22,7 @@
 | SCR-SRCH-01-C02 | Page header | `PageHeader` "Search" | `search-screen.tsx:63` |
 | SCR-SRCH-01-C03 | Search form | Input (aria-label as C01, `maxLength` 120) + "Search" button | `search-screen.tsx:64-78` |
 | SCR-SRCH-01-C04 | Hint / length message | `role=status` text when term not searchable | `search-screen.tsx:80-83` |
+| SCR-SRCH-01-C12 | Trending searches (empty box only) | Line "Trending · rank · term · marker" rolling every 2.5 s (not under reduced motion, while open, hovered or focused); pressing it unfolds the top 10 (rank, term, up n / down n / NEW / same); picking a term replaces the address with its search; note "Terms searched by at least 3 people…"; hidden when there are none | `search-screen.tsx` (`Trending`), `ui/widgets/trending-terms.tsx` (Lucian #322) (BR-SRCH-012) |
 | SCR-SRCH-01-C05 | Results heading | `h2` "Results for “term”" | `search-screen.tsx:86` |
 | SCR-SRCH-01-C06 | Tabs | Stories / Authors / Tags (Radix tabs) | `search-screen.tsx:87-95` |
 | SCR-SRCH-01-C07 | Story results | Card grid + infinite list, end "No more results." | `search-screen.tsx:125-166` |
