@@ -176,7 +176,7 @@ export function CardCarousel({
         aria-labelledby={headingId}
         tabIndex={scrollable ? 0 : undefined}
         className={cn(
-          "-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth px-1 pb-1 outline-none [scrollbar-width:none] focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:gap-4 [&::-webkit-scrollbar]:hidden",
+          "-mx-1 flex snap-x snap-mandatory scroll-px-1 gap-3 overflow-x-auto overscroll-x-contain scroll-smooth px-1 pb-1 outline-none [scrollbar-width:none] focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:gap-4 [&::-webkit-scrollbar]:hidden",
           "data-[dragging=true]:cursor-grabbing data-[dragging=true]:snap-none data-[dragging=true]:scroll-auto data-[dragging=true]:select-none",
           scrollable && "cursor-grab",
         )}

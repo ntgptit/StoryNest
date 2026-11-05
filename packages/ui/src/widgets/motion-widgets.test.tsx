@@ -202,6 +202,15 @@ describe("CardCarousel", () => {
     }
   });
 
+  it("snaps cards inside the track's side padding, so the row rests at the very start (previous disabled)", () => {
+    // Without scroll padding the first snap point is the 4px padding, the browser parks the row at scrollLeft 4 and
+    // "previous" stays enabled at the start while the first card is clipped.
+    renderCarousel();
+    const list = screen.getByRole("list", { name: "Popular" });
+    expect(list.className).toMatch(/(^|\s)px-1(\s|$)/);
+    expect(list.className).toMatch(/(^|\s)scroll-px-1(\s|$)/);
+  });
+
   it("cancels the card click after a mouse drag, but not after a plain click", () => {
     renderCarousel();
     const list = screen.getByRole("list", { name: "Popular" });

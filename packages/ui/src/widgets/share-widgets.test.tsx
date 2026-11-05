@@ -188,14 +188,18 @@ describe("ShareDialog", () => {
   });
 });
 
-type Observed = { callback: IntersectionObserverCallback; disconnect: ReturnType<typeof vi.fn> };
+type Observed = {
+  callback: IntersectionObserverCallback;
+  options: IntersectionObserverInit | undefined;
+  disconnect: ReturnType<typeof vi.fn>;
+};
 
 function fakeIntersectionObserver() {
   const observers: Observed[] = [];
   class FakeObserver {
     disconnect = vi.fn();
-    constructor(callback: IntersectionObserverCallback) {
-      observers.push({ callback, disconnect: this.disconnect });
+    constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+      observers.push({ callback, options, disconnect: this.disconnect });
     }
     observe() {}
     unobserve() {}
@@ -264,6 +268,16 @@ describe("StickyActionBar", () => {
 
     io.report("visible");
     expect(bar().getAttribute("data-state")).toBe("hidden");
+  });
+
+  it("observes an area reaching far below the fold, so a jump from below straight past the top is reported", () => {
+    // With a plain viewport root, "below the fold" and "above the top" are both "not intersecting": an instant jump
+    // between them (an in-page link, End) crosses no threshold and the bar would never rise.
+    const io = fakeIntersectionObserver();
+    render(<BarPage />);
+    const [top, right, bottom, left] = (io.observers.at(-1)?.options?.rootMargin ?? "").split(" ");
+    expect([top, right, left]).toEqual(["-56px", "0px", "0px"]);
+    expect(Number.parseFloat(bottom ?? "0")).toBeGreaterThanOrEqual(10_000);
   });
 
   it("stays hidden without IntersectionObserver and stops observing when it goes away", () => {

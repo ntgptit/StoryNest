@@ -9,8 +9,19 @@ import { cn } from "../lib/utils.ts";
 const HEADER_INSET = "-56px 0px 0px 0px";
 
 /**
+ * The margin with its bottom pushed far below the viewport. An anchor anywhere below the fold then counts as
+ * intersecting, so a jump from below it straight past the top (an in-page link, End, a restored scroll position) is
+ * still a crossing that the observer reports; with the plain margin both ends are "not intersecting" and nothing fires.
+ */
+function reachBelow(rootMargin: string): string {
+  const [top = "0px", right = top, , left = right] = rootMargin.split(/\s+/).filter(Boolean);
+  return `${top} ${right} 100000px ${left}`;
+}
+
+/**
  * True once `anchorRef` has scrolled up out of view (above the top inset), false while it is on screen or still below
  * the fold. Without IntersectionObserver (old browsers, tests) it stays false, so the page simply keeps its own button.
+ * Only the top and sides of `rootMargin` matter: below, the observed area always reaches far past the fold.
  */
 export function useScrolledPast(anchorRef: RefObject<Element | null>, rootMargin = HEADER_INSET): boolean {
   const [past, setPast] = useState(false);
@@ -24,7 +35,7 @@ export function useScrolledPast(anchorRef: RefObject<Element | null>, rootMargin
         const top = entry.rootBounds?.top ?? 0;
         setPast(!entry.isIntersecting && entry.boundingClientRect.bottom <= top);
       },
-      { rootMargin },
+      { rootMargin: reachBelow(rootMargin) },
     );
     observer.observe(anchor);
     return () => observer.disconnect();
@@ -51,7 +62,7 @@ export function StickyActionBar({
   /** Accessible name of the bar's region. */
   label: string;
   children: ReactNode;
-  /** IntersectionObserver root margin; defaults to the sticky header's height at the top. */
+  /** IntersectionObserver root margin (top and sides; the bottom is ignored); defaults to the sticky header's height at the top. */
   rootMargin?: string;
   className?: string;
 }) {

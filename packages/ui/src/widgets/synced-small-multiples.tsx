@@ -157,7 +157,7 @@ export function SyncedSmallMultiples({
   };
 
   return (
-    <figure aria-labelledby={captionId} className={cn("m-0 flex flex-col gap-3", className)}>
+    <figure aria-labelledby={captionId} className={cn("m-0 flex min-w-0 flex-col gap-3", className)}>
       <figcaption id={captionId} className="sr-only">
         {summary}
       </figcaption>

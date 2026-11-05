@@ -121,6 +121,14 @@ describe("SyncedSmallMultiples", () => {
     ).toEqual(["5", "2", "Launch"]);
     expect(screen.getByRole("button", { name: "Hide table" }).getAttribute("aria-expanded")).toBe("true");
   });
+
+  it("lets the figure shrink below the open table's width, so the table scrolls in its box instead of widening the page", () => {
+    // As a grid or flex item the figure would otherwise take the table's min-content width (a phone page scrolled sideways).
+    render(renderCharts());
+    fireEvent.click(screen.getByRole("button", { name: "Show table" }));
+    expect(screen.getByRole("figure").className).toMatch(/(^|\s)min-w-0(\s|$)/);
+    expect(screen.getByRole("region", { name: "Figures" }).className).toContain("overflow-auto");
+  });
 });
 
 const step = (n: number, overrides: Partial<FunnelStep> = {}): FunnelStep => ({
