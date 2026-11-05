@@ -41,7 +41,7 @@ try {
   if (await item.count()) { await item.click(); await r.waitForLoadState("networkidle"); opened = r.url().replace(B, "") + " h1=" + (await r.locator("h1").first().innerText().catch(() => "")); }
   record("VER-RDR-07", n && /Chương thử hai/.test(opened) ? "PASS" : "CHECK", `chapter 2 published → follower notification after ~${secs}s: ${!!n}; bell label "${bell}"; clicking it opened ${opened}`);
   // RDR-08 author replies to reader comment
-  const cr = await as("reader"); const cm = await cr.from("comments").select("id,chapter_id").ilike("body", "%Bình luận chương từ người đọc%").single();
+  const cr = await as("reader"); const cm = await cr.from("comments").select("id,chapter_id").eq("chapter_id", results._data.ch1).ilike("body", "%Bình luận chương từ người đọc%").limit(1).single();
   const au = await as("author");
   const rep = await au.rpc("post_comment", { p_id: crypto.randomUUID(), p_chapter_id: cm.data.chapter_id, p_body: "[QA] Tác giả trả lời bình luận.", p_parent_id: cm.data.id, p_block_id: null }).then((x) => x, (e) => ({ error: e }));
   let replyNote = rep.error ? `RPC error ${rep.error.message}` : "reply via RPC";

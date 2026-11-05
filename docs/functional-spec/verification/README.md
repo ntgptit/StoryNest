@@ -111,7 +111,7 @@ repeated.
 | --- | --- |
 | 01–02 | VER-AUT-01…05 |
 | 03–04 | VER-TEAM-01…08, VER-AUT-15 |
-| 05–07 | VER-RDR-01…08 |
+| 05–07 (incl. `06a`) | VER-RDR-01…08 |
 | 08 | VER-AUT-06, VER-AUT-08, VER-AUT-14 |
 | 09–10 | VER-AUT-07, 09…13 |
 | 11 | VER-RDR-09…11, VER-X-01…06 |
@@ -120,36 +120,33 @@ repeated.
 ## Full re-run after PR #60
 
 2026-11-05, `main` at `e17014b`, `storynest-dev`, the same six QA accounts, a new QA story (`[QA] Câu chuyện kiểm thử A`,
-slug suffix from `QA_SLUG_SUFFIX`). The first story of the earlier runs was renamed "(lượt chạy 1)" and the second
-"(lượt chạy 2)" so scripts find the new one. Nothing was deleted from the shared project (see Cleanup below).
+slug suffix from `QA_SLUG_SUFFIX`). Earlier QA stories were renamed "(lượt chạy N)" so scripts find the new one. Nothing
+was deleted from the shared project (see Cleanup below).
 
-Run-book fixes needed to start (committed with this section): `lib.mjs` exported a `URL` that hid the global `URL`
-(the scripts did not start at all); the story form now has a link ("Đường dẫn") that must be unique per author, so
-`01-stage1.mjs` fills it from `QA_SLUG_SUFFIX`; visibility is a radio-card group (`01`, `02`); `02-stage1b.mjs` no
-longer fails when `01` already published chapter 1; `pw.mjs` marks the editor tour as seen. One step is outside the
-scripts: after `04-stage2b.mjs` the owner cannot restore the deleted story (F-STM-09), so the QA story was restored
-with an admin `update public.stories set deleted_at = null where id = '<QA story>'` (QA-owned row only).
+**Result: all scripts ran to the end; 49 cases recorded.**
 
 | Result | Count |
 | --- | --- |
-| PASS | 21 |
-| CONFIRMED (known finding reproduced) | 10 |
-| CHECK (needs a person's reading of the note) | 5 |
-| NEW DEFECT (F-STM-09 again) | 1 |
-| INFO | 1 |
+| PASS | 30 |
+| CONFIRMED (known finding reproduced) | 14 |
+| CHECK (read the note) | 2 (VER-RDR-03, VER-RDR-06) |
+| NEW DEFECT (F-STM-09 again) | 1 (VER-AUT-15) |
+| INFO | 2 |
 
-Scripts `01`–`04`, `07`, `08`, `11` and the parts of `05`, `12`, `13` before the failing step ran to the end with the
-same verdicts as before. **Not green yet — the steps below stop on selectors that PR #60 changed, so their cases were
-not re-run (the earlier results above still stand for the pre-PR #60 UI):**
+The run needed these run-book fixes (all committed): `lib.mjs` exported a `URL` that hid the global `URL`, so no script
+started; the story form now has a link ("Đường dẫn") that must be unique per author, so `01` fills it from
+`QA_SLUG_SUFFIX`; visibility is a radio-card group (`01`, `02`); `02` no longer fails when `01` already published
+chapter 1; "Hẹn giờ…" is an option of the publish split button ("Cách đăng khác", helper `openSchedule` in `pw.mjs`);
+comment edit is in the options menu (`05`); `pw.mjs` marks the editor tour as seen; and `06a-stage4.mjs` (add, write and
+publish chapter 2, follower notification) was missing from the run-book although `07` and `09` need chapter 2.
 
-| Script | Stops at | Likely cause |
-| --- | --- | --- |
-| `05-stage3.mjs` | edit own comment: button "Sửa" not found | comment menu / edit control changed |
-| `09-stage6.mjs` | chapter row button "Đổi đường dẫn" | chapter manager rebuilt (row actions, bulk actions) |
-| `10-stage6b.mjs`, `09` (schedule step) | button "Hẹn giờ…" | schedule is now an option of the publish split button |
-| `12-stage8.mjs`, `13-stage8c.mjs` | moderator queue card "QA Outsider" | depends on the reports `05`/`12` create; not reached |
+Two steps are outside the scripts: after `04-stage2b.mjs` the owner cannot restore the deleted story (F-STM-09), so the
+QA story is restored with an admin `update public.stories set deleted_at = null where id = '<QA story>'` (QA-owned row
+only) before `05`. Run order: `01`–`04`, that restore, then `05`, `06`, `06a`, `07`…`13` (env: `QA_SLUG_SUFFIX` new for
+each run).
 
-Next step for the run-book: re-record these selectors against the new UI (a separate task; no app code involved).
+Not re-run after the last edit: the lookup in `06a-stage4.mjs` (RDR-08 part) is now limited to this story's chapter
+(it failed on the shared comment text with several QA stories present); `07` records VER-RDR-07/08 anyway and passed.
 
 ## Cleanup
 
