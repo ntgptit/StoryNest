@@ -8,7 +8,7 @@ try {
   // AUT-02 create story A with defaults
   await p.goto(B + "/studio/new", { waitUntil: "networkidle" });
   // Visibility is a radio-card group since PR #60 (the checked card is the default); status is still a select.
-  const visDefault = await p.getByRole("radiogroup", { name: "Hiển thị" }).getByRole("radio", { checked: true }).evaluate((el) => el.closest("label")?.innerText ?? el.getAttribute("aria-label") ?? "?").catch(() => "?");
+  const visDefault = await p.locator('[aria-label="Hiển thị"] [aria-checked="true"]').first().innerText().catch(() => "?");
   const statusDefault = await p.getByRole("combobox", { name: "Tình trạng" }).innerText().catch(() => "?");
   await p.getByLabel("Tên truyện").fill("[QA] Câu chuyện kiểm thử A");
   // The story link is unique per author and earlier runs keep their story (cleanup cannot delete published versions): a run suffix keeps this one distinct.
