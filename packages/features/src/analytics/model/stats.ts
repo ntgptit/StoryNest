@@ -339,6 +339,60 @@ export function formatPercent(ratio: number): string {
   return `${Math.round(ratio * 100)}%`;
 }
 
+/** What the vertical axis of the chapter scatter shows: likes per 100 reads, or retention (BR-STAT-003). */
+export const SCATTER_METRICS = ["likesPer100", "retention"] as const;
+export type ScatterMetric = (typeof SCATTER_METRICS)[number];
+
+/** Share of the most-read chapter's reads under which the scatter's filter fades a chapter (its ratio is noisy). */
+export const LOW_READS_SHARE = 0.1;
+
+export interface ChapterScatterPoint {
+  chapterId: string;
+  number: number;
+  title: string;
+  reads: number;
+  votes: number;
+  /** The vertical value: likes ÷ reads × 100, or retention as a ratio (0.8 = 80%). */
+  value: number;
+}
+
+/**
+ * The chapters as dots of reads (x) against `metric` (y), in reading order (BR-STAT-015). A chapter without a value is
+ * left out and counted in `omitted`: for likes per 100 reads one with no reads (nothing to divide by), for retention
+ * the first chapter and any chapter after one with no reads (BR-STAT-003 gives no basis).
+ */
+export function chapterScatter(
+  chapters: readonly ChapterStat[],
+  metric: ScatterMetric,
+): { points: ChapterScatterPoint[]; omitted: number } {
+  const ordered = [...chapters].sort((a, b) => a.number - b.number);
+  const points = ordered.flatMap((chapter): ChapterScatterPoint[] => {
+    const value =
+      metric === "retention" ? chapter.retention : chapter.reads > 0 ? (chapter.votes / chapter.reads) * 100 : null;
+    if (value === null || !Number.isFinite(value)) return [];
+    return [
+      {
+        chapterId: chapter.chapterId,
+        number: chapter.number,
+        title: chapter.title,
+        reads: chapter.reads,
+        votes: chapter.votes,
+        value,
+      },
+    ];
+  });
+  return { points, omitted: ordered.length - points.length };
+}
+
+/**
+ * Reads under which the scatter's filter fades a chapter: `LOW_READS_SHARE` of the most-read chapter, rounded up; 0
+ * (no filter) when that would not exceed 1 read, since fading chapters under 1 read means nothing.
+ */
+export function lowReadsThreshold(chapters: readonly ChapterStat[]): number {
+  const threshold = Math.ceil(Math.max(0, ...chapters.map((chapter) => chapter.reads)) * LOW_READS_SHARE);
+  return threshold > 1 ? threshold : 0;
+}
+
 /** A drop-off as a signed change: 0.18 -> "−18%", −0.05 (more reads) -> "+5%", anything that rounds to 0 -> "0%". */
 export function formatChange(dropOff: number): string {
   const percent = Math.round(Math.abs(dropOff) * 100);

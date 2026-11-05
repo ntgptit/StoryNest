@@ -10,7 +10,7 @@
 | User goals | See the trend over 7/30/90 days; spot the chapter where readers stop |
 | Actors / roles | Owner, co-author (editor excluded) |
 | Related entities | RPCs `author_chapter_stats(story)`, `author_story_daily(story, days)`; tables `chapter_stats`, `chapter_read_events`, `chapter_votes`, `comments`, `chapter_versions`; index `idx_chapter_read_events_story_day` |
-| Code | `packages/features/src/analytics/{api/analytics.api.ts,hooks/use-analytics.ts,model/stats.ts,components/daily-chart.tsx,components/reads-heatmap.tsx,screens/story-stats-screen.tsx,keys.ts}`; `packages/ui/src/widgets/{synced-small-multiples,calendar-heatmap,funnel-steps,rolling-number}.tsx`; `supabase/migrations/20261104002100_author_stats.sql` |
+| Code | `packages/features/src/analytics/{api/analytics.api.ts,hooks/use-analytics.ts,model/stats.ts,components/daily-chart.tsx,components/reads-heatmap.tsx,screens/story-stats-screen.tsx,keys.ts}`; `packages/ui/src/widgets/{synced-small-multiples,calendar-heatmap,funnel-steps,scatter-picker,rolling-number}.tsx`; `supabase/migrations/20261104002100_author_stats.sql` |
 | Dependencies | OBJ-PROG (read events / read counting), OBJ-VOTE, OBJ-CMT, OBJ-JOB (stats aggregation job, event purge) |
 
 | Rule | Name | Status |
@@ -29,6 +29,7 @@
 | BR-STAT-012 | Publish-day flags | Verified |
 | BR-STAT-013 | Reads heatmap (last 90 days) | Verified |
 | BR-STAT-014 | Zooming the daily charts | Verified |
+| BR-STAT-015 | Chapters compared (scatter) | Verified |
 
 ## 2. Rules
 
@@ -134,7 +135,7 @@
 | Description | Three small multiples (Reads, Likes, Comments: the three series `author_story_daily` returns) on one day axis. Before drawing, `alignDaily` puts the points on one sorted, gap-free UTC axis (a duplicate day is added up, a missing day is 0, a malformed day is dropped), so index i is the same day in every chart. Each chart has its own scale: bar height = value ÷ that series' busiest day, a non-zero value at least 2% tall, zero empty; a dashed line marks the series' mean over the range. A shared cursor (pointer, touch, ←/→/Home/End/Esc on a focused chart) shows that day's value and the change from the day before in every chart and announces the day in a polite live region; with no cursor the latest day is shown. The figure's caption is the text summary ("30-day chart: n reads, n likes, n comments"); a "Show as table" toggle lists the same numbers |
 | Preconditions | Daily series loaded |
 | Conditions | All-zero range → "No activity in this range yet." instead of a chart. Each chart keeps 90 bar slots (the longest range) counted back from the latest day, so switching ranges morphs the bars that stay instead of replacing them; the previous range stays on screen while the next loads (`placeholderData`). Colours `--chart-1..3` only |
-| Expected behavior | No chart library; motion only on a range change or a zoom (BR-STAT-014), never on first render; reduced motion clamps it |
+| Expected behavior | No chart library; motion only on a range change, a zoom (BR-STAT-014) or a scatter axis/filter change (BR-STAT-015), never on first render; reduced motion clamps it |
 | Exceptions | — (U-STAT-02 resolved) |
 | Related screens | SCR-STAT-01 |
 | Evidence | `packages/features/src/analytics/components/daily-chart.tsx`; `packages/ui/src/widgets/synced-small-multiples.tsx`; `packages/features/src/analytics/model/stats.ts` (`alignDaily`, `formatDay`); `packages/features/src/analytics/analytics.test.tsx`; `packages/ui/src/widgets/stats-widgets.test.tsx` |
@@ -198,4 +199,16 @@
 | Exceptions | — |
 | Related screens | SCR-STAT-01 |
 | Evidence | `packages/ui/src/widgets/synced-small-multiples.tsx`; `packages/ui/src/widgets/stats-widgets.test.tsx` ("SyncedSmallMultiples zoom") |
+| Status | Verified |
+
+### BR-STAT-015 — Chapters compared (scatter)
+| Field | Value |
+| --- | --- |
+| Description | "Chapters compared" plots each published chapter as a dot from the BR-STAT-002 rows only (`chapterScatter`, pure): x = the chapter's all-time reads, y = a choice of **Likes per 100 reads** (`likes ÷ reads × 100`, default) or **Retention** (BR-STAT-003). The axes start at 0 and end at the largest plotted value. The optional filter "Fade chapters under n reads" fades (and makes unpickable) chapters with fewer than `ceil(0.1 × most-read chapter's reads)` reads (`lowReadsThreshold`, `LOW_READS_SHARE`), because their ratios swing a lot |
+| Preconditions | BR-STAT-001; chapters loaded |
+| Conditions | Section shown only when at least two chapters have reads. Likes per 100 reads leaves out chapters with 0 reads; Retention leaves out chapter 1 and any chapter after one with 0 reads; the summary says how many are left out. No filter when the threshold would be 1 read or less, or no plotted chapter is under it. Nothing plottable on the chosen axis → "No chapter can be plotted on this axis yet." |
+| Expected behavior | Labelled as reads, never readers (note). Pressing a dot shows "Chapter n · title: n reads, n likes, <axis> <value>." in a polite live region. Switching the axis or toggling the filter is purely a view: nothing is requested, the dots glide to their new places (never on first render; reduced motion jumps) |
+| Exceptions | Reads, not distinct readers, so likes per 100 reads is not a share of readers who liked |
+| Related screens | SCR-STAT-01 |
+| Evidence | `packages/features/src/analytics/model/stats.ts` (`chapterScatter`, `lowReadsThreshold`); `packages/features/src/analytics/components/chapter-scatter.tsx`; `packages/ui/src/widgets/scatter-picker.tsx` (Lucian #155); `packages/features/src/analytics/analytics.test.tsx` ("chapter scatter model", "ChapterScatter"); `packages/ui/src/widgets/stats-widgets.test.tsx` ("ScatterPicker") |
 | Status | Verified |

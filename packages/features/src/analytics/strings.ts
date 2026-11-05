@@ -98,6 +98,25 @@ const vi = {
         .filter(Boolean)
         .join(", ") + ".",
   },
+  scatter: {
+    title: "So sánh các chương",
+    metricLabel: "Trục dọc",
+    metrics: { likesPer100: "Lượt thích trên 100 lượt đọc", retention: "Giữ chân" },
+    label: (metric: string) => `Các chương theo lượt đọc (ngang) và ${metric} (dọc)`,
+    hint: "Dùng phím mũi tên để chuyển giữa các chương, Enter để chọn, Esc để bỏ chọn.",
+    xAxis: "Lượt đọc →",
+    yAxis: (metric: string) => `↑ ${metric}`,
+    filter: (reads: string) => `Làm mờ chương dưới ${reads} lượt đọc`,
+    summary: (shown: number, faded: number) =>
+      `${shown} chương trên biểu đồ${faded > 0 ? `, ${faded} chương bị làm mờ` : ""}. Chọn một chấm để xem số liệu.`,
+    omittedLikes: (count: number) => `${count} chương chưa có lượt đọc nên không có trên biểu đồ.`,
+    omittedRetention: (count: number) =>
+      `${count} chương không có chỉ số giữ chân (chương đầu, hoặc chương trước đó chưa có lượt đọc) nên không có trên biểu đồ.`,
+    empty: "Chưa có chương nào để vẽ theo trục này.",
+    detail: (point: { number: number; title: string; reads: string; likes: string; metric: string; value: string }) =>
+      `Chương ${point.number} · ${point.title}: ${point.reads} lượt đọc, ${point.likes} lượt thích, ${point.metric} ${point.value}.`,
+    note: "Lượt đọc là tổng lượt đọc của chương từ trước đến nay (một người đọc được tính một lần mỗi chương mỗi ngày), không phải số người đọc riêng biệt. Lượt thích trên 100 lượt đọc = lượt thích ÷ lượt đọc × 100; chương ít lượt đọc cho tỉ lệ dao động mạnh, nên có thể làm mờ chúng.",
+  },
   chapters: {
     title: "Theo chương",
     note: "“Giữ chân” là số lượt đọc của chương so với chương liền trước.",

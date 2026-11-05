@@ -69,6 +69,7 @@ import { CopyLinkButton } from "@storynest/ui/widgets/copy-link-button";
 import { ExpandableText } from "@storynest/ui/widgets/expandable-text";
 import { FindReplaceBar } from "@storynest/ui/widgets/find-replace-bar";
 import { FunnelSteps, type FunnelStep } from "@storynest/ui/widgets/funnel-steps";
+import { ScatterPicker } from "@storynest/ui/widgets/scatter-picker";
 import { ImageCropDialog, type CropArea } from "@storynest/ui/widgets/image-crop-dialog";
 import { MegaNav, MegaNavSection, megaNavItemClass, type MegaNavEntry } from "@storynest/ui/widgets/mega-nav";
 import { MergeChoice } from "@storynest/ui/widgets/merge-choice";
@@ -2325,6 +2326,62 @@ function AuthoringResponsiveExample() {
   );
 }
 
+const batch3StatsChapters = [
+  { n: 1, reads: 412, likes: 21, retention: null },
+  { n: 2, reads: 318, likes: 12, retention: 0.77 },
+  { n: 3, reads: 290, likes: 25, retention: 0.91 },
+  { n: 4, reads: 201, likes: 6, retention: 0.69 },
+  { n: 5, reads: 188, likes: 15, retention: 0.94 },
+  { n: 6, reads: 33, likes: 4, retention: 0.18 },
+  { n: 7, reads: 12, likes: 3, retention: 0.36 },
+];
+
+function Batch3StatsScatterExample() {
+  const [metric, setMetric] = useState<"likes" | "retention">("likes");
+  const [fade, setFade] = useState(false);
+  const metricName = metric === "likes" ? "Likes per 100 reads" : "Retention";
+  const plotted = batch3StatsChapters.flatMap((c) => {
+    const value = metric === "likes" ? (c.likes / c.reads) * 100 : c.retention;
+    return value === null ? [] : [{ ...c, value }];
+  });
+  const format = (v: number) => (metric === "likes" ? v.toFixed(1) : `${Math.round(v * 100)}%`);
+  return (
+    <div id="batch3-stats-scatter" className="max-w-xl">
+      <ScatterPicker
+        toolbar={
+          <div role="group" aria-label="Vertical axis" className="flex flex-wrap gap-1">
+            {(["likes", "retention"] as const).map((option) => (
+              <Button
+                key={option}
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-pressed={option === metric}
+                onClick={() => setMetric(option)}
+                className="aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-accent-foreground"
+              >
+                {option === "likes" ? "Likes per 100 reads" : "Retention"}
+              </Button>
+            ))}
+          </div>
+        }
+        label={`Chapters by reads (across) and ${metricName} (up)`}
+        hint="Use the arrow keys to move between chapters, Enter to pick one, Esc to let go."
+        xLabel="Reads →"
+        yLabel={`↑ ${metricName}`}
+        formatX={(v) => String(v)}
+        formatY={format}
+        summary={`${plotted.length} chapters plotted. Press a dot to see its figures.`}
+        filter={{ label: "Fade chapters under 42 reads", pressed: fade, onPressedChange: setFade, below: 42 }}
+        points={plotted.map((c) => {
+          const detail = `Chapter ${c.n}: ${c.reads} reads, ${c.likes} likes, ${metricName} ${format(c.value)}.`;
+          return { key: String(c.n), x: c.reads, y: c.value, label: detail, detail };
+        })}
+      />
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -2570,6 +2627,10 @@ export function Gallery() {
         <AuthoringTourExample />
         <AuthoringSplitExample />
         <AuthoringResponsiveExample />
+      </Section>
+
+      <Section title="Batch 3 · stats3">
+        <Batch3StatsScatterExample />
       </Section>
     </AppShell>
   );
