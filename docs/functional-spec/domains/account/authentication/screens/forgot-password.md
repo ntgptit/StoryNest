@@ -36,7 +36,7 @@
 | Validation | BR-AUTH-001 |
 | Error behavior | Rate limit / network / generic banner; same success message whether or not the account exists (BR-AUTH-014) |
 | Navigation | Stays; C06 replaces the form |
-| Evidence | `forgot-password-screen.tsx:19-40`, `use-auth-actions.ts:40-52`, `auth-screens.test.tsx:222-252` |
+| Evidence | `forgot-password-screen.tsx:23-89`, `use-auth-actions.ts:40-52`, `auth-screens.test.tsx:222-252` |
 
 | Field | SCR-AUTH-03-A02 Back to sign in |
 | --- | --- |

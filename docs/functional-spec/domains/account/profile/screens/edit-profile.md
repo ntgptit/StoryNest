@@ -55,7 +55,7 @@
 | Validation | BR-PRF-007 (client), BR-PRF-008 (server) |
 | Error behavior | Inline `role="alert"` under the editor; previous picture kept |
 | Navigation | Stays |
-| Evidence | `avatar-editor.tsx:24-29,40-45,57-68`, `use-avatar.ts:12-26` |
+| Evidence | `avatar-editor.tsx:32-37,49-54,67-78,90-105`, `use-avatar.ts:12-26` |
 
 | Field | SCR-PRF-02-A03 Remove picture |
 | --- | --- |
@@ -66,7 +66,7 @@
 | Validation | — |
 | Error behavior | Inline error |
 | Navigation | Stays |
-| Evidence | `avatar-editor.tsx:43-56`, `profile.api.ts:71-84` |
+| Evidence | `avatar-editor.tsx:52-66`, `profile.api.ts:71-84` |
 
 | Field | SCR-PRF-02-A04 Cancel |
 | --- | --- |

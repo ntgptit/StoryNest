@@ -112,7 +112,7 @@ StoryCard.
 (PageHeader, auth, edit profile), `text-2xl sm:text-3xl` (story, chapter), `text-3xl sm:text-4xl` (home hero); section `h2`:
 `text-xl` (Home "Mới cập nhật"), `text-lg` (story, search, recommendations, author, stats), `text-base` (settings, team,
 chapter manager); EmptyState/ErrorState `h2` `text-lg font-medium` vs. sections `font-semibold`. StoryCard "updated" line
-uses an arbitrary `text-[0.7rem]` = 11.2 px (`story-card.tsx:90`), against the tokens' own "no arbitrary values" rule
+uses an arbitrary `text-[0.7rem]` = 11.2 px (`story-card.tsx:106`), against the tokens' own "no arbitrary values" rule
 (`tokens.css:3-4`). Verified (Code). Vietnamese stacked diacritics at 11–12 px with `text-xs` default leading (1.33) read
 cramped (Inferred).
 Recommendation — add `@utility` classes in `tokens.css`:
@@ -172,7 +172,7 @@ ring-offset-2 ring-offset-background` in Button/Input/Badge/Tabs/StoryCard (repl
 `--border` (0.90) for decorative dividers but set `--input` to about `oklch(0.65 0.015 80)` (computed 3.15:1) for field
 outlines; dark `--input` (16 % white, 3.85:1) already passes. Do not lighten `--primary` further (4.8:1 has no margin).
 
-**DS-06 Story cards, covers and list patterns** — One StoryCard shape (`story-card.tsx:36-95`) everywhere: `p-3`, 2:3 cover,
+**DS-06 Story cards, covers and list patterns** — One StoryCard shape (`story-card.tsx:56-165`, now with grid and list variants) everywhere: `p-3`, 2:3 cover,
 2-line title, author, a wrapping row of two badges (category `secondary`, status `outline`), 2-line synopsis, counters,
 "updated" line. Measured heights: 451 px at 390 (two columns of ~173 px; cover ≈ 224 px = half the card), 507–535 px at
 768, 511–539 px at 1280 (four columns of 232 px inside the 1024 px column). On Home at 390 the first card starts at
@@ -195,7 +195,7 @@ Recommendation — StoryCard variants (FP-037):
 | `rail` (horizontal shelf) | cover 2:3 at 112–128 px wide · title 2 lines · `meta` slot (reason) | ≈ 260 px tall, 2.5 items visible at 390 | "Recommended for you", "You may also like", "Trending" (FP-032); fixes the single full-height card |
 Rules: captions live **inside** the card (`meta` slot), never below it; the whole card/row is one link, separate actions
 sit outside the link; author name hidden on the author's own page (`hideAuthor`); counters use `StatPill` (StoryCard
-duplicates its markup today, `story-card.tsx:78-89`). Containers: `StoryGrid` (2 / 3 / 4 / 5 columns at base / `sm` /
+duplicates its markup today, `story-card.tsx:91-104`). Containers: `StoryGrid` (2 / 3 / 4 / 5 columns at base / `sm` /
 `lg` / `xl` with the `browse` width token), `StoryList` (rows with dividers inside one `Surface`, like the chapter list on
 the story page), `StoryRail` (scroll-snap, peek, arrow buttons on fine pointers).
 Placeholder cover: tinted background from a 6-step palette of new tokens `--cover-1…6` (light ≈ `oklch(0.86–0.90 0.04–0.05

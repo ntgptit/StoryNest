@@ -97,11 +97,11 @@
 | --- | --- |
 | Description | Daily reads exist only for the last 90 days (read events are purged after counting); the series counts a read at once, `chapter_stats` up to about a minute later (aggregation job) |
 | Preconditions | — |
-| Conditions | Screen note: "Daily reads are only available for the last 90 days. Days are in UTC." |
+| Conditions | Screen note: "Daily reads are only available for the last 90 days. Days are in UTC." (the note now continues with chart-interaction hints; changed by PR #60) |
 | Expected behavior | Per-chapter and daily numbers may briefly disagree |
 | Exceptions | No export, no per-chapter-per-day breakdown (WBS 6.5 "Chưa làm") |
 | Related screens | SCR-STAT-01 |
-| Evidence | `supabase/migrations/20261104002100_author_stats.sql:13-18`; `packages/features/src/analytics/strings.en.ts:28`; `docs/WBS.md` WP 6.5 |
+| Evidence | `supabase/migrations/20261104002100_author_stats.sql:13-18`; `packages/features/src/analytics/strings.en.ts:27`; `docs/WBS.md` WP 6.5 |
 | Status | Documented |
 
 ### BR-STAT-007 — Error handling on the stats screen

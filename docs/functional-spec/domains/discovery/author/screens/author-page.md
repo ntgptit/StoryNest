@@ -23,7 +23,7 @@
 | SCR-AUTHOR-01-C03 | Follow button | "Follow"/"Following" with icon, `aria-pressed`, hidden on own page | `follow-author-button.tsx:18-44` |
 | SCR-AUTHOR-01-C04 | Report button | Report this person (OBJ-MOD) | `author-screen.tsx:102` |
 | SCR-AUTHOR-01-C08 | Share button | "Share" under Follow: dialog with the absolute author link `https://<site>/author/<username>` (canonical origin), "Copy" that turns into a check (Lucian #008 / #254) and "Share with another app" where `navigator.share` exists | `author-screen.tsx`, `features/share/components/share-button.tsx` |
-| SCR-AUTHOR-01-C05 | Stories section | `h2` "Author's stories"; card grid + infinite list; end "No more stories." | `author-screen.tsx:93-131`, `strings.en.ts:4,23-24` |
+| SCR-AUTHOR-01-C05 | Stories section | `h2` "Author's stories"; card grid + infinite list; end "No more stories." | `author-screen.tsx:106-144`, `strings.en.ts:4,23-24` |
 | SCR-AUTHOR-01-C06 | Not found | Empty state "Author not found" | `author-screen.tsx:46-48` |
 | SCR-AUTHOR-01-C07 | Error states | Profile error and stories error, both "Couldn't load the author page" + "Try again" | `author-screen.tsx:36-45,111-117` |
 
@@ -82,7 +82,7 @@
 | Validation | — |
 | Error behavior | Later-page error silent (U-SRCH-01) |
 | Navigation | SCR-STORY-01 |
-| Evidence | `author-screen.tsx:111-129` |
+| Evidence | `author-screen.tsx:126-142` |
 
 | Field | SCR-AUTHOR-01-A06 — Report the author |
 | --- | --- |

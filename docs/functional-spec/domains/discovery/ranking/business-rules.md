@@ -108,5 +108,5 @@
 | Expected behavior | Two sets of numbers per card (period vs total) |
 | Exceptions | Badge `aria-label` "Rank N" sits on a generic `span` and overlaps the card's "18+" badge position → U-RANK-02 |
 | Related screens | SCR-RANK-01 |
-| Evidence | `ranking/screens/ranking-screen.tsx:81-109`, `ranking/strings.en.ts:8-9`, `packages/ui/src/widgets/story-card.tsx:60-66` |
+| Evidence | `ranking/screens/ranking-screen.tsx:81-109`, `ranking/strings.en.ts:8-9`, `packages/ui/src/widgets/story-card.tsx:125-137` |
 | Status | Verified |

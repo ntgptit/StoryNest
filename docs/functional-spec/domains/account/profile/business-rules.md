@@ -141,13 +141,13 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 ### BR-PRF-011 — Avatar changes apply immediately
 | Field | Value |
 | --- | --- |
-| Description | The avatar editor is independent from the details form: a picked file is uploaded at once, not on "Save changes"; "Cancel" does not undo it |
+| Description | The avatar editor is independent from the details form: a picked file is cropped in a dialog and, on "Use photo", uploaded at once, not on "Save changes" (changed by PR #60: the crop dialog now precedes the upload); "Cancel" does not undo it |
 | Preconditions | — |
 | Conditions | — |
 | Expected behavior | Success → toast "Profile picture updated." / "Profile picture removed."; auth profile cache updated so the header avatar changes |
 | Exceptions | Error shown under the editor (`role="alert"`); buttons disabled while busy |
 | Related screens | SCR-PRF-02, SCR-SHELL-01 |
-| Evidence | `packages/features/src/profile/components/avatar-editor.tsx:16-79`, `packages/features/src/profile/hooks/use-avatar.ts:12-41` |
+| Evidence | `packages/features/src/profile/components/avatar-editor.tsx:16-108`, `packages/features/src/profile/hooks/use-avatar.ts:12-41` |
 | Status | Verified |
 
 ### BR-PRF-012 — Avatar display and fallback

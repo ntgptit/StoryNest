@@ -22,11 +22,11 @@
 | SCR-HOME-01-C02 | "Recommended for you" block | Member + unfiltered only; up to 8 cards with a reason line; hidden while loading/empty/error | `discover-home.tsx:10-13`, `recommendation-list.tsx:63-79` |
 | SCR-HOME-01-C03 | Section heading | `h2` "Recently updated" (`title`) | `discover-screen.tsx:50-52` |
 | SCR-HOME-01-C04 | Shortcuts nav (`aria-label` "Shortcuts") | "From authors you follow" (member), "See rankings" (all) | `discover-screen.tsx:53-62` |
-| SCR-HOME-01-C05 | Category chips (nav "Categories") | "All" + root categories as links; horizontally scrollable on mobile; skeleton while tree loads | `category-chips.tsx:31-38`, `discover-screen.tsx:66-70` |
+| SCR-HOME-01-C05 | Category chips (nav "Categories") | "All" + root categories as links; horizontally scrollable; skeleton while tree loads. Shown from `sm` up only: on a phone the filters sit in a bottom sheet (`DiscoverFilterBar`) instead (changed by PR #60) | `category-chips.tsx:31-38`, `discover-screen.tsx:65-77` |
 | SCR-HOME-01-C06 | Active-tag line | "Filtering by tag #name" + "Clear tag filter" (X icon) | `tag-filters.tsx:31-41` |
 | SCR-HOME-01-C07 | Popular tags (nav "Popular tags") | Up to 12 `#tag` chips, toggling | `tag-filters.tsx:43-61`, `model/popular-tags.ts:1` |
-| SCR-HOME-01-C08 | Story grid | 2/3/4 columns; `StoryCard` per story | `discover-screen.tsx:19,98-116` |
-| SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:110-115` |
+| SCR-HOME-01-C08 | Story grid | 2/3/4 columns; `StoryCard` per story | `story-tile.tsx:13`, `discover-screen.tsx:106-121` |
+| SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:114-119` |
 | SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:95-99` |
 | SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:79-88,122-129` |
 
@@ -96,7 +96,7 @@
 | Validation | Cursor validated |
 | Error behavior | Inline error with "Try again" (calls `fetchNextPage`) |
 | Navigation | — |
-| Evidence | `infinite-list.tsx:30-62`, `discover-screen.tsx:110-124` |
+| Evidence | `infinite-list.tsx:30-62`, `discover-screen.tsx:114-129` |
 
 | Field | SCR-HOME-01-A07 — Open a story |
 | --- | --- |

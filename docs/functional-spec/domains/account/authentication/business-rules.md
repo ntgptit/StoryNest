@@ -77,7 +77,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | Needs confirmation → "Check your email" card showing the address; otherwise `onSignedUp` → `replace(next)` + `refresh()` |
 | Exceptions | Sign-in before confirming → "Your email isn't confirmed yet. Open the link in your sign-up email." (`email_not_confirmed`). No "resend" action exists (F-AUTH-03): the app has no resend-confirmation call, so the "Check your email" card (envelope animation, Lucian 064) only adds a spam-folder hint and "Use a different email", which returns to the filled form |
 | Related screens | SCR-AUTH-02, SCR-AUTH-01 |
-| Evidence | `packages/features/src/auth/api/auth.api.ts:34`, `packages/features/src/auth/screens/sign-up-screen.tsx:45-60`, `apps/web/src/app/(auth)/auth-pages.tsx:32-44` |
+| Evidence | `packages/features/src/auth/api/auth.api.ts:34`, `packages/features/src/auth/screens/sign-up-screen.tsx:47-70`, `apps/web/src/app/(auth)/auth-pages.tsx:32-44` |
 | Status | Verified (code); whether confirmation is enabled in each Supabase project: Unknown (no `supabase/config.toml` in repo) |
 
 ### BR-AUTH-006 — Email links land on `/auth/callback` (PKCE)
@@ -185,7 +185,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | "Instructions sent" / "If this email has an account, you'll get a password reset link within a few minutes." Link target: `/auth/callback?next=%2Freset-password` |
 | Exceptions | Rate limit / network errors are shown (BR-AUTH-013). Resend (2026-11-05, Lucian 064): the "Instructions sent" card offers "Resend email", locked for 60 s (`RESEND_COOLDOWN_SECONDS`, Supabase's default gap between two emails) behind a filling ring; it sends the same `resetPasswordForEmail` request again, then locks again. "Use a different email" returns to the form |
 | Related screens | SCR-AUTH-03 |
-| Evidence | `packages/features/src/auth/screens/forgot-password-screen.tsx:24-40`, `packages/features/src/auth/strings.en.ts:35-44`, `packages/features/src/auth/hooks/use-auth-actions.ts:40-52`, `packages/features/src/auth/auth-screens.test.tsx:222-252` |
+| Evidence | `packages/features/src/auth/screens/forgot-password-screen.tsx:24-89`, `packages/features/src/auth/strings.en.ts:35-44`, `packages/features/src/auth/hooks/use-auth-actions.ts:40-52`, `packages/features/src/auth/auth-screens.test.tsx:222-252` |
 | Status | Verified |
 
 ### BR-AUTH-015 — Setting a new password needs a session

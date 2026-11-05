@@ -60,12 +60,12 @@ sheet, TOC, search and rankings worked as specified.
 | U-TAX-02 | TAX / SCR-HOME-01 | Tag names may keep a leading "#", rendered as "##Kiemhiep" because the UI prefixes "#". Normalise on create; strip in display. | `…/20261104001400_tags.sql:57`, `discovery/screens/tag-filters.tsx:55`; **runtime RT-07** | FP-017 |
 | U-HOME-03 | HOME / SCR-HOME-01 | An unknown `?category=` slug shows the generic "No stories yet" empty state with no sign the filter is invalid. | `discover-screen.tsx`; **runtime RT-15** | Quick fix |
 | U-SRCH-01 | SRCH, RANK, AUTHOR | Next-page failures are silent on search, ranking, author page and following feed (Home shows them) → `loadMoreError` in `InfiniteList`. | `search-screen.tsx:173,200`, `ranking-screen.tsx:53` | FP-020 |
-| U-SRCH-02 | SRCH / header SearchBox | Mobile search not autofocused; no feedback for < 3 chars or no match in the dropdown. | `search/components/search-box.tsx:24-29,45-49,98-133` | Quick fix |
+| U-SRCH-02 | SRCH / header SearchBox | Mobile header search: the field now autofocuses when it expands (changed by PR #60); still no feedback for < 3 chars or no match in the dropdown. | `search/components/search-box.tsx:45-51,53-55,94-98,178-213` | Quick fix |
 | U-RANK-01 | RANK / SCR-RANK-01 | "Today" = UTC calendar day for reads but rolling 24 h for votes (Q-RANK-01). | `…/20261104001500_rankings.sql:23-34` | Quick fix |
 | U-RANK-02 | RANK / SCR-RANK-01 | Rank badge `aria-label` on a generic span; badge overlaps the 18+ badge (CSS, not rendered). | `ranking-screen.tsx:96-102` | FP-022 |
 | U-AUTHOR-01 | AUTHOR / SCR-AUTHOR-01 | Follow button changes label and `aria-pressed` together; unfollow has no confirmation. | `author/components/follow-author-button.tsx:27-42` | FP-022 |
 | U-AUTHOR-02 | AUTHOR / SCR-AUTHOR-01 | Header story count ignores the reader's 18+ opt-in while the list honours it. | `…/20261104001600_author_follows.sql:43-45` | Quick fix |
-| U-READ-02 | READ / SCR-READ-01 | Chapter images always `alt=""`; no alt column exists (see FP-030). | `reader/components/block-view.tsx:36` | FP-030 |
+| U-READ-02 | READ / SCR-READ-01 | Chapter images always `alt=""`; no alt column exists (see FP-030). | `reader/components/block-view.tsx:64-79` | FP-030 |
 | U-READ-03 | READ, STORY | "Chapter N" uses `sort_order`, so drafts/archived chapters leave gaps (Q-READ-01). | `story/model/story-detail.ts:49,60` | FP-012 |
 | U-STORY-01 | STORY, READ | Follow/Save/Add-to-list and Vote vanish silently when their state query fails. | `story/components/story-actions.tsx:23`, `reader/components/vote-button.tsx:21` | FP-020 |
 | U-STORY-02 | STORY / SCR-STORY-01 | Updated/published dates are loaded but never shown. | `story/model/story-detail.ts:13,53,63` | Quick fix |
@@ -73,7 +73,7 @@ sheet, TOC, search and rankings worked as specified.
 | U-CMT-03 | CMT | Reply gives no toast, guests get no Reply button, reply-list errors have no retry. | `comment-item.tsx:174,199-203,266` | Quick fix |
 | U-CMT-04 | CMT | Commenter shown as plain name: no avatar, profile link or "Author" badge. | `comment-item.tsx:108` | FP-025 |
 | U-NOTI-02 | NOTI | Invite text always says "co-author"; invite notice stays actionable after it is answered; empty state omits replies. | `notifications/strings.en.ts:15,28-32` | FP-013 |
-| U-LIB-02 | LIB | Removal is immediate with no undo; placeholder has no title; "reading list" wording clashes with Reading lists. | `library-screen.tsx:146-179` | FP-015 |
+| U-LIB-02 | LIB | Removal is immediate; Saved and Following removals now offer Undo in the toast (changed by PR #60), the Reading tab still has none; placeholder has no title; "reading list" wording clashes with Reading lists. | `library-screen.tsx:171-192,194-240` | FP-015 |
 | U-LIB-03 | LIB / SCR-STORY-01 | Follow/Save group `aria-label` is "Sign in to follow or save stories" for signed-in users too. | `story/components/story-actions.tsx:29` | FP-022 |
 | U-LIST-01 | LIST | No copy-link / share button. | `list-screen.tsx:122-168` | Quick fix |
 | U-LIST-02 | LIST / add-to-list sheet | Quick create silently ignores names over 120 characters. | `lists/components/add-to-list-button.tsx:121,160-168` | FP-014 |
@@ -84,11 +84,11 @@ sheet, TOC, search and rankings worked as specified.
 | U-STM-04 | STM, TEAM / SCR-STM-01 | Invitation inbox and deleted list render nothing on load error. | `studio/components/my-invitations.tsx:14-18` | FP-020 |
 | U-STM-05 | STM, CHM, TEAM | Tag remove target 20 px; repeated buttons (Write, Delete, Archive…) lack the item name. | `studio/components/tag-editor.tsx:85-101` | FP-022 |
 | U-STM-06 | STM / SCR-STM-02 | Tags typed on create are lost if the tag save fails. | `story-form-screen.tsx:156-178` | FP-018 |
-| U-CHM-01 | CHM | Scheduled date fetched but not shown ("Scheduled" badge only). | `chapter-manager-screen.tsx:152` | FP-010 |
+| U-CHM-01 | CHM | The chapter row still shows only a "Scheduled" badge, but the scheduled date is now shown in the scheduled-chapters outbox above the list (changed by PR #60). | `studio/components/chapter-row.tsx:139`, `studio/components/scheduled-chapters.tsx:102-106`, `chapter-manager-screen.tsx:238` | FP-010 |
 | U-CHM-02 | CHM | Chapter manager of a deleted story fails with "Chapter not found." | `…/20261104000400_chapter_management.sql:49-52` | FP-018 |
 | U-TEAM-01 | TEAM | One message for three invite conflicts. | `studio/model/collaboration.ts:134-135` | FP-016 |
 | U-STAT-01 | STAT / SCR-STAT-01 | Stats page does not name the story; reachable only from the Studio row. | `analytics/screens/story-stats-screen.tsx:83-90` | FP-019 |
-| U-STAT-02 | STAT | Per-day values only in a mouse `title` tooltip. | `analytics/components/daily-chart.tsx:17-31` | FP-022 |
+| U-STAT-02 | STAT | Per-day values only in a mouse `title` tooltip; now a shared-cursor readout (pointer, touch, arrow keys) plus a data table (changed by PR #60). | `analytics/components/daily-chart.tsx:24-89` | FP-022 |
 | U-EDT-01 | EDT | Misleading copy: conflict banner says changes "will be lost" (they are backed up); cancel-schedule reuses the Unpublish dialog; save-first message always blames title/content. | `editor/strings.en.ts` | FP-034 |
 | U-EDT-02 | EDT | Title input `maxLength` 400 while the limit is 200. | `chapter-editor-screen.tsx:498`, `editor/model/draft-form.ts:6` | FP-034 |
 | U-EDT-03 | EDT | Word count inside `aria-live` (announced every keystroke); 36 px toolbar without arrow-key navigation; no H1/context. | `chapter-editor-screen.tsx`, `editor/components/editor-toolbar.tsx` | FP-022 |

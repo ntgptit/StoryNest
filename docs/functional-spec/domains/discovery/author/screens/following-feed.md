@@ -20,7 +20,7 @@
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
 | SCR-AUTHOR-02-C01 | Page header | "From authors you follow" / "Recently updated stories from the authors you follow." | `following-screen.tsx:29`, `strings.en.ts:30-32` |
-| SCR-AUTHOR-02-C02 | Story grid | Infinite list of cards, end "No more stories." | `following-screen.tsx:54-72` |
+| SCR-AUTHOR-02-C02 | Story grid | Infinite list of cards, end "No more stories." | `following-screen.tsx:46-57` |
 | SCR-AUTHOR-02-C03 | Loading | 8-tile skeleton `aria-busy` | `following-screen.tsx:37-42` |
 | SCR-AUTHOR-02-C04 | Empty | "No stories yet / Follow a few authors and their updated stories will show up here." | `following-screen.tsx:43-44`, `strings.en.ts:33-36` |
 | SCR-AUTHOR-02-C05 | Error | "Couldn't load the list" + "Try again" | `following-screen.tsx:30-36`, `strings.en.ts:38` |
@@ -58,7 +58,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-STORY-01 |
-| Evidence | `following-screen.tsx:58-65` |
+| Evidence | `following-screen.tsx:50` |
 
 | Field | SCR-AUTHOR-02-A04 — Retry |
 | --- | --- |

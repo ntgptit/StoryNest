@@ -36,7 +36,7 @@
 | Expected behavior | Numbers formatted per locale |
 | Exceptions | When the reader shows mature content the list below may contain more stories than M → U-AUTHOR-02 |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `author/screens/author-screen.tsx:71-91`, `20261104001600_author_follows.sql:41-45`, `supabase/tests/220_author_follows.test.sql:56,73`, `docs/WBS.md:211` |
+| Evidence | `author/screens/author-screen.tsx:67-104`, `20261104001600_author_follows.sql:41-45`, `supabase/tests/220_author_follows.test.sql:56,73`, `docs/WBS.md:211` |
 | Status | Verified |
 
 ### BR-AUTHOR-003 — Follower count counts active followers only

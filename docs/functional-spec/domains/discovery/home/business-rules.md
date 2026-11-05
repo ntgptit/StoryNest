@@ -24,7 +24,7 @@
 | Expected behavior | Unlisted stories (readable by link per BR-STORY-*) are never advertised. Mature stories carry an "18+" badge when shown |
 | Exceptions | **Owner account status is not checked**: stories of suspended/deactivated owners are listed; the owner embed is hidden by `app_users_read` RLS so the card shows "Anonymous author" (`unknownAuthor`). Every other discovery list excludes them (see domain overview matrix) → F-HOME-01 |
 | Related screens | SCR-HOME-01, SCR-AUTHOR-01 (same function with `authorId`) |
-| Evidence | `packages/features/src/discovery/api/discovery.api.ts:51-71`, `discovery/hooks/use-latest-stories.ts:22-24`, `discovery/model/story-card.ts:51-54`, `supabase/migrations/20261103000100_auth_and_rls.sql:182-184,198-202`, `discovery/discovery.test.tsx:82`, `docs/WBS.md:206` ("Chưa làm … listLatestStories chưa lọc theo trạng thái chủ truyện") |
+| Evidence | `packages/features/src/discovery/api/discovery.api.ts:51-56,63-71`, `discovery/hooks/use-latest-stories.ts:22-24`, `discovery/model/story-card.ts:51-54`, `supabase/migrations/20261103000100_auth_and_rls.sql:182-184,198-202`, `discovery/discovery.test.tsx:82`, `docs/WBS.md:206` ("Chưa làm … listLatestStories chưa lọc theo trạng thái chủ truyện") |
 | Status | Verified |
 
 ### BR-HOME-002 — Ordering and keyset pagination
@@ -120,7 +120,7 @@
 | Expected behavior | Whole card is one link to `/story/{id}/{slug}` (WBS Q2). Shows cover (lazy) or the title's first letter, "18+" badge, title (2 lines), author display name (not a link), category badge, status label (Draft/Ongoing/Completed/On hiatus), synopsis excerpt (120 chars), reads and votes (with sr-only labels), "Updated <relative>" |
 | Exceptions | Missing owner → "Anonymous author"; missing stats → zeros; unknown status → raw value |
 | Related screens | SCR-HOME-01, SCR-SRCH-01, SCR-RANK-01, SCR-AUTHOR-01/02, story page (similar) |
-| Evidence | `discovery/model/story-card.ts:38-85`, `packages/ui/src/widgets/story-card.tsx:36-95`, `packages/ui/src/widgets/story-cover.tsx:5-41` |
+| Evidence | `discovery/model/story-card.ts:38-85`, `packages/ui/src/widgets/story-card.tsx:56-165`, `packages/ui/src/widgets/story-cover.tsx:5-41` |
 | Status | Verified |
 
 ### BR-HOME-010 — Hero

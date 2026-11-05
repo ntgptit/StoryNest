@@ -77,13 +77,13 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 ### BR-EDT-003 — Supported content set (Tiptap features)
 | Field | Value |
 | --- | --- |
-| Description | The editor offers exactly what a chapter body can store: paragraph, one heading level (H2), bold, italic, underline, strikethrough, hard line break, divider (horizontal rule), image block, undo/redo. |
+| Description | The editor offers exactly what a chapter body can store: paragraph, one heading level (H2), bold, italic, underline, strikethrough, hard line break, divider (horizontal rule), image block, undo/redo (plus a find-and-replace button, which stores no content; changed by PR #60). |
 | Preconditions | Tiptap 3.32.2 StarterKit with blockquote, bullet/ordered list, list item, list keymap, code block, inline code and link switched off. |
 | Conditions | Any node the body cannot store reaching `docToBody` (or an image block without a storage key). |
 | Expected behavior | `UnsupportedContentError` → save refused with "Part of the content can't be saved. Remove it and try again." (status "Not saved: check the chapter title and content"). Nothing is silently dropped. Image block is an atom (selectable, draggable) that shows the picture from its public URL, or an empty frame when no URL can be built (key is kept). |
 | Exceptions | Pasted HTML with lists/links/images is normalised by the ProseMirror schema before it reaches the converter (lists become paragraphs, links lose the link, external `<img>` is dropped) — Inferred from schema; not tested in repo. |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/model/extensions.ts:12-38,48-66`, `packages/features/src/editor/model/body-converter.ts:36-42,94-118`, `packages/features/src/editor/components/editor-toolbar.tsx:46-80`, tests `editor.test.ts:114,225`, `editor-screen.test.tsx:195` |
+| Evidence | `packages/features/src/editor/model/extensions.ts:12-38,48-66`, `packages/features/src/editor/model/body-converter.ts:36-42,94-118`, `packages/features/src/editor/components/editor-toolbar.tsx:69-146`, tests `editor.test.ts:114,225`, `editor-screen.test.tsx:195` |
 | Status | Verified |
 
 ### BR-EDT-004 — Permanent block ids
@@ -365,13 +365,13 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 ### BR-EDT-027 — Keyboard shortcuts and input rules
 | Field | Value |
 | --- | --- |
-| Description | Shortcuts come from the Tiptap 3.32.2 extensions enabled in `BR-EDT-003`; the app adds none. |
+| Description | Shortcuts come from the Tiptap 3.32.2 extensions enabled in `BR-EDT-003`; the app adds none (changed by PR #60: it now adds Mod-F, find and replace). |
 | Preconditions | Focus in the editor body. |
 | Conditions | Bold Mod-B; italic Mod-I; underline Mod-U; strikethrough Mod-Shift-S; heading Mod-Alt-2; hard break Shift-Enter / Mod-Enter; undo Mod-Z, redo Mod-Shift-Z / Mod-Y. Markdown input rules: `## ` → heading, `---` / `___ ` / `*** ` → divider, `**x**` / `__x__` bold, `*x*` / `_x_` italic, `~~x~~` strike. Toolbar buttons do not steal focus (mousedown prevented). |
-| Expected behavior | As listed. No save shortcut (Mod-S opens the browser's save-page dialog) — U-EDT-04. Shortcuts are not shown in tooltips or `aria-keyshortcuts`. |
+| Expected behavior | As listed. No save shortcut (Mod-S opens the browser's save-page dialog) — U-EDT-04. Shortcuts are now shown in the toolbar tooltips (changed by PR #60, Lucian 076); there is still no `aria-keyshortcuts`. |
 | Exceptions | — |
 | Related screens | SCR-EDT-01 |
-| Evidence | Tiptap 3.32.2 sources under `node_modules/.pnpm/`: `@tiptap/extension-bold/src/bold.tsx:133`, `@tiptap/extension-strike/src/strike.ts:113`, `@tiptap/extension-heading/src/heading.ts:137,146`, `@tiptap/extension-horizontal-rule/src/horizontal-rule.ts:131`, `@tiptap/extension-hard-break/src/hard-break.ts:117-118`, `@tiptap/extensions/src/undo-redo/undo-redo.ts:77-79`; version pin `packages/features/package.json:21-25`; `packages/features/src/editor/components/editor-toolbar.tsx:97-98` |
+| Evidence | Tiptap 3.32.2 sources under `node_modules/.pnpm/`: `@tiptap/extension-bold/src/bold.tsx:133`, `@tiptap/extension-strike/src/strike.ts:113`, `@tiptap/extension-heading/src/heading.ts:137,146`, `@tiptap/extension-horizontal-rule/src/horizontal-rule.ts:131`, `@tiptap/extension-hard-break/src/hard-break.ts:117-118`, `@tiptap/extensions/src/undo-redo/undo-redo.ts:77-79`; version pin `packages/features/package.json:21-25`; `packages/features/src/editor/components/editor-toolbar.tsx:165-166` |
 | Status | Verified (library default; not covered by repo tests) |
 
 ### BR-EDT-028 — Cache refresh after a publish action
