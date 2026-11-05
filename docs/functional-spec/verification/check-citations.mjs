@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Checks the `path:line` citations in the functional spec against code that changed after the spec was written.
 //
-//   node docs/functional-spec/verification/check-citations.mjs [--base <commit>] [--head <ref>] [--docs-rev <ref>] [--fix]
+//   node docs/functional-spec/verification/check-citations.mjs [--base <commit>] [--head <ref>] [--docs-rev <ref>] [--written-with-head <range>] [--fix]
 //   (run --fix on committed documents only: it is idempotent after a commit because rewritten lines are no longer "old")
 //
 // For every citation written at or before --base (found with git blame, so citations added later are ignored) it
@@ -30,7 +30,13 @@ process.chdir(root);
 
 const tracked = git("ls-tree", "-r", "--name-only", HEAD).split("\n").filter(Boolean);
 const baseTracked = new Set(git("ls-tree", "-r", "--name-only", BASE).split("\n").filter(Boolean));
-const ancestors = new Set(git("rev-list", BASE).split("\n").filter(Boolean));
+// Citations written by a commit in this range already describe the --head code (for example documents merged from main
+// together with that code); everything else in --docs-rev is checked.
+const SKIP_RANGE = flag("--written-with-head", "");
+const writtenWithHead = new Set(SKIP_RANGE ? git("rev-list", SKIP_RANGE).split("\n").filter(Boolean) : []);
+const ancestors = SKIP_RANGE
+  ? new Set(git("rev-list", DOCS_REV).split("\n").filter((c) => c && !writtenWithHead.has(c)))
+  : new Set(git("rev-list", BASE).split("\n").filter(Boolean));
 const status = new Map(); // file -> "M" | "D" | "R"
 for (const line of git("diff", "--name-status", "-M", BASE, HEAD).split("\n").filter(Boolean)) {
   const [s, from] = line.split("\t");
