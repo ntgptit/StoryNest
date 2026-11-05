@@ -43,7 +43,7 @@ counted in both areas.)
 | The core loop works end to end: create story → write → autosave with conflict detection → publish/schedule → readers read → followers notified | Verified (Code) WF-EDT-01…10, WF-NOTI-01; Verified (Runtime) reading path |
 | Data integrity is strong: RLS on every table, writes through transactional RPCs, immutable versions, idempotent outbox, deduplicated read counting | Verified (Code) + 31 SQL test files passing |
 | Paragraph comments bound to stable block IDs — a pattern competitors handle less well when authors edit (BM-12, BM-13) | Verified (Code) BR-CMT-*, BR-EDT-* |
-| Bilingual (vi/en) with no hard-coded text, design tokens enforced by tooling | Verified (Code) `check:hardcode`, `check:tokens` |
+| All UI text is translated (vi/en) with no hard-coded strings, and design tokens are enforced by tooling. **Not yet end-to-end bilingual:** server rendering, `<html lang>` and page titles stay Vietnamese in English mode (U-I18N-01, FP-021) | Verified (Code) `check:hardcode`, `check:tokens`; Verified (Runtime) RT-08 |
 | Discovery basics are correct: diacritic-insensitive search, rankings by period, recommendations with reasons, consistent eligibility filters in RPC-backed lists | Verified (Runtime) RT-11/RT-12, discovery consistency matrix |
 | Moderation exists with a written reason and an audit row for every action | Verified (Code) BR-MOD-* |
 
