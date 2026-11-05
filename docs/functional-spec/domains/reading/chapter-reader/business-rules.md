@@ -37,6 +37,9 @@
 | [BR-READ-019](#br-read-019--reading-time-left) | Reading time left | Verified (unit + component tests) |
 | [BR-READ-020](#br-read-020--focus-mode-is-a-device-only-setting) | Focus mode is a device-only setting | Verified (unit + component tests) |
 | [BR-READ-021](#br-read-021--quote-link-and-landing-highlight) | Quote link and landing highlight | Verified (component tests) |
+| [BR-READ-022](#br-read-022--long-stories-chapter-ranges) | Long stories: chapter ranges | Verified (unit + component tests) |
+| [BR-READ-023](#br-read-023--end-of-a-finished-story) | End of a finished story | Verified (unit + component tests) |
+| [BR-READ-024](#br-read-024--read-aloud-uses-the-devices-speech-engine) | Read aloud uses the device's speech engine | Verified (unit + component tests) |
 
 ---
 
@@ -291,3 +294,39 @@
 | Related screens | SCR-READ-01 |
 | Evidence | `packages/features/src/reader/components/reader-blocks.tsx`, `packages/features/src/reader/screens/reader-screen.tsx` (`quoteText`), `packages/features/src/progress/hooks/use-reading-tracker.ts` (`onRestored`), `packages/ui/src/widgets/selection-toolbar.tsx`, `packages/ui/src/widgets/highlight-sweep.tsx`, `packages/features/src/reader/reader.test.tsx` |
 | Status | Verified (component tests) |
+
+### BR-READ-022 — Long stories: chapter ranges
+| Field | Value |
+| --- | --- |
+| Description | A story with more than 50 published chapters is "long". Its chapters are cut, in reading order (by position, not number), into ranges of 50, or of the smallest multiple of 50 that keeps the count at 20 ranges or fewer. |
+| Preconditions | The published chapter list is loaded. |
+| Conditions | — |
+| Expected behavior | The story page shows the ranges as an accordion ("Chapters 1–50", one open at a time; until the reader picks one, the range of the continue chapter, else the first). The reader's contents sheet adds a scrub rail with the first chapter number of each range. Stories of 50 chapters or fewer keep the plain list. |
+| Exceptions | — |
+| Related screens | SCR-STORY-01, SCR-READ-01 |
+| Evidence | `packages/features/src/story/model/chapter-ranges.ts`, `packages/features/src/story/screens/story-screen.tsx` (`ChapterRangeList`), `packages/features/src/reader/components/toc-sheet.tsx`, `packages/features/src/story/story.test.tsx` |
+| Status | Verified (unit + component tests) |
+
+### BR-READ-023 — End of a finished story
+| Field | Value |
+| --- | --- |
+| Description | The reader is at the end of the whole story only on the last published chapter of a story whose status is `completed` (the latest chapter of an ongoing or paused story is not an end). There it is congratulated ("You finished the story!", Add to list) and offered similar stories. |
+| Preconditions | Story and chapter list loaded. |
+| Conditions | — |
+| Expected behavior | The celebration plays once, when the reader scrolls the card into view; never on page load. Nothing is stored (no streak or goal: that would need backend). |
+| Exceptions | — |
+| Related screens | SCR-READ-01 |
+| Evidence | `packages/features/src/reader/model/chapter.ts` (`isStoryFinished`), `packages/features/src/reader/components/story-finished.tsx`, `packages/features/src/reader/reader.test.tsx` |
+| Status | Verified (unit + component tests) |
+
+### BR-READ-024 — Read aloud uses the device's speech engine
+| Field | Value |
+| --- | --- |
+| Description | "Read this chapter aloud" speaks the chapter's paragraphs and headings with the browser's Web Speech API, in the app language (`vi-VN` / `en-US`), one block per utterance. Nothing is sent to a server; voices are those of the device. |
+| Preconditions | `speechSynthesis` exists (the button is hidden otherwise, e.g. some Android WebViews) and the chapter has text. |
+| Conditions | — |
+| Expected behavior | Play starts at the first block whose bottom is below the reader bar, or at the block where the last pause stopped. Pause cancels speech. Leaving the chapter stops it. |
+| Exceptions | A device without a voice for the language reads with its default voice. |
+| Related screens | SCR-READ-01 |
+| Evidence | `packages/features/src/reader/hooks/use-read-aloud.ts`, `packages/features/src/reader/model/read-aloud.ts`, `packages/features/src/reader/reader.test.tsx` |
+| Status | Verified (unit + component tests) |

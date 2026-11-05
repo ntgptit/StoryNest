@@ -1,7 +1,8 @@
 "use client";
 
-import { Minus, Plus, Type } from "lucide-react";
+import { Type } from "lucide-react";
 import {
+  READER_FONT_SIZES,
   READER_FONTS,
   READER_LINE_HEIGHTS,
   READER_THEMES,
@@ -9,6 +10,9 @@ import {
   type ReaderLineHeight,
   type ReaderTheme,
 } from "@storynest/validation";
+import { revealFrom } from "@storynest/ui/lib/view-transition";
+import { RollingStepper } from "@storynest/ui/widgets/rolling-stepper";
+import { SwatchPicker } from "@storynest/ui/widgets/swatch-picker";
 import { Button } from "@storynest/ui/components/button";
 import { Label } from "@storynest/ui/components/label";
 import { Switch } from "@storynest/ui/components/switch";
@@ -27,6 +31,16 @@ import { canStepFontSize, stepFontSize } from "../model/preferences.ts";
 import { readerText } from "../strings.ts";
 
 const text = readerText.settings;
+
+/** Each background as its paper with a sample of its ink; "match app theme" is half light, half dark paper. */
+const THEME_SWATCH: Record<ReaderTheme, string> = {
+  site: "bg-[linear-gradient(135deg,var(--color-paper-light)_50%,var(--color-paper-dark)_50%)]",
+  light: "bg-paper-light text-ink-light",
+  sepia: "bg-paper-sepia text-ink-sepia",
+  dark: "bg-paper-dark text-ink-dark",
+};
+/** Sample letters inside a swatch (not text to translate: a type specimen, like a font picker's). */
+const SWATCH_SAMPLE = "Aa";
 
 function Choice<T extends string>({
   label,
@@ -83,34 +97,16 @@ export function ReaderSettingsSheet() {
           <SheetDescription>{text.description}</SheetDescription>
         </SheetHeader>
         <div className={cn("flex flex-col gap-6 px-4 pb-6")}>
-          <div role="group" aria-label={text.fontSize} className="flex flex-col gap-2">
-            <span className="text-sm font-medium">{text.fontSize}</span>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                aria-label={text.smaller}
-                disabled={!canStepFontSize(preferences.fontSize, -1)}
-                onClick={() => update({ fontSize: stepFontSize(preferences.fontSize, -1) })}
-              >
-                <Minus aria-hidden className="size-4" />
-              </Button>
-              <output aria-live="polite" className="min-w-20 text-center text-sm">
-                {text.sizeNames[preferences.fontSize]}
-              </output>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                aria-label={text.larger}
-                disabled={!canStepFontSize(preferences.fontSize, 1)}
-                onClick={() => update({ fontSize: stepFontSize(preferences.fontSize, 1) })}
-              >
-                <Plus aria-hidden className="size-4" />
-              </Button>
-            </div>
-          </div>
+          <RollingStepper
+            label={text.fontSize}
+            valueText={text.sizeNames[preferences.fontSize]}
+            position={READER_FONT_SIZES.indexOf(preferences.fontSize)}
+            canDecrease={canStepFontSize(preferences.fontSize, -1)}
+            canIncrease={canStepFontSize(preferences.fontSize, 1)}
+            onStep={(direction) => update({ fontSize: stepFontSize(preferences.fontSize, direction) })}
+            decreaseLabel={text.smaller}
+            increaseLabel={text.larger}
+          />
           <Choice<ReaderLineHeight>
             label={text.lineHeight}
             values={READER_LINE_HEIGHTS}
@@ -125,12 +121,17 @@ export function ReaderSettingsSheet() {
             labelOf={(value) => text.fonts[value]}
             onSelect={(font) => update({ font })}
           />
-          <Choice<ReaderTheme>
+          <SwatchPicker<ReaderTheme>
             label={text.theme}
-            values={READER_THEMES}
-            current={preferences.theme}
-            labelOf={(value) => text.themes[value]}
-            onSelect={(theme) => update({ theme })}
+            value={preferences.theme}
+            options={READER_THEMES.map((value) => ({
+              value,
+              label: text.themes[value],
+              className: THEME_SWATCH[value],
+              content: value === "site" ? null : SWATCH_SAMPLE,
+            }))}
+            // The new background spreads out in a circle from the pressed swatch (instant with reduced motion).
+            onChange={(theme, swatch) => revealFrom(swatch, () => update({ theme }))}
           />
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">

@@ -5,6 +5,7 @@ export const en = {
   chaptersTitle: "Chapters",
   chapterCount: (count: number) => `${count} chapter${count === 1 ? "" : "s"}`,
   chapterLabel: (number: number) => `Chapter ${number}`,
+  chapterRange: (first: number, last: number) => `Chapters ${first}–${last}`,
   words: (count: string) => `${count} words`,
   synopsisTitle: "Synopsis",
   readMore: "Show more",

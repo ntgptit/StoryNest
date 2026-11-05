@@ -1,7 +1,7 @@
 "use client";
 
 import { BookOpen, FileQuestion, Heart, List, MessageCircle, Users } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { VISIBILITY } from "@storynest/validation";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button, buttonVariants } from "@storynest/ui/components/button";
@@ -11,6 +11,8 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { ExpandableText } from "@storynest/ui/widgets/expandable-text";
 import { StickyActionBar } from "@storynest/ui/widgets/sticky-action-bar";
 import { StatPill } from "@storynest/ui/widgets/stat-pill";
+import { AccordionList } from "@storynest/ui/widgets/accordion-list";
+import { cn } from "@storynest/ui/lib/utils";
 import { StoryCover } from "@storynest/ui/widgets/story-cover";
 import { formatCount } from "@storynest/utils";
 import { AppLink } from "../../_shared/platform.tsx";
@@ -24,7 +26,8 @@ import { TocSheet } from "../../reader/index.ts";
 import { ShareButton, shareText } from "../../share/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
-import { chapterHref } from "../model/story-detail.ts";
+import { chapterHref, type ChapterListItem, type StoryDetail } from "../model/story-detail.ts";
+import { chapterRanges, isLongStory, rangeIndexOf } from "../model/chapter-ranges.ts";
 import { storyText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
@@ -183,27 +186,15 @@ export function StoryScreen({
             />
           ) : chapterItems.length === 0 ? (
             <p className="text-sm text-muted-foreground">{storyText.noChaptersYet}</p>
+          ) : isLongStory(chapterItems.length) ? (
+            <ChapterRangeList
+              story={data}
+              chapters={chapterItems}
+              continueSlug={continueChapter?.slug}
+              locale={locale}
+            />
           ) : (
-            <ol className="divide-y rounded-xl border">
-              {chapterItems.map((chapter) => (
-                <li key={chapter.id}>
-                  <AppLink
-                    href={chapterHref(data, chapter)}
-                    className="flex items-baseline justify-between gap-3 px-4 py-3 hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-                  >
-                    <span className="min-w-0">
-                      <span className="block text-xs text-muted-foreground">
-                        {storyText.chapterLabel(chapter.number)}
-                      </span>
-                      <span className="block truncate text-sm font-medium">{chapter.title}</span>
-                    </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {storyText.words(formatCount(chapter.wordCount, locale))}
-                    </span>
-                  </AppLink>
-                </li>
-              ))}
-            </ol>
+            <ChapterList story={data} chapters={chapterItems} locale={locale} className="rounded-xl border" />
           )}
         </section>
 
@@ -238,6 +229,73 @@ export function StoryScreen({
         ) : null}
       </article>
     </AdultGate>
+  );
+}
+
+function ChapterList({
+  story,
+  chapters,
+  locale,
+  className,
+}: {
+  story: Pick<StoryDetail, "id" | "slug">;
+  chapters: readonly ChapterListItem[];
+  locale: string;
+  className?: string;
+}) {
+  return (
+    <ol className={cn("divide-y", className)}>
+      {chapters.map((chapter) => (
+        <li key={chapter.id}>
+          <AppLink
+            href={chapterHref(story, chapter)}
+            className="flex items-baseline justify-between gap-3 px-4 py-3 hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <span className="min-w-0">
+              <span className="block text-xs text-muted-foreground">{storyText.chapterLabel(chapter.number)}</span>
+              <span className="block truncate text-sm font-medium">{chapter.title}</span>
+            </span>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {storyText.words(formatCount(chapter.wordCount, locale))}
+            </span>
+          </AppLink>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/**
+ * A long story's chapters in ranges (1–50, 51–100...), one range open at a time. Until the reader picks one, the
+ * range of the chapter they would continue in is open (the first range for a new reader).
+ */
+function ChapterRangeList({
+  story,
+  chapters,
+  continueSlug,
+  locale,
+}: {
+  story: Pick<StoryDetail, "id" | "slug">;
+  chapters: readonly ChapterListItem[];
+  continueSlug: string | undefined;
+  locale: string;
+}) {
+  const ranges = chapterRanges(chapters);
+  // undefined = the reader has not chosen yet (follow the continue chapter); null = they closed every range.
+  const [chosen, setChosen] = useState<string | null | undefined>(undefined);
+  const auto = ranges[Math.max(0, rangeIndexOf(ranges, continueSlug))];
+  const openId = chosen === undefined ? (auto ? String(auto.start) : null) : chosen;
+  return (
+    <AccordionList
+      openId={openId}
+      onOpenChange={setChosen}
+      items={ranges.map((range) => ({
+        id: String(range.start),
+        title: storyText.chapterRange(range.firstNumber, range.lastNumber),
+        meta: storyText.chapterCount(range.chapters.length),
+        content: <ChapterList story={story} chapters={range.chapters} locale={locale} className="border-t" />,
+      }))}
+    />
   );
 }
 

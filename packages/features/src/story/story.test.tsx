@@ -10,6 +10,13 @@ import { PlatformProvider, type PlatformAdapter } from "../_shared/platform.tsx"
 import { ToastProvider } from "../_shared/toast.tsx";
 import { getStory, listStoryChapters } from "./api/story.api.ts";
 import {
+  chapterRangeSize,
+  chapterRanges,
+  isLongStory,
+  LONG_STORY_CHAPTERS,
+  rangeIndexOf,
+} from "./model/chapter-ranges.ts";
+import {
   chapterHref,
   isIndexable,
   toChapterListItem,
@@ -519,5 +526,64 @@ describe("StoryScreen sticky reading bar", () => {
     renderScreen(client);
     await screen.findByText(storyText.noChaptersYet);
     expect(bar()).toBeNull();
+  });
+});
+
+describe("chapter ranges", () => {
+  const items = (count: number) => Array.from({ length: count }, (_, i) => toChapterListItem(chapterRow(i + 1)));
+
+  it("calls a story long above 50 chapters and cuts it in ranges of 50, larger ones beyond 20 ranges", () => {
+    expect(isLongStory(LONG_STORY_CHAPTERS)).toBe(false);
+    expect(isLongStory(LONG_STORY_CHAPTERS + 1)).toBe(true);
+    expect(chapterRangeSize(120)).toBe(50);
+    expect(chapterRangeSize(1000)).toBe(50);
+    expect(chapterRangeSize(1001)).toBe(100);
+    const ranges = chapterRanges(items(120));
+    expect(ranges.map((r) => [r.start, r.firstNumber, r.lastNumber, r.chapters.length])).toEqual([
+      [0, 1, 50, 50],
+      [50, 51, 100, 50],
+      [100, 101, 120, 20],
+    ]);
+    expect(rangeIndexOf(ranges, "chuong-77")).toBe(1);
+    expect(rangeIndexOf(ranges, undefined)).toBe(-1);
+    expect(chapterRanges([])).toEqual([]);
+  });
+});
+
+describe("StoryScreen: long stories", () => {
+  it("groups more than 50 chapters in ranges, one open at a time, the first range open for a new reader", async () => {
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: Array.from({ length: 120 }, (_, i) => chapterRow(i + 1)), error: null }),
+    );
+    renderScreen(client);
+    const first = await screen.findByRole("button", { name: new RegExp(storyText.chapterRange(1, 50)) });
+    const second = screen.getByRole("button", { name: new RegExp(storyText.chapterRange(51, 100)) });
+    expect(screen.getByRole("button", { name: new RegExp(storyText.chapterRange(101, 120)) })).toBeTruthy();
+    expect(first.getAttribute("aria-expanded")).toBe("true");
+    expect(second.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.getByRole("link", { name: /Tựa chương 50/ })).toBeTruthy();
+    // A closed range's chapters are not built until it is opened.
+    expect(screen.queryByRole("link", { name: /Tựa chương 51/ })).toBeNull();
+
+    fireEvent.click(second);
+    expect(second.getAttribute("aria-expanded")).toBe("true");
+    expect(first.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.getByRole("link", { name: /Tựa chương 51/ }).getAttribute("href")).toBe(
+      `/story/${STORY_ID}/rung-suong-mu/chuong-51`,
+    );
+    // Arrow keys move between range headers.
+    fireEvent.keyDown(second, { key: "ArrowDown" });
+    expect(document.activeElement?.textContent).toContain(storyText.chapterRange(101, 120));
+  });
+
+  it("keeps the plain list for a story of 50 chapters", async () => {
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: Array.from({ length: 50 }, (_, i) => chapterRow(i + 1)), error: null }),
+    );
+    renderScreen(client);
+    expect(await screen.findByRole("link", { name: /Tựa chương 50/ })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: new RegExp(storyText.chapterRange(1, 50)) })).toBeNull();
   });
 });

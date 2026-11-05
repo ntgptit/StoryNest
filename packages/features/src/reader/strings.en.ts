@@ -1,7 +1,19 @@
 export const en = {
   backToStory: "Back to story",
   chapterLabel: (number: number) => `Chapter ${number}`,
-  toc: { open: "Contents", title: "Contents", description: "Choose a chapter to read." },
+  toc: {
+    open: "Contents",
+    title: "Contents",
+    description: "Choose a chapter to read.",
+    inChapter: "In this chapter",
+    scrub: "Jump to chapter",
+    scrubMark: (number: string) => `From chapter ${number}`,
+  },
+  readAloud: { play: "Read this chapter aloud", pause: "Pause reading aloud" },
+  finished: {
+    title: "You finished the story!",
+    description: (title: string) => `${title} is complete. Thanks for reading all the way to the last chapter.`,
+  },
   nav: { label: "Chapter navigation", previous: "Previous chapter", next: "Next chapter", none: "End" },
   progress: "Chapter reading progress",
   timeLeft: {

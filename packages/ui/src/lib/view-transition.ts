@@ -67,3 +67,37 @@ export function morphCoverInto(cover: HTMLElement, navigate: () => void): boolea
   });
   return true;
 }
+
+/** Marks <html> while a theme reveal runs, so its own clip-path animation replaces the default cross-fade. */
+export const THEME_REVEAL_ATTRIBUTE = "data-theme-reveal";
+
+/** Radius from (x, y) that covers a width × height viewport: the distance to its farthest corner. */
+export function revealRadius(x: number, y: number, width: number, height: number): number {
+  return Math.hypot(Math.max(x, width - x), Math.max(y, height - y));
+}
+
+/**
+ * Circular reveal (adapted from Lucian UX/UI Prompt 219, MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt): runs
+ * `update` (which must change the page's look synchronously, e.g. a data attribute on <html>) inside a view transition
+ * in which the new look spreads out in a circle from the centre of `origin` (theme-reveal in tokens.css). Without the
+ * API, or with reduced motion, `update` simply runs.
+ */
+export function revealFrom(origin: HTMLElement, update: () => void): void {
+  if (!canMorphCover()) {
+    update();
+    return;
+  }
+  const root = document.documentElement;
+  const rect = origin.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  root.style.setProperty("--reveal-x", `${x}px`);
+  root.style.setProperty("--reveal-y", `${y}px`);
+  root.style.setProperty("--reveal-r", `${revealRadius(x, y, window.innerWidth, window.innerHeight)}px`);
+  root.setAttribute(THEME_REVEAL_ATTRIBUTE, "");
+  const transition = (document as TransitionDocument).startViewTransition!(update);
+  void transition.finished.finally(() => {
+    root.removeAttribute(THEME_REVEAL_ATTRIBUTE);
+    for (const name of ["--reveal-x", "--reveal-y", "--reveal-r"]) root.style.removeProperty(name);
+  });
+}

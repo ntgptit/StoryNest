@@ -8,6 +8,7 @@ const vi = {
   chaptersTitle: "Danh sách chương",
   chapterCount: (count: number) => `${count} chương`,
   chapterLabel: (number: number) => `Chương ${number}`,
+  chapterRange: (first: number, last: number) => `Chương ${first}–${last}`,
   words: (count: string) => `${count} từ`,
   synopsisTitle: "Giới thiệu",
   readMore: "Xem thêm",
