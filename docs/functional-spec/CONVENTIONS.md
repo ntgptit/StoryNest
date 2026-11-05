@@ -48,6 +48,20 @@ and raises a finding or a decision (`Q-*`) instead of silently picking one.
 | Feature proposal | `FP-NNN` | `FP-004` |
 | Decision record | `DEC-NNN` | `DEC-003` |
 
+Phase 2 (product discovery) identifiers:
+
+| Kind | Format | Example |
+| --- | --- | --- |
+| User journey | `JRN-<ROLE>-NN`, ROLE ∈ `RDR` reader/guest, `AUT` author/team, `MOD` moderator/operator (incl. reporter and affected party), `ACC` account lifecycle | `JRN-RDR-05` |
+| Capability (gap matrix row) | `CAP-<AREA>-NN`, AREA ∈ `READ`, `DISC`, `ENG`, `AUTH` (author), `TNS`, `ACCT`, `PLAT`, `GROW` | `CAP-READ-04` |
+| Screen enhancement | `SE-<CODE>-NN`, mirrors the screen it assesses (`SCR-HOME-01` → `SE-HOME-01`) | `SE-READ-01` |
+| Screen enhancement AC | `SE-<CODE>-NN-ACnn` (always `[Proposed]` until implemented) | `SE-READ-01-AC03` |
+| Business-rule change proposal | `BRC-<CODE>-NN` — proposes a change to a Verified rule; never edits the rule until approved | `BRC-READ-01` |
+| External benchmark | `BM-NN` | `BM-12` |
+
+Verification tags used from Phase 2 on: `Verified (Code)`, `Verified (Runtime)`, `Documented`, `Inferred`,
+`Proposed`, `Unknown`. Phase 1's plain "Verified" means `Verified (Code)` unless the text says runtime or SQL test.
+
 Object codes (single registry — do not invent new ones without adding them here):
 
 | Domain | Folder | Object codes |
