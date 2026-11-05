@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, BellRing, Bookmark, BookmarkCheck } from "lucide-react";
+import { Bell, BellRing } from "lucide-react";
 import { Button } from "@storynest/ui/components/button";
+import { SaveRibbonIcon } from "@storynest/ui/widgets/save-ribbon-icon";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { AddToListButton } from "../../lists/index.ts";
 import { useAppToast } from "../../_shared/toast.tsx";
@@ -42,6 +43,8 @@ export function StoryActions({ storyId }: { storyId: string }) {
       <Button
         type="button"
         variant={saved ? "default" : "outline"}
+        // Same padding the Button gives a direct <svg> child; SaveRibbonIcon wraps its svg in a span.
+        className="px-3"
         aria-pressed={signedIn ? saved : undefined}
         disabled={save.isPending}
         onClick={() => {
@@ -52,7 +55,7 @@ export function StoryActions({ storyId }: { storyId: string }) {
           });
         }}
       >
-        {saved ? <BookmarkCheck aria-hidden className="size-4" /> : <Bookmark aria-hidden className="size-4" />}
+        <SaveRibbonIcon saved={saved} />
         {saved ? t.saved : t.save}
       </Button>
       <AddToListButton storyId={storyId} />

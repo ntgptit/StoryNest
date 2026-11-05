@@ -191,6 +191,68 @@
   --font-reader: ui-serif, Georgia, Cambria, "Times New Roman", serif;
 }
 
+/*
+ * Motion. Easing curves and named animations live here, like colours: components use `ease-spring`,
+ * `animate-ribbon-drop`... never inline cubic-bezier() or ad-hoc @keyframes. Decorative motion (bursts, confetti)
+ * goes behind `motion-safe:`; everything else is clamped by the reduced-motion rule in the base layer below.
+ * The ribbon-* set is adapted from Lucian UX/UI Prompt #012 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt/#012).
+ */
+@theme {
+  --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --ease-pour: cubic-bezier(0.6, 0, 0.3, 1);
+
+  /* Save toggle (SaveRibbonIcon): fill pours down, the icon dips and bounces, a ring and a small burst fly out. */
+  --animate-ribbon-fill: ribbon-fill 0.55s var(--ease-pour) both;
+  --animate-ribbon-drop: ribbon-drop 0.7s var(--ease-soft);
+  --animate-ribbon-ring: ribbon-ring 0.6s var(--ease-soft) forwards;
+  --animate-ribbon-burst: ribbon-burst 0.8s var(--ease-soft) forwards;
+
+  @keyframes ribbon-fill {
+    from {
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @keyframes ribbon-drop {
+    0% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(12%) scaleY(0.9);
+    }
+    60% {
+      transform: translateY(-9%);
+    }
+    100% {
+      transform: none;
+    }
+  }
+  @keyframes ribbon-ring {
+    from {
+      opacity: 1;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.35);
+    }
+  }
+  /* Each particle sets --burst-angle; it starts near the icon and drifts outwards while fading. */
+  @keyframes ribbon-burst {
+    0% {
+      opacity: 1;
+      transform: rotate(var(--burst-angle)) translateY(-0.5rem) scale(0.6);
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(var(--burst-angle)) translateY(-1.5rem) scale(1.1) rotate(160deg);
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
@@ -220,5 +282,19 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+  /*
+   * Reduced motion: animations and transitions jump to their end state instead of playing (WCAG 2.3.3). A tiny
+   * duration rather than `none` keeps animationend/transitionend firing, which Radix dialogs and sheets wait for.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

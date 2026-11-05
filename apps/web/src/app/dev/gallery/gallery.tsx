@@ -56,6 +56,7 @@ import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
+import { SaveRibbonIcon } from "@storynest/ui/widgets/save-ribbon-icon";
 import { StatPill } from "@storynest/ui/widgets/stat-pill";
 
 const loginSchema = z.object({
@@ -111,6 +112,23 @@ function FormExample() {
         <Button type="submit">Sign in</Button>
       </form>
     </Form>
+  );
+}
+
+/** Save toggle with the ribbon animation (SaveRibbonIcon, adapted from a Lucian UX/UI Prompt element). */
+function SaveToggleExample() {
+  const [saved, setSaved] = useState(false);
+  return (
+    <Button
+      type="button"
+      variant={saved ? "default" : "outline"}
+      className="px-3"
+      aria-pressed={saved}
+      onClick={() => setSaved((value) => !value)}
+    >
+      <SaveRibbonIcon saved={saved} />
+      {saved ? "Saved" : "Save"}
+    </Button>
   );
 }
 
@@ -174,6 +192,7 @@ export function Gallery() {
           <Button variant="destructive">Destructive</Button>
           <Button size="touch">Touch target</Button>
           <Button disabled>Disabled</Button>
+          <SaveToggleExample />
         </div>
       </Section>
 

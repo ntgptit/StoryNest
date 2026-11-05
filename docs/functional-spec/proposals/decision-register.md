@@ -15,6 +15,7 @@ owner, then update the affected rules/proposals. Entry point: [README](../README
 | DEC-005 | Q5 Two Supabase projects (dev + prod), migrations via CI | WBS §4 Q5 | Approved (prod/staging not yet created) | Coverage report |
 | DEC-006 | Q6 Google OAuth in M1; paragraph comments in M2 | WBS §4 Q6 | Approved; OAuth **not delivered** (F-AUTH-02) | FP-009 |
 | DEC-007 | Q7 Account deletion = anonymise, keep content | WBS §4 Q7 | Approved; legal policy still open | FP-008 blocked |
+| DEC-013 | Lucian UX/UI Prompt is a **reference** for interaction/motion: vendored agent skill (`.claude/skills/lucian-uxui`, with StoryNest override rules) + motion tokens and a global reduced-motion clamp in `packages/design-tokens`; elements are rewritten as `packages/ui` widgets, never pasted into screens. First port: `SaveRibbonIcon` (#012) on the story Save button | Project owner, 2026-11-05 | Trial (rollback: revert the commit; the skill folder is self-contained) | SCR-STORY save action: icon animation only, behaviour unchanged |
 
 ## 2. Documentation decisions (this spec)
 

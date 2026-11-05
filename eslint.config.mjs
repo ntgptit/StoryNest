@@ -37,6 +37,8 @@ export default tseslint.config(
       "**/next-env.d.ts",
       "packages/database/src/database.types.ts",
       "supabase/**",
+      // Vendored third-party agent skill (see .claude/skills/lucian-uxui/VENDOR.md).
+      ".claude/skills/lucian-uxui/**",
       "android/**",
       "ios/**",
     ],
