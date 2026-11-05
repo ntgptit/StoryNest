@@ -55,7 +55,7 @@ export function RankingScreen({
           title={t.error.title}
           description={t.error.description}
           retryLabel={t.error.retry}
-          onRetry={() => void ranking.refetch()}
+          onRetry={() => ranking.refetch()}
         />
       ) : ranking.isPending ? (
         <div className={GRID} aria-busy>

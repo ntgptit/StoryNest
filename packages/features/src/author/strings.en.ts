@@ -16,6 +16,7 @@ export const en = {
   notFound: {
     title: "Author not found",
     description: "The author doesn't exist or the account is no longer visible.",
+    searchSimilar: (name: string) => `Search authors for “${name}”`,
   },
   error: {
     title: "Couldn't load the author page",

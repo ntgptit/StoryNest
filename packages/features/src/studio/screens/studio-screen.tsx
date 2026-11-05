@@ -130,7 +130,7 @@ export function StudioScreen({
           title={studioText.error.title}
           description={studioText.error.description}
           retryLabel={studioText.error.retry}
-          onRetry={() => void stories.refetch()}
+          onRetry={() => stories.refetch()}
         />
       ) : stories.isPending ? (
         <div className="flex flex-col gap-3" aria-busy>

@@ -192,7 +192,7 @@ function VersionViewer({
         title={t.error.title}
         description={t.error.description}
         retryLabel={t.error.retry}
-        onRetry={() => void blocks.refetch()}
+        onRetry={() => blocks.refetch()}
       />
     );
   }

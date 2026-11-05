@@ -146,7 +146,7 @@ function Loading({ grid = false }: { grid?: boolean }) {
   );
 }
 
-function Failed({ onRetry }: { onRetry: () => void }) {
+function Failed({ onRetry }: { onRetry: () => Promise<unknown> }) {
   return (
     <ErrorState title={t.error.title} description={t.error.description} retryLabel={t.error.retry} onRetry={onRetry} />
   );
@@ -170,7 +170,7 @@ function StoryResults({
   const results = useSearchStories(term);
   const stories = results.data?.pages.flatMap((page) => page.items) ?? [];
 
-  if (results.isError && stories.length === 0) return <Failed onRetry={() => void results.refetch()} />;
+  if (results.isError && stories.length === 0) return <Failed onRetry={() => results.refetch()} />;
   if (results.isPending) return <Loading grid />;
   if (stories.length === 0) return <Empty tab="stories" icon={Search} />;
   return (
@@ -197,7 +197,7 @@ function AuthorResults({ term }: { term: string }) {
   const results = useSearchAuthors(term);
   const authors = results.data?.pages.flatMap((page) => page.items) ?? [];
 
-  if (results.isError && authors.length === 0) return <Failed onRetry={() => void results.refetch()} />;
+  if (results.isError && authors.length === 0) return <Failed onRetry={() => results.refetch()} />;
   if (results.isPending) return <Loading />;
   if (authors.length === 0) return <Empty tab="authors" icon={UserRound} />;
   return (
@@ -239,7 +239,7 @@ function AuthorRow({ author }: { author: AuthorHit }) {
 function TagResults({ term }: { term: string }) {
   const results = useSearchTags(term);
 
-  if (results.isError) return <Failed onRetry={() => void results.refetch()} />;
+  if (results.isError) return <Failed onRetry={() => results.refetch()} />;
   if (results.isPending) return <Loading />;
   if (results.data.length === 0) return <Empty tab="tags" icon={TagIcon} />;
   return (

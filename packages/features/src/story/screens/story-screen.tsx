@@ -57,7 +57,7 @@ export function StoryScreen({
         title={storyText.error.title}
         description={storyText.error.description}
         retryLabel={storyText.error.retry}
-        onRetry={() => void story.refetch()}
+        onRetry={() => story.refetch()}
       />
     );
   }
@@ -182,7 +182,7 @@ export function StoryScreen({
             <ErrorState
               title={storyText.chaptersError.title}
               retryLabel={storyText.chaptersError.retry}
-              onRetry={() => void chapters.refetch()}
+              onRetry={() => chapters.refetch()}
             />
           ) : chapterItems.length === 0 ? (
             <p className="text-sm text-muted-foreground">{storyText.noChaptersYet}</p>

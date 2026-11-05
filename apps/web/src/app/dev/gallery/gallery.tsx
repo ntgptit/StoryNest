@@ -141,6 +141,12 @@ import { RollingStepper } from "@storynest/ui/widgets/rolling-stepper";
 import { ScrubIndex, scrollRowToTop } from "@storynest/ui/widgets/scrub-index";
 import { SectionOutline } from "@storynest/ui/widgets/section-outline";
 import { SwatchPicker } from "@storynest/ui/widgets/swatch-picker";
+// Batch 3 · shell3
+import { PenLine, Settings } from "lucide-react";
+import { AvailabilityHint, type AvailabilityStatus } from "@storynest/ui/widgets/availability-hint";
+import { CommandPalette } from "@storynest/ui/widgets/command-palette";
+import { LockoutCountdown } from "@storynest/ui/widgets/lockout-countdown";
+import { WaveIntro } from "@storynest/ui/widgets/wave-intro";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -2731,6 +2737,223 @@ function Reader3RangesExample() {
   );
 }
 
+function Shell3LockoutExample() {
+  const total = 15;
+  const cooldown = useCountdown(total);
+  const [started, setStarted] = useState(false);
+  return (
+    <div id="shell3-lockout" className="flex max-w-sm flex-col gap-3">
+      {started ? (
+        <LockoutCountdown
+          secondsLeft={cooldown.left}
+          total={total}
+          title="Too many attempts"
+          readyTitle="You can try again now"
+          waitingLabel={(clock) => `Try again in ${clock}`}
+          action={
+            cooldown.left > 0 ? (
+              <a href="#shell3-lockout" className="text-primary underline-offset-4 hover:underline">
+                Reset your password instead
+              </a>
+            ) : undefined
+          }
+        />
+      ) : null}
+      <Button
+        type="button"
+        disabled={cooldown.left > 0}
+        onClick={() => {
+          setStarted(true);
+          cooldown.restart();
+        }}
+      >
+        Sign in
+      </Button>
+    </div>
+  );
+}
+
+const shell3TakenNames = ["reader", "admin", "storynest"];
+
+function Shell3AvailabilityExample() {
+  const [value, setValue] = useState("");
+  const [status, setStatus] = useState<AvailabilityStatus>("idle");
+  const timer = useRef<number | undefined>(undefined);
+  return (
+    <div id="shell3-availability" className="flex max-w-sm flex-col gap-2">
+      <Label htmlFor="shell3-username">Username (try “reader”)</Label>
+      <Input
+        id="shell3-username"
+        value={value}
+        autoCapitalize="none"
+        spellCheck={false}
+        onChange={(event) => {
+          const next = event.target.value;
+          setValue(next);
+          window.clearTimeout(timer.current);
+          if (!/^[A-Za-z0-9_]{3,30}$/.test(next)) return setStatus("idle");
+          setStatus("checking");
+          timer.current = window.setTimeout(
+            () => setStatus(shell3TakenNames.includes(next.toLowerCase()) ? "taken" : "available"),
+            700,
+          );
+        }}
+      />
+      <AvailabilityHint
+        status={status}
+        labels={{
+          checking: "Checking the name…",
+          available: "This name looks free",
+          taken: "This name is already taken",
+        }}
+      />
+    </div>
+  );
+}
+
+function Shell3RetryExample() {
+  const [attempts, setAttempts] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  if (loaded) {
+    return (
+      <div className="flex items-center gap-2">
+        <p className="text-sm">Loaded after {attempts} retries.</p>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setLoaded(false);
+            setAttempts(0);
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div id="shell3-retry" className="rounded-xl border">
+      <ErrorState
+        title="Couldn't load this list"
+        description="The first retry fails, the second works."
+        retryLabel="Retry"
+        onRetry={() =>
+          new Promise<void>((resolve) =>
+            window.setTimeout(() => {
+              setAttempts((count) => count + 1);
+              if (attempts >= 1) setLoaded(true);
+              resolve();
+            }, 900),
+          )
+        }
+      />
+    </div>
+  );
+}
+
+function Shell3IntroExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div id="shell3-intro">
+      <Button variant="outline" onClick={() => setOpen(true)}>
+        Show the first-run intro
+      </Button>
+      {open ? (
+        <WaveIntro
+          open
+          onOpenChange={setOpen}
+          pages={[
+            {
+              icon: BookOpen,
+              title: "Read your way",
+              body: "Open a story and read it chapter by chapter. Where you stopped is remembered for next time.",
+            },
+            {
+              icon: Library,
+              title: "Follow and save to your Library",
+              body: "Follow the stories and authors you like, and save stories to your Library to find them again.",
+            },
+            {
+              icon: PenLine,
+              title: "Write in Studio",
+              body: "Start a new story, write it chapter by chapter and publish when you are ready.",
+            },
+          ]}
+          labels={{ next: "Next", done: "Get started", skip: "Skip", step: (n, total) => `Page ${n} of ${total}` }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+const shell3Commands = [
+  { key: "/", label: "Home", icon: Home },
+  { key: "/library", label: "Library", icon: Library },
+  { key: "/studio", label: "Studio", icon: PenLine },
+  { key: "/settings", label: "Settings", icon: Settings },
+];
+const shell3Stories = ["The Lantern Keeper", "Library of Ashes", "Studio Nights"];
+
+function Shell3PaletteExample() {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<string | null>(null);
+  const needle = query.trim().toLowerCase();
+  return (
+    <div id="shell3-palette" className="flex flex-wrap items-center gap-3">
+      <Button
+        variant="outline"
+        onClick={() => {
+          setQuery("");
+          setOpen(true);
+        }}
+      >
+        Open the command palette (Ctrl/⌘ K in the app)
+      </Button>
+      {picked ? <span className="text-sm text-muted-foreground">Picked: {picked}</span> : null}
+      <CommandPalette
+        open={open}
+        onOpenChange={setOpen}
+        query={query}
+        onQueryChange={setQuery}
+        groups={[
+          {
+            key: "go",
+            label: "Go to",
+            items: shell3Commands
+              .filter((c) => c.label.toLowerCase().includes(needle))
+              .map((c) => ({ ...c, onSelect: () => setPicked(c.key) })),
+          },
+          {
+            key: "stories",
+            label: "Stories",
+            items:
+              needle.length >= 2
+                ? shell3Stories
+                    .filter((title) => title.toLowerCase().includes(needle))
+                    .map((title) => ({ key: title, label: title, icon: BookOpen, onSelect: () => setPicked(title) }))
+                : [],
+          },
+        ]}
+        labels={{
+          title: "Command palette",
+          input: "Find a page or a story",
+          placeholder: "Go to a page or find a story…",
+          empty: "Nothing matches",
+          results: "Results",
+        }}
+        footer={
+          <>
+            <span>↑↓ select</span>
+            <span>Enter open</span>
+            <span>Esc close</span>
+          </>
+        }
+      />
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -3001,6 +3224,14 @@ export function Gallery() {
         <Reader3ContentsExample />
         <Reader3FinishExample />
         <Reader3RangesExample />
+      </Section>
+
+      <Section title="Batch 3 · shell3">
+        <Shell3LockoutExample />
+        <Shell3AvailabilityExample />
+        <Shell3RetryExample />
+        <Shell3IntroExample />
+        <Shell3PaletteExample />
       </Section>
     </AppShell>
   );

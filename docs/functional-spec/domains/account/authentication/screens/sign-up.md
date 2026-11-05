@@ -27,6 +27,9 @@
 | SCR-AUTH-02-C09 | "Check your email" card (`role="status"`) | "Check your email" / "We've sent a confirmation link. Open the email and click the link to finish signing up." + address + "Sign in" link |
 | SCR-AUTH-02-C10 | Email typo suggestion (Lucian 264) | As SCR-AUTH-01-C10 (BR-AUTH-001) |
 | SCR-AUTH-02-C11 | Password strength meter (Lucian 036) | Shown once a password is typed: 4 bars, "Strength · advice only" + "Weak/Fair/Good/Strong" (`aria-live`), checklist "At least 8 characters", "Upper and lower case letters", "A number", "A symbol", hints. Advisory only (BR-AUTH-002) |
+| SCR-AUTH-02-C13 | Username availability hint (Lucian 300, batch 3 · shell3) | Under the username field, 450 ms after typing stops and only for a valid name: small spinner "Checking the name…", then "This name looks free" (check) or "This name is taken. Pick another, or a random ending will be added to it." (cross); results spoken through a polite live region. Looks the name up in the public `app_users` read (case ignored). Advisory only: never blocks submit; a taken name still signs up and the `handle_new_user` trigger adds `_xxxxxxxx` (suspended/deleted accounts are hidden by RLS, so "free" can be wrong) |
+| SCR-AUTH-02-C14 | Lockout countdown (Lucian 067) | As SCR-AUTH-01-C11, without the reset link |
+| SCR-AUTH-02-C15 | First-run intro flag (Lucian 383) | A successful sign-up marks the intro as due on this device (`localStorage` `storynest.firstRunIntro`); the shell shows it once signed in (SCR-SHELL-01-C19) |
 | SCR-AUTH-02-C12 | Check-your-email extras (Lucian 064) | Envelope animation (decorative, plays once), hint "No email? Look in your spam or promotions folder. If the address was wrong, use a different email.", button "Use a different email" → back to the filled form. No resend (BR-AUTH-005) |
 
 No password confirmation field, no terms/privacy consent (WBS 6.9 legal pages ⬜), no captcha (F-AUTH-06).

@@ -52,7 +52,7 @@ export function NotificationsScreen({ locale = currentLocale() }: { locale?: str
           title={t.error.title}
           description={t.error.description}
           retryLabel={t.error.retry}
-          onRetry={() => void list.refetch()}
+          onRetry={() => list.refetch()}
         />
       ) : list.isPending ? (
         <div className="flex flex-col gap-2" aria-busy>

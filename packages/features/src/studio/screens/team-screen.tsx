@@ -54,7 +54,7 @@ export function TeamScreen({ storyId }: { storyId: string }) {
         title={studioText.error.title}
         description={studioText.error.description}
         retryLabel={studioText.error.retry}
-        onRetry={() => void story.refetch()}
+        onRetry={() => story.refetch()}
       />
     );
   }

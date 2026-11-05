@@ -132,7 +132,7 @@ function SettingsForm() {
           title={t.error.title}
           description={t.error.description}
           retryLabel={t.error.retry}
-          onRetry={() => void settings.refetch()}
+          onRetry={() => settings.refetch()}
         />
       ) : (
         <>

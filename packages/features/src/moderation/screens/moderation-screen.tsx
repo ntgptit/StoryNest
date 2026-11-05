@@ -97,7 +97,7 @@ function Queue() {
           title={t.error.title}
           description={t.error.description}
           retryLabel={t.error.retry}
-          onRetry={() => void queue.refetch()}
+          onRetry={() => queue.refetch()}
         />
       ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground">{filter === QUEUE_FILTER.OPEN ? t.empty.open : t.empty.closed}</p>

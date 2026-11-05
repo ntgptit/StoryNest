@@ -65,7 +65,7 @@ export function CommentThread({
           title={commentText.error.title}
           description={commentText.error.description}
           retryLabel={commentText.error.retry}
-          onRetry={() => void list.refetch()}
+          onRetry={() => list.refetch()}
         />
       ) : list.isPending ? (
         <div className="flex flex-col gap-3" aria-busy>

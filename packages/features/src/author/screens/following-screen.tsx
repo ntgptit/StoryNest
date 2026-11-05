@@ -32,7 +32,7 @@ export function FollowingScreen({
           title={t.feed.error.title}
           description={t.feed.error.description}
           retryLabel={t.feed.error.retry}
-          onRetry={() => void feed.refetch()}
+          onRetry={() => feed.refetch()}
         />
       ) : feed.isPending ? (
         <div className={GRID} aria-busy>

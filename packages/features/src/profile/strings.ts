@@ -9,6 +9,12 @@ const vi = {
     displayName: "Tên hiển thị",
     username: "Tên người dùng",
     usernameHint: "Chữ, số và dấu gạch dưới, 3-30 ký tự. Đổi tên sẽ đổi địa chỉ hồ sơ của bạn.",
+    // Live hint while typing (advisory: saving is the real check).
+    availability: {
+      checking: "Đang kiểm tra tên…",
+      available: "Tên này có vẻ còn trống",
+      taken: "Tên này đã có người dùng",
+    },
     bio: "Giới thiệu",
     bioHint: "Tối đa 1000 ký tự.",
     submit: "Lưu thay đổi",

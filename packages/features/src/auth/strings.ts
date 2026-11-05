@@ -24,6 +24,12 @@ const vi = {
     passwordHint: "Ít nhất 8 ký tự.",
     username: "Tên người dùng (không bắt buộc)",
     usernameHint: "Chữ, số và dấu gạch dưới, 3-30 ký tự. Để trống để tự tạo.",
+    // Live hint while typing. A taken name is not refused: the account gets it with a random ending added.
+    usernameAvailability: {
+      checking: "Đang kiểm tra tên…",
+      available: "Tên này có vẻ còn trống",
+      taken: "Tên này đã có người dùng. Hãy chọn tên khác, nếu không tên sẽ được thêm một đuôi ngẫu nhiên.",
+    },
     displayName: "Tên hiển thị (không bắt buộc)",
     submit: "Đăng ký",
     submitting: "Đang tạo tài khoản…",
@@ -84,6 +90,13 @@ const vi = {
       repeat: "Tránh lặp một ký tự nhiều lần.",
       longer: "Từ 12 ký tự trở lên sẽ mạnh hơn.",
     },
+  },
+  // Countdown when the server asked to wait a set number of seconds (rate limit).
+  lockout: {
+    title: "Bạn đã thử quá nhiều lần",
+    waiting: (clock: string) => `Thử lại sau ${clock}`,
+    ready: "Bạn có thể thử lại ngay bây giờ",
+    resetInstead: "Đặt lại mật khẩu thay vì chờ",
   },
   // Suggestion under an email field when the domain looks mistyped (never applied without a press).
   emailTypo: { before: "Có phải ý bạn là", after: "?" },

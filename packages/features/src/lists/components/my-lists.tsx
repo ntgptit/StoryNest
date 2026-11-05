@@ -55,7 +55,7 @@ export function MyLists({
           title={t.error.title}
           description={t.error.description}
           retryLabel={t.error.retry}
-          onRetry={() => void lists.refetch()}
+          onRetry={() => lists.refetch()}
         />
       ) : lists.isPending ? (
         <div className="flex flex-col gap-2" aria-busy>

@@ -112,7 +112,7 @@ function LibraryList({
         title={t.error.title}
         description={t.error.description}
         retryLabel={t.error.retry}
-        onRetry={() => void list.refetch()}
+        onRetry={() => list.refetch()}
       />
     );
   }

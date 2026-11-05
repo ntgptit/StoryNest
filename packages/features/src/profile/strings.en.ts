@@ -5,6 +5,11 @@ export const en = {
     displayName: "Display name",
     username: "Username",
     usernameHint: "Letters, numbers and underscores, 3-30 characters. Changing it changes your profile address.",
+    availability: {
+      checking: "Checking the name…",
+      available: "This name looks free",
+      taken: "This name is already taken",
+    },
     bio: "Bio",
     bioHint: "Up to 1000 characters.",
     submit: "Save changes",
