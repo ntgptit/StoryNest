@@ -27,7 +27,7 @@
 | SCR-SRCH-01-C07 | Story results | Card grid + infinite list, end "No more results." | `search-screen.tsx:125-166` |
 | SCR-SRCH-01-C08 | Author results | List of rows (avatar, name, @username · N stories) + "Load more" button | `search-screen.tsx:196-237` |
 | SCR-SRCH-01-C09 | Tag results | List of "#name / N stories" rows (≤ 10) | `search-screen.tsx:239-259` |
-| SCR-SRCH-01-C10 | Loading | Skeletons, `role=status` "Searching…" | `search-screen.tsx:105-113` |
+| SCR-SRCH-01-C10 | Loading | Skeletons, `role=status` "Searching…" | `search-screen.tsx:139-147` |
 | SCR-SRCH-01-C11 | Empty / error | Per-tab empty texts; "Can't search right now" + "Try again" | `search-screen.tsx:149-157`, `strings.en.ts:17-22` |
 
 ## C. User actions and system responses

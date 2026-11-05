@@ -35,7 +35,7 @@
 | SCR-READ-01-C10 | End marker | "— End of chapter —" (`aria-hidden`) | `reader-screen.tsx:154-156` |
 | SCR-READ-01-C11 | Vote button | Toggle + "N votes" (`aria-live`) ([BR-VOTE-*](../../../community/vote/business-rules.md)) | `reader/components/vote-button.tsx` |
 | SCR-READ-01-C12 | Report button | `ReportButton kind="chapter"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `reader-screen.tsx:158-160` |
-| SCR-READ-01-C13 | Comments section | `section#comments`, h2 + chapter-level `CommentThread` (SCR-CMT-01) | `reader-screen.tsx:117-124` |
+| SCR-READ-01-C13 | Comments section | `section#comments`, h2 + chapter-level `CommentThread` (SCR-CMT-01) | `reader-screen.tsx:161-168` |
 | SCR-READ-01-C14 | Chapter nav | "Previous chapter" / "Next chapter" links with `rel`, or disabled placeholders | `reader/components/chapter-nav.tsx` |
 | SCR-READ-01-C15 | Skeleton | Title + 6 lines, `aria-busy` | `reader-screen.tsx:192-202` |
 | SCR-READ-01-C16 | Time left | Ring + "N min left" in the toolbar ("N min" on phones), check when finished (BR-READ-019) | `packages/ui/src/widgets/reading-time-left.tsx`, `reader-screen.tsx` (`TimeLeft`) |
@@ -57,7 +57,7 @@
 | Validation | UUID story id, non-empty slug (`reader.api.ts:23`) |
 | Error behavior | Not readable → 404. Error → "Couldn't load the chapter" / "Check your connection and try again." + "Try again" |
 | Navigation | Wrong story slug → 308 |
-| Evidence | `[chapterSlug]/page.tsx:42-66`, `reader-screen.tsx:39-64` |
+| Evidence | `[chapterSlug]/page.tsx:42-66`, `reader-screen.tsx:49-83` |
 
 #### SCR-READ-01-A02 — Scroll / read
 | Field | Value |
@@ -69,7 +69,7 @@
 | Validation | Server validates percent and block (BR-PROG-003) |
 | Error behavior | Silent; retried on the next scroll |
 | Navigation | — |
-| Evidence | `reading-progress.tsx:14-52`, `use-reading-tracker.ts:65-100` |
+| Evidence | `reading-progress.tsx:20-67`, `use-reading-tracker.ts:70-108` |
 
 #### SCR-READ-01-A03 — Go to next / previous chapter
 | Field | Value |
@@ -93,7 +93,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | → SCR-READ-01 |
-| Evidence | `toc-sheet.tsx:28-63` |
+| Evidence | `toc-sheet.tsx:50-84` |
 
 #### SCR-READ-01-A05 — Back to story
 | Field | Value |
@@ -141,7 +141,7 @@
 | Validation | Server: active account + chapter readable |
 | Error behavior | Rollback + toast "You can't vote for this chapter." / "No connection…" / "Couldn't vote. Please try again." |
 | Navigation | Guest → login |
-| Evidence | `vote-button.tsx:16-47` |
+| Evidence | `vote-button.tsx:16-45` |
 
 #### SCR-READ-01-A09 — Open paragraph comments / chapter comments
 | Field | Value |
@@ -153,7 +153,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `reader-blocks.tsx:12-77`, `reader-screen.tsx:117-124` |
+| Evidence | `reader-blocks.tsx:12-77`, `reader-screen.tsx:161-168` |
 
 #### SCR-READ-01-A10 — Report the chapter
 | Field | Value |

@@ -31,7 +31,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | No data changed. |
 | Affected objects | `chapter_drafts`, `chapters` (read), `story_role` RPC. |
 | Related screens | SCR-EDT-01, chapter manager (`OBJ-CHM`) |
-| Status | Verified (`editor-screen.test.tsx:187-305`) |
+| Status | Verified (`editor-screen.test.tsx:187-306`) |
 
 ### WF-EDT-02 — Write and autosave the draft
 | Field | Value |
@@ -121,7 +121,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | New immutable `chapter_versions` row (`BR-HIST-002`); chapter `published`. |
 | Affected objects | `chapter_drafts`, `chapters`, `chapter_blocks`, `chapter_versions`, `chapter_version_blocks`, `stories`, `chapter_stats`, `story_stats`, `outbox_events` |
 | Related screens | SCR-EDT-01, SCR-HIST-01 (new version listed), reader (`BR-READ-*`) |
-| Status | Verified (`publishing.test.tsx:266-333`, `20_publish.test.sql`) |
+| Status | Verified (`publishing.test.tsx:290-355`, `20_publish.test.sql`) |
 
 ### WF-EDT-08 — Schedule a publication and auto-publish
 | Field | Value |

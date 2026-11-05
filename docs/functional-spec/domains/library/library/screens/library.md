@@ -25,8 +25,8 @@
 | SCR-LIB-01-C03 | Story grid | `ul` "<Tab> stories", 2/3/4 columns, `StoryCard` per entry | `library-screen.tsx:103-111`, `:139-145` |
 | SCR-LIB-01-C04 | Entry actions | "Continue with chapter N" (Reading, primary), "Open story" (Saved/Following, outline), remove button (ghost), time line | `library-screen.tsx:155-181` |
 | SCR-LIB-01-C05 | Unavailable placeholder | Dashed `role="note"` card "Story no longer available" | `library-screen.tsx:198-205` |
-| SCR-LIB-01-C06 | Skeleton | 4 cover-shaped skeletons `aria-busy` | `library-screen.tsx:90-97` |
-| SCR-LIB-01-C07 | Empty state | Per tab icon/title/description | `library-screen.tsx:99-102`, `strings.en.ts:7-17` |
+| SCR-LIB-01-C06 | Skeleton | 4 cover-shaped skeletons `aria-busy` | `library-screen.tsx:119-126` |
+| SCR-LIB-01-C07 | Empty state | Per tab icon/title/description | `library-screen.tsx:130-132`, `strings.en.ts:7-17` |
 | SCR-LIB-01-C08 | Error state | "Couldn't load your library" + "Try again" | `library-screen.tsx:109-117` |
 | SCR-LIB-01-C09 | My lists (Lists tab) | See [SCR-LIST-01 §B](../../reading-lists/screens/reading-list.md#b-components) component C08 | `my-lists.tsx` |
 

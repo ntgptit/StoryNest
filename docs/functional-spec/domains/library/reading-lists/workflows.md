@@ -70,7 +70,7 @@
 | Postconditions | — |
 | Affected objects | OBJ-LIST |
 | Related screens | SCR-LIST-01 |
-| Status | Verified — `packages/features/src/lists/screens/list-screen.tsx:36-186` |
+| Status | Verified — `packages/features/src/lists/screens/list-screen.tsx:73-231` |
 
 ### WF-LIST-05 — Edit a list
 | Field | Value |

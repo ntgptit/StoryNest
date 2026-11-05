@@ -25,7 +25,7 @@
 | SCR-STAT-01-C08 | Section "Reads over the last 90 days": weeks × weekdays heatmap (Monday first, Mon/Wed/Fri labelled, month labels above the weeks), status line (summary, or the picked day's reads, likes, comments and publish note), legend "Reads per day" with the whole-number range of each shade, "Show reads by week as a table" toggle, note (UTC days, reads are not distinct readers, always 90 days); "No reads in the last 90 days." when every day has 0 reads | `components/reads-heatmap.tsx`, `ui/widgets/calendar-heatmap.tsx` (BR-STAT-013) |
 | SCR-STAT-01-C07 | Section "Read-through by chapter": funnel of the published chapters in reading order (bar width = reads ÷ most-read chapter, change from the chapter before, biggest drop in `--chart-1`), status line (live region) with the summary; first 8 steps + "Show all n chapters"; note that steps are reads, not distinct readers; hidden when no chapter is published; "No reads yet to draw the funnel." when every chapter has 0 reads | `components/read-through-funnel.tsx`, `ui/widgets/funnel-steps.tsx` (BR-STAT-011) |
 | SCR-STAT-01-C05 | Section "By chapter": table (Chapter, Reads + bar, Likes, Comments, Retention), horizontal scroll on narrow screens, note; empty "No chapters have been published yet." | `story-stats-screen.tsx` |
-| SCR-STAT-01-C06 | States: auth skeleton; sign-in prompt; no access; not found; error + "Try again" | `story-stats-screen.tsx:30-60,77-86` |
+| SCR-STAT-01-C06 | States: auth skeleton; sign-in prompt; no access; not found; error + "Try again" | `story-stats-screen.tsx:36-71,92-102` |
 
 ## C. User actions & system responses
 

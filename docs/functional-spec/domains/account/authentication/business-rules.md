@@ -173,7 +173,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | Banner `role="alert"` above the form; form stays usable |
 | Exceptions | Unknown schema codes show the generic text, never raw English from the server |
 | Related screens | SCR-AUTH-01..04 |
-| Evidence | `packages/features/src/auth/model/messages.ts:16-51`, `packages/features/src/_shared/errors.ts:101-117`, `packages/features/src/auth/components/auth-card.tsx:27-38`, `packages/features/src/auth/auth-screens.test.tsx:97-124` |
+| Evidence | `packages/features/src/auth/model/messages.ts:16-51`, `packages/features/src/_shared/errors.ts:101-117`, `packages/features/src/auth/components/auth-card.tsx:31-42`, `packages/features/src/auth/auth-screens.test.tsx:97-124` |
 | Status | Verified |
 
 ### BR-AUTH-014 — No account enumeration on password reset
@@ -185,7 +185,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | "Instructions sent" / "If this email has an account, you'll get a password reset link within a few minutes." Link target: `/auth/callback?next=%2Freset-password` |
 | Exceptions | Rate limit / network errors are shown (BR-AUTH-013). Resend (2026-11-05, Lucian 064): the "Instructions sent" card offers "Resend email", locked for 60 s (`RESEND_COOLDOWN_SECONDS`, Supabase's default gap between two emails) behind a filling ring; it sends the same `resetPasswordForEmail` request again, then locks again. "Use a different email" returns to the form |
 | Related screens | SCR-AUTH-03 |
-| Evidence | `packages/features/src/auth/screens/forgot-password-screen.tsx:24-40`, `packages/features/src/auth/strings.en.ts:31-41`, `packages/features/src/auth/hooks/use-auth-actions.ts:40-52`, `packages/features/src/auth/auth-screens.test.tsx:222-252` |
+| Evidence | `packages/features/src/auth/screens/forgot-password-screen.tsx:24-40`, `packages/features/src/auth/strings.en.ts:35-44`, `packages/features/src/auth/hooks/use-auth-actions.ts:40-52`, `packages/features/src/auth/auth-screens.test.tsx:222-252` |
 | Status | Verified |
 
 ### BR-AUTH-015 — Setting a new password needs a session

@@ -204,7 +204,7 @@
 | Expected behavior | Can sign in (Supabase Auth is untouched) and read. Every write gated by `is_active_account()` is refused (42501): report, comment, follow, create story, list/library writes. Profile hidden from others (`app_users_read`), author page "not found", excluded from search/ranking/recommendations/following feed/popular tags |
 | Exceptions | Still visible: their stories in home/category/tag lists with "Anonymous author" (F-HOME-01), on the story page by link, in the sitemap; their visible comments. No notice is shown to the suspended user (F-MOD-06). Scope of suspension is not specified anywhere (Q-MOD-01) |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:74-80,182-184,198-202,268-271`, `20261104001300_search.sql:80-81`, `20261104001500_rankings.sql:107`, `20261104001600_author_follows.sql:50,109`, `20261104001700_recommendations.sql:36,101`, `packages/features/src/discovery/api/discovery.api.ts:63-71`, `apps/web/src/lib/seo/sitemap-data.ts:22-29`, `packages/features/src/_shared/auth.tsx:13,21` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:74-80,182-184,198-202,268-271`, `20261104001300_search.sql:80-81`, `20261104001500_rankings.sql:107`, `20261104001600_author_follows.sql:50,109`, `20261104001700_recommendations.sql:36,101`, `packages/features/src/discovery/api/discovery.api.ts:66-73`, `apps/web/src/lib/seo/sitemap-data.ts:22-29`, `packages/features/src/_shared/auth.tsx:13,21` |
 | Status | Inferred (assembled from RLS/RPC filters; no end-to-end test of a suspended author's content) |
 
 ### BR-MOD-017 — Content actions close the reports on the target
@@ -240,7 +240,7 @@
 | Expected behavior | Card fields: kind, status, reason, details, reporter display name, target title (story title; chapter published title or slug; first 300 chars of comment; account display name), target state, link to the target (story / chapter / author page), count of open reports on the same target (shown when > 1) |
 | Exceptions | Rows missing id/date/target/state, or with unknown kind/status, are dropped silently. Not shown although returned: report date, comment author `username`, `reviewed_by/reviewed_at` (U-MOD-01) |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:191-323`, `moderation/api/moderation.api.ts:33-47`, `moderation/model/report.ts:34-127`, `moderation/components/report-card.tsx:68-99`, `supabase/tests/260_moderation.test.sql:133-154` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:191-323`, `moderation/api/moderation.api.ts:33-47`, `moderation/model/report.ts:34-127`, `moderation/components/report-card.tsx:109-148`, `supabase/tests/260_moderation.test.sql:133-154` |
 | Status | Verified |
 
 ### BR-MOD-020 — Console access

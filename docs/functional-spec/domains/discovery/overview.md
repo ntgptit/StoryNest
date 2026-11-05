@@ -37,7 +37,7 @@ BR-MAT-*, suspension by BR-MOD-* / BR-AUTH-*. This matrix records where each lis
 
 | List (screen) | Data source | `visibility = public` (unlisted excluded) | not draft | not deleted | owner account active | mature only on opt-in | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Home feed (SCR-HOME-01) | `listLatestStories` (PostgREST) | Yes | Yes | Yes | **No** — suspended/deactivated owners' stories are listed with "Anonymous author" | Yes (`useShowMature`) | `packages/features/src/discovery/api/discovery.api.ts:64-71`, `discovery/model/story-card.ts:51-54`, `supabase/migrations/20261103000100_auth_and_rls.sql:198-202` → [F-HOME-01](#findings-index) |
+| Home feed (SCR-HOME-01) | `listLatestStories` (PostgREST) | Yes | Yes | Yes | **No** — suspended/deactivated owners' stories are listed with "Anonymous author" | Yes (`useShowMature`) | `packages/features/src/discovery/api/discovery.api.ts:66-73`, `discovery/model/story-card.ts:51-54`, `supabase/migrations/20261103000100_auth_and_rls.sql:198-202` → [F-HOME-01](#findings-index) |
 | Author page stories (SCR-AUTHOR-01) | `listLatestStories({authorId})` | Yes | Yes | Yes | Indirect: list renders only after `author_profile` returned an active author | Yes | `author/screens/author-screen.tsx:46-49,61`, `20261104001600_author_follows.sql:50` |
 | Popular tags (SCR-HOME-01) | `popular_tags` RPC | Yes | Yes | Yes | Yes | Never counted (always excluded) | `20261104001400_tags.sql:110-120` |
 | Search stories + header suggestions (SCR-SRCH-01) | `search_stories` RPC | Yes | Yes | Yes | Yes | Yes | `20261104001300_search.sql:78-81` |

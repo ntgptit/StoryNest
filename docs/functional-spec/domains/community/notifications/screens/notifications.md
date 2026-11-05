@@ -20,7 +20,7 @@
 
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-NOTI-01-C01 | Header bell | Icon link to `/notifications`, round 36 px, badge (destructive colour, "9+" cap), accessible name "Notifications" / "Notifications, N unread"; owns the Realtime subscription | `notification-bell.tsx:10-38` |
+| SCR-NOTI-01-C01 | Header bell | Icon link to `/notifications`, round 36 px, badge (destructive colour, "9+" cap), accessible name "Notifications" / "Notifications, N unread"; owns the Realtime subscription | `notification-bell.tsx:12-46` |
 | SCR-NOTI-01-C02 | Page header | Title "Notifications", description "New chapters, comment replies and collaboration invites.", action "Mark all as read" (outline, small) | `notifications-screen.tsx:29-48` |
 | SCR-NOTI-01-C03 | Notification list | `ul` "Notification list"; each item a card link (or button when no link) with unread dot, bold text, sr-only "Unread:", relative time | `notifications-screen.tsx:66-72`, `:91-122` |
 | SCR-NOTI-01-C04 | Loading skeleton | 4 rows `aria-busy` | `notifications-screen.tsx:57-62` |
@@ -39,7 +39,7 @@
 | Validation | — |
 | Error behavior | ErrorState + retry |
 | Navigation | `/notifications` |
-| Evidence | `notification-bell.tsx:22-37`, `use-notifications.ts:19-31` |
+| Evidence | `notification-bell.tsx:26-45`, `use-notifications.ts:19-31` |
 
 | Field | SCR-NOTI-01-A02 Open one notification |
 | --- | --- |

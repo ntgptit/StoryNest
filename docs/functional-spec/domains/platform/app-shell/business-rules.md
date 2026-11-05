@@ -51,7 +51,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | Sign-out per BR-AUTH-017 |
 | Exceptions | The "Sign in" link carries no `next`, so the user returns to `/` after signing in (U-SHELL-04). No "Notifications", "Following", "Ranking" or "My public page" items |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/user-menu.tsx:22-81`, `packages/features/src/shell/strings.en.ts:3-13` |
+| Evidence | `packages/features/src/shell/components/user-menu.tsx:24-84`, `packages/features/src/shell/strings.en.ts:3-13` |
 | Status | Verified |
 
 ### BR-SHELL-004 — Bottom navigation (mobile)
@@ -87,7 +87,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | One QueryClient per provider instance (never a module singleton) |
 | Exceptions | — |
 | Related screens | All |
-| Evidence | `apps/web/src/app/providers.tsx:22-48`, `packages/features/src/_shared/query-provider.tsx:7-22` |
+| Evidence | `apps/web/src/app/providers.tsx:23-54`, `packages/features/src/_shared/query-provider.tsx:7-22` |
 | Status | Verified |
 
 ### BR-SHELL-007 — Error model and retry policy
@@ -183,5 +183,5 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | Hosting defaults only (Unknown) |
 | Exceptions | — |
 | Related screens | All |
-| Evidence | `apps/web/next.config.ts:4-7`, `apps/web/src/app/layout.tsx:35-38`, `docs/WBS.md:252` (WP 8.3 "header bảo mật/CSP") |
+| Evidence | `apps/web/next.config.ts:4-7`, `apps/web/src/app/layout.tsx:39-41`, `docs/WBS.md:252` (WP 8.3 "header bảo mật/CSP") |
 | Status | Verified (absence) — F-SHELL-02 |

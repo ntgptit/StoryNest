@@ -44,7 +44,7 @@
 | Validation | BR-PRF-001 |
 | Error behavior | Username taken → field error "This username is already taken."; other errors → C07 banner; values kept |
 | Navigation | `/me` on success |
-| Evidence | `edit-profile-screen.tsx:66-159`, `profile.test.tsx` |
+| Evidence | `edit-profile-screen.tsx:68-170`, `profile.test.tsx` |
 
 | Field | SCR-PRF-02-A02 Add / change picture |
 | --- | --- |
@@ -55,7 +55,7 @@
 | Validation | BR-PRF-007 (client), BR-PRF-008 (server) |
 | Error behavior | Inline `role="alert"` under the editor; previous picture kept |
 | Navigation | Stays |
-| Evidence | `avatar-editor.tsx:24-29,40-45,57-68`, `use-avatar.ts:11-25` |
+| Evidence | `avatar-editor.tsx:24-29,40-45,57-68`, `use-avatar.ts:12-26` |
 
 | Field | SCR-PRF-02-A03 Remove picture |
 | --- | --- |

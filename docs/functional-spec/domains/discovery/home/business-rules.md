@@ -120,7 +120,7 @@
 | Expected behavior | Whole card is one link to `/story/{id}/{slug}` (WBS Q2). Shows cover (lazy) or the title's first letter, "18+" badge, title (2 lines), author display name (not a link), category badge, status label (Draft/Ongoing/Completed/On hiatus), synopsis excerpt (120 chars), reads and votes (with sr-only labels), "Updated <relative>" |
 | Exceptions | Missing owner → "Anonymous author"; missing stats → zeros; unknown status → raw value |
 | Related screens | SCR-HOME-01, SCR-SRCH-01, SCR-RANK-01, SCR-AUTHOR-01/02, story page (similar) |
-| Evidence | `discovery/model/story-card.ts:38-85`, `packages/ui/src/widgets/story-card.tsx:36-95`, `packages/ui/src/widgets/story-cover.tsx:5-35` |
+| Evidence | `discovery/model/story-card.ts:38-85`, `packages/ui/src/widgets/story-card.tsx:36-95`, `packages/ui/src/widgets/story-cover.tsx:5-41` |
 | Status | Verified |
 
 ### BR-HOME-010 — Hero

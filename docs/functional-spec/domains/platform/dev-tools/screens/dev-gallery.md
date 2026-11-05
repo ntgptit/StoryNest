@@ -18,7 +18,7 @@
 | --- | --- | --- |
 | SCR-DEV-01-C01 | Own `AppShell` header "StoryNest · gallery" + `BottomNav` (Home, Gallery, Library, Me) | English literals |
 | SCR-DEV-01-C02 | `PageHeader` "Component gallery" | |
-| SCR-DEV-01-C03 | Sections: Buttons, Form controls, Display, Navigation and overlays, States, Infinite list | `gallery.tsx:167-311` |
+| SCR-DEV-01-C03 | Sections: Buttons, Form controls, Display, Navigation and overlays, States, Infinite list | `gallery.tsx:2353-2499` |
 | SCR-DEV-01-C04 | Demo form with zod validation | `gallery.tsx:143-183` |
 | SCR-DEV-01-C05 | ConfirmDialog demo "Unpublish this chapter?" and toast buttons | |
 
@@ -32,7 +32,7 @@
 | Validation | Demo zod schema |
 | Error behavior | — |
 | Navigation | Bottom-nav demo links go to real routes |
-| Evidence | `gallery.tsx:75-311` |
+| Evidence | `gallery.tsx:2265-2499` |
 
 ## D. UI states
 | State | Status | Note |

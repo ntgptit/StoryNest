@@ -63,5 +63,5 @@ Screen: [SCR-DEV-01 Dev gallery](screens/dev-gallery.md).
 | Expected behavior | — |
 | Exceptions | `StoryCard`, `StoryCover`, `ReadingProgress`, `PageSkeleton` widgets are not shown (U-DEV-01) |
 | Related screens | SCR-DEV-01 |
-| Evidence | `apps/web/src/app/dev/gallery/gallery.tsx:52-59,142-311`, `packages/ui/src/widgets/` listing, `packages/design-tokens/src/tokens.css:6-7` |
+| Evidence | `apps/web/src/app/dev/gallery/gallery.tsx:54-60,2328-2499`, `packages/ui/src/widgets/` listing, `packages/design-tokens/src/tokens.css:6-7` |
 | Status | Verified |

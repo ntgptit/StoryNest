@@ -28,7 +28,7 @@
 | Postconditions | `user_follows` edge inserted/deleted; new stories of the author appear in `/following`, "Recommended for you" may gain `followed_author` items |
 | Affected objects | OBJ-AUTHOR, OBJ-REC, OBJ-AUTH |
 | Related screens | SCR-AUTHOR-01 → (login) → SCR-AUTHOR-01; SCR-AUTHOR-02 |
-| Status | Verified (`author/author.test.tsx:334-389`, `docs/WBS.md:209` browser check) |
+| Status | Verified (`author/author.test.tsx:335-397`, `docs/WBS.md:209` browser check) |
 
 ### WF-AUTHOR-03 — Read the followed-authors feed
 | Field | Value |

@@ -75,7 +75,7 @@ No own screen: controls live in SCR-SHELL-01 (header) and SCR-SET-01.
 | Expected behavior | Auth state, query cache and LanguageSync (mounted above the provider) are kept; **component state of the current page (form input, dialogs, scroll) is lost** |
 | Exceptions | — |
 | Related screens | All |
-| Evidence | `packages/features/src/_shared/language.tsx:18-35`, `apps/web/src/app/providers.tsx:36-39`, `docs/WBS.md:124` |
+| Evidence | `packages/features/src/_shared/language.tsx:18-35`, `apps/web/src/app/providers.tsx:39-41`, `docs/WBS.md:124` |
 | Status | Verified — U-I18N-02 |
 
 ### BR-I18N-006 — Header language switcher
@@ -87,7 +87,7 @@ No own screen: controls live in SCR-SHELL-01 (header) and SCR-SET-01.
 | Expected behavior | BR-I18N-003 + BR-I18N-005; members also get BR-SET-004 |
 | Exceptions | Not present on the `(auth)` layout or the dev gallery (U-AUTH-01) |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/language-switcher.tsx:7-23`, `packages/features/src/shell/strings.en.ts:15-19`, `apps/web/src/app/(auth)/layout.tsx:5-13` |
+| Evidence | `packages/features/src/shell/components/language-switcher.tsx:8-24`, `packages/features/src/shell/strings.en.ts:15-19`, `apps/web/src/app/(auth)/layout.tsx:5-13` |
 | Status | Verified |
 
 ### BR-I18N-007 — Server-written texts stay Vietnamese

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Checks the `path:line` citations in the functional spec against code that changed after the spec was written.
 //
-//   node docs/functional-spec/verification/check-citations.mjs [--base <commit>] [--head <ref>] [--fix]
+//   node docs/functional-spec/verification/check-citations.mjs [--base <commit>] [--head <ref>] [--docs-rev <ref>] [--fix]
+//   (run --fix on committed documents only: it is idempotent after a commit because rewritten lines are no longer "old")
 //
 // For every citation written at or before --base (found with git blame, so citations added later are ignored) it
 // looks at the diff of the cited file between --base and --head:
@@ -20,6 +21,8 @@ const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) 
 const BASE = flag("--base", "d4368d1");
 const HEAD = flag("--head", "origin/main");
 const FIX = args.includes("--fix");
+// Revision of the documents (blame is taken here); the code is compared between --base and --head.
+const DOCS_REV = flag("--docs-rev", "HEAD");
 
 const git = (...a) => execFileSync("git", a, { encoding: "utf8", maxBuffer: 1 << 28 });
 const root = git("rev-parse", "--show-toplevel").trim();
@@ -103,7 +106,7 @@ for (const doc of docs) {
   const lines = fs.readFileSync(doc, "utf8").split("\n");
   // blame: which commit wrote each line
   const authorOf = new Array(lines.length + 1).fill("");
-  const blame = git("blame", "--line-porcelain", "-w", HEAD, "--", doc);
+  const blame = git("blame", "--line-porcelain", "-w", DOCS_REV, "--", doc);
   for (const l of blame.split("\n")) {
     const m = l.match(/^([0-9a-f]{40}) \d+ (\d+)/);
     if (m) {

@@ -23,7 +23,7 @@ collaborator's role (F-TEAM-03).
 | Postconditions | Invitee is **not** a collaborator until they accept |
 | Affected objects | OBJ-TEAM, OBJ-NOTI |
 | Related screens | SCR-TEAM-01 |
-| Status | Verified — `team-screen.tsx:205-279`, `20261104000500_collaboration_invitations.sql:54-103` |
+| Status | Verified — `team-screen.tsx:213-292`, `20261104000500_collaboration_invitations.sql:54-103` |
 
 ### WF-TEAM-02 — Answer an invitation
 | Field | Value |

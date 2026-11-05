@@ -36,7 +36,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | SCR-EDT-01-C17 | Side-by-side live preview (Lucian 101) | From 1024 px wide: toggle "Side-by-side preview" (`aria-pressed`, off by default) puts the editor and a live preview of what is typed (the preview screen's article) side by side, with a divider `role="separator"` (drag, ←/→ 3 %, Home/End 35–70 %, Esc back to 55 %). On/off and width remembered in localStorage `storynest.editor.split` | `chapter-editor-screen.tsx`, `model/workspace-prefs.ts`, `packages/ui/src/widgets/split-pane.tsx` |
 | SCR-EDT-01-C18 | First-run tour (Lucian 197) | Once per device (localStorage `storynest.editor.tour-done`, set on Done or Skip): dim layer with a hole over toolbar → autosave status → publish panel → find button; "Step n of 4", Back / Next / Done, Skip; modal dialog, focus on Next, Esc skips, ←/→ step; hole glides (jumps under reduced motion). Turned on by the web route only (`firstRunTour`) | `chapter-editor-screen.tsx`, `packages/ui/src/widgets/spotlight-tour.tsx` |
 | SCR-EDT-01-C09 | Schedule dialog | Title "Schedule publication", `datetime-local` "Publish time" (min now+1 min), "Your time zone: {zone}", inline error, Cancel / Schedule | `publish-panel.tsx:154-191` |
-| SCR-EDT-01-C10 | Unpublish confirm dialog | "Unpublish this chapter?", destructive "Unpublish chapter", Cancel | `publish-panel.tsx:201-213` |
+| SCR-EDT-01-C10 | Unpublish confirm dialog | "Unpublish this chapter?", destructive "Unpublish chapter", Cancel | `publish-panel.tsx:193-205` |
 | SCR-EDT-01-C11 | Footer status | `aria-live="polite"`: "{n} words · {status}" | `chapter-editor-screen.tsx:381-385` |
 | SCR-EDT-01-C12 | Save button | "Save draft" / "Saving…" | `chapter-editor-screen.tsx:558-560` |
 | SCR-EDT-01-C13 | Drop and paste a picture (Lucian 032) | A file dragged over the text highlights it ("Drop the picture to insert it"); dropped, it is inserted where it lands; a pasted picture (screenshot, copied image, no text) is inserted at the cursor. Same upload, checks and error toasts as "Insert picture" (A05). A paste with text is left to the editor | `chapter-editor-screen.tsx` (`handleDrop`, `handlePaste`), `model/pasted-image.ts` |
@@ -52,7 +52,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | Draft body via `chapterBodySchema`; `storyId` must match |
 | Error behavior | Not found / Can't open the draft / Couldn't load the draft + Try again |
 | Navigation | Anonymous → `/login?next=…` |
-| Evidence | `page.tsx:11-14`, `chapter-editor-screen.tsx:47-67` |
+| Evidence | `page.tsx:11-14`, `chapter-editor-screen.tsx:85-107` |
 
 | Field | SCR-EDT-01-A02 Edit title |
 | --- | --- |
@@ -74,7 +74,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | `BR-EDT-006` |
 | Error behavior | Unsupported content → "Part of the content can't be saved. Remove it and try again." |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:217-220` |
+| Evidence | `chapter-editor-screen.tsx:289-292` |
 
 | Field | SCR-EDT-01-A04 Format (toolbar / shortcut) |
 | --- | --- |
@@ -195,7 +195,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | — |
 | Error behavior | Panel alert; dialog stays open |
 | Navigation | — |
-| Evidence | `publish-panel.tsx:149-158,201-213` |
+| Evidence | `publish-panel.tsx:141-150,193-205` |
 
 | Field | SCR-EDT-01-A12 Navigate away |
 | --- | --- |

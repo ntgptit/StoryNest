@@ -68,7 +68,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | — |
 | Error behavior | Base blocks still loading → skeleton (no explicit error state for base load failure: skeleton stays) |
 | Navigation | — |
-| Evidence | `history-screen.tsx:176-198,234-259` |
+| Evidence | `history-screen.tsx:180-202,237-260` |
 
 | Field | SCR-HIST-01-A04 Restore to draft |
 | --- | --- |

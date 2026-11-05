@@ -73,7 +73,7 @@
 | Expected behavior | Titled section (`h2`) with a 2/3/4-column grid of home cards, each followed by its reason sentence |
 | Exceptions | — |
 | Related screens | SCR-HOME-01, SCR-STORY-01 |
-| Evidence | `recommendations/components/recommendation-list.tsx:13-92`, `apps/web/src/app/(main)/discover-home.tsx:9-13`, `story/screens/story-screen.tsx:186-188`, `recommendations/recommendations.test.tsx:219,235` |
+| Evidence | `recommendations/components/recommendation-list.tsx:13-92`, `apps/web/src/app/(main)/discover-home.tsx:11-15`, `story/screens/story-screen.tsx:239-240`, `recommendations/recommendations.test.tsx:219,235` |
 | Status | Verified |
 
 ### BR-REC-006 — Sizes and limits

@@ -21,8 +21,8 @@
 | ID | Component | Content / behaviour | Evidence |
 | --- | --- | --- | --- |
 | SCR-MOD-01-C01 | Page header | Title "Moderation"; description "The report queue. Every action is logged along with its reason." (`moderationText.console.title/description`) | `moderation-screen.tsx:78`, `strings.en.ts:40-41` |
-| SCR-MOD-01-C02 | Queue tabs | "Pending" (open = pending + reviewing, oldest first) / "Resolved" (resolved + dismissed, newest first) (`console.tabs.open/closed`) | `moderation-screen.tsx:52-60`, `api/moderation.api.ts:33-47` |
-| SCR-MOD-01-C03 | Report list | `InfiniteList` of cards, gap 3, "Load more" button + auto load; 20 per page | `moderation-screen.tsx:74-83`, `model/report.ts:34` |
+| SCR-MOD-01-C02 | Queue tabs | "Pending" (open = pending + reviewing, oldest first) / "Resolved" (resolved + dismissed, newest first) (`console.tabs.open/closed`) | `moderation-screen.tsx:85-91`, `api/moderation.api.ts:33-47` |
+| SCR-MOD-01-C03 | Report list | `InfiniteList` of cards, gap 3, "Load more" button + auto load; 20 per page | `moderation-screen.tsx:105-116`, `model/report.ts:34` |
 | SCR-MOD-01-C04 | Card header badges | Kind ("Story/Chapter/Comment/Account"), status ("Pending/Under review/Resolved/Dismissed"), reason label; "N pending reports about this item" when N > 1 | `report-card.tsx:156-165`, `strings.en.ts:54,58,68-73` |
 | SCR-MOD-01-C05 | Target preview | Title / comment excerpt (≤ 300 chars, line breaks kept); "Status: <state>" ("Visible/Hidden/Removed/Deleted/Active/Suspended/Deactivated"); "Open content" link when a target URL exists | `report-card.tsx:167-180`, `model/report.ts:121-127` |
 | SCR-MOD-01-C06 | Report details | Reporter's description (if any); "Reported by <name>" | `report-card.tsx:182-185` |
@@ -43,7 +43,7 @@
 | Validation | Server `requireUser` + `isModerator`; DB `is_moderator()` |
 | Error behavior | Load failure → "Couldn't load the queue" / "Check your connection and try again." / "Try again" |
 | Navigation | — |
-| Evidence | `apps/web/src/app/(main)/moderation/page.tsx:12-20`, `apps/web/src/lib/auth/route-guard.ts:44`, `moderation-screen.tsx:21-47`, `hooks/use-moderation.ts:36-55` |
+| Evidence | `apps/web/src/app/(main)/moderation/page.tsx:12-20`, `apps/web/src/lib/auth/route-guard.ts:44`, `moderation-screen.tsx:22-51`, `hooks/use-moderation.ts:36-55` |
 
 | Field | SCR-MOD-01-A02 — Switch tab |
 | --- | --- |
@@ -54,7 +54,7 @@
 | Validation | Only `open`/`closed` reachable |
 | Error behavior | As A01 |
 | Navigation | None (tab not deep-linkable) |
-| Evidence | `moderation-screen.tsx:45-60`, `moderation.test.tsx:368` |
+| Evidence | `moderation-screen.tsx:75-91`, `moderation.test.tsx:368` |
 
 | Field | SCR-MOD-01-A03 — Load more |
 | --- | --- |
@@ -65,7 +65,7 @@
 | Validation | — |
 | Error behavior | A failed next page puts the infinite query in `error`; the screen checks `isError` before rendering items, so the whole list is replaced by the error state (Inferred from TanStack Query v5 semantics; not tested) |
 | Navigation | — |
-| Evidence | `model/report.ts:107-115`, `moderation-screen.tsx:74-83`, `moderation.test.tsx:396` |
+| Evidence | `model/report.ts:107-115`, `moderation-screen.tsx:105-116`, `moderation.test.tsx:396` |
 
 | Field | SCR-MOD-01-A04 — Open the reported content |
 | --- | --- |

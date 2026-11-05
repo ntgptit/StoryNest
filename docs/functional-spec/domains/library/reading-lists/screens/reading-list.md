@@ -20,10 +20,10 @@
 
 | ID | Component | Where mounted | Description | Evidence |
 | --- | --- | --- | --- | --- |
-| SCR-LIST-01-C01 | Page header | This page | Title = list title; description if non-empty; owner actions "Edit" (outline) and "Delete list" (ghost, destructive) | `list-screen.tsx:87-108` |
+| SCR-LIST-01-C01 | Page header | This page | Title = list title; description if non-empty; owner actions "Edit" (outline) and "Delete list" (ghost, destructive) | `list-screen.tsx:122-146` |
 | SCR-LIST-01-C02 | Meta line | This page | Owner: visibility badge (lock / link / globe) + "Back to library"; visitor: "<name>'s list"; both: "N stories" | `list-screen.tsx:153-168` |
-| SCR-LIST-01-C03 | Story grid | This page | `ul` "Stories in this list", 2/3/4 columns, `StoryCard` | `list-screen.tsx:133-186` |
-| SCR-LIST-01-C04 | Owner item controls | This page | ↑ "Move up: <title>", ↓ "Move down: <title>" (icon buttons), "Remove from list" | `list-screen.tsx:142-182` |
+| SCR-LIST-01-C03 | Story grid | This page | `ul` "Stories in this list", 2/3/4 columns, `StoryCard` | `list-screen.tsx:180-231` |
+| SCR-LIST-01-C04 | Owner item controls | This page | ↑ "Move up: <title>", ↓ "Move down: <title>" (icon buttons), "Remove from list" | `list-screen.tsx:186-227` |
 | SCR-LIST-01-C05 | Empty / not-found / error | This page | EmptyState (owner/visitor variants), "List not found", ErrorState + retry; skeleton block while loading | `list-screen.tsx:74-87`, `:126-131` |
 | SCR-LIST-01-C06 | Delete confirm dialog | This page | "Delete this list?" destructive | `list-screen.tsx:254-272` |
 | SCR-LIST-01-C07 | List form dialog (`ListFormDialog`) | This page (edit mode, `list-screen.tsx:235-252`) and Library → Lists tab (create mode, `my-lists.tsx:84-100`) | Fields List name (Input), Description (Textarea + hint), Visibility (Select); description line shows the visibility hint; inline field errors; `role="alert"` failure; Cancel / "Create list" or "Save changes" / "Saving…" | `packages/features/src/lists/components/list-form-dialog.tsx:28-140` |

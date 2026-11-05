@@ -23,7 +23,7 @@
 | SCR-STM-03-C03 | Notice "This story is deleted." (when deleted) | `story-form-screen.tsx:108` |
 | SCR-STM-03-C04 | Editor notice "You're an editor of this story, so you can't change its details." (replaces the form) | `story-form-screen.tsx:109-111` |
 | SCR-STM-03-C05 | Cover block: label "Cover", preview (2:3), "Add a cover"/"Change cover" ("Uploading…"), "Remove cover", hidden file input "Choose a cover", hint, alert; after a valid pick the crop dialog "Adjust the cover" (2:3 frame, "Zoom" slider, "Use photo"/"Cancel") | `components/cover-editor.tsx`, `packages/ui/src/widgets/image-crop-dialog.tsx` |
-| SCR-STM-03-C06..C13 | Same fields as SCR-STM-02-C04..C11 (title, slug, synopsis, category, tags, language, status, visibility, 18+) pre-filled | `story-form-screen.tsx:212-395` |
+| SCR-STM-03-C06..C13 | Same fields as SCR-STM-02-C04..C11 (title, slug, synopsis, category, tags, language, status, visibility, 18+) pre-filled | `story-form-screen.tsx:240-424` |
 | SCR-STM-03-C14 | "Save changes" (disabled until something changed; "Saving…"), "Cancel" → `/studio` | `story-form-screen.tsx:426-432` |
 | SCR-STM-03-C15 | Owner only: "Delete story" (destructive outline) or "Restore story" when deleted | `story-form-screen.tsx:433-462` |
 | SCR-STM-03-C16 | Confirm dialog "Delete this story?" | `story-form-screen.tsx:466-479` |

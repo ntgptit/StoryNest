@@ -217,7 +217,7 @@ Verified (Code + Runtime). Recommendation: `Chip` component (`variant: "filter" 
 interactive things look like pills.
 
 **DS-08 Form layout** — Auth forms are clean single-column cards. Inconsistencies: Edit profile builds its own `h1` and
-error banner instead of `PageHeader` and the auth `FormError` (`edit-profile-screen.tsx:90-103` vs. `auth-card.tsx:28-37`);
+error banner instead of `PageHeader` and the auth `FormError` (`edit-profile-screen.tsx:104-117` vs. `auth-card.tsx:31-41`);
 forms (`max-w-xl`) sit left-aligned in the 1024 px column at 1280 px while auth forms are centred; settings switches use
 18 × 32 px controls. Verified (Code). Recommendation: move `FormError` to `packages/ui` as `FormAlert`; all form pages use
 `PageHeader` + `narrow` width token (centred `max-w-2xl`); sticky save bar on phones for long forms (edit profile, story
@@ -414,13 +414,13 @@ user menu "Profile". Web-only component (not a `packages/features` screen). Load
 
 **Current experience** — Own `h1` (not `PageHeader`), avatar editor (80 px preview, add/change/remove), display name,
 username (+hint), bio (5 rows, "Up to 1000 characters"), "Save changes" (disabled until dirty), "Cancel"
-(`packages/features/src/profile/screens/edit-profile-screen.tsx:90-155`). No unsaved-changes guard (U-PRF-02), username
+(`packages/features/src/profile/screens/edit-profile-screen.tsx:104-169`). No unsaved-changes guard (U-PRF-02), username
 availability only on save (SCR-PRF-02-AC10 [Proposed]), rename breaks old links (U-PRF-03).
 
 **Identified opportunities**
 - UX: no live bio counter; picture removal has no confirmation or undo. Verified (Code).
 - UX: username change consequences ("your address changes; old links stop working") are in a hint only. Verified (Code).
-- Consistency: own heading markup and own error banner duplicate `PageHeader` and `FormError` (`edit-profile-screen.tsx:91-103` vs `auth-card.tsx:28-37`). Verified (Code).
+- Consistency: own heading markup and own error banner duplicate `PageHeader` and `FormError` (`edit-profile-screen.tsx:105-117` vs `auth-card.tsx:31-41`). Verified (Code).
 - Missing: preview of how the profile looks publicly. Inferred value.
 
 **Proposed experience** — `PageHeader` with back to `/me`; sections as `Surface`s: "Picture" (avatar editor; "Remove"
@@ -493,7 +493,7 @@ category), U-TAX-01/02.
 **Identified opportunities**
 - Density. Two 451 px cards per row at 390 px: the first story title is at y ≈ 668, under the hero and two chip rows. Verified (Runtime).
 - The guest gets no value proposition, CTA or trending/popular entry. Verified (Code) `home-hero.tsx`.
-- A member gets the same marketing hero on every visit and has no "Continue reading" entry (`discover-home.tsx:11-15`). Verified (Code).
+- A member gets the same marketing hero on every visit and has no "Continue reading" entry (`discover-home.tsx:12-17`). Verified (Code).
 - On a filtered view the h1 stays generic and the active category shows only as a highlighted chip. There is no breadcrumb and no sub-category row. Verified (Code) / U-TAX-01.
 - The category chip row hides overflow with no affordance: "Phiêu lưu" is cut at 390 px. Verified (Runtime).
 - No filter or sort beyond category/tag. The feed meaning is "last edited" (N-03). Verified (Code).
@@ -753,7 +753,7 @@ U-CMT-01, F-STORY-01, N-01, N-02, N-05, N-08, N-09.
 - **End of chapter.** Next is after the whole thread (U-READ-01). There is no end-of-story or caught-up state (N-05). Verified.
 - **Comment markers.** Shown after every paragraph even at 0, at 50 % opacity, 14 px icon (N-09, U-CMT-01). Readers cannot hide them, and they break the visual rhythm of the text (`m-reader.png`, `d-reader.png`). Verified.
 - **Targets.** 17/21 controls below 44 px at 390 px, 16/16 at ≥ 768 px (metrics). Verified (Runtime).
-- **TOC.** No read marks, no "new", does not scroll the current chapter into view (`toc-sheet.tsx:36-60`). For a 300-chapter story the current one may be off-screen. Verified (Code).
+- **TOC.** No read marks, no "new", does not scroll the current chapter into view (`toc-sheet.tsx:58-81`). For a 300-chapter story the current one may be off-screen. Verified (Code).
 - **Restore.** Silent jump to the saved position (N-08). Verified (Code).
 - **Header duplication.** Many chapters start with a heading block equal to the chapter title (seen in dev data: "Câu trả lời đầu tiên" twice). Content issue, not a reader bug. Verified (Runtime). Out of scope except as an editor hint (studio agent).
 
@@ -935,7 +935,7 @@ not-found state is a dead end with no action — Verified (Runtime) `m-list-miss
 
 **Identified opportunities**
 - Missing functionality: share or copy link — Verified (Code) (`list-screen.tsx:87-124`; no share code in `features/`). Add stories from the list page — Verified (Code) `lists/strings.en.ts` `page.emptyOwner` sends the owner to each story. Visitor cannot reach the owner — Verified (Code) `list-screen.tsx:159-160` (plain `span`).
-- UX/UI: a list of ≤ 500 items in a full-card grid with one-step ↑/↓ — Verified (Code) `list-screen.tsx:142-163`. Hypothesised: reordering long lists is tedious (same pattern as U-CHM-03). C08 rows are text-only with no visual cue of content — Verified (Code) `my-lists.tsx:29-102`. C09 quick-create silently ignores > 120 characters (U-LIST-02).
+- UX/UI: a list of ≤ 500 items in a full-card grid with one-step ↑/↓ — Verified (Code) `list-screen.tsx:186-208`. Hypothesised: reordering long lists is tedious (same pattern as U-CHM-03). C08 rows are text-only with no visual cue of content — Verified (Code) `my-lists.tsx:29-102`. C09 quick-create silently ignores > 120 characters (U-LIST-02).
 - Workflow: shared links preview as the generic "Danh sách đọc" title — Verified (Code) BR-LIST-014 (`apps/web/src/app/(main)/lists/[id]/page.tsx:7-14`). The not-found state has no way forward — Verified (Runtime).
 - IA: C09 is a third keep-action next to Follow and Save (§1.6) → it moves into the unified Save sheet (FP-048).
 
@@ -1701,7 +1701,7 @@ work is S and should ship with it.
 **Current experience** — `AppShell`: sticky 56 px header (`max-w-5xl`), content column `max-w-5xl px-4 py-6`, mobile bottom
 nav (Home, Library, Write, Me) hidden from `md`, generic grid skeleton, sonner toaster, no footer
 (`packages/ui/src/widgets/app-shell.tsx:22-34`, `bottom-nav.tsx:47`, `main-shell.tsx:13-18`). Header right side: SearchBox
-(icon < `sm`, field ≥ `sm`), 18+ button, "VI/EN", bell (members), user menu or "Sign in" (`site-header.tsx:13-22`).
+(icon < `sm`, field ≥ `sm`), 18+ button, "VI/EN", bell (members), user menu or "Sign in" (`site-header.tsx:17-28`).
 Missing: desktop nav (U-SHELL-01), `next` on sign-in (U-SHELL-04), not-found/error pages (F-SHELL-01), skip link (RT-09),
 offline state, footer.
 

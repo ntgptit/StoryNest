@@ -89,7 +89,7 @@ Rule summary
 | Expected behavior | Unknown block or a block of another chapter → `22023` "unknown paragraph". Chapter-level thread sits at the end of the chapter (`#comments`); paragraph thread opens in a bottom sheet. |
 | Exceptions | Block ids are never recycled (FK `ON DELETE RESTRICT`), so anchors stay valid across versions. |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:155-160`, `:222-225`, `supabase/migrations/20261103000000_init_schema.sql:116`, `:203-204`, `packages/features/src/reader/components/reader-blocks.tsx:42-59`, `supabase/tests/130_comments.test.sql:66-67`, `:89-90` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:155-160`, `:222-225`, `supabase/migrations/20261103000000_init_schema.sql:116`, `:203-204`, `packages/features/src/reader/components/reader-blocks.tsx:103-122`, `supabase/tests/130_comments.test.sql:66-67`, `:89-90` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-005 — One level of replies; reply inherits the parent's paragraph

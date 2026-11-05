@@ -41,7 +41,7 @@ Full table with suppression rules and link checks: [BR-NOTI-002](notifications/b
 
 | Depends on | What | Reference |
 | --- | --- | --- |
-| D-READING / OBJ-READ | Hosts the vote button and both comment panels; `can_read_chapter`; block anchors `b-<id>` and `#comments` | `packages/features/src/reader/screens/reader-screen.tsx:113-124`, `packages/features/src/reader/components/reader-blocks.tsx` |
+| D-READING / OBJ-READ | Hosts the vote button and both comment panels; `can_read_chapter`; block anchors `b-<id>` and `#comments` | `packages/features/src/reader/screens/reader-screen.tsx:157-168`, `packages/features/src/reader/components/reader-blocks.tsx` |
 | D-READING / OBJ-STORY | Story visibility rules (`BR-STORY-*`); story page shows comment/vote counters | — |
 | D-LIBRARY / OBJ-LIB | Story follows are the audience of `chapter_published` | [BR-LIB-001](../library/library/business-rules.md#br-lib-001--follow-and-save-are-independent) |
 | D-STUDIO / OBJ-EDT, OBJ-TEAM | Publishing emits `chapter.published`; invitations produce notices | `BR-EDT-*`, `BR-TEAM-*` |

@@ -66,7 +66,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | Protected targets redirect guests to sign-in (BR-AUTH-008) |
 | Navigation | `/`, `/library`, `/studio`, `/me` |
-| Evidence | `main-shell.tsx:13-18`, `bottom-nav.tsx:22-74` |
+| Evidence | `main-shell.tsx:13-18`, `bottom-nav.tsx:23-75` |
 
 | Field | SCR-SHELL-01-A02 Open account menu and choose an item |
 | --- | --- |
@@ -77,7 +77,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/library`, `/studio`, `/me`, `/moderation` (mods), `/settings` |
-| Evidence | `user-menu.tsx:50-80`, `shell.test.tsx` |
+| Evidence | `user-menu.tsx:52-83`, `shell.test.tsx` |
 
 | Field | SCR-SHELL-01-A03 Sign out |
 | --- | --- |
@@ -110,7 +110,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | — |
 | Navigation | Stays |
-| Evidence | `language-switcher.tsx:8-23` |
+| Evidence | `language-switcher.tsx:10-24` |
 
 | Field | SCR-SHELL-01-A06 Open a desktop navigation panel |
 | --- | --- |

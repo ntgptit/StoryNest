@@ -120,7 +120,7 @@
 | Expected behavior | ArrowDown/Up cycle through rows, Enter opens the active story or the results page, Escape closes, mouse-down on a row navigates, blur closes after 120 ms. Below `sm` only a search icon linking to `/search` |
 | Exceptions | Loading, no-match and error states of the list are not shown (only the "See all" row) → U-SRCH-02 |
 | Related screens | SCR-SRCH-01-C01 (renders in the shell on every page) |
-| Evidence | `search/components/search-box.tsx:13-137`, `search/model/search.ts:8-9`, `search/hooks/use-search.ts:66-80`, `search/search.test.tsx:393-476` |
+| Evidence | `search/components/search-box.tsx:13-137`, `search/model/search.ts:8-9`, `search/hooks/use-search.ts:66-80`, `search/search.test.tsx:415-497` |
 | Status | Verified |
 
 ### BR-SRCH-010 — Story results reuse the home card

@@ -38,8 +38,8 @@ sheet, TOC, search and rankings worked as specified.
 | U-SHELL-04 | SHELL / SCR-SHELL-01 | Header "Sign in" links to `/login` without `next`; a reader mid-chapter lands on Home after signing in → `withNext('/login', pathname)`. | `shell/components/user-menu.tsx:32-38`; runtime (header link `/login`) | S | FP-019 |
 | U-PRF-01 | PRF / SCR-PRF-01 | `/me` (bottom-nav "Me") shows only name, username, email, bio and Edit; no avatar, public page, Settings or Sign out → make it the account hub. | `apps/web/src/app/(main)/me/me-view.tsx:16-43` | S | FP-019 |
 | U-I18N-02 | I18N / all forms | Switching language re-keys the page tree and discards unsaved input (story form, profile, possibly editor) → confirm when dirty or re-render without remount. | `packages/features/src/_shared/language.tsx:18-35` | M | FP-003 |
-| U-READ-01 | READ / SCR-READ-01 | Previous/next chapter controls appear only after vote, report and the whole comment thread; no ←/→ shortcuts → place nav right after "— End of chapter —". | `reader/screens/reader-screen.tsx:88-91,113-125`; runtime (reader text order) | S | FP-012 |
-| U-CMT-01 | CMT / SCR-CMT-01 | Paragraph "Comment on this paragraph" button: 14 px icon, `text-xs`, 50 % opacity until hover — hard to see and tap on phones → ≥ 24–44 px target, visible affordance. | `reader/components/reader-blocks.tsx:50-59` | S | FP-022 |
+| U-READ-01 | READ / SCR-READ-01 | Previous/next chapter controls appear only after vote, report and the whole comment thread; no ←/→ shortcuts → place nav right after "— End of chapter —". | `reader/screens/reader-screen.tsx:120-122,157-169`; runtime (reader text order) | S | FP-012 |
+| U-CMT-01 | CMT / SCR-CMT-01 | Paragraph "Comment on this paragraph" button: 14 px icon, `text-xs`, 50 % opacity until hover — hard to see and tap on phones → ≥ 24–44 px target, visible affordance. | `reader/components/reader-blocks.tsx:113-122` | S | FP-022 |
 | U-NOTI-01 | NOTI → CMT | Reply notification scrolls to the paragraph but does not open the sheet, expand replies or highlight the reply → deep-link params. | `notifications/model/notification.ts:93-99`, `reader-blocks.tsx:65` | M | FP-013 |
 | U-LIB-01 | LIB / SCR-LIB-01 | Library tab is component state; "Back to library" and deleting a list always land on "Reading" → `?tab=`. | `library/screens/library-screen.tsx:43`, `lists/screens/list-screen.tsx:163-167,270` | S | FP-015 |
 
@@ -52,7 +52,7 @@ sheet, TOC, search and rankings worked as specified.
 | U-PRF-03 | PRF | Username rename breaks `/author/<username>` links (no redirect). | `author/model/author.ts:8` | FP-011 |
 | U-SET-01 | SET / SCR-SET-01 | Saving the language to the account fails silently although the page says it is saved for every device. | `settings/hooks/use-language-sync.ts:47-56` | FP-021 |
 | U-SET-02 | SET / SCR-SET-01 | Notification switches have no pending state; concurrent optimistic writes can roll back over a later value. | `settings/hooks/use-settings.ts:40-49` | Quick fix |
-| U-SHELL-02 | SHELL | Header controls below 44 px (language 32 px, icons 36 px) despite the project `touch-target` rule. | `ui/components/button.tsx:22-25`, `shell/components/language-switcher.tsx:12-16` | FP-022 |
+| U-SHELL-02 | SHELL | Header controls below 44 px (language 32 px, icons 36 px) despite the project `touch-target` rule. | `ui/components/button.tsx:22-25`, `shell/components/language-switcher.tsx:13-16` | FP-022 |
 | U-SHELL-03 | SHELL | One card-grid skeleton for every route causes layout jumps. | `apps/web/src/app/(main)/loading.tsx` | Quick fix |
 | U-I18N-01 | I18N | SSR always renders Vietnamese with `<html lang="vi">`; English applied after hydration; tab titles stay Vietnamese. | `apps/web/src/app/layout.tsx:44`, `apps/web/src/lib/strings.ts`; **runtime RT-08** | FP-021 |
 | U-DEV-01 | DEV / SCR-DEV-01 | Gallery has no theme toggle and omits StoryCard, StoryCover, ReadingProgress, PageSkeleton. | `apps/web/src/app/dev/gallery/gallery.tsx` | Quick fix |
@@ -75,7 +75,7 @@ sheet, TOC, search and rankings worked as specified.
 | U-NOTI-02 | NOTI | Invite text always says "co-author"; invite notice stays actionable after it is answered; empty state omits replies. | `notifications/strings.en.ts:15,28-32` | FP-013 |
 | U-LIB-02 | LIB | Removal is immediate with no undo; placeholder has no title; "reading list" wording clashes with Reading lists. | `library-screen.tsx:146-179` | FP-015 |
 | U-LIB-03 | LIB / SCR-STORY-01 | Follow/Save group `aria-label` is "Sign in to follow or save stories" for signed-in users too. | `story/components/story-actions.tsx:29` | FP-022 |
-| U-LIST-01 | LIST | No copy-link / share button. | `list-screen.tsx:87-124` | Quick fix |
+| U-LIST-01 | LIST | No copy-link / share button. | `list-screen.tsx:122-168` | Quick fix |
 | U-LIST-02 | LIST / add-to-list sheet | Quick create silently ignores names over 120 characters. | `lists/components/add-to-list-button.tsx:121,160-168` | FP-014 |
 | U-LIST-03 | LIST | One PT409 message for "changed" and "limit reached". | `lists/model/list.ts:116-117` | FP-014 |
 | U-STM-01 | STM / SCR-STM-02/03 | "Public" hint ignores that Draft stories are invisible; switching a live story to Draft hides it with no warning. | `studio/strings.en.ts:230-235` | Quick fix |
@@ -96,8 +96,8 @@ sheet, TOC, search and rankings worked as specified.
 | U-EDT-05 | EDT | No confirmation before the first publish, which irreversibly notifies followers. | `editor/components/publish-panel.tsx` | FP-034 |
 | U-HIST-01 | HIST | Compare ignores title changes, says "paragraphs" for images/dividers, no "before" for a changed image. | `history/model/history.ts` | Quick fix |
 | U-HIST-02 | HIST / SCR-HIST-02 | Preview lacks "Chapter n" label and end marker; reuses history error text. | `history/screens/preview-screen.tsx` | Quick fix |
-| U-MOD-01 | MOD / SCR-MOD-01 | Queue card lacks date, comment author, closed-by, consequence text. | `moderation/components/report-card.tsx:68-99,158-162` | FP-024 |
-| U-MOD-02 | MOD / SCR-MOD-01 | Only Pending/Resolved tabs; no status/kind filter; tab not in URL. | `moderation-screen.tsx:45-60` | FP-024 |
+| U-MOD-01 | MOD / SCR-MOD-01 | Queue card lacks date, comment author, closed-by, consequence text. | `moderation/components/report-card.tsx:109-148,212-216` | FP-024 |
+| U-MOD-02 | MOD / SCR-MOD-01 | Only Pending/Resolved tabs; no status/kind filter; tab not in URL. | `moderation-screen.tsx:75-91` | FP-024 |
 | U-MAT-01 | MAT / SCR-MAT-01 | Gate "Go back" does nothing when there is no history (shared links). | `adult-content/components/adult-gate.tsx:24-26` | FP-005 |
 | U-MAT-02 | MAT / header | 18+ control is icon-only, announced as a toggle but opens a dialog. | `adult-content/components/adult-content-button.tsx:29-38` | FP-022 |
 | U-ABU-01 | ABU / SCR-CMT-01 | Same "too fast" message for the 10-minute and the daily comment limit. | `comments/model/comment.ts:131-136` | Quick fix |
@@ -117,7 +117,7 @@ now **Verified (Runtime)** at 768 px as well (`t-home.png`: no section navigatio
 | ID | Pri | Object / screen | Current behaviour → improvement | Evidence | FP |
 | --- | --- | --- | --- | --- | --- |
 | U-SHELL-06 | P2 | SHELL / all | Focus ring is faint: `--ring` already has 50 % alpha and components add `ring-ring/50`, about 25 % effective (≈ 1.25:1 calculated in light mode) → full-strength ring token | `packages/design-tokens/src/tokens.css:52`, `packages/ui/src/components/button.tsx:8` (Inferred contrast) | FP-037, FP-022 |
-| U-I18N-03 | P3 | I18N / header | Language button shows "VI" but its accessible name is "Switch to English" (WCAG 2.5.3 label in name) | `packages/features/src/shell/components/language-switcher.tsx:12-19`, `shell/strings.en.ts:17` | FP-022 |
+| U-I18N-03 | P3 | I18N / header | Language button shows "VI" but its accessible name is "Switch to English" (WCAG 2.5.3 label in name) | `packages/features/src/shell/components/language-switcher.tsx:13-20`, `shell/strings.en.ts:17` | FP-022 |
 | U-MAT-03 | P3 | MAT / SCR-MAT-01 | Continuing past the gate turns 18+ on for every list, but the gate does not say so | `packages/features/src/adult-content/hooks/use-adult-content.ts:15` | FP-005 |
 | U-STM-07 | P3 | STM / SCR-STM-02/03 | 18+ hint says "hidden from the home page" while 18+ stories are hidden from every list | `packages/features/src/studio/strings.en.ts:237` | Quick fix |
 | U-MOD-04 | P3 | MOD / SCR-MOD-01 | The queue drops "under review by": `reviewed_by` is returned by SQL but not mapped | `…/20261104002000_moderation.sql:209,233`, `packages/features/src/moderation/model/report.ts:37-54` | FP-024 |

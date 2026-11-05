@@ -63,7 +63,7 @@ Screen: [SCR-SET-01 Settings](screens/settings.md).
 | Expected behavior | A new device picks up the account language after sign-in |
 | Exceptions | Guests and failures change nothing; save failures are silent and retried on the next change (U-SET-01) |
 | Related screens | SCR-SET-01, header switcher (SCR-SHELL-01) |
-| Evidence | `packages/features/src/settings/hooks/use-language-sync.ts:21-76`, `packages/features/src/settings/components/language-sync.tsx:5-13`, `apps/web/src/app/providers.tsx:36-39`, `packages/features/src/settings/settings.test.tsx` |
+| Evidence | `packages/features/src/settings/hooks/use-language-sync.ts:21-76`, `packages/features/src/settings/components/language-sync.tsx:5-13`, `apps/web/src/app/providers.tsx:39-41`, `packages/features/src/settings/settings.test.tsx` |
 | Status | Verified (unit tests; runtime check in `docs/WBS.md:124`) |
 
 ### BR-SET-005 — Notification switches

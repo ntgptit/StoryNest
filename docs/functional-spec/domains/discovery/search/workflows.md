@@ -13,7 +13,7 @@
 | Postconditions | — |
 | Affected objects | OBJ-SRCH, OBJ-STORY |
 | Related screens | SCR-SRCH-01-C01 → SCR-STORY-01 or SCR-SRCH-01 |
-| Status | Verified (`search/search.test.tsx:393-476`) |
+| Status | Verified (`search/search.test.tsx:415-497`) |
 
 ### WF-SRCH-02 — Full results with tabs
 | Field | Value |
@@ -28,7 +28,7 @@
 | Postconditions | — |
 | Affected objects | OBJ-SRCH, OBJ-AUTHOR, OBJ-TAX, OBJ-HOME |
 | Related screens | SCR-SRCH-01 → SCR-STORY-01 / SCR-AUTHOR-01 / SCR-HOME-01 |
-| Status | Verified (`search/search.test.tsx:275-391`) |
+| Status | Verified (`search/search.test.tsx:299-413`) |
 
 ### WF-SRCH-03 — Search on a narrow screen
 | Field | Value |

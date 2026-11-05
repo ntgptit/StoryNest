@@ -36,7 +36,7 @@
 | Validation | BR-AUTH-002 (new password); confirmation must match → "Passwords don't match." on the confirm field |
 | Error behavior | `same_password`, `weak_password`, network, session expired ("The link has expired. Request a new one.") |
 | Navigation | `/` |
-| Evidence | `reset-password-screen.tsx:28-40,52-98`, `packages/validation/src/auth.ts:60-62`, `auth-screens.test.tsx:254-300` |
+| Evidence | `reset-password-screen.tsx:29-41,53-100`, `packages/validation/src/auth.ts:60-62`, `auth-screens.test.tsx:254-300` |
 
 | Field | SCR-AUTH-04-A02 Request a new link |
 | --- | --- |

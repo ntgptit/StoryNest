@@ -83,7 +83,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | `UnsupportedContentError` → save refused with "Part of the content can't be saved. Remove it and try again." (status "Not saved: check the chapter title and content"). Nothing is silently dropped. Image block is an atom (selectable, draggable) that shows the picture from its public URL, or an empty frame when no URL can be built (key is kept). |
 | Exceptions | Pasted HTML with lists/links/images is normalised by the ProseMirror schema before it reaches the converter (lists become paragraphs, links lose the link, external `<img>` is dropped) — Inferred from schema; not tested in repo. |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/model/extensions.ts:11-37,47-66`, `packages/features/src/editor/model/body-converter.ts:36-42,94-118`, `packages/features/src/editor/components/editor-toolbar.tsx:46-80`, tests `editor.test.ts:114,225`, `editor-screen.test.tsx:195` |
+| Evidence | `packages/features/src/editor/model/extensions.ts:12-38,48-66`, `packages/features/src/editor/model/body-converter.ts:36-42,94-118`, `packages/features/src/editor/components/editor-toolbar.tsx:46-80`, tests `editor.test.ts:114,225`, `editor-screen.test.tsx:195` |
 | Status | Verified |
 
 ### BR-EDT-004 — Permanent block ids

@@ -68,7 +68,7 @@
 | Postconditions | Cover shown on Studio row, story page, story cards |
 | Affected objects | OBJ-STM |
 | Related screens | SCR-STM-03; on SCR-STM-02 only the hint "Save the story first…" |
-| Status | Verified — `packages/features/src/studio/components/cover-editor.tsx:37-106`, `packages/features/src/studio/cover.test.tsx:148-192` |
+| Status | Verified — `packages/features/src/studio/components/cover-editor.tsx:37-106`, `packages/features/src/studio/cover.test.tsx:188-230` |
 
 ### WF-STM-05 — Soft-delete a story
 | Field | Value |

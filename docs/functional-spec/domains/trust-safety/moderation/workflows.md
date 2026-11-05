@@ -28,7 +28,7 @@
 | Postconditions | Report `reviewing` (still in Pending) or closed (in Resolved) |
 | Affected objects | OBJ-MOD |
 | Related screens | SCR-MOD-01 |
-| Status | Verified (`moderation/components/report-card.tsx:32-191`, `moderation/hooks/use-moderation.ts:57-99`, `moderation/moderation.test.tsx:343-535`) |
+| Status | Verified (`moderation/components/report-card.tsx:52-220`, `moderation/hooks/use-moderation.ts:57-99`, `moderation/moderation.test.tsx:343-535`) |
 
 ### WF-MOD-03 — Act on the reported content
 | Field | Value |

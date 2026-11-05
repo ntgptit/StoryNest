@@ -27,7 +27,7 @@
 | SCR-HOME-01-C07 | Popular tags (nav "Popular tags") | Up to 12 `#tag` chips, toggling | `tag-filters.tsx:43-61`, `model/popular-tags.ts:1` |
 | SCR-HOME-01-C08 | Story grid | 2/3/4 columns; `StoryCard` per story | `discover-screen.tsx:19,98-116` |
 | SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:110-115` |
-| SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:90-95` |
+| SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:95-99` |
 | SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:79-88,122-129` |
 
 ## C. User actions and system responses
@@ -52,7 +52,7 @@
 | Validation | Unknown slug → empty list |
 | Error behavior | Tree error with category active → full error |
 | Navigation | Same screen |
-| Evidence | `category-chips.tsx:34-35`, `discovery.api.ts:74-79` |
+| Evidence | `category-chips.tsx:34-35`, `discovery.api.ts:76-81` |
 
 | Field | SCR-HOME-01-A03 — Clear category ("All") |
 | --- | --- |
@@ -143,7 +143,7 @@
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
 | Initial | Implemented | SSR first page (`page.tsx:24-40`) |
-| Loading | Implemented | Route `RouteLoading`; chip skeleton; 8-tile skeleton grid `aria-busy` (`discover-screen.tsx:84-89`) |
+| Loading | Implemented | Route `RouteLoading`; chip skeleton; 8-tile skeleton grid `aria-busy` (`discover-screen.tsx:89-94`) |
 | Empty | Implemented | "No stories yet / Check back later, or try another category." or tag variant (`strings.en.ts:12-13`) |
 | Populated | Implemented | Grid + infinite footer |
 | Validation error | Not applicable | No input; bad params ignored or produce empty state |

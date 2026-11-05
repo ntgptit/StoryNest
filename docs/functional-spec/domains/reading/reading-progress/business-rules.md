@@ -104,7 +104,7 @@
 | Expected behavior | Pending position flushed immediately. A failed write keeps the last-saved marker unchanged, so the next push retries. Failures never interrupt reading. |
 | Exceptions | — |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/progress/model/progress-writer.ts:12-68`, `packages/features/src/progress/model/progress.ts:4-5`, `packages/features/src/progress/hooks/use-reading-tracker.ts:58,65-100`, `packages/features/src/progress/progress.test.tsx:84-129,302` |
+| Evidence | `packages/features/src/progress/model/progress-writer.ts:12-68`, `packages/features/src/progress/model/progress.ts:4-5`, `packages/features/src/progress/hooks/use-reading-tracker.ts:63,70-108`, `packages/features/src/progress/progress.test.tsx:84-129,302` |
 | Status | Verified |
 
 ### BR-PROG-007 — Restore on open
@@ -116,7 +116,7 @@
 | Expected behavior | Scroll to the saved block (`scrollIntoView start`). If the block no longer exists (republished), fall back to percent × scrollable height. |
 | Exceptions | A deep-link hash wins (BR-READ-007). A completed chapter opens at the top. Layout shifts from late-loading images may offset the restore (WBS 2.5 "not verified"). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/progress/model/progress.ts:31-35`, `packages/features/src/progress/hooks/use-reading-tracker.ts:30-39,65-70`, `packages/features/src/progress/hooks/use-progress.ts:10-21`, `packages/features/src/progress/progress.test.tsx:257,267` |
+| Evidence | `packages/features/src/progress/model/progress.ts:31-35`, `packages/features/src/progress/hooks/use-reading-tracker.ts:32-41,70-74`, `packages/features/src/progress/hooks/use-progress.ts:10-21`, `packages/features/src/progress/progress.test.tsx:257,267` |
 | Status | Verified |
 
 ### BR-PROG-008 — Continue reading target

@@ -24,7 +24,7 @@ Note: `MyInvitations` (invitee side) is **not** on this screen; it is mounted on
 | SCR-TEAM-01-C02 | Link "Back to story details" | `team-screen.tsx:104-109` |
 | SCR-TEAM-01-C03 | Section "Current collaborators": rows name, @username, role badge, "Remove"; empty "No collaborators yet." | `team-screen.tsx:111-142` |
 | SCR-TEAM-01-C04 | Section "Invitations": rows invitee name, @username · role, status badge (Pending/Accepted/Declined/Cancelled), "Cancel invitation" on pending; empty "No invitations sent." | `team-screen.tsx:144-184` |
-| SCR-TEAM-01-C05 | Form "Invite a collaborator": "Username" input + hint/error (same element), "Role" select + role hint, "Send invitation" | `team-screen.tsx:231-278` |
+| SCR-TEAM-01-C05 | Form "Invite a collaborator": "Username" input + hint/error (same element), "Role" select + role hint, "Send invitation" | `team-screen.tsx:240-291` |
 | SCR-TEAM-01-C06 | Confirm dialog "Remove this collaborator?" | `team-screen.tsx:188-208` |
 | SCR-TEAM-01-C07 | Skeletons, error state with retry, "Story not found", "Only the owner can manage this" | `team-screen.tsx:50-72,84-99` |
 | SCR-TEAM-01-C08 | Username combobox (Lucian 034) | From 3 characters (a leading @ ignored, 250 ms pause) up to 5 authors from the existing author search (`search_authors`: people with a public story) with avatar, name and @username, typed part marked. Arrow keys move, Enter/press picks, Tab accepts the faint completion, Escape closes; "Searching…" / "No author matches. You can still invite by the exact username." Enter without a highlighted row submits what was typed, so any exact username still works | `team-screen.tsx` (`useAuthorSuggestions`), `packages/ui/src/widgets/autocomplete-input.tsx` |

@@ -9,7 +9,7 @@
 | Business object | [OBJ-CMT](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Comment thread (`CommentThread` widget) |
 | Type | Embedded panel — no own route |
-| Mounted in | (1) Chapter reader SCR-READ-01 (OBJ-READ) route `/story/[id]/[slug]/[chapterSlug]` (`apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx`), as `<section id="comments">` after the vote and report buttons: `packages/features/src/reader/screens/reader-screen.tsx:117-124` (chapter scope, newest first). (2) Same reader, bottom `Sheet` opened from the trailing button of each paragraph/heading: `packages/features/src/reader/components/reader-blocks.tsx:64-76` (paragraph scope, oldest first). |
+| Mounted in | (1) Chapter reader SCR-READ-01 (OBJ-READ) route `/story/[id]/[slug]/[chapterSlug]` (`apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx`), as `<section id="comments">` after the vote and report buttons: `packages/features/src/reader/screens/reader-screen.tsx:161-168` (chapter scope, newest first). (2) Same reader, bottom `Sheet` opened from the trailing button of each paragraph/heading: `packages/features/src/reader/components/reader-blocks.tsx:64-76` (paragraph scope, oldest first). |
 | Component files | `packages/features/src/comments/components/comment-thread.tsx`, `comment-item.tsx`, `comment-composer.tsx`; hooks `packages/features/src/comments/hooks/use-comments.ts`; API `packages/features/src/comments/api/comments.api.ts`; model `packages/features/src/comments/model/comment.ts` |
 | Roles | Guest (read), signed-in reader (write/reply/like/edit/delete own), story owner & co-author (hide/unhide), moderator (sees hidden) |
 | Access guard | None at route level (reader is public); data guarded by `can_read_chapter` + `comment_listable` |
@@ -20,18 +20,18 @@
 
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-CMT-01-C01 | Section heading | "Comments" `h2`, section `aria-label` "Comments", anchor `#comments`, `scroll-mt-20` | `reader-screen.tsx:117-124` |
-| SCR-CMT-01-C02 | Paragraph comment button | Trailing icon button on paragraph/heading, count when > 0, name "Comment on this paragraph (N)"; 50% opacity until hover/focus | `reader-blocks.tsx:42-59` |
+| SCR-CMT-01-C01 | Section heading | "Comments" `h2`, section `aria-label` "Comments", anchor `#comments`, `scroll-mt-20` | `reader-screen.tsx:161-168` |
+| SCR-CMT-01-C02 | Paragraph comment button | Trailing icon button on paragraph/heading, count when > 0, name "Comment on this paragraph (N)"; 50% opacity until hover/focus | `reader-blocks.tsx:103-122` |
 | SCR-CMT-01-C03 | Paragraph sheet | Bottom sheet with three heights (peek / half / full, opens at half, drag the top or use the grabber button, pulled down closes), title "Comment on this paragraph", description = excerpt; also opened from the reader's quote tools | `reader-blocks.tsx`, `packages/ui/src/widgets/detent-sheet.tsx` |
-| SCR-CMT-01-C04 | Composer | Textarea (sr-only label "Write a comment"/"Write a reply"), placeholder "Share your thoughts…", counter from 8,000 chars, inline error `role="alert"`, "Post"/"Posting…", optional "Cancel" | `comment-composer.tsx:21-102` |
+| SCR-CMT-01-C04 | Composer | Textarea (sr-only label "Write a comment"/"Write a reply"), placeholder "Share your thoughts…", counter from 8,000 chars, inline error `role="alert"`, "Post"/"Posting…", optional "Cancel" | `comment-composer.tsx:21-105` |
 | SCR-CMT-01-C05 | Guest sign-in link | Outline button "Sign in to comment" → `/login?next=` | `comment-thread.tsx:57-61` |
 | SCR-CMT-01-C06 | Comment list | `ul` "Comment list"; skeleton ×2 while loading; empty text; ErrorState | `comment-thread.tsx:63-86` |
-| SCR-CMT-01-C07 | Comment item | `article` named by author; header (name, relative time, "(edited)", ⋯ menu); hidden note; body (`whitespace-pre-line`); action row | `comment-item.tsx:99-238` |
+| SCR-CMT-01-C07 | Comment item | `article` named by author; header (name, relative time, "(edited)", ⋯ menu); hidden note; body (`whitespace-pre-line`); action row | `comment-item.tsx:101-242` |
 | SCR-CMT-01-C08 | Item menu | ⋯ "Comment options": Edit, Delete (own visible); Hide comment / Unhide comment (manager) | `comment-item.tsx:111-131` |
 | SCR-CMT-01-C09 | Like button | Heart + "N likes", `aria-pressed` | `comment-item.tsx:161-173` |
 | SCR-CMT-01-C10 | Reply button & reply composer | "Reply" (`aria-expanded`), indented composer | `comment-item.tsx:174-206` |
 | SCR-CMT-01-C11 | Report button | `ReportButton kind="comment"` label "Report" (OBJ-MOD) | `comment-item.tsx:186-188` |
-| SCR-CMT-01-C12 | Replies toggle & list | "View N replies"/"Hide replies", `ul` "Replies", "Load more replies" | `comment-item.tsx:204-270` |
+| SCR-CMT-01-C12 | Replies toggle & list | "View N replies"/"Hide replies", `ul` "Replies", "Load more replies" | `comment-item.tsx:208-283` |
 | SCR-CMT-01-C13 | Placeholder | "This comment was deleted." | `comment-item.tsx:103-104` |
 | SCR-CMT-01-C14 | Delete confirm dialog | "Delete this comment?" destructive confirm | `comment-item.tsx:224-241` |
 | SCR-CMT-01-C15 | Load more | "Load more comments"/"Loading…" | `comment-thread.tsx:88-99` |
@@ -168,7 +168,7 @@
 | Loading | Implemented | 2 skeleton rows `aria-busy`; replies "Loading…"; load-more "Loading…" — `comment-thread.tsx:70-75`, `comment-item.tsx:265` |
 | Empty | Implemented | "No comments yet. Be the first." / "No comments on this paragraph yet." — `comment-thread.tsx:76-77` |
 | Populated | Implemented | List + paging — `comment-thread.tsx:78-99` |
-| Validation error | Implemented | Inline under textarea, `aria-invalid` — `comment-composer.tsx:73-88` |
+| Validation error | Implemented | Inline under textarea, `aria-invalid` — `comment-composer.tsx:74-91` |
 | Request error | Implemented | ErrorState + retry (list); inline (composer); toast (like/hide/delete); replies: text without retry — Recommended: add retry to reply list |
 | Success | Implemented | Toasts for post/edit/delete/hide/unhide; **no toast for a reply** (U-CMT-03) |
 | Disabled | Implemented | Composer disabled while sending; like disabled while pending — `comment-composer.tsx:78`, `comment-item.tsx:168` |

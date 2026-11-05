@@ -193,7 +193,7 @@
 | Expected behavior | **Font size** `s / m / l / xl` = Small 1rem / Medium 1.125rem / Large 1.3125rem / Extra large 1.5rem (default **m**), changed by −/+ steps that stop at the ends (buttons disabled there). **Line spacing** `compact 1.5 / normal 1.75 / relaxed 2` (default **normal**). **Font** `sans / serif` (default **sans**). **Background** `site` (follows the app theme) / `light` / `sepia` / `dark` (default **site**). Any missing or invalid field falls back to its default on its own; unknown keys are dropped. |
 | Exceptions | — |
 | Related screens | SCR-READ-01 (settings sheet); settings screen (OBJ-SET) |
-| Evidence | `packages/validation/src/reader-preferences.ts:6-52`, `packages/features/src/reader/model/preferences.ts:33-41`, `packages/design-tokens/src/tokens.css:95-128`, `packages/features/src/reader/strings.en.ts:7-21`, `packages/features/src/reader/preferences.test.tsx:42,125,197,327` |
+| Evidence | `packages/validation/src/reader-preferences.ts:6-52`, `packages/features/src/reader/model/preferences.ts:33-41`, `packages/design-tokens/src/tokens.css:95-128`, `packages/features/src/reader/strings.en.ts:28-41`, `packages/features/src/reader/preferences.test.tsx:42,125,197,327` |
 | Status | Verified |
 
 ### BR-READ-014 — Device copy of preferences
@@ -217,7 +217,7 @@
 | Expected behavior | An inline bootstrap script in the root layout `<head>` applies the stored, validated values before first paint (no flash of the wrong background). The reader then keeps them in sync through a layout effect and **removes them on unmount**, so the site look returns. The theme reskins the whole page, header and nav included. Size, spacing and font apply to `.reader-text`. |
 | Exceptions | Bootstrap failures are swallowed (try/catch); the defaults apply. |
 | Related screens | SCR-READ-01 |
-| Evidence | `apps/web/src/app/layout.tsx:33-38`, `apps/web/src/lib/routes.ts:1-5`, `packages/features/src/reader/model/preferences.ts:14-31,51-73`, `packages/features/src/reader/hooks/use-reader-preferences.ts:29-45`, `packages/design-tokens/src/tokens.css:84-88,143-146`, `packages/features/src/reader/preferences.test.tsx:54,66-112,148` |
+| Evidence | `apps/web/src/app/layout.tsx:35-41`, `apps/web/src/lib/routes.ts:1-5`, `packages/features/src/reader/model/preferences.ts:14-31,51-73`, `packages/features/src/reader/hooks/use-reader-preferences.ts:29-45`, `packages/design-tokens/src/tokens.css:84-88,143-146`, `packages/features/src/reader/preferences.test.tsx:54,66-112,148` |
 | Status | Verified (WBS 2.7 runtime check incl. JS blocked) |
 
 ### BR-READ-016 — Account copy and sync

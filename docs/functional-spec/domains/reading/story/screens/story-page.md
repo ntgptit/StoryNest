@@ -30,7 +30,7 @@
 | SCR-STORY-01-C06 | Stats row | Reads / Votes / Comments / Followers (`StatPill`, locale-formatted) | `story-screen.tsx:103-113` |
 | SCR-STORY-01-C07 | Primary CTA | "Start reading" or "Continue reading · Chapter N" (large button-styled link) | `story-screen.tsx:105-109` |
 | SCR-STORY-01-C08 | Library actions | `StoryActions`: Follow / Following, Save to library / Saved (toggle buttons with `aria-pressed`), plus `AddToListButton`. Group label = "Sign in to follow or save stories" | `story/components/story-actions.tsx` (rules `BR-LIB-*`, `BR-LIST-*`) |
-| SCR-STORY-01-C09 | Report button | `ReportButton kind="story"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `story-screen.tsx:112-114` |
+| SCR-STORY-01-C09 | Report button | `ReportButton kind="story"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `story-screen.tsx:129-130` |
 | SCR-STORY-01-C10 | Synopsis | h2 "Synopsis". Text keeps line breaks; empty → "The author hasn't written a synopsis yet." Clamped to 6 lines with a fade and "Show more / Show less" (`ExpandableText`, Lucian #288): the toggle appears only when the text really overflows (measured), carries `aria-expanded`/`aria-controls`, and the full text stays in the DOM (SEO) | `story-screen.tsx`, `ui/widgets/expandable-text.tsx` |
 | SCR-STORY-01-C11 | Tag list | `#tag` badges linking to the home feed filtered by tag; aria-label "View stories tagged {name}" (`BR-TAX-*`) | `story-screen.tsx:149-159` |
 | SCR-STORY-01-C12 | Chapter list | h2 "Chapters" + "N chapters". Ordered list of rows: "Chapter N", title (truncated), "N words" | `story-screen.tsx:162-208` |
@@ -88,7 +88,7 @@
 | Validation | Server: `can_read_story` |
 | Error behavior | Rollback + toast "You can't follow or save this story." (forbidden) / "No connection. Check your network and try again." / "Couldn't complete that. Please try again." |
 | Navigation | Guest → `/login?next=<path>` |
-| Evidence | `story-actions.tsx:26-41`, `use-story-library.ts:32-73`, `library.test.tsx:145-256` |
+| Evidence | `story-actions.tsx:30-47`, `use-story-library.ts:32-73`, `library.test.tsx:145-256` |
 
 #### SCR-STORY-01-A05 — Save / remove from library
 | Field | Value |
@@ -100,7 +100,7 @@
 | Validation | Server: `can_read_story` |
 | Error behavior | Rollback + toast by kind (as A04) |
 | Navigation | Guest → `/login?next=<path>` |
-| Evidence | `story-actions.tsx:42-57`, `use-story-library.ts:75-94` |
+| Evidence | `story-actions.tsx:48-65`, `use-story-library.ts:75-94` |
 
 #### SCR-STORY-01-A06 — Add to reading list
 | Field | Value |

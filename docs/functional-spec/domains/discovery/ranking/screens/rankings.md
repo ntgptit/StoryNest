@@ -22,8 +22,8 @@
 | SCR-RANK-01-C01 | Page header | "Ranking" / "The most read and most voted stories." | `ranking-screen.tsx:37`, `strings.en.ts:2-3` |
 | SCR-RANK-01-C02 | Period tabs | `TabsList` "Time period": Today, This week, This month, All time | `ranking-screen.tsx:38-46`, `strings.en.ts:4-5` |
 | SCR-RANK-01-C03 | Freshness note | "Updated <relative>" | `ranking-screen.tsx:47-51` |
-| SCR-RANK-01-C04 | Ranked grid | Infinite list of ranked cards | `ranking-screen.tsx:76-87` |
-| SCR-RANK-01-C05 | Ranked card | Rank badge (aria-label "Rank N"), `StoryCard`, "<n> reads · <m> votes" | `ranking-screen.tsx:93-123` |
+| SCR-RANK-01-C04 | Ranked grid | Infinite list of ranked cards | `ranking-screen.tsx:69-80` |
+| SCR-RANK-01-C05 | Ranked card | Rank badge (aria-label "Rank N"), `StoryCard`, "<n> reads · <m> votes" | `ranking-screen.tsx:81-109` |
 | SCR-RANK-01-C06 | Empty / error | "No ranking yet…", "Couldn't load the ranking" + "Try again" | `ranking-screen.tsx:53-67`, `strings.en.ts:12-17` |
 
 ## C. User actions and system responses
