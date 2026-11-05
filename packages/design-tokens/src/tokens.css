@@ -573,6 +573,59 @@
   bottom: calc(var(--size-bottom-nav) + env(safe-area-inset-bottom));
 }
 
+/*
+ * Batch 2 "manage" (chapter manager, reading list order, version compare, moderation console), adapted from Lucian
+ * UX/UI Prompt #038, #178, #255, #317, #127, #217 and #273 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt),
+ * keeping their durations and curves. Each plays only after the user did something. Drag-to-move and the flying rows
+ * (SortableList) reuse --ease-glide and --ease-rise from the blocks above.
+ */
+@theme {
+  /* Differences only (#217): unchanged paragraphs fold away (grid rows 1fr -> 0fr) on this curve, in 0.45 s. */
+  --ease-fold: cubic-bezier(0.3, 0.8, 0.3, 1);
+
+  /* Context menu (#038): blooms from the point that was pressed (origin set by Radix). */
+  --animate-menu-bloom: menu-bloom 0.4s var(--ease-spring);
+  @keyframes menu-bloom {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
+
+  /* Bulk selection dock (#178): rises into place when the first row is selected. */
+  --animate-dock-in: dock-in 0.35s ease;
+  @keyframes dock-in {
+    from {
+      opacity: 0.55;
+      transform: translateY(7px);
+    }
+  }
+
+  /* Change hunk (#127): the change navigated to gives a small nudge. */
+  --animate-hunk-nudge: hunk-nudge 0.22s var(--ease-soft);
+  @keyframes hunk-nudge {
+    from {
+      transform: translateX(-4px);
+    }
+  }
+
+  /* Detail side panel (#273): the next item comes up from below, the previous one down from above. */
+  --animate-detail-next: detail-next 0.4s var(--ease-glide);
+  --animate-detail-prev: detail-prev 0.4s var(--ease-glide);
+  @keyframes detail-next {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+  }
+  @keyframes detail-prev {
+    from {
+      opacity: 0;
+      transform: translateY(-40px);
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

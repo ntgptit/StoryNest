@@ -31,6 +31,13 @@ const vi = {
     changed: "Sửa",
     before: "Trước đó:",
     caption: (n: number, base: string) => `So với ${base}, phiên bản ${n} có những thay đổi sau.`,
+    onlyChanges: "Chỉ hiện thay đổi",
+    unchanged: (count: number) => `${count} đoạn không đổi`,
+    hideUnchanged: (count: number) => `Ẩn ${count} đoạn không đổi`,
+    previousChange: "Thay đổi trước",
+    nextChange: "Thay đổi tiếp theo",
+    changeCount: (count: number) => `${count} chỗ thay đổi`,
+    changePosition: (n: number, count: number) => `Thay đổi ${n}/${count}`,
   },
   restore: {
     action: "Khôi phục vào bản nháp",

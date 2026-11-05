@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@storynest/ui/components/tabs";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
+import { DetailPanel } from "@storynest/ui/widgets/detail-panel";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
@@ -41,17 +42,47 @@ export function ModerationScreen() {
   return <Queue />;
 }
 
+/** Which report the detail panel shows, where it was in the list, and how it was reached (for the step animation). */
+type Selection = { id: string; index: number; direction: -1 | 0 | 1 };
+
 function Queue() {
   const [filter, setFilter] = useState<QueueFilter>(QUEUE_FILTER.OPEN);
   const queue = useReportQueue(filter);
   const items = queue.data?.pages.flatMap((page) => page.items) ?? [];
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+
+  let index = selection ? items.findIndex((report) => report.id === selection.id) : -1;
+  if (selection && index === -1 && !queue.isPending) {
+    // The report left this queue (it was just handled): show the one that took its place, so triage goes on.
+    if (items.length === 0) {
+      setSelection(null);
+      setPanelOpen(false);
+    } else {
+      index = Math.min(selection.index, items.length - 1);
+      const next = items[index];
+      if (next) setSelection({ id: next.id, index, direction: 1 });
+    }
+  }
+  const current = index === -1 ? null : (items[index] ?? null);
+
+  const show = (at: number, direction: -1 | 0 | 1) => {
+    const report = items[at];
+    if (!report) return;
+    setSelection({ id: report.id, index: at, direction });
+    setPanelOpen(true);
+  };
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-4">
       <PageHeader title={t.title} description={t.description} />
       <Tabs
         value={filter}
-        onValueChange={(value) => setFilter(value === QUEUE_FILTER.CLOSED ? QUEUE_FILTER.CLOSED : QUEUE_FILTER.OPEN)}
+        onValueChange={(value) => {
+          setFilter(value === QUEUE_FILTER.CLOSED ? QUEUE_FILTER.CLOSED : QUEUE_FILTER.OPEN);
+          setSelection(null);
+          setPanelOpen(false);
+        }}
       >
         <TabsList>
           <TabsTrigger value={QUEUE_FILTER.OPEN}>{t.tabs.open}</TabsTrigger>
@@ -74,7 +105,9 @@ function Queue() {
         <InfiniteList
           items={items}
           getKey={(report) => report.id}
-          renderItem={(report) => <ReportCard report={report} />}
+          renderItem={(report, at) => (
+            <ReportCard report={report} selected={panelOpen && report.id === current?.id} onOpen={() => show(at, 0)} />
+          )}
           hasMore={queue.hasNextPage}
           isLoadingMore={queue.isFetchingNextPage}
           onLoadMore={() => void queue.fetchNextPage()}
@@ -82,6 +115,28 @@ function Queue() {
           listClassName="gap-3"
         />
       )}
+      {items.length > 0 ? <p className="text-xs text-muted-foreground">{t.openDetails}</p> : null}
+
+      {current ? (
+        <DetailPanel
+          open={panelOpen}
+          onOpenChange={setPanelOpen}
+          title={current.title}
+          description={t.panel.keys}
+          position={t.panel.position(index + 1, items.length)}
+          hasPrevious={index > 0}
+          hasNext={index < items.length - 1}
+          onPrevious={() => show(index - 1, -1)}
+          onNext={() => show(index + 1, 1)}
+          previousLabel={t.panel.previous}
+          nextLabel={t.panel.next}
+          closeLabel={t.panel.close}
+          contentKey={current.id}
+          direction={selection?.direction ?? 0}
+        >
+          <ReportCard key={current.id} report={current} variant="panel" />
+        </DetailPanel>
+      ) : null}
     </div>
   );
 }

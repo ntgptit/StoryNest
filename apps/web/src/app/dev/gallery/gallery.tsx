@@ -77,6 +77,11 @@ import { StickyActionBar } from "@storynest/ui/widgets/sticky-action-bar";
 import { StoryCover } from "@storynest/ui/widgets/story-cover";
 import { SyncedSmallMultiples, type SmallMultipleDay } from "@storynest/ui/widgets/synced-small-multiples";
 import { CalendarHeatmap, type HeatmapCell, type HeatLevel } from "@storynest/ui/widgets/calendar-heatmap";
+import { BulkActionDock } from "@storynest/ui/widgets/bulk-action-dock";
+import { DetailPanel } from "@storynest/ui/widgets/detail-panel";
+import { ChangeStepper, FoldRow, FoldToggle } from "@storynest/ui/widgets/diff-folds";
+import { RowActionsButton, RowActionsMenu, type RowAction } from "@storynest/ui/widgets/row-actions-menu";
+import { DragHandle, SortableItem, useSortableList } from "@storynest/ui/widgets/sortable-list";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -1097,6 +1102,371 @@ function Batch2StatsExample() {
   );
 }
 
+// ---- Batch 2 · manage: row context menu, bulk dock, drag reorder with flying rows, diff folds, detail panel --------
+
+const MANAGE_ROWS = [
+  { id: "m1", title: "Chapter 1: The Lamp Room", status: "Published" },
+  { id: "m2", title: "Chapter 2: Salt on the Glass", status: "Published" },
+  { id: "m3", title: "Chapter 3: A Ship Without Lights, and a Title Long Enough to Wrap", status: "Draft" },
+  { id: "m4", title: "Chapter 4: Low Tide", status: "Archived" },
+  { id: "m5", title: "Chapter 5: Keeper's Log", status: "Draft" },
+];
+
+function ManageListExample() {
+  const toast = useAppToast();
+  const [rows, setRows] = useState(MANAGE_ROWS);
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
+  const ids = rows.map((row) => row.id);
+  const reorderTo = (next: string[]) =>
+    setRows((current) => next.flatMap((id) => current.find((row) => row.id === id) ?? []));
+  const sortable = useSortableList({ ids, onReorder: reorderTo });
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const move = (id: string, direction: 1 | -1) => {
+    const from = ids.indexOf(id);
+    const to = from + direction;
+    if (to < 0 || to >= ids.length) return;
+    const next = [...ids];
+    next.splice(from, 1);
+    next.splice(to, 0, id);
+    reorderTo(next);
+  };
+  return (
+    <div className="flex max-w-2xl flex-col gap-2">
+      <ol ref={sortable.listRef} aria-label="Demo chapters" className="relative flex flex-col gap-2">
+        {sortable.order.map((id, index) => {
+          const row = byId.get(id);
+          if (!row) return null;
+          const actions: RowAction[] = [
+            { id: "up", label: "Move up", disabled: index === 0, onSelect: () => move(id, -1) },
+            { id: "down", label: "Move down", disabled: index === ids.length - 1, onSelect: () => move(id, 1) },
+            { id: "rename", label: "Rename", onSelect: () => toast.info(`Rename ${row.title}`) },
+            { id: "archive", label: "Archive", onSelect: () => toast.info(`Archive ${row.title}`) },
+            {
+              id: "delete",
+              label: "Delete",
+              destructive: true,
+              separated: true,
+              onSelect: () => toast.info(`Delete ${row.title}`),
+            },
+          ];
+          const checked = selected.has(id);
+          return (
+            <RowActionsMenu key={id} actions={actions} label={row.title}>
+              <SortableItem
+                sortable={sortable}
+                id={id}
+                data-selected={checked || undefined}
+                className="flex items-start gap-1.5 rounded-xl border bg-card p-2 text-card-foreground select-none group-data-[selected]/sortable:border-primary group-data-[selected]/sortable:bg-accent group-data-[state=open]/sortable:ring-2 group-data-[state=open]/sortable:ring-primary sm:gap-2 sm:p-3"
+              >
+                <DragHandle sortable={sortable} id={id} className="-my-1" />
+                <span className="flex h-6 items-center sm:h-11">
+                  <Checkbox
+                    checked={checked}
+                    aria-label={`Select ${row.title}`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setSelected((current) => {
+                        const next = new Set(current);
+                        if (!next.delete(id)) next.add(id);
+                        return next;
+                      });
+                    }}
+                  />
+                </span>
+                <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">Chapter {index + 1}</p>
+                    <p className="truncate text-sm font-medium">{row.title}</p>
+                    <Badge variant="outline" className="mt-1">
+                      {row.status}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={index === 0}
+                      onClick={() => move(id, -1)}
+                    >
+                      Up
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={index === ids.length - 1}
+                      onClick={() => move(id, 1)}
+                    >
+                      Down
+                    </Button>
+                    <Button type="button" size="sm" variant="ghost" className="hidden sm:inline-flex">
+                      Rename
+                    </Button>
+                    <RowActionsButton
+                      actions={actions.slice(2)}
+                      label={`More actions: ${row.title}`}
+                      menuLabel={row.title}
+                    />
+                  </div>
+                </div>
+              </SortableItem>
+            </RowActionsMenu>
+          );
+        })}
+      </ol>
+      <p className="text-xs text-muted-foreground">
+        Right-click, long-press or Shift+F10 a row for its menu; drag the grip to reorder.
+      </p>
+      <BulkActionDock
+        count={selected.size}
+        summary={`${selected.size} selected`}
+        label="Bulk actions"
+        clearLabel="Clear selection"
+        onClear={() => setSelected(new Set())}
+      >
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={() => {
+            toast.success(`Archived ${selected.size}`);
+            setSelected(new Set());
+          }}
+        >
+          Archive ({selected.size})
+        </Button>
+        <Button type="button" size="sm" variant="destructive" onClick={() => toast.error("1 could not be deleted")}>
+          Delete ({selected.size})
+        </Button>
+      </BulkActionDock>
+    </div>
+  );
+}
+
+const GRID_STORIES = ["The Lighthouse Keeper", "Salt Roads", "Glass Harbour", "Nine Lanterns", "Low Tide", "Kestrel"];
+
+function ManageGridExample() {
+  const [order, setOrder] = useState(GRID_STORIES);
+  const sortable = useSortableList({ ids: order, onReorder: setOrder, layout: "grid" });
+  return (
+    <ul
+      ref={sortable.listRef}
+      aria-label="Demo reading list"
+      className="relative grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-3"
+    >
+      {sortable.order.map((title, index) => (
+        <SortableItem key={title} sortable={sortable} id={title} className="flex flex-col gap-2">
+          <div className="flex aspect-[3/2] items-end rounded-lg border bg-muted p-2 text-sm font-medium">{title}</div>
+          <div className="flex items-center gap-1">
+            <DragHandle sortable={sortable} id={title} />
+            <span className="text-xs text-muted-foreground">#{index + 1}</span>
+          </div>
+        </SortableItem>
+      ))}
+    </ul>
+  );
+}
+
+type DemoEntry = { key: string; kind: "same" | "added" | "removed" | "changed"; text: string };
+const DIFF_DEMO: DemoEntry[] = [
+  { key: "p1", kind: "same", text: "The lamp was lit at dusk, as it had been every night for forty years." },
+  { key: "p2", kind: "same", text: "Mara climbed the hundred and twelve steps with the oil can." },
+  { key: "p3", kind: "changed", text: "Below, the sea was flat and grey and very quiet." },
+  { key: "p4", kind: "same", text: "She checked the wick, then the glass, then the wick again." },
+  { key: "p5", kind: "same", text: "Gulls argued on the gallery rail." },
+  { key: "p6", kind: "same", text: "Far out, a light answered hers, where no light should be." },
+  { key: "p7", kind: "added", text: "It blinked twice, and went dark." },
+  { key: "p8", kind: "removed", text: "She went back down to make tea." },
+  { key: "p9", kind: "same", text: "That night she did not sleep." },
+];
+
+function DiffFoldsExample() {
+  const [only, setOnly] = useState(false);
+  const [opened, setOpened] = useState<ReadonlySet<number>>(() => new Set());
+  const [current, setCurrent] = useState(-1);
+  const refs = useRef(new Map<number, HTMLElement>());
+  // Runs: consecutive same entries / consecutive changes.
+  const runs: { same: boolean; entries: DemoEntry[]; change: number }[] = [];
+  for (const entry of DIFF_DEMO) {
+    const same = entry.kind === "same";
+    const last = runs.at(-1);
+    if (last && last.same === same) last.entries.push(entry);
+    else runs.push({ same, entries: [entry], change: same ? -1 : runs.filter((run) => !run.same).length });
+  }
+  const total = runs.filter((run) => !run.same).length;
+  const step = (index: number) => {
+    setCurrent(index);
+    refs.current.get(index)?.scrollIntoView({ block: "center" });
+    refs.current.get(index)?.focus({ preventScroll: true });
+  };
+  return (
+    <div className="flex max-w-2xl flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <label className="flex items-center gap-2 text-sm">
+          <Switch
+            checked={only}
+            onCheckedChange={(checked) => {
+              setOnly(checked);
+              setOpened(new Set());
+            }}
+          />
+          Only show changes
+        </label>
+        <ChangeStepper
+          current={current}
+          total={total}
+          status={current < 0 ? `${total} changes` : `Change ${current + 1} of ${total}`}
+          previousLabel="Previous change"
+          nextLabel="Next change"
+          onStep={step}
+        />
+      </div>
+      <ul aria-label="Demo comparison" className="reader-text -mt-[1em] flex flex-col">
+        {runs.flatMap((run, runIndex) => {
+          if (run.same) {
+            const folded = only && !opened.has(runIndex);
+            const ids = run.entries.map((entry) => `demo-fold-${entry.key}`);
+            const rows = run.entries.map((entry, index) => (
+              <FoldRow key={entry.key} id={ids[index]} folded={folded}>
+                <p className="pt-[1em]">{entry.text}</p>
+              </FoldRow>
+            ));
+            return only
+              ? [
+                  <li key={`fold-${runIndex}`}>
+                    <div className="pt-[1em]">
+                      <FoldToggle
+                        expanded={!folded}
+                        controls={ids.join(" ")}
+                        onToggle={() =>
+                          setOpened((now) => {
+                            const next = new Set(now);
+                            if (!next.delete(runIndex)) next.add(runIndex);
+                            return next;
+                          })
+                        }
+                      >
+                        {folded
+                          ? `${run.entries.length} unchanged paragraphs`
+                          : `Hide ${run.entries.length} unchanged paragraphs`}
+                      </FoldToggle>
+                    </div>
+                  </li>,
+                  ...rows,
+                ]
+              : rows;
+          }
+          return run.entries.map((entry, index) => (
+            <li key={entry.key}>
+              <div className="pt-[1em]">
+                <div
+                  ref={
+                    index === 0
+                      ? (element) => {
+                          if (element) refs.current.set(run.change, element);
+                        }
+                      : undefined
+                  }
+                  tabIndex={index === 0 ? -1 : undefined}
+                  data-current={run.change === current || undefined}
+                  className={`rounded-r-md border-l-4 pl-3 outline-none data-[current]:bg-accent/60 ${
+                    index === 0 ? "motion-safe:data-[current]:animate-hunk-nudge" : ""
+                  } ${entry.kind === "removed" ? "border-destructive line-through opacity-70" : "border-primary"}`}
+                >
+                  <Badge variant={entry.kind === "removed" ? "destructive" : "secondary"} className="mb-1">
+                    {entry.kind}
+                  </Badge>
+                  <p>{entry.text}</p>
+                </div>
+              </div>
+            </li>
+          ));
+        })}
+      </ul>
+    </div>
+  );
+}
+
+const PANEL_REPORTS = [
+  { id: "r1", title: "Insulting comment under chapter 4", kind: "Comment", reason: "Harassment", by: "reader_ana" },
+  { id: "r2", title: "Copied story: Salt Roads", kind: "Story", reason: "Copyright", by: "kestrel" },
+  { id: "r3", title: "Spam account linking to a shop", kind: "Account", reason: "Spam", by: "mara.k" },
+  { id: "r4", title: "Graphic violence without a mature flag", kind: "Chapter", reason: "Violence", by: "lumen" },
+];
+
+function DetailPanelExample() {
+  const toast = useAppToast();
+  const [at, setAt] = useState<{ index: number; direction: -1 | 0 | 1 } | null>(null);
+  const [open, setOpen] = useState(false);
+  const report = at ? PANEL_REPORTS[at.index] : undefined;
+  const show = (index: number, direction: -1 | 0 | 1) => {
+    setAt({ index, direction });
+    setOpen(true);
+  };
+  return (
+    <div className="flex max-w-2xl flex-col gap-2">
+      <ul className="flex flex-col gap-2">
+        {PANEL_REPORTS.map((item, index) => (
+          <li key={item.id}>
+            <article
+              aria-label={item.title}
+              aria-current={(open && at?.index === index) || undefined}
+              className="flex flex-col gap-2 rounded-xl border p-3 aria-[current]:border-primary aria-[current]:bg-accent/60"
+            >
+              <span className="flex gap-2">
+                <Badge variant="secondary">{item.kind}</Badge>
+                <Badge variant="outline">{item.reason}</Badge>
+              </span>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => show(index, 0)}
+                className="w-fit text-left text-sm font-medium underline-offset-4 hover:underline"
+              >
+                {item.title}
+              </button>
+            </article>
+          </li>
+        ))}
+      </ul>
+      {report && at ? (
+        <DetailPanel
+          open={open}
+          onOpenChange={setOpen}
+          title={report.title}
+          description="J / K: next / previous report · Esc: close"
+          position={`${at.index + 1} of ${PANEL_REPORTS.length}`}
+          hasPrevious={at.index > 0}
+          hasNext={at.index < PANEL_REPORTS.length - 1}
+          onPrevious={() => show(at.index - 1, -1)}
+          onNext={() => show(at.index + 1, 1)}
+          previousLabel="Previous report"
+          nextLabel="Next report"
+          closeLabel="Close details"
+          contentKey={report.id}
+          direction={at.direction}
+        >
+          <div className="flex gap-2">
+            <Badge variant="secondary">{report.kind}</Badge>
+            <Badge variant="outline">{report.reason}</Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">Reported by {report.by} · 2 hours ago</p>
+          <Textarea placeholder="Typing j or k here does not switch reports" />
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="destructive" onClick={() => toast.info("Hide")}>
+              Hide
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => toast.info("Resolve")}>
+              Mark resolved
+            </Button>
+          </div>
+        </DetailPanel>
+      ) : null}
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -1306,6 +1676,13 @@ export function Gallery() {
 
       <Section title="Batch 2 · stats">
         <Batch2StatsExample />
+      </Section>
+
+      <Section title="Batch 2 · manage">
+        <ManageListExample />
+        <ManageGridExample />
+        <DiffFoldsExample />
+        <DetailPanelExample />
       </Section>
     </AppShell>
   );

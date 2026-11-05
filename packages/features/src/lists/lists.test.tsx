@@ -467,6 +467,7 @@ describe("ListScreen", () => {
     expect(screen.queryByRole("button", { name: t.page.edit })).toBeNull();
     expect(screen.queryByRole("button", { name: t.page.remove })).toBeNull();
     expect(screen.queryByRole("button", { name: new RegExp(t.page.moveUp) })).toBeNull();
+    expect(document.querySelector("[data-part=drag-handle]")).toBeNull(); // nothing to drag either
   });
 
   it("writes the age of each story in English when the language is English", async () => {
@@ -500,6 +501,11 @@ describe("ListScreen", () => {
     expect((screen.getByRole("button", { name: `${t.page.moveDown}: Truyện 2` }) as HTMLButtonElement).disabled).toBe(
       true,
     );
+    // A drag handle per story (pointer only: hidden from assistive tech, the move buttons are the keyboard route).
+    const handles = document.querySelectorAll("[data-part=drag-handle]");
+    expect(handles).toHaveLength(2);
+    expect(handles[0]?.getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByText(t.page.reorderHint)).toBeTruthy();
   });
 
   it("moves a story: sends the complete new order and shows it at once", async () => {

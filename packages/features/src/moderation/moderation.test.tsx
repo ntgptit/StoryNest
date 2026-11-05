@@ -533,3 +533,63 @@ describe("ModerationScreen", () => {
     expect((within(dialog).getByLabelText(t.console.dialog.reasonLabel) as HTMLTextAreaElement).value).toBe("");
   });
 });
+
+describe("ModerationScreen detail panel", () => {
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+    Element.prototype.hasPointerCapture = vi.fn(() => false);
+    Element.prototype.releasePointerCapture = vi.fn();
+  });
+
+  it("opens a report in the side panel with its actions, steps with J / K and closes with Escape", async () => {
+    const c = fakeClient({ list_reports: () => ({ data: [row(1), row(2), row(3)], error: null }) });
+    renderUi(c, <ModerationScreen />, moderatorSession);
+    const card = await screen.findByRole("article", { name: "Nội dung 2" });
+    fireEvent.click(within(card).getByRole("button", { name: "Nội dung 2" }));
+
+    let panel = await screen.findByRole("dialog", { name: "Nội dung 2" });
+    expect(within(panel).getByText(t.console.panel.position(2, 3))).toBeTruthy();
+    expect(within(panel).getByText("Chi tiết 2")).toBeTruthy();
+    expect(within(panel).getByRole("button", { name: t.console.actions.hide_comment })).toBeTruthy();
+    expect(within(panel).getByRole("button", { name: t.console.actions.dismiss_report })).toBeTruthy();
+    expect(document.querySelector('article[aria-current="true"]')?.getAttribute("aria-label")).toBe("Nội dung 2");
+
+    fireEvent.keyDown(within(panel).getByRole("button", { name: t.console.panel.close }), { key: "j" });
+    panel = await screen.findByRole("dialog", { name: "Nội dung 3" });
+    expect(within(panel).getByText(t.console.panel.position(3, 3))).toBeTruthy();
+    expect((within(panel).getByRole("button", { name: t.console.panel.next }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    fireEvent.keyDown(within(panel).getByRole("button", { name: t.console.panel.close }), { key: "k" });
+    fireEvent.keyDown(within(panel).getByRole("button", { name: t.console.panel.close }), { key: "k" });
+    panel = await screen.findByRole("dialog", { name: "Nội dung 1" });
+    expect(document.querySelector('article[aria-current="true"]')?.getAttribute("aria-label")).toBe("Nội dung 1");
+
+    fireEvent.keyDown(panel, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(document.querySelector('article[aria-current="true"]')).toBeNull();
+  });
+
+  it("does not switch reports while the reason is being typed, and moves on to the next one once handled", async () => {
+    let handled = false;
+    const c = fakeClient({
+      list_reports: () => ({ data: handled ? [row(2), row(3)] : [row(1), row(2), row(3)], error: null }),
+      resolve_report: () => {
+        handled = true;
+        return { data: null, error: null };
+      },
+    });
+    renderUi(c, <ModerationScreen />, moderatorSession);
+    const card = await screen.findByRole("article", { name: "Nội dung 1" });
+    fireEvent.click(within(card).getByText(t.console.reportedBy("Người báo 1"))); // a click on the card itself
+    const panel = await screen.findByRole("dialog", { name: "Nội dung 1" });
+    fireEvent.click(within(panel).getByRole("button", { name: t.console.actions.resolve_report }));
+    const reason = await screen.findByLabelText(t.console.dialog.reasonLabel);
+    fireEvent.keyDown(reason, { key: "j" });
+    expect(screen.getByRole("dialog", { name: "Nội dung 1" })).toBeTruthy();
+    fireEvent.change(reason, { target: { value: "đã xử lý xong" } });
+    fireEvent.click(screen.getByRole("button", { name: t.console.dialog.confirm }));
+    await waitFor(() => expect(c.of("resolve_report")).toHaveLength(1));
+    expect(await screen.findByRole("dialog", { name: "Nội dung 2" })).toBeTruthy();
+  });
+});

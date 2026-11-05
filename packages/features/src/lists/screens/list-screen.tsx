@@ -10,6 +10,7 @@ import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
+import { DragHandle, SortableItem, useSortableList } from "@storynest/ui/widgets/sortable-list";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
 import { useAuth } from "../../_shared/auth.tsx";
 import { currentLocale } from "../../_shared/i18n.ts";
@@ -49,6 +50,14 @@ export function ListScreen({
   const remove = useDeleteList(listId);
   const removeStory = useRemoveFromList();
   const reorder = useReorderList(listId);
+  const isOwner = auth.status === "authenticated" && detail.data !== null && auth.user.id === detail.data?.list.ownerId;
+  // Called before the loading and error returns (hooks): with no list yet it simply has nothing to order.
+  const sortable = useSortableList({
+    ids: detail.data?.items.map((item) => item.storyId) ?? [],
+    onReorder: (next) => reorder.mutate(next, { onError: (error) => toast.error(listErrorMessage(error)) }),
+    disabled: reorder.isPending || !isOwner,
+    layout: "grid",
+  });
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   // The access just chosen in the share dialog, shown at once and until the list has reloaded after the save (or the
@@ -78,7 +87,6 @@ export function ListScreen({
   }
 
   const { list, items } = detail.data;
-  const isOwner = auth.status === "authenticated" && auth.user.id === list.ownerId;
   const Icon = VISIBILITY_ICON[list.visibility];
   const labels = {
     reads: discoveryText.card.reads,
@@ -86,6 +94,8 @@ export function ListScreen({
     updated: discoveryText.card.updated,
   };
   const ids = items.map((item) => item.storyId);
+  const byId = new Map(items.map((item) => [item.storyId, item]));
+  const shown = sortable.order.flatMap((id) => byId.get(id) ?? []);
 
   const changeAccess = (visibility: Visibility) => {
     setChosenAccess({ value: visibility, at: Date.now() });
@@ -164,9 +174,9 @@ export function ListScreen({
           description={(isOwner ? listText.page.emptyOwner : t.empty).description}
         />
       ) : (
-        <ul aria-label={t.storiesLabel} className={GRID}>
-          {items.map((item, index) => (
-            <li key={item.storyId} className="flex flex-col gap-2">
+        <ul ref={sortable.listRef} aria-label={t.storiesLabel} className={`relative ${GRID}`}>
+          {shown.map((item, index) => (
+            <SortableItem key={item.storyId} sortable={sortable} id={item.storyId} className="flex flex-col gap-2">
               <StoryCard
                 story={toStoryCardData(item.story, coverUrlFor)}
                 labels={labels}
@@ -175,6 +185,7 @@ export function ListScreen({
               />
               {isOwner ? (
                 <div className="flex flex-wrap items-center gap-1">
+                  <DragHandle sortable={sortable} id={item.storyId} />
                   <Button
                     type="button"
                     size="icon"
@@ -190,7 +201,7 @@ export function ListScreen({
                     size="icon"
                     variant="outline"
                     aria-label={`${t.moveDown}: ${item.story.title}`}
-                    disabled={reorder.isPending || index === items.length - 1}
+                    disabled={reorder.isPending || index === shown.length - 1}
                     onClick={() => move(item.storyId, 1)}
                   >
                     <ArrowDown aria-hidden className="size-4" />
@@ -214,10 +225,12 @@ export function ListScreen({
                   </Button>
                 </div>
               ) : null}
-            </li>
+            </SortableItem>
           ))}
         </ul>
       )}
+
+      {isOwner && items.length > 1 ? <p className="text-xs text-muted-foreground">{t.reorderHint}</p> : null}
 
       {editing ? (
         <ListFormDialog

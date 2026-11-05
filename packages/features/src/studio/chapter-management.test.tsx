@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AppError } from "../_shared/errors.ts";
 import { AuthProvider } from "../_shared/auth.tsx";
 import type { DataClient } from "../_shared/client.ts";
@@ -18,7 +18,10 @@ import {
 } from "./api/chapters.api.ts";
 import {
   applyOrder,
+  chaptersFor,
+  chapterStateActions,
   isChapterSlugTaken,
+  selectRange,
   liveChapterIds,
   moveChapter,
   sortChapters,
@@ -30,6 +33,12 @@ import { ChapterManagerScreen } from "./index.ts";
 import { studioText } from "./strings.ts";
 
 afterEach(cleanup);
+beforeEach(() => {
+  // jsdom lacks what Radix menus call while they open.
+  Element.prototype.scrollIntoView = vi.fn();
+  Element.prototype.hasPointerCapture = vi.fn(() => false);
+  Element.prototype.releasePointerCapture = vi.fn();
+});
 
 const t = studioText.chapters;
 const STORY_ID = "5eed0000-0000-4000-8000-00000000d001";
@@ -496,5 +505,144 @@ describe("ChapterManagerScreen", () => {
     expect(within(first).getByRole("button", { name: new RegExp(t.moveDown) })).toBeTruthy();
     expect(within(first).queryByRole("button", { name: t.archive })).toBeNull();
     expect(within(first).queryByRole("button", { name: t.delete })).toBeNull();
+  });
+});
+
+describe("chapter actions, selection and bulk", () => {
+  it("offers the same state actions to a row and to a selection, by role and state", () => {
+    expect(chapterStateActions(chapter(1), true)).toEqual(["archive", "delete"]);
+    expect(chapterStateActions(chapter(1, { status: "archived" }), true)).toEqual(["unarchive", "delete"]);
+    expect(chapterStateActions(chapter(1, { deleted: true }), true)).toEqual(["restore"]);
+    expect(chapterStateActions(chapter(1), false)).toEqual([]); // an editor archives and deletes nothing
+    const list = [chapter(2), chapter(1, { status: "archived" }), chapter(3, { deleted: true })];
+    const all = new Set([cid(1), cid(2), cid(3)]);
+    expect(chaptersFor(list, all, "archive", true).map((c) => c.id)).toEqual([cid(2)]);
+    expect(chaptersFor(list, all, "delete", true).map((c) => c.id)).toEqual([cid(1), cid(2)]); // list order
+    expect(chaptersFor(list, all, "restore", true).map((c) => c.id)).toEqual([cid(3)]);
+    expect(chaptersFor(list, all, "delete", false)).toEqual([]);
+  });
+
+  it("selects a range between the last ticked row and this one", () => {
+    const order = [cid(1), cid(2), cid(3), cid(4)];
+    expect([...selectRange(order, new Set(), cid(2), true)]).toEqual([cid(2)]);
+    expect([...selectRange(order, new Set([cid(1)]), cid(3), true, cid(1))].sort()).toEqual([cid(1), cid(2), cid(3)]);
+    expect([...selectRange(order, new Set(order), cid(1), false, cid(3))]).toEqual([cid(4)]);
+    expect([...selectRange(order, new Set(), cid(2), true, cid(9))]).toEqual([cid(2)]); // unknown anchor: just this row
+  });
+
+  it("opens a row's context menu with its actions (right-click or Shift+F10) and runs them", async () => {
+    const t1 = fakeClient({ chapters: [row(1), row(2)] });
+    renderManager(t1);
+    await screen.findByRole("list", { name: t.listLabel });
+    fireEvent.contextMenu(itemFor("Chương 1"), { clientX: 10, clientY: 10 });
+    const menu = await screen.findByRole("menu", { name: "Chương 1" });
+    expect(
+      within(menu)
+        .getAllByRole("menuitem")
+        .map((item) => item.textContent),
+    ).toEqual([t.write, t.moveUp, t.moveDown, t.rename, t.archive, t.delete]);
+    fireEvent.click(within(menu).getByRole("menuitem", { name: t.rename }));
+    expect(await screen.findByRole("dialog", { name: t.renameTitle })).toBeTruthy();
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+    fireEvent.keyDown(within(itemFor("Chương 2")).getByRole("link", { name: t.write }), { key: "F10", shiftKey: true });
+    const second = await screen.findByRole("menu", { name: "Chương 2" });
+    fireEvent.click(within(second).getByRole("menuitem", { name: t.write }));
+    expect(push).toHaveBeenCalledWith(`/studio/story/${STORY_ID}/chapter/${cid(2)}`);
+  });
+
+  it("keeps every action reachable on a phone: the hidden buttons are in the ... menu", async () => {
+    renderManager(fakeClient({ chapters: [row(1)] }));
+    await screen.findByRole("list", { name: t.listLabel });
+    const more = within(itemFor("Chương 1")).getByRole("button", { name: t.moreActions("Chương 1") });
+    fireEvent.pointerDown(more, { button: 0, pointerType: "mouse" });
+    const menu = await screen.findByRole("menu");
+    expect(
+      within(menu)
+        .getAllByRole("menuitem")
+        .map((item) => item.textContent),
+    ).toEqual([t.rename, t.archive, t.delete]);
+  });
+
+  it("archives the selected chapters one by one after confirming, and keeps the failures selected with a reason", async () => {
+    const t1 = fakeClient({
+      chapters: [row(1), row(2), row(3, { status: "archived" })],
+      rpc: (_name, args) =>
+        args.p_chapter_id === cid(2)
+          ? { data: null, error: { code: "42501", message: "denied", status: 403 } }
+          : { data: null, error: null },
+    });
+    renderManager(t1);
+    await screen.findByRole("list", { name: t.listLabel });
+    toasts.show.mockClear();
+    fireEvent.click(within(itemFor("Chương 1")).getByRole("checkbox", { name: t.select("Chương 1") }));
+    fireEvent.click(within(itemFor("Chương 3")).getByRole("checkbox", { name: t.select("Chương 3") }), {
+      shiftKey: true,
+    });
+    const dock = screen.getByRole("region", { name: t.bulk.label });
+    expect(within(dock).getByText(t.bulk.selected(3))).toBeTruthy();
+    // Chapter 3 is archived already: archive applies to two, unarchive to one.
+    expect(within(dock).getByRole("button", { name: t.bulk.unarchive(1) })).toBeTruthy();
+    fireEvent.click(within(dock).getByRole("button", { name: t.bulk.archive(2) }));
+    const dialog = await screen.findByRole("dialog", { name: t.bulk.archiveTitle(2) });
+    expect(t1.rpcCalls).toEqual([]);
+    fireEvent.click(within(dialog).getByRole("button", { name: t.archive }));
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("error", t.bulk.partial(1, 1)));
+    expect(t1.rpcCalls).toEqual([
+      { name: "archive_chapter", args: { p_chapter_id: cid(1) } },
+      { name: "archive_chapter", args: { p_chapter_id: cid(2) } },
+    ]);
+    expect(within(itemFor("Chương 2")).getByText(t.bulk.failedRow(t.errors.forbidden))).toBeTruthy();
+    // The failed one and the one the action did not apply to stay selected; the archived one is unticked.
+    expect(within(itemFor("Chương 1")).getByRole("checkbox").getAttribute("aria-checked")).toBe("false");
+    expect(within(itemFor("Chương 2")).getByRole("checkbox").getAttribute("aria-checked")).toBe("true");
+    expect(within(screen.getByRole("region", { name: t.bulk.label })).getByText(t.bulk.selected(2))).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: t.bulk.clear }));
+    expect(screen.queryByRole("region", { name: t.bulk.label })).toBeNull();
+    expect(within(itemFor("Chương 2")).queryByText(t.bulk.failedRow(t.errors.forbidden))).toBeNull();
+  });
+
+  it("restores several deleted chapters directly, like their rows do", async () => {
+    const t1 = fakeClient({
+      chapters: [
+        row(1),
+        row(2, { deleted_at: "2026-11-04T00:00:00Z" }),
+        row(3, { deleted_at: "2026-11-04T00:00:00Z" }),
+      ],
+    });
+    renderManager(t1);
+    await screen.findByRole("list", { name: t.listLabel });
+    toasts.show.mockClear();
+    fireEvent.click(within(itemFor("Chương 2")).getByRole("checkbox"));
+    fireEvent.click(within(itemFor("Chương 3")).getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: t.bulk.restore(2) }));
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.bulk.done.restore(2)));
+    expect(t1.updates.map((u) => (u.values as { deleted_at: unknown }).deleted_at)).toEqual([null, null]);
+  });
+
+  it("gives an editor no checkboxes and no bulk dock", async () => {
+    renderManager(
+      fakeClient({
+        chapters: [row(1), row(2)],
+        story: {
+          id: STORY_ID,
+          owner_id: "someone",
+          slug: "s",
+          title: "Truyện",
+          synopsis: "",
+          category_id: null,
+          language_code: "vi",
+          status: "draft",
+          visibility: "private",
+          is_mature: false,
+          deleted_at: null,
+        },
+        role: "editor",
+      }),
+    );
+    await screen.findByRole("list", { name: t.listLabel });
+    expect(screen.queryByRole("checkbox")).toBeNull();
   });
 });

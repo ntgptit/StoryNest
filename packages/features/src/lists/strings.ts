@@ -60,6 +60,7 @@ const vi = {
     deleteTitle: "Xóa danh sách này?",
     deleteDescription: "Danh sách sẽ biến mất. Các truyện trong đó không bị ảnh hưởng.",
     deleted: "Đã xóa danh sách.",
+    reorderHint: "Kéo tay nắm bên dưới mỗi truyện để đổi thứ tự, hoặc dùng nút lên/xuống.",
     moveUp: "Chuyển lên",
     moveDown: "Chuyển xuống",
     remove: "Bỏ khỏi danh sách",

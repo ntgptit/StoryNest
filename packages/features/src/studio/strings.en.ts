@@ -60,6 +60,32 @@ export const en = {
     cancel: "Cancel",
     empty: { title: "This story has no chapters yet", description: "Add the first chapter below." },
     numbering: "Chapters are numbered in order; after a deletion there may be a gap until you reorder them.",
+    reorderHint: "Drag the handle at the start of a row to reorder, or use the up and down buttons.",
+    moreActions: (chapterTitle: string) => `More actions: ${chapterTitle}`,
+    select: (chapterTitle: string) => `Select ${chapterTitle}`,
+    bulk: {
+      label: "Actions for the selected chapters",
+      selected: (count: number) => `${count} chapter${count === 1 ? "" : "s"} selected`,
+      selectAll: "Select all",
+      clear: "Clear selection",
+      archive: (count: number) => `Archive (${count})`,
+      unarchive: (count: number) => `Unarchive (${count})`,
+      delete: (count: number) => `Delete (${count})`,
+      restore: (count: number) => `Restore (${count})`,
+      archiveTitle: (count: number) => `Archive ${count} chapters?`,
+      deleteTitle: (count: number) => `Delete ${count} chapters?`,
+      working: "Working…",
+      done: {
+        archive: (count: number) => `Archived ${count} chapter${count === 1 ? "" : "s"}.`,
+        unarchive: (count: number) =>
+          `Unarchived ${count} chapter${count === 1 ? "" : "s"}. ${count === 1 ? "It is" : "They are"} back to draft.`,
+        delete: (count: number) => `Deleted ${count} chapter${count === 1 ? "" : "s"}.`,
+        restore: (count: number) => `Restored ${count} chapter${count === 1 ? "" : "s"}.`,
+      },
+      partial: (done: number, failed: number) =>
+        `${done} done, ${failed} could not be changed (still selected; the reason is on each row).`,
+      failedRow: (reason: string) => `Not changed: ${reason}`,
+    },
     outbox: {
       title: "Scheduled",
       description: (zone: string) => `These chapters publish by themselves, soonest first. Times are in ${zone}.`,

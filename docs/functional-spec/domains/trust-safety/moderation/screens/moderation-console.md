@@ -29,6 +29,7 @@
 | SCR-MOD-01-C07 | Content action buttons | One button by target + state: "Hide comment" / "Unhide comment", "Remove story" / "Restore story", "Suspend account" / "Reinstate account"; take-down buttons use the destructive variant; shown on open **and** closed reports | `report-card.tsx:187-205`, `model/report.ts:130-146` |
 | SCR-MOD-01-C08 | Report action buttons | "Under review" (pending only), "Mark as resolved", "Dismiss report" (ghost) — open reports only | `report-card.tsx:206-242` |
 | SCR-MOD-01-C09 | Reason dialog | Title = action label; label "Reason (required, will be logged)"; placeholder "Example: violates the harassment policy"; inline length error; `role="alert"` request error; "Cancel" / "Confirm" ("Working…") | `report-card.tsx:245-275`, `strings.en.ts:85-93` |
+| SCR-MOD-01-C11 | Detail side panel (Lucian #273) | The report title is a button (a click on the card outside its controls too) that opens a right-hand panel (full width on phones) with the report's content, when it was reported and the same actions and reason dialog as the card; the card stays highlighted (`aria-current`). Arrows or J / K step to the next / previous loaded report ("i of n"), Esc or the close button closes. J/K are ignored while typing or in the reason dialog. A report that leaves the queue after an action is replaced by the one that took its place | `moderation-screen.tsx`, `components/report-card.tsx` (`variant="panel"`), `packages/ui/src/widgets/detail-panel.tsx` |
 | SCR-MOD-01-C10 | Status views | Skeleton (`aria-busy`), error state, empty text, client-only sign-in prompt / "no access" empty state | `moderation-screen.tsx:24-40,62-73` |
 
 ## C. User actions & system responses
@@ -177,6 +178,8 @@
 - **SCR-MOD-01-AC13** `[Proposed]` Given any card, then it shows when the report was filed and, for comments, who wrote the comment; closed cards show who closed them and when (U-MOD-01).
 - **SCR-MOD-01-AC14** `[Proposed]` Given a destructive action dialog, then it states the consequence (e.g. "The account will no longer be able to post, comment or report") before Confirm (U-MOD-01).
 - **SCR-MOD-01-AC15** `[Proposed]` Given the console, when the moderator filters by status (pending / under review / resolved / dismissed) or target kind, then only matching reports are listed and the filter is kept in the URL (U-MOD-02).
+- **SCR-MOD-01-AC17** Given three open reports, when I open the second, then the panel shows "2 of 3" with its actions; J shows the third, K twice the first, Esc closes the panel and no card is highlighted any more.
+- **SCR-MOD-01-AC18** Given the panel is open, when I resolve the report (with a reason), then the panel moves on to the report now at its place in the queue.
 - **SCR-MOD-01-AC16** `[Proposed]` Given a target, when the moderator opens its history, then the audit rows for that target are listed with actor, action, reason and time (F-MOD-07).
 
 ## F. Findings referenced

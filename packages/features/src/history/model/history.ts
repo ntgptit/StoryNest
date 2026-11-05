@@ -1,3 +1,4 @@
+import { DIFF_STATUS, type DiffEntry } from "../../_shared/block-diff.ts";
 import type { AppError } from "../../_shared/errors.ts";
 import { historyText } from "../strings.ts";
 
@@ -55,6 +56,35 @@ export {
   type DiffEntry,
   type DiffSummary,
 } from "../../_shared/block-diff.ts";
+
+/** A stretch of the comparison: unchanged blocks in a row, or a change (one or more changed blocks in a row). */
+export type DiffSegment =
+  | { kind: "same"; key: string; entries: DiffEntry[] }
+  | { kind: "change"; key: string; entries: DiffEntry[]; /** 0-based number of the change. */ index: number };
+
+const entryKey = (entry: DiffEntry) => `${entry.status}-${entry.block.id}`;
+
+/**
+ * The diffBlocks result cut into runs: "same" runs can fold away ("differences only") and "change" runs are what
+ * previous / next change steps through. The entries keep their order, so laying the runs end to end gives the diff.
+ */
+export function groupDiff(entries: readonly DiffEntry[]): DiffSegment[] {
+  const segments: DiffSegment[] = [];
+  let changes = 0;
+  for (const entry of entries) {
+    const kind = entry.status === DIFF_STATUS.SAME ? "same" : "change";
+    const last = segments.at(-1);
+    if (last?.kind === kind) {
+      last.entries.push(entry);
+    } else if (kind === "same") {
+      segments.push({ kind, key: entryKey(entry), entries: [entry] });
+    } else {
+      segments.push({ kind, key: entryKey(entry), entries: [entry], index: changes });
+      changes += 1;
+    }
+  }
+  return segments;
+}
 
 /** Text for a failed history action. */
 export function historyErrorMessage(error: AppError): string {

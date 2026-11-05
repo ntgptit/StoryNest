@@ -57,6 +57,7 @@ export const en = {
     deleteTitle: "Delete this list?",
     deleteDescription: "The list will be gone. The stories in it are not affected.",
     deleted: "List deleted.",
+    reorderHint: "Drag the handle under a story to reorder, or use the up and down buttons.",
     moveUp: "Move up",
     moveDown: "Move down",
     remove: "Remove from list",
