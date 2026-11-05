@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AppError } from "../_shared/errors.ts";
@@ -21,6 +21,7 @@ import {
   type AuthorProfileRow,
 } from "./model/author.ts";
 import { authorText } from "./strings.ts";
+import { shareText } from "../share/index.ts";
 
 afterEach(cleanup);
 
@@ -405,6 +406,46 @@ describe("AuthorScreen", () => {
     );
     await screen.findByRole("heading", { name: "Tác Giả A" });
     expect(await screen.findByRole("button", { name: "Báo cáo người dùng" })).toBeTruthy();
+  });
+
+  it("shares the author page by its absolute link", async () => {
+    renderUi(
+      fakeClient({ profile: { data: [profileRow()], error: null } }).client,
+      <AuthorScreen username="tac_gia_a" />,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: shareText.open }));
+    const dialog = await screen.findByRole("dialog", { name: shareText.title("Tác Giả A") });
+    expect(within(dialog).getByText(shareText.author.description)).toBeTruthy();
+    expect((within(dialog).getByRole("textbox", { name: shareText.linkLabel }) as HTMLInputElement).value).toBe(
+      "https://app.test/author/tac_gia_a",
+    );
+  });
+
+  it("clamps a long bio with 'show more' (only when it overflows) and keeps all of it in the page", async () => {
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(300);
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(80);
+    try {
+      renderUi(
+        fakeClient({ profile: { data: [profileRow({ bio: "Dòng một.\nDòng hai.\nDòng ba." })], error: null } }).client,
+        <AuthorScreen username="tac_gia_a" />,
+      );
+      const toggle = await screen.findByRole("button", { name: t.readMore });
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+      expect(document.getElementById(toggle.getAttribute("aria-controls") ?? "")?.textContent).toContain("Dòng ba.");
+      fireEvent.click(toggle);
+      expect(screen.getByRole("button", { name: t.readLess }).getAttribute("aria-expanded")).toBe("true");
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("shows a short bio without a toggle", async () => {
+    renderUi(
+      fakeClient({ profile: { data: [profileRow()], error: null } }).client,
+      <AuthorScreen username="tac_gia_a" />,
+    );
+    expect(await screen.findByText("Viết truyện đêm.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: t.readMore })).toBeNull();
   });
 });
 

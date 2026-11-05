@@ -64,6 +64,12 @@ export const en = {
     cancel: "Cancel",
     backToLibrary: "Back to library",
   },
+  share: {
+    access: "Who can open the link",
+    ownerDescription: "Choose who can open the list, then send the link.",
+    visitorDescription: "Anyone with the link can open this list.",
+    changed: (label: string) => `Changed to "${label}".`,
+  },
   addTo: {
     open: "Add to list",
     title: "Add to list",

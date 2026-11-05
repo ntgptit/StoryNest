@@ -5,15 +5,17 @@ import { formatCount } from "@storynest/utils";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { ExpandableText } from "@storynest/ui/widgets/expandable-text";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
 import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
 import { discoveryText, toStoryCardData, useLatestStories } from "../../discovery/index.ts";
 import { ReportButton } from "../../moderation/index.ts";
+import { ShareButton, shareText } from "../../share/index.ts";
 import { FollowAuthorButton } from "../components/follow-author-button.tsx";
 import { useAuthorProfile } from "../hooks/use-author.ts";
-import type { AuthorProfile } from "../model/author.ts";
+import { authorHref, type AuthorProfile } from "../model/author.ts";
 import { authorText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
@@ -80,12 +82,28 @@ function AuthorPage({
             @{profile.username} · {t.followers(formatCount(profile.followers, locale))} ·{" "}
             {t.stories(formatCount(profile.stories, locale))}
           </p>
-          <p className="max-w-prose pt-1 text-sm whitespace-pre-line text-foreground/90">
-            {profile.bio.trim() === "" ? t.noBio : profile.bio}
-          </p>
+          <div className="pt-1">
+            {profile.bio.trim() === "" ? (
+              <p className="max-w-prose text-sm text-foreground/90">{t.noBio}</p>
+            ) : (
+              <ExpandableText
+                lines={4}
+                moreLabel={t.readMore}
+                lessLabel={t.readLess}
+                className="max-w-prose text-sm whitespace-pre-line text-foreground/90"
+              >
+                {profile.bio}
+              </ExpandableText>
+            )}
+          </div>
         </div>
         <div className="flex flex-col items-start gap-2">
           <FollowAuthorButton profile={profile} />
+          <ShareButton
+            path={authorHref(profile.username)}
+            name={profile.displayName}
+            description={shareText.author.description}
+          />
           <ReportButton kind="user" targetId={profile.userId} ownerId={profile.userId} />
         </div>
       </header>

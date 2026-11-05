@@ -48,7 +48,8 @@ export function BottomNav({
         className,
       )}
     >
-      <ul className="mx-auto flex max-w-xl items-stretch justify-around">
+      {/* Fixed row height (--size-bottom-nav), so bars that sit above the nav (StickyActionBar) line up with it. */}
+      <ul className="mx-auto flex min-h-(--size-bottom-nav) max-w-xl items-stretch justify-around">
         {items.map((item) => {
           const active = isNavItemActive(item, pathname);
           const Icon = item.icon;

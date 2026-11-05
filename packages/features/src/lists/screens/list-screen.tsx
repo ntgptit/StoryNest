@@ -1,8 +1,8 @@
 "use client";
 
 import { ArrowDown, ArrowUp, FileQuestion, Globe, Link2, ListChecks, Lock } from "lucide-react";
-import { useState, type ComponentType } from "react";
-import type { Visibility } from "@storynest/validation";
+import { useState } from "react";
+import { VISIBILITIES, VISIBILITY, type Visibility } from "@storynest/validation";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
 import { Skeleton } from "@storynest/ui/components/skeleton";
@@ -16,14 +16,15 @@ import { currentLocale } from "../../_shared/i18n.ts";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
+import { ShareButton } from "../../share/index.ts";
 import { ListFormDialog } from "../components/list-form-dialog.tsx";
 import { useDeleteList, useList, useRemoveFromList, useReorderList, useUpdateList } from "../hooks/use-lists.ts";
-import { listErrorMessage, moveStory } from "../model/list.ts";
+import { listErrorMessage, listHref, moveStory, type ReadingList } from "../model/list.ts";
 import { listText } from "../strings.ts";
 
 const t = listText.page;
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
-const VISIBILITY_ICON: Record<Visibility, ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
+const VISIBILITY_ICON: Record<Visibility, typeof Lock> = {
   private: Lock,
   unlisted: Link2,
   public: Globe,
@@ -50,6 +51,16 @@ export function ListScreen({
   const reorder = useReorderList(listId);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // The access just chosen in the share dialog, shown at once and until the list has reloaded after the save (or the
+  // save failed); from then on the server's answer is what the dialog shows.
+  const [chosenAccess, setChosenAccess] = useState<{ value: Visibility; at: number } | null>(null);
+  if (
+    chosenAccess !== null &&
+    (detail.data?.list.visibility === chosenAccess.value ||
+      (!update.isPending && detail.dataUpdatedAt > chosenAccess.at))
+  ) {
+    setChosenAccess(null);
+  }
 
   if (detail.isPending) return <Skeleton className="h-96 w-full rounded-xl" aria-busy />;
   if (detail.isError) {
@@ -76,6 +87,20 @@ export function ListScreen({
   };
   const ids = items.map((item) => item.storyId);
 
+  const changeAccess = (visibility: Visibility) => {
+    setChosenAccess({ value: visibility, at: Date.now() });
+    update.mutate(
+      { title: list.title, description: list.description, visibility },
+      {
+        onSuccess: () => toast.success(listText.share.changed(listText.visibility[visibility])),
+        onError: (error) => {
+          setChosenAccess(null);
+          toast.error(listErrorMessage(error));
+        },
+      },
+    );
+  };
+
   const move = (storyId: string, direction: 1 | -1) => {
     const next = moveStory(ids, storyId, direction);
     if (next === null) return;
@@ -89,7 +114,13 @@ export function ListScreen({
         description={list.description === "" ? undefined : list.description}
         actions={
           isOwner ? (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <ListShareButton
+                list={list}
+                access={chosenAccess?.value ?? list.visibility}
+                onChange={changeAccess}
+                pending={update.isPending}
+              />
               <Button type="button" size="sm" variant="outline" onClick={() => setEditing(true)}>
                 {t.edit}
               </Button>
@@ -103,7 +134,10 @@ export function ListScreen({
                 {t.delete}
               </Button>
             </div>
-          ) : undefined
+          ) : list.visibility === VISIBILITY.PRIVATE ? undefined : (
+            // A visitor only ever gets here for a public or unlisted list (RLS); a private one is never offered.
+            <ListShareButton list={list} />
+          )
         }
       />
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -224,5 +258,48 @@ export function ListScreen({
         }}
       />
     </section>
+  );
+}
+
+/**
+ * Share for a reading list. The owner sees who can open the link and changes it there (through the same update as the
+ * edit dialog); a visitor gets the link only. The link of a private list is only ever shown to its owner.
+ */
+function ListShareButton({
+  list,
+  access,
+  onChange,
+  pending,
+}: {
+  list: ReadingList;
+  access?: Visibility;
+  onChange?: (visibility: Visibility) => void;
+  pending?: boolean;
+}) {
+  const owner = onChange !== undefined && access !== undefined;
+  return (
+    <ShareButton
+      size="sm"
+      path={listHref(list.id)}
+      name={list.title}
+      description={owner ? listText.share.ownerDescription : listText.share.visitorDescription}
+      access={
+        owner
+          ? {
+              label: listText.share.access,
+              value: access,
+              onChange,
+              pending,
+              options: VISIBILITIES.map((visibility) => ({
+                value: visibility,
+                label: listText.visibility[visibility],
+                description: listText.visibilityHints[visibility],
+                icon: VISIBILITY_ICON[visibility],
+                reachable: visibility !== VISIBILITY.PRIVATE,
+              })),
+            }
+          : undefined
+      }
+    />
   );
 }

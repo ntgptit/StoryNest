@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: buildReaderBootstrapScript(CHAPTER_PATH_PATTERN) }} />
       </head>
       <body className="min-h-dvh">
-        <Providers>{children}</Providers>
+        <Providers siteOrigin={getSiteUrl().origin}>{children}</Providers>
       </body>
     </html>
   );

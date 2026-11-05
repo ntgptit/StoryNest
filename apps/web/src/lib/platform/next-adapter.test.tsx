@@ -12,7 +12,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-import { nextPlatformAdapter } from "./next-adapter.tsx";
+import { nextPlatformAdapter, nextPlatformAdapterFor } from "./next-adapter.tsx";
 
 afterEach(() => {
   cleanup();
@@ -53,6 +53,13 @@ describe("nextPlatformAdapter", () => {
 
   it("reports the page origin for auth redirect links", () => {
     expect(nextPlatformAdapter.appOrigin()).toBe(window.location.origin);
+  });
+
+  it("builds shared links on the canonical site origin it is given, keeping the page origin for auth", () => {
+    const adapter = nextPlatformAdapterFor("https://storynest.example");
+    expect(adapter.shareOrigin?.()).toBe("https://storynest.example");
+    expect(adapter.appOrigin()).toBe(window.location.origin);
+    expect(adapter.Link).toBe(nextPlatformAdapter.Link);
   });
 
   it("opens external links without giving the page access to this window", () => {

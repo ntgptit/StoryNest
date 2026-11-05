@@ -31,6 +31,7 @@ import {
   type ListStoryRow,
 } from "./model/list.ts";
 import { listText } from "./strings.ts";
+import { shareText } from "../share/index.ts";
 
 afterEach(cleanup);
 
@@ -580,6 +581,68 @@ describe("ListScreen", () => {
     await waitFor(() => expect(c.of("reading_lists", "update")).toHaveLength(1));
     expect(c.of("reading_lists", "update")[0]!.values).toMatchObject({ title: "Mới", visibility: "private" });
     await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.form.saved));
+  });
+
+  it("lets the owner share the list: who can open it, changed through the list update, and the link to copy", async () => {
+    const c = fakeClient({ detail: detail({ title: "Hay", description: "Mô tả", visibility: "unlisted" }), items: [] });
+    renderUi(c, <ListScreen listId={lid(1)} />);
+    fireEvent.click(await screen.findByRole("button", { name: shareText.open }));
+    const dialog = await screen.findByRole("dialog", { name: shareText.title("Hay") });
+    expect(within(dialog).getByText(t.share.ownerDescription)).toBeTruthy();
+    expect((within(dialog).getByRole("textbox", { name: shareText.linkLabel }) as HTMLInputElement).value).toBe(
+      `https://app.test/lists/${lid(1)}`,
+    );
+    const access = within(dialog).getByRole("region", { name: t.share.access });
+    expect(within(access).getByText(t.visibilityHints.unlisted)).toBeTruthy();
+
+    fireEvent.keyDown(within(access).getByRole("combobox", { name: t.share.access }), { key: "Enter" });
+    fireEvent.click(await screen.findByRole("option", { name: t.visibility.public }));
+    // shown at once, before the save and the reload
+    expect(within(access).getByText(t.visibilityHints.public)).toBeTruthy();
+    await waitFor(() => expect(c.of("reading_lists", "update")).toHaveLength(1));
+    expect(c.of("reading_lists", "update")[0]!.values).toEqual({
+      title: "Hay",
+      description: "Mô tả",
+      visibility: "public",
+    });
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.share.changed(t.visibility.public)));
+  });
+
+  it("puts the access back and says why when the change is refused", async () => {
+    const c = fakeClient({
+      detail: detail({ visibility: "private" }),
+      items: [],
+      update: { data: null, error: { code: "42501", message: "denied" } },
+    });
+    renderUi(c, <ListScreen listId={lid(1)} />);
+    fireEvent.click(await screen.findByRole("button", { name: shareText.open }));
+    const access = within(await screen.findByRole("dialog")).getByRole("region", { name: t.share.access });
+    expect(within(access).getByText(t.visibilityHints.private)).toBeTruthy();
+    fireEvent.keyDown(within(access).getByRole("combobox", { name: t.share.access }), { key: "Enter" });
+    fireEvent.click(await screen.findByRole("option", { name: t.visibility.unlisted }));
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("error", expect.any(String)));
+    await waitFor(() => expect(within(access).getByText(t.visibilityHints.private)).toBeTruthy());
+  });
+
+  it("gives a visitor of a shared list the link only, without the access controls", async () => {
+    const c = fakeClient({ detail: detail({ owner_id: "someone-else", visibility: "unlisted" }), items: [] });
+    renderUi(c, <ListScreen listId={lid(1)} />, false);
+    fireEvent.click(await screen.findByRole("button", { name: shareText.open }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(t.share.visitorDescription)).toBeTruthy();
+    expect(within(dialog).queryByRole("combobox")).toBeNull();
+    expect(within(dialog).queryByRole("region", { name: t.share.access })).toBeNull();
+    expect((within(dialog).getByRole("textbox", { name: shareText.linkLabel }) as HTMLInputElement).value).toBe(
+      `https://app.test/lists/${lid(1)}`,
+    );
+  });
+
+  it("never offers the link of a private list to anyone but its owner", async () => {
+    // RLS hides a private list from others; even if one arrived, there is no share button for a visitor.
+    const c = fakeClient({ detail: detail({ owner_id: "someone-else", visibility: "private" }), items: [] });
+    renderUi(c, <ListScreen listId={lid(1)} />);
+    await screen.findByText(t.page.empty.title);
+    expect(screen.queryByRole("button", { name: shareText.open })).toBeNull();
   });
 
   it("deletes the list only after confirmation, then goes back to the library", async () => {

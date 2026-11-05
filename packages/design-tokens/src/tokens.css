@@ -531,6 +531,48 @@
   }
 }
 
+/*
+ * Story batch: share a story, a reading list or an author page, the sticky reading bar and read-more. Adapted from
+ * Lucian UX/UI Prompt #008, #254, #221 and #288 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their
+ * durations and curves: CopyLinkButton, ShareDialog, StickyActionBar and ExpandableText in packages/ui.
+ */
+@theme {
+  /* Access icon swap (#254) and the bar rising from below (#221) overshoot a little; read-more unfolds without. */
+  --ease-pop: cubic-bezier(0.3, 1.5, 0.5, 1);
+  --ease-rise: cubic-bezier(0.3, 1.2, 0.5, 1);
+  --ease-unfold: cubic-bezier(0.3, 0.8, 0.25, 1);
+
+  /* Share dialog: the new access icon spins in; a layer over the link field flashes once when the link is copied. */
+  --animate-access-icon-in: access-icon-in 0.45s var(--ease-pop);
+  --animate-link-flash: link-flash 0.8s ease;
+  @keyframes access-icon-in {
+    from {
+      opacity: 0;
+      transform: rotate(-120deg) scale(0.4);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes link-flash {
+    25% {
+      background-color: color-mix(in oklab, var(--primary) 12%, transparent);
+      box-shadow: inset 0 0 0 2px var(--primary);
+    }
+  }
+}
+
+:root {
+  /* Height of the mobile BottomNav row (without the home-indicator inset); bars that sit above it use it too. */
+  --size-bottom-nav: 3.5rem;
+}
+
+/* Fixed bars that must clear the mobile BottomNav and the home indicator (pair with md:bottom-0 where it hides). */
+@utility bottom-above-nav {
+  bottom: calc(var(--size-bottom-nav) + env(safe-area-inset-bottom));
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

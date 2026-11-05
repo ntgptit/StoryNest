@@ -20,6 +20,15 @@ function useNextNavigation() {
   };
 }
 
+/**
+ * The adapter with shared links built on the site's canonical origin (`getSiteUrl()`, the base of every canonical and
+ * Open Graph URL). The root layout reads it on the server and hands it down, because the environment variables it
+ * comes from are not all available in the browser.
+ */
+export function nextPlatformAdapterFor(siteOrigin: string): PlatformAdapter {
+  return { ...nextPlatformAdapter, shareOrigin: () => siteOrigin };
+}
+
 /** Platform adapter for the Next.js web app. The Capacitor shell provides its own (WBS WP 7.1). */
 export const nextPlatformAdapter: PlatformAdapter = {
   platform: "web",

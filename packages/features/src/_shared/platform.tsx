@@ -35,6 +35,12 @@ export interface PlatformAdapter {
    * reset, OAuth. Web returns window.location.origin; the Capacitor shell returns its universal-link domain.
    */
   appOrigin(): string;
+  /**
+   * Public origin for links people share (copy link, share sheet): the same address as the canonical and Open Graph
+   * URLs, so a link copied on a preview deployment or in the native shell still points at the real site. Optional:
+   * without it shared links use appOrigin().
+   */
+  shareOrigin?(): string;
   /** Open a URL outside the app (system browser / in-app browser on mobile). */
   openExternal(url: string): void;
 }

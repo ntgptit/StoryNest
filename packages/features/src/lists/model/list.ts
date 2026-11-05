@@ -8,6 +8,11 @@ const one = <T>(value: Maybe<T>): T | null => (Array.isArray(value) ? (value[0] 
 
 export const asVisibility = (value: string): Visibility => VISIBILITIES.find((v) => v === value) ?? VISIBILITY.PRIVATE;
 
+/** The page of a reading list (whether it opens for the visitor is up to its visibility and RLS). */
+export function listHref(listId: string): string {
+  return `/lists/${listId}`;
+}
+
 // ---- my lists ---------------------------------------------------------------------------------------------------
 
 export interface ListRow {

@@ -28,6 +28,7 @@
 | SCR-LIST-01-C06 | Delete confirm dialog | This page | "Delete this list?" destructive | `list-screen.tsx:207-225` |
 | SCR-LIST-01-C07 | List form dialog (`ListFormDialog`) | This page (edit mode, `list-screen.tsx:188-205`) and Library → Lists tab (create mode, `my-lists.tsx:84-100`) | Fields List name (Input), Description (Textarea + hint), Visibility (Select); description line shows the visibility hint; inline field errors; `role="alert"` failure; Cancel / "Create list" or "Save changes" / "Saving…" | `packages/features/src/lists/components/list-form-dialog.tsx:28-140` |
 | SCR-LIST-01-C08 | My lists (`MyLists`) | Library page, "Lists" tab (`packages/features/src/library/screens/library-screen.tsx:61-63`) | "New list" button; rows (title, "N stories · Updated …", visibility badge) linking to `/lists/{id}`; empty / error / skeleton | `packages/features/src/lists/components/my-lists.tsx:29-102` |
+| SCR-LIST-01-C10 | Share button & dialog (`ShareButton` → `ShareDialog`, Lucian #254 / #008) | This page: header actions (owner: before Edit; visitor of a public/unlisted list: alone) | Dialog "Share “<title>”" with the absolute list link (canonical origin) in a read-only field, "Copy" that turns into a check, and "Share with another app" where `navigator.share` exists. Owner only: an access row "Who can open the link" (lock / link / globe icon, spins on change) with a Select over private / unlisted / public and the existing visibility hint as explanation; a change goes through the same `useUpdateList` as the edit dialog. A visitor never sees the access row, and no one but the owner is offered the link of a private list | `list-screen.tsx` (`ListShareButton`), `packages/features/src/share/components/share-button.tsx`, `packages/ui/src/widgets/share-dialog.tsx` |
 | SCR-LIST-01-C09 | Add-to-list button & sheet (`AddToListButton`) | Story page action group (`packages/features/src/story/components/story-actions.tsx:58`) | Outline "Add to list" button; bottom sheet "Add to list" with toggle buttons per list (`aria-pressed`, count) and "New list name" + "Create and add" | `packages/features/src/lists/components/add-to-list-button.tsx:22-165` |
 
 ## C. User actions & system responses
@@ -142,6 +143,17 @@
 | Navigation | None |
 | Evidence | `add-to-list-button.tsx:112-129`, `:154-162` |
 
+| Field | SCR-LIST-01-A11 Share a list / change who can open it |
+| --- | --- |
+| Trigger | "Share" (C10) → "Copy" / "Share with another app"; owner: pick another access in the dialog |
+| Preconditions | Owner (any visibility), or a visitor of a public / unlisted list |
+| Expected behavior | Copy: link on the clipboard, check + "Copied" for 1.8 s, announced politely. Access change: shown at once, saved with the list's current title and description, toast `Changed to "<label>".`, then the reloaded list is shown |
+| State change | Access change: `reading_lists.visibility` (same update as A02) |
+| Validation | — |
+| Error behavior | Clipboard blocked → toast "Couldn't copy. Select the link and copy it yourself."; refused access change → previous access back + error toast (`listErrorMessage`) |
+| Navigation | None |
+| Evidence | `list-screen.tsx`, `lists.test.tsx` (share tests), `share/share.test.tsx` |
+
 ## D. UI states
 
 | State | Status | Behaviour / evidence |
@@ -177,7 +189,8 @@
 - SCR-LIST-01-AC14 Given a story in my public list becomes private, when a visitor opens the list, then that story is not shown and "N stories" excludes it.
 - SCR-LIST-01-AC15 [Proposed] Given a story in my list is no longer available, when I (the owner) open the list, then a placeholder lets me remove it (F-LIST-02).
 - SCR-LIST-01-AC16 [Proposed] Given my list contains my own deleted story, when I reorder, then the reorder succeeds (F-LIST-01).
-- SCR-LIST-01-AC17 [Proposed] Given an unlisted or public list, when I press "Copy link", then the list URL is copied and a toast confirms (U-LIST-01).
+- SCR-LIST-01-AC17 Given an unlisted or public list, when I press "Share" and then "Copy", then the absolute list URL is copied and the button turns into a check with "Copied" (announced to screen readers) (U-LIST-01).
+- SCR-LIST-01-AC19 Given I own the list, when I open Share, then I see who can open the link with its explanation and can change it there; a visitor sees the link only, and a private list's link is shown to its owner alone.
 - SCR-LIST-01-AC18 [Proposed] Given a quick-create name over 120 characters, when I press "Create and add", then the name-too-long message is shown (U-LIST-02).
 
 ## F. Findings referenced

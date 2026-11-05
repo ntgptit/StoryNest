@@ -67,6 +67,12 @@ const vi = {
     cancel: "Hủy",
     backToLibrary: "Về thư viện",
   },
+  share: {
+    access: "Ai mở được liên kết",
+    ownerDescription: "Chọn ai mở được danh sách, rồi gửi liên kết.",
+    visitorDescription: "Ai có liên kết đều mở được danh sách này.",
+    changed: (label: string) => `Đã đổi thành "${label}".`,
+  },
   addTo: {
     open: "Thêm vào danh sách",
     title: "Thêm vào danh sách",

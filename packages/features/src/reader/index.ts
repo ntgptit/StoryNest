@@ -11,6 +11,7 @@ export {
 } from "./model/chapter.ts";
 export { BlockView } from "./components/block-view.tsx";
 export { ReaderSettingsSheet } from "./components/reader-settings-sheet.tsx";
+export { TocSheet } from "./components/toc-sheet.tsx";
 export { readerText } from "./strings.ts";
 export { buildReaderBootstrapScript } from "./model/preferences.ts";
 export { splitByMarks, MARK_TYPES, type MarkType, type TextMark } from "./model/chapter.ts";
