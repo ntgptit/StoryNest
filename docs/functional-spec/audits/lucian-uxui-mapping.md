@@ -8,44 +8,39 @@ Every element of [Lucian UX/UI Prompt](https://lucianlabs.dev/uxui-prompt/) chec
 
 | Verdict | Meaning | Count |
 | --- | --- | --- |
-| Applied | Ported and in use | 10 |
-| Port | The surface exists and the interaction can be built in the frontend with existing data/APIs (new UI behaviour allowed, no new table, RPC, column or service). Value for readers/authors: H 14, M 50, L 66 | 130 |
+| Applied | Ported and in use | 24 |
+| Port | The surface exists and the interaction can be built in the frontend with existing data/APIs (new UI behaviour allowed, no new table, RPC, column or service). Value for readers/authors: H 0, M 50, L 66 | 116 |
 | Needs backend | Fits the product but needs data/API that does not exist (named per row) | 38 |
 | Covered | StoryNest already has an equivalent; porting adds little | 37 |
 | No surface | No plausible place in a reading/writing app (reason per row) | 185 |
 | **Total** | | **400** |
 
-Findings made during the audit that are not about Lucian:
+Findings made during the audit that are not about Lucian, and their status:
 
-- The app header (`packages/ui/src/widgets/app-shell.tsx`, `sticky top-0 z-30`) and the reader toolbar (`packages/features/src/reader/screens/reader-screen.tsx`, `sticky top-0 z-10`) stick to the same edge, so once the page scrolls the header covers the reader toolbar and its progress bar (verified in code, not yet in a browser).
-- Desktop has no primary navigation (U-SHELL-01): `BottomNav` is hidden from `md` up; Rankings and Following are only linked from Home.
-- There is no copy-link or share action anywhere in `packages/features/src`, so an unlisted reading list cannot be passed on from the app.
-- `apps/mobile` only holds `.gitkeep`: the Capacitor shell described in the README does not exist yet.
+- **Fixed** (6071e17, e935f58): the app header and the reader toolbar both stuck to `top-0`, so the header covered the reader toolbar and its progress bar once the page scrolled. AppShell now publishes `--app-header-offset`; the toolbar and reader anchors sit below it.
+- **Fixed** (6071e17): desktop had no primary navigation (U-SHELL-01). Mobile still reaches Rankings/Following only from Home (Q-SHELL-01).
+- **Fixed** (d32b159): there was no copy-link or share action, so an unlisted reading list could not be passed on from the app.
+- **Open**: `apps/mobile` only holds `.gitkeep`; the Capacitor shell described in the README does not exist yet.
+- **Open**: `pnpm db:verify` can fail in its cleanup (`rm: ... pg_wal: Directory not empty`): `local-db.sh` runs `pg_ctl stop` as root, which fails silently, so `rm` races the running Postgres. Re-running passes.
 
-## 2. Applied (10)
+## 2. Applied
 
-| # | Element | Surface | Evidence | Notes |
+Notes are the audit's port plan. What was actually built and what was left out is in each commit message: 337649f (#012), b4ba6ad (#006 #022 #039 #062 #074 #079 #355), 0ac5bd8 (#244 #339), 483de96 (#069), 6071e17 (#040 #354 #212), 4fd647a (#128 #149 #190), 03d9dce (#095 #160 #400), d32b159 (#008 #221 #254 #288).
+
+### Applied elements (24)
+
+| # | Element | Surface | Evidence | Port plan |
 | --- | --- | --- | --- | --- |
 | [006](https://lucianlabs.dev/uxui-prompt/#006) | Ink ripple subscribe button | Story Follow button | `packages/features/src/story/components/story-actions.tsx:45 (RingingBellIcon)` | Already ported in b4ba6ad (bell swing on follow); ink ripple and subscriber count roll not ported |
+| [008](https://lucianlabs.dev/uxui-prompt/#008) | Copy button that turns into a check | Share link of a story, a reading list (unlisted = link only) and an author page | `packages/features/src/story/screens/story-screen.tsx:111`<br>`packages/features/src/lists/screens/list-screen.tsx:113 (visibility badge)`<br>`grep finds no clipboard/navigator.share anywhere in packages/features/src` | CopyLinkButton widget in packages/ui (clipboard API, icon redrawn as a check, "Copied" bubble; navigator.share / Capacitor Share on mobile) placed in StoryActions, the reading list header and the author header; an unlisted list is useless today without a way to copy its link |
 | [012](https://lucianlabs.dev/uxui-prompt/#012) | Bookmark ribbon | Story Save button | `packages/features/src/story/components/story-actions.tsx:63 (SaveRibbonIcon)`<br>`packages/ui/src/widgets/save-ribbon-icon.tsx` | Already ported in 337649f |
 | [022](https://lucianlabs.dev/uxui-prompt/#022) | Heart burst like | Chapter vote button | `packages/features/src/reader/components/vote-button.tsx:42 (HeartBurstIcon)` | Already ported in b4ba6ad |
 | [039](https://lucianlabs.dev/uxui-prompt/#039) | Sliding pill tabs | TabsList | `packages/ui/src/components/tabs.tsx` | Already ported in b4ba6ad |
+| [040](https://lucianlabs.dev/uxui-prompt/#040) | Expanding side rail | Desktop primary navigation (there is none) | `docs/functional-spec/screen-inventory.md (section 4: desktop has no primary navigation`<br>`U-SHELL-01)`<br>`packages/ui/src/widgets/bottom-nav.tsx (md:hidden)` | SideRail widget in AppShell from md up with the same navItems() as BottomNav plus Rankings and Following, collapsible to icons with the highlight sliding between items; closes a documented navigation gap |
 | [062](https://lucianlabs.dev/uxui-prompt/#062) | Sign-in card feedback | Auth FormError | `packages/features/src/auth/components/auth-card.tsx` | Already ported in b4ba6ad (head-shake) |
+| [069](https://lucianlabs.dev/uxui-prompt/#069) | Avatar crop editor | Avatar editor (square) and cover editor (2:3), both auto-cropped to the centre today | `packages/features/src/profile/components/avatar-editor.tsx:28`<br>`packages/features/src/studio/components/cover-editor.tsx:24`<br>`packages/features/src/_shared/image-prepare.ts:33 (cropBox centres)` | Crop dialog between file pick and upload: drag and zoom (slider, wheel, pinch) inside a round (avatar) or 2:3 (cover) frame with thirds guides; pass the chosen box to createBrowserRenderer instead of the centred cropBox. Authors decide how their cover looks |
 | [074](https://lucianlabs.dev/uxui-prompt/#074) | Notification bell dropdown | Header bell | `packages/features/src/notifications/components/notification-bell.tsx:22` | Already ported in b4ba6ad (swing + badge pop); dropdown list not ported |
 | [079](https://lucianlabs.dev/uxui-prompt/#079) | Skeleton that blooms into a post | Skeleton primitive | `packages/ui/src/components/skeleton.tsx` | Already ported in b4ba6ad (shared shimmer streak) |
-| [244](https://lucianlabs.dev/uxui-prompt/#244) | Form validation that takes you to errors | Create/edit story form; sign-up | `packages/features/src/studio/screens/story-form-screen.tsx:197`<br>`packages/features/src/auth/screens/sign-up-screen.tsx` | On invalid submit show an error summary at the top ('N fields need attention', each item focuses its field) built from formState.errors plus server errors (slugTaken via setError, tags error); react-hook-form already focuses the first invalid field, so add the summary, outlines and a light shake. |
-| [339](https://lucianlabs.dev/uxui-prompt/#339) | Drag-and-snap card carousel | Recommendation rows (home "Recommended for you", story page "You might also like") | `packages/ui/src/widgets/card-carousel.tsx`<br>`packages/features/src/recommendations/components/recommendation-list.tsx:34` | Ported in commit 0ac5bd8 as CardCarousel (scroll-snap, mouse drag, arrows that dim at the ends, progress bar). Next step: reuse it for per-category rows on Discover. |
-| [355](https://lucianlabs.dev/uxui-prompt/#355) | Cloud autosave indicator | Chapter editor autosave status | `packages/ui/src/widgets/autosave-icon.tsx:22` | Already ported as AutosaveIcon (bobbing dots, drawn check, slash on failure). |
-
-## 3. Port
-
-### 3.1 Value H (14)
-
-| # | Element | Surface | Evidence | Plan |
-| --- | --- | --- | --- | --- |
-| [008](https://lucianlabs.dev/uxui-prompt/#008) | Copy button that turns into a check | Share link of a story, a reading list (unlisted = link only) and an author page | `packages/features/src/story/screens/story-screen.tsx:111`<br>`packages/features/src/lists/screens/list-screen.tsx:113 (visibility badge)`<br>`grep finds no clipboard/navigator.share anywhere in packages/features/src` | CopyLinkButton widget in packages/ui (clipboard API, icon redrawn as a check, "Copied" bubble; navigator.share / Capacitor Share on mobile) placed in StoryActions, the reading list header and the author header; an unlisted list is useless today without a way to copy its link |
-| [040](https://lucianlabs.dev/uxui-prompt/#040) | Expanding side rail | Desktop primary navigation (there is none) | `docs/functional-spec/screen-inventory.md (section 4: desktop has no primary navigation`<br>`U-SHELL-01)`<br>`packages/ui/src/widgets/bottom-nav.tsx (md:hidden)` | SideRail widget in AppShell from md up with the same navItems() as BottomNav plus Rankings and Following, collapsible to icons with the highlight sliding between items; closes a documented navigation gap |
-| [069](https://lucianlabs.dev/uxui-prompt/#069) | Avatar crop editor | Avatar editor (square) and cover editor (2:3), both auto-cropped to the centre today | `packages/features/src/profile/components/avatar-editor.tsx:28`<br>`packages/features/src/studio/components/cover-editor.tsx:24`<br>`packages/features/src/_shared/image-prepare.ts:33 (cropBox centres)` | Crop dialog between file pick and upload: drag and zoom (slider, wheel, pinch) inside a round (avatar) or 2:3 (cover) frame with thirds guides; pass the chosen box to createBrowserRenderer instead of the centred cropBox. Authors decide how their cover looks |
 | [095](https://lucianlabs.dev/uxui-prompt/#095) | Bar chart that changes shape | Story stats daily chart | `packages/features/src/analytics/components/daily-chart.tsx:26 (native title tooltip only)`<br>`packages/features/src/analytics/screens/story-stats-screen.tsx:131` | Rebuild DailyChart with keyed bars that morph between 7 / 30 / 90 days, pointer / touch / arrow-key scrub that highlights one bar and shows that day's reads, votes and comments with the change from the day before, plus an average line; author_story_daily already returns all three series |
 | [128](https://lucianlabs.dev/uxui-prompt/#128) | Find and replace | Chapter editor toolbar | `packages/features/src/editor/components/editor-toolbar.tsx:22`<br>`packages/features/src/editor/model/extensions.ts:47` | Add a find/replace popover to EditorToolbar backed by a small Tiptap extension (ProseMirror decorations for matches, replaceAll via one transaction so undo works); useful for renaming a character across a chapter. No backend. |
 | [149](https://lucianlabs.dev/uxui-prompt/#149) | Conflict sentence merge | Chapter editor conflict / local backup | `packages/features/src/editor/screens/chapter-editor-screen.tsx:123`<br>`packages/features/src/editor/screens/chapter-editor-screen.tsx:349`<br>`packages/features/src/history/model/history.ts:119` | When a conflict or a stale local backup appears, offer a per-paragraph merge view: diff backup.body vs the server draft with diffBlocks (bodyToReaderBlocks on both), pick mine/theirs per block, then load the merged body into the editor and save with the current revision. Replaces the all-or-nothing restore/discard. |
@@ -53,10 +48,20 @@ Findings made during the audit that are not about Lucian:
 | [190](https://lucianlabs.dev/uxui-prompt/#190) | Scheduled outbox | Chapter manager (scheduled chapters) | `packages/features/src/studio/model/studio-chapter.ts:11`<br>`packages/features/src/studio/screens/chapter-manager-screen.tsx:152`<br>`packages/features/src/editor/api/publishing.api.ts:42` | Chapter manager shows only a "Scheduled" badge though scheduled_for is loaded; add an outbox section listing scheduled chapters with their local time, inline reschedule (scheduleChapter) and "publish now" (publishChapter with the draft revision from getChapterDraft). |
 | [212](https://lucianlabs.dev/uxui-prompt/#212) | Hide-on-scroll header | Chapter reader (app header + reader toolbar) | `packages/ui/src/widgets/app-shell.tsx:24`<br>`packages/features/src/reader/screens/reader-screen.tsx:74` | Add a scroll-direction hook; on the reader route slide the AppShell header (and the reader toolbar) up on scroll-down and back on scroll-up, keeping ReadingProgress pinned. Also check the overlap: both bars are sticky top-0, so once scrolled the z-30 app header appears to cover the z-10 reader toolbar and its progress bar. |
 | [221](https://lucianlabs.dev/uxui-prompt/#221) | Sticky buy bar with option sheet | Story page Start/Continue reading CTA | `packages/features/src/story/screens/story-screen.tsx:105` | IntersectionObserver on the Read/Continue button; when it scrolls away raise a bottom bar (above the bottom nav) with the title and Continue chapter N; a secondary button opens a chapter-picker sheet reusing TocSheet as the option sheet. |
+| [244](https://lucianlabs.dev/uxui-prompt/#244) | Form validation that takes you to errors | Create/edit story form; sign-up | `packages/features/src/studio/screens/story-form-screen.tsx:197`<br>`packages/features/src/auth/screens/sign-up-screen.tsx` | On invalid submit show an error summary at the top ('N fields need attention', each item focuses its field) built from formState.errors plus server errors (slugTaken via setError, tags error); react-hook-form already focuses the first invalid field, so add the summary, outlines and a light shake. |
 | [254](https://lucianlabs.dev/uxui-prompt/#254) | Share dialog with link access | Reading list page; story page | `packages/features/src/lists/screens/list-screen.tsx:113`<br>`packages/features/src/lists/components/list-form-dialog.tsx`<br>`packages/features/src/story/screens/story-screen.tsx` | Share dialog on the list screen: an access row over the existing visibility (private / unlisted / public through useUpdateList, owner only), Copy link with check state, navigator.share on mobile; plus a Share button on the story page (copy link; OG images already exist). No share or copy-link action exists today. |
 | [288](https://lucianlabs.dev/uxui-prompt/#288) | Expandable product details | Story synopsis; author bio | `packages/features/src/story/screens/story-screen.tsx:122`<br>`packages/features/src/author/screens/author-screen.tsx:83` | Clamp the synopsis (up to 5,000 chars, whitespace-pre-line, pushes the chapter list below the fold on mobile) to about 6 lines with a fade and Show more / Show less that animates height and restores scroll on collapse; same for long bios. |
+| [339](https://lucianlabs.dev/uxui-prompt/#339) | Drag-and-snap card carousel | Recommendation rows (home "Recommended for you", story page "You might also like") | `packages/ui/src/widgets/card-carousel.tsx`<br>`packages/features/src/recommendations/components/recommendation-list.tsx:34` | Ported in commit 0ac5bd8 as CardCarousel (scroll-snap, mouse drag, arrows that dim at the ends, progress bar). Next step: reuse it for per-category rows on Discover. |
 | [354](https://lucianlabs.dev/uxui-prompt/#354) | Morphing mega menu | Desktop header navigation | `packages/features/src/shell/components/site-header.tsx:10`<br>`docs/functional-spec/screen-inventory.md` | From md up there is no primary navigation at all (U-SHELL-01), and Rankings and Following are reachable only from links on Home. Add Browse (root categories via useCategories plus popular tags), Rankings and Following to SiteHeader with one morphing dropdown panel; Tab, Enter and Escape work from the keyboard. |
+| [355](https://lucianlabs.dev/uxui-prompt/#355) | Cloud autosave indicator | Chapter editor autosave status | `packages/ui/src/widgets/autosave-icon.tsx:22` | Already ported as AutosaveIcon (bobbing dots, drawn check, slash on failure). |
 | [400](https://lucianlabs.dev/uxui-prompt/#400) | Synced-cursor small multiples | Story statistics daily chart | `packages/features/src/analytics/components/daily-chart.tsx:10`<br>`packages/features/src/analytics/model/stats.ts:36`<br>`packages/features/src/story/model/story-detail.ts:44` | Replace the reads-only bar chart with three small multiples (reads, votes, comments, already in DailyPoint) on one day axis with a synced crosshair and per-day values. Flag chapter publishedAt days (useStoryChapters) as events. Compare = previous period by fetching twice the days (author_story_daily caps p_days at 90, so 7 and 30 only). |
+
+## 3. Port
+
+### 3.1 Value H (0)
+
+| # | Element | Surface | Evidence | Plan |
+| --- | --- | --- | --- | --- |
 
 ### 3.2 Value M (50)
 
