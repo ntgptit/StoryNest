@@ -13,12 +13,15 @@ import { useAuth } from "../../_shared/auth.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useStoryChapters } from "../../story/index.ts";
 import { DailyChart } from "../components/daily-chart.tsx";
+import { InterimCountUp } from "../components/interim-count-up.tsx";
+import { ReadsHeatmap } from "../components/reads-heatmap.tsx";
 import { ReadThroughFunnel } from "../components/read-through-funnel.tsx";
 import { useChapterStats, useDailyStats } from "../hooks/use-analytics.ts";
 import {
   barPercent,
   DEFAULT_RANGE,
   formatRetention,
+  HEATMAP_DAYS,
   isRangeDays,
   RANGE_DAYS,
   sumDaily,
@@ -53,11 +56,13 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
   const [days, setDays] = useState<RangeDays>(DEFAULT_RANGE);
   const chapters = useChapterStats(storyId);
   const daily = useDailyStats(storyId, days);
+  // The heatmap always shows the longest window the RPC allows (it shares the cache entry when 90 days is picked).
+  const quarter = useDailyStats(storyId, HEATMAP_DAYS);
   // Only for the publish-day flags: the story's published chapters with first_published_at (RLS lets the owner and
   // co-authors read them). If this request fails, the chart is simply drawn without flags.
   const published = useStoryChapters(storyId);
 
-  const failure = chapters.error ?? daily.error;
+  const failure = chapters.error ?? daily.error ?? quarter.error;
   if (failure?.kind === "forbidden") {
     return <EmptyState icon={Lock} title={t.noAccess.title} description={t.noAccess.description} />;
   }
@@ -66,6 +71,10 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
   }
 
   const totals = sumDaily(daily.data ?? []);
+  const publishedChapters = published.data?.map((chapter) => ({
+    number: chapter.number,
+    publishedAt: chapter.publishedAt,
+  }));
   const rows = chapters.data ?? [];
   const maxReads = Math.max(0, ...rows.map((row) => row.reads));
 
@@ -88,6 +97,7 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
           onRetry={() => {
             void chapters.refetch();
             void daily.refetch();
+            void quarter.refetch();
           }}
         />
       ) : (
@@ -127,7 +137,10 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
                 ).map(([label, value]) => (
                   <div key={label} className="rounded-xl border p-3">
                     <dt className="text-xs text-muted-foreground">{label}</dt>
-                    <dd className="text-2xl font-semibold tabular-nums">{formatCount(value, locale)}</dd>
+                    <dd className="text-2xl font-semibold tabular-nums">
+                      {/* Counts from the previous range's total on a switch (Lucian 047), never on first load. */}
+                      <InterimCountUp value={value} format={(n) => formatCount(n, locale)} />
+                    </dd>
                   </div>
                 ))}
               </dl>
@@ -137,18 +150,21 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
           <section aria-label={t.daily.title} className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">{t.daily.title}</h2>
             {daily.data ? (
-              <DailyChart
-                points={daily.data}
-                published={published.data?.map((chapter) => ({
-                  number: chapter.number,
-                  publishedAt: chapter.publishedAt,
-                }))}
-                locale={locale}
-              />
+              <DailyChart points={daily.data} published={publishedChapters} locale={locale} />
             ) : (
               <Skeleton className="h-32 w-full rounded-lg" aria-busy />
             )}
             <p className="text-xs text-muted-foreground">{t.daily.note}</p>
+          </section>
+
+          <section aria-label={t.heatmap.title} className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">{t.heatmap.title}</h2>
+            {quarter.data ? (
+              <ReadsHeatmap points={quarter.data} published={publishedChapters} locale={locale} />
+            ) : (
+              <Skeleton className="h-40 w-full max-w-md rounded-lg" aria-busy />
+            )}
+            <p className="text-xs text-muted-foreground">{t.heatmap.note}</p>
           </section>
 
           {chapters.isPending || rows.length > 0 ? (

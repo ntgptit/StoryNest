@@ -9,19 +9,20 @@
 | Name | Story statistics ("Story statistics") |
 | Route | `/studio/story/[id]/stats` |
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/stats/page.tsx` (view `stats-view.tsx`) |
-| Screen component | `packages/features/src/analytics/screens/story-stats-screen.tsx` (`StoryStatsScreen` → `Stats`); `components/daily-chart.tsx` (widget `packages/ui/src/widgets/synced-small-multiples.tsx`, Lucian #400 + #095); `components/read-through-funnel.tsx` (widget `packages/ui/src/widgets/funnel-steps.tsx`, Lucian #160) |
+| Screen component | `packages/features/src/analytics/screens/story-stats-screen.tsx` (`StoryStatsScreen` → `Stats`); `components/daily-chart.tsx` (widget `packages/ui/src/widgets/synced-small-multiples.tsx`, Lucian #400 + #095); `components/read-through-funnel.tsx` (widget `packages/ui/src/widgets/funnel-steps.tsx`, Lucian #160); `components/reads-heatmap.tsx` (widget `packages/ui/src/widgets/calendar-heatmap.tsx`, Lucian #151); `components/interim-count-up.tsx` (totals count-up, Lucian #047, interim until the shared RollingNumber lands); zoom of the daily charts in `synced-small-multiples.tsx` (Lucian #170) |
 | Roles | Owner, co-author; editor and non-members see no-access / not-found states |
 | Entry points | SCR-STM-01 row "Stats" (owner, co-author). Not linked from SCR-STM-03, SCR-CHM-01 or SCR-TEAM-01 |
 | Workflows | WF-STAT-01, WF-STAT-02 |
-| Rules | BR-STAT-001..012, BR-STM-023 |
+| Rules | BR-STAT-001..014, BR-STM-023 |
 
 ## B. Components
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
 | SCR-STAT-01-C01 | Header "Story statistics" / "Who reads your story and where they stop." (no story title) | `story-stats-screen.tsx:68`, `strings.en.ts:2-3` |
 | SCR-STAT-01-C02 | Link "← Back to Studio" → `/studio` | `story-stats-screen.tsx:69-75` |
-| SCR-STAT-01-C03 | Section "In the selected range": tabs 7/30/90 days ("Time range"), three tiles Reads / New likes / New comments (dimmed, `aria-busy`, while a new range loads) | `story-stats-screen.tsx` |
-| SCR-STAT-01-C04 | Section "By day": three small multiples (Reads `--chart-1`, Likes `--chart-2`, Comments `--chart-3`) on one day axis with a shared cursor, per-chart value + change from the day before, dashed average line, first/middle/last day ticks, dotted flags on days a chapter was first published; a `figure` captioned with the summary ("30-day chart: n reads, …"); "Show as table" toggle; or "No activity in this range yet."; note | `components/daily-chart.tsx`, `ui/widgets/synced-small-multiples.tsx` (BR-STAT-009, BR-STAT-012) |
+| SCR-STAT-01-C03 | Section "In the selected range": tabs 7/30/90 days ("Time range", sliding pill), three tiles Reads / New likes / New comments (dimmed, `aria-busy`, while a new range loads; on a switch each tile counts from the previous range's total to the new one, BR-STAT-005) | `story-stats-screen.tsx`, `components/interim-count-up.tsx` |
+| SCR-STAT-01-C04 | Section "By day": three small multiples (Reads `--chart-1`, Likes `--chart-2`, Comments `--chart-3`) on one day axis with a shared cursor, per-chart value + change from the day before, dashed average line, first/middle/last day ticks, dotted flags on days a chapter was first published; a `figure` captioned with the summary ("30-day chart: n reads, …"); zoom row ("Zoom in", "Show all" while zoomed, live status "Showing <from> – <to>: n of N days." / "Selected <from> – <to>, n days. …"); "Show as table" toggle; or "No activity in this range yet."; note | `components/daily-chart.tsx`, `ui/widgets/synced-small-multiples.tsx` (BR-STAT-009, BR-STAT-012, BR-STAT-014) |
+| SCR-STAT-01-C08 | Section "Reads over the last 90 days": weeks × weekdays heatmap (Monday first, Mon/Wed/Fri labelled, month labels above the weeks), status line (summary, or the picked day's reads, likes, comments and publish note), legend "Reads per day" with the whole-number range of each shade, "Show reads by week as a table" toggle, note (UTC days, reads are not distinct readers, always 90 days); "No reads in the last 90 days." when every day has 0 reads | `components/reads-heatmap.tsx`, `ui/widgets/calendar-heatmap.tsx` (BR-STAT-013) |
 | SCR-STAT-01-C07 | Section "Read-through by chapter": funnel of the published chapters in reading order (bar width = reads ÷ most-read chapter, change from the chapter before, biggest drop in `--chart-1`), status line (live region) with the summary; first 8 steps + "Show all n chapters"; note that steps are reads, not distinct readers; hidden when no chapter is published; "No reads yet to draw the funnel." when every chapter has 0 reads | `components/read-through-funnel.tsx`, `ui/widgets/funnel-steps.tsx` (BR-STAT-011) |
 | SCR-STAT-01-C05 | Section "By chapter": table (Chapter, Reads + bar, Likes, Comments, Retention), horizontal scroll on narrow screens, note; empty "No chapters have been published yet." | `story-stats-screen.tsx` |
 | SCR-STAT-01-C06 | States: auth skeleton; sign-in prompt; no access; not found; error + "Try again" | `story-stats-screen.tsx:30-60,77-86` |
@@ -42,7 +43,7 @@
 | Field | SCR-STAT-01-A02 Retry |
 | --- | --- |
 | Trigger | "Try again" |
-| Expected behavior | Refetch chapters and daily series |
+| Expected behavior | Refetch chapters, the selected daily series and the 90-day heatmap series |
 | Evidence | `story-stats-screen.tsx:77-86`; `analytics.test.tsx:284` |
 
 | Field | SCR-STAT-01-A03 Back to Studio |
@@ -63,6 +64,18 @@
 | Expected behavior | A scrollable table (Day, Reads, Likes, Comments, and "Published" when a flag exists) lists exactly the charted numbers |
 | Evidence | `ui/widgets/synced-small-multiples.tsx`; `analytics.test.tsx` ("lists the same numbers …") |
 
+| Field | SCR-STAT-01-A07 Zoom into days of the daily charts |
+| --- | --- |
+| Trigger | Mouse/pen: drag across any chart. Keyboard: on a focused chart hold Shift and press ←/→, then Enter. Touch and any input: pick a day, then "Zoom in". "Show all", or Esc with nothing picked, zooms out |
+| Expected behavior | While dragging (or Shift-selecting) a band marks the days in all three charts and the status line reads "Selected <from> – <to>, n days. …"; releasing (or Enter) zooms in when at least 3 days are selected (fewer: treated as a click). "Zoom in" halves the visible days around the picked day (or the middle of the view), never below 3. Zoomed, the bars outside the window fold away and the rest widen (same morph as a range switch), each chart rescales to its busiest visible day and its average is over the visible days, the axis ticks and flags follow the window, and the status reads "Showing <from> – <to>: n of N days." (polite live region). The cursor stays shared and keys stay inside the window. Esc steps back: selection, then picked day, then zoom. Changing the range drops the zoom. The table still lists every day of the range |
+| Evidence | `ui/widgets/synced-small-multiples.tsx` (`zoomInWindow`, `MIN_ZOOM_DAYS`); `ui/widgets/stats-widgets.test.tsx` ("SyncedSmallMultiples zoom") |
+
+| Field | SCR-STAT-01-A08 Read a day in the heatmap |
+| --- | --- |
+| Trigger | Press a square (press again to let go), or Tab into the grid (one tab stop) and use ↑/↓ (a day), ←/→ (a week), Home/End (first/last day), Esc (clear), Enter/Space (toggle) |
+| Expected behavior | The picked square lifts with a ring and the status line shows "<day>: n reads, n likes, n comments[. Chapter n published]"; each square's accessible name is that same sentence. "Show reads by week as a table" lists the reads with weeks as rows (the Monday as row header) and weekdays as columns |
+| Evidence | `ui/widgets/calendar-heatmap.tsx`; `ui/widgets/stats-widgets.test.tsx` ("CalendarHeatmap"); `analytics.test.tsx` ("ReadsHeatmap") |
+
 | Field | SCR-STAT-01-A06 Inspect a funnel step |
 | --- | --- |
 | Trigger | Press a chapter step (`aria-pressed`); press again to return |
@@ -75,7 +88,7 @@
 | Initial | Implemented | Auth skeleton |
 | Loading | Implemented | Per-section skeletons (`aria-busy`) |
 | Empty | Implemented | "No activity in this range yet." / "No chapters have been published yet." |
-| Populated | Implemented | Totals, chart, table |
+| Populated | Implemented | Totals, chart, heatmap, funnel, table |
 | Validation error | Not applicable | — |
 | Request error | Implemented | Error state + retry; forbidden/notFound distinct |
 | Success | Not applicable | Read-only |
@@ -98,6 +111,9 @@
 - SCR-STAT-01-AC11 Given chapters 1–3 have 80, 60 and 40 reads, Then the funnel reads "Chapter 3 has 50% of chapter 1's reads" and highlights chapter 3 (−33%, the biggest drop).
 - SCR-STAT-01-AC12 Given a chapter was first published on a day in the range, Then that day carries a flag and its readout and table row say "Chapter n published".
 - SCR-STAT-01-AC13 Given I switch from 30 to 7 days, Then the chart is not replaced by a skeleton and the 7 remaining bars morph into place (no motion with reduced motion).
+- SCR-STAT-01-AC14 Given I switch ranges, Then each total counts from the old range's figure to the new one in about 0.75 s (reduced motion: it jumps), And it does not count on the first load, And a screen reader reads only the final number.
+- SCR-STAT-01-AC15 Given the 30-day charts, When I drag across 5 days with a mouse (or Shift+←/→ then Enter, or pick a day and press "Zoom in"), Then all three charts show only those days rescaled, And "Show all" brings back the 30 days.
+- SCR-STAT-01-AC16 Given any range is selected, Then the heatmap shows the last 90 UTC days, And pressing a square (or moving to it with the arrow keys) shows that day's reads, likes and comments.
 
 ## F. Findings referenced
 U-STAT-01, U-STAT-02, F-STM-06.

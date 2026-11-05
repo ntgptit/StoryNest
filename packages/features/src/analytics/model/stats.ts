@@ -42,6 +42,8 @@ export interface DailyPoint {
 export const RANGE_DAYS = [7, 30, 90] as const;
 export type RangeDays = (typeof RANGE_DAYS)[number];
 export const DEFAULT_RANGE: RangeDays = 30;
+/** Days of the reads heatmap: the most `author_story_daily` returns (it refuses more than 90). */
+export const HEATMAP_DAYS = 90;
 
 export const isRangeDays = (value: number): value is RangeDays => (RANGE_DAYS as readonly number[]).includes(value);
 
@@ -185,6 +187,86 @@ export function formatDay(day: string, locale: string, style: "long" | "short"):
       ? { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }
       : { day: "numeric", month: "numeric", timeZone: "UTC" };
   return new Intl.DateTimeFormat(locale, options).format(new Date(n * DAY_MS));
+}
+
+/** Shade of a heatmap day: 0 for no reads, else the quarter of the busiest day the value falls in (1 to 4). */
+export type HeatLevel = 0 | 1 | 2 | 3 | 4;
+
+export function heatLevel(value: number, max: number): HeatLevel {
+  if (value <= 0 || max <= 0) return 0;
+  return Math.min(4, Math.max(1, Math.ceil((value / max) * 4))) as HeatLevel;
+}
+
+/**
+ * The whole numbers each shade stands for, for the legend: level 0 is 0, level L covers (max·(L−1)/4, max·L/4]. A level
+ * no whole number can reach (a busiest day of 1 to 3) is left out, so the legend never shows a range that cannot occur.
+ */
+export function heatLegend(max: number): { level: HeatLevel; from: number; to: number }[] {
+  const legend: { level: HeatLevel; from: number; to: number }[] = [{ level: 0, from: 0, to: 0 }];
+  for (const level of [1, 2, 3, 4] as const) {
+    const from = Math.floor((max * (level - 1)) / 4) + 1;
+    const to = Math.floor((max * level) / 4);
+    if (from <= to) legend.push({ level, from, to });
+  }
+  return legend;
+}
+
+/** Monday 0 … Sunday 6 of a day number (1970-01-01, day 0, was a Thursday). */
+const weekdayOf = (n: number) => (((n + 3) % 7) + 7) % 7;
+
+/** The days of an aligned axis laid out as weeks (Monday first) for the heatmap. */
+export interface WeekGrid {
+  /** One entry per week, oldest first, each with 7 slots Monday to Sunday: an index into the axis, or null. */
+  columns: (number | null)[][];
+  /** The Monday of each week (`YYYY-MM-DD`), which may fall before the first day of the axis. */
+  weekStarts: string[];
+  /** Per week, the first day of a month that falls in it (`YYYY-MM-DD`); the first week gets its own month unless a
+   * month starts in one of the next two weeks (the labels would collide); otherwise null. */
+  monthStarts: (string | null)[];
+}
+
+/** Lays a gap-free, oldest-first day axis (as `alignDaily` returns) out week by week; malformed days give no grid. */
+export function weekColumns(days: readonly string[]): WeekGrid {
+  const grid: WeekGrid = { columns: [], weekStarts: [], monthStarts: [] };
+  const first = days[0] === undefined ? null : dayNumber(days[0]);
+  if (first === null) return grid;
+  const offset = weekdayOf(first);
+  const weeks = Math.ceil((offset + days.length) / 7);
+  for (let week = 0; week < weeks; week += 1) {
+    grid.columns.push(
+      Array.from({ length: 7 }, (_, weekday) => {
+        const index = week * 7 + weekday - offset;
+        return index >= 0 && index < days.length ? index : null;
+      }),
+    );
+    grid.weekStarts.push(dayString(first - offset + week * 7));
+  }
+  const starts = grid.columns.map((column) => {
+    const day = column.flatMap((index) => (index === null ? [] : [days[index] ?? ""])).find((d) => d.endsWith("-01"));
+    return day ?? null;
+  });
+  grid.monthStarts = starts.map((start, week) =>
+    week === 0 && start === null && starts[1] === null && starts[2] === null ? (days[0] ?? null) : start,
+  );
+  return grid;
+}
+
+/** Month of a UTC day for an axis label: "thg 11" / "Nov". */
+export function formatMonth(day: string, locale: string): string {
+  const n = dayNumber(day);
+  if (n === null) return day;
+  return new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" }).format(new Date(n * DAY_MS));
+}
+
+/** Weekday names Monday to Sunday: long ("Thứ Hai" / "Monday") and short ("Th 2" / "Mon"). */
+export function weekdayNames(locale: string): { long: string; short: string }[] {
+  const long = new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "UTC" });
+  const short = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" });
+  // 1970-01-05 (day 4) was a Monday.
+  return Array.from({ length: 7 }, (_, i) => {
+    const date = new Date((4 + i) * DAY_MS);
+    return { long: long.format(date), short: short.format(date) };
+  });
 }
 
 /** One chapter of the read-through funnel. */

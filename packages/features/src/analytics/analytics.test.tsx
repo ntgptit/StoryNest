@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
 import type { DataClient } from "../_shared/client.ts";
@@ -15,19 +15,27 @@ import {
   DEFAULT_RANGE,
   formatChange,
   formatDay,
+  formatMonth,
   formatPercent,
   formatRetention,
+  HEATMAP_DAYS,
+  heatLegend,
+  heatLevel,
   isRangeDays,
   publishedByDay,
   readThroughFunnel,
   sumDaily,
   toChapterStat,
   toDailyPoint,
+  weekColumns,
+  weekdayNames,
   type ChapterStat,
   type ChapterStatRow,
   type DailyRow,
 } from "./model/stats.ts";
 import { DailyChart } from "./components/daily-chart.tsx";
+import { InterimCountUp } from "./components/interim-count-up.tsx";
+import { ReadsHeatmap } from "./components/reads-heatmap.tsx";
 import { ReadThroughFunnel } from "./components/read-through-funnel.tsx";
 import { StoryStatsScreen } from "./index.ts";
 import { analyticsText } from "./strings.ts";
@@ -540,6 +548,188 @@ describe("StoryStatsScreen", () => {
     fireEvent.click(await screen.findByRole("button", { name: t.error.retry }));
     await waitFor(() => expect(c.of("author_chapter_stats").length).toBeGreaterThan(1));
     expect(c.of("author_story_daily").length).toBeGreaterThan(1);
+  });
+
+  it("draws the reads heatmap from a 90-day request, whatever range is picked", async () => {
+    const c = full();
+    renderScreen(c);
+    const heatmap = within(await screen.findByRole("region", { name: t.heatmap.title }));
+    expect(await heatmap.findByRole("grid", { name: t.heatmap.label })).toBeTruthy();
+    expect(heatmap.getAllByRole("gridcell").filter((cell) => cell.hasAttribute("aria-label"))).toHaveLength(3);
+    expect(c.of("author_story_daily").map((call) => call.args.p_days)).toEqual([30, HEATMAP_DAYS]);
+    expect(heatmap.getByText(t.heatmap.note)).toBeTruthy();
+  });
+
+  it("brings the totals to the new range's figures when the range changes", async () => {
+    const c = fakeClient({
+      author_story_daily: (args) => ({
+        data: args.p_days === 7 ? [dayRow(3, { reads: 2, votes: 7, comments: 1 })] : [dayRow(1, { reads: 40 })],
+        error: null,
+      }),
+    });
+    renderScreen(c);
+    const totals = within(await screen.findByRole("region", { name: t.totals.title }));
+    await waitFor(() => expect(totals.getByText("40")).toBeTruthy());
+    const tab = screen.getByRole("tab", { name: t.range.options[7] });
+    fireEvent.mouseDown(tab, { button: 0 });
+    fireEvent.click(tab);
+    // Whether it counts or (without animation frames) jumps, it ends on the 7-day totals and is read only once.
+    await waitFor(() => expect(totals.getByText("7")).toBeTruthy());
+    await waitFor(() => expect(totals.queryByText("40")).toBeNull());
+    expect(totals.getByText("2")).toBeTruthy();
+  });
+});
+
+describe("reads heatmap model", () => {
+  it("shades a day by the quarter of the busiest day it falls in", () => {
+    expect([0, 1, 2, 3, 5, 6, 7, 8, 10].map((reads) => heatLevel(reads, 10))).toEqual([0, 1, 1, 2, 2, 3, 3, 4, 4]);
+    expect(heatLevel(5, 0)).toBe(0);
+    expect(heatLevel(1, 1)).toBe(4);
+  });
+
+  it("labels each shade with the whole numbers it covers and leaves out shades no count can reach", () => {
+    expect(heatLegend(10)).toEqual([
+      { level: 0, from: 0, to: 0 },
+      { level: 1, from: 1, to: 2 },
+      { level: 2, from: 3, to: 5 },
+      { level: 3, from: 6, to: 7 },
+      { level: 4, from: 8, to: 10 },
+    ]);
+    expect(heatLegend(2)).toEqual([
+      { level: 0, from: 0, to: 0 },
+      { level: 2, from: 1, to: 1 },
+      { level: 4, from: 2, to: 2 },
+    ]);
+    // The legend always agrees with the shading.
+    for (let max = 1; max <= 40; max += 1) {
+      const legend = heatLegend(max);
+      for (let reads = 0; reads <= max; reads += 1) {
+        const entry = legend.find((item) => item.level === heatLevel(reads, max));
+        expect(entry && reads >= entry.from && reads <= entry.to).toBe(true);
+      }
+    }
+  });
+
+  it("lays the days out Monday to Sunday, week by week, and marks where months start", () => {
+    // Wed 28 Oct to Thu 5 Nov 2026.
+    const days = alignDaily([
+      { day: "2026-10-28", reads: 1, votes: 0, comments: 0 },
+      { day: "2026-11-05", reads: 1, votes: 0, comments: 0 },
+    ]).days;
+    expect(weekColumns(days)).toEqual({
+      columns: [
+        [null, null, 0, 1, 2, 3, 4],
+        [5, 6, 7, 8, null, null, null],
+      ],
+      weekStarts: ["2026-10-26", "2026-11-02"],
+      monthStarts: ["2026-11-01", null],
+    });
+  });
+
+  it("labels the first week with its own month only when no month starts right after it", () => {
+    const axis = (from: string, to: string) =>
+      alignDaily([
+        { day: from, reads: 0, votes: 0, comments: 0 },
+        { day: to, reads: 0, votes: 0, comments: 0 },
+      ]).days;
+    expect(weekColumns(axis("2026-10-20", "2026-11-03")).monthStarts).toEqual([null, "2026-11-01", null]);
+    expect(weekColumns(axis("2026-10-05", "2026-10-25")).monthStarts).toEqual(["2026-10-05", null, null]);
+    expect(weekColumns(["not a day"])).toEqual({ columns: [], weekStarts: [], monthStarts: [] });
+    expect(weekColumns([])).toEqual({ columns: [], weekStarts: [], monthStarts: [] });
+  });
+
+  it("names the weekdays from Monday and the month of a day", () => {
+    const names = weekdayNames("en");
+    expect(names).toHaveLength(7);
+    expect(names[0]).toEqual({ long: "Monday", short: "Mon" });
+    expect(names[6]?.long).toBe("Sunday");
+    expect(formatMonth("2026-11-05", "en")).toBe("Nov");
+    expect(formatMonth("nope", "en")).toBe("nope");
+  });
+});
+
+describe("ReadsHeatmap", () => {
+  const nineDays = [
+    { day: "2026-10-28", reads: 4, votes: 1, comments: 0 },
+    { day: "2026-11-02", reads: 8, votes: 0, comments: 3 },
+    { day: "2026-11-05", reads: 1, votes: 0, comments: 0 },
+  ];
+
+  it("shades every day of the window by reads and reads out the day's three numbers", () => {
+    render(<ReadsHeatmap points={nineDays} published={[{ number: 4, publishedAt: "2026-11-02T09:00:00Z" }]} />);
+    const grid = screen.getByRole("grid", { name: t.heatmap.label });
+    expect(
+      within(grid)
+        .getAllByRole("gridcell")
+        .filter((cell) => cell.hasAttribute("aria-label")),
+    ).toHaveLength(9);
+    const busiest = within(grid).getByRole("gridcell", {
+      name: t.daily.readout(formatDay("2026-11-02", "vi", "long"), 8, 0, 3, t.daily.published([4])),
+    });
+    expect(busiest.getAttribute("data-level")).toBe("4");
+    const quiet = within(grid).getByRole("gridcell", {
+      name: t.daily.readout(formatDay("2026-10-29", "vi", "long"), 0, 0, 0, null),
+    });
+    expect(quiet.getAttribute("data-level")).toBe("0");
+    expect(screen.getByText(t.heatmap.summary(9, "13", formatDay("2026-11-02", "vi", "long"), "8"))).toBeTruthy();
+    fireEvent.click(busiest);
+    expect(document.querySelector('[data-slot="heatmap-status"]')?.textContent).toBe(
+      busiest.getAttribute("aria-label"),
+    );
+  });
+
+  it("says so when there were no reads, even with likes or comments", () => {
+    render(<ReadsHeatmap points={[{ day: "2026-11-05", reads: 0, votes: 2, comments: 1 }]} />);
+    expect(screen.getByText(t.heatmap.empty)).toBeTruthy();
+    expect(screen.queryByRole("grid")).toBeNull();
+  });
+});
+
+describe("InterimCountUp", () => {
+  let frames: FrameRequestCallback[] = [];
+  const flush = (now: number) =>
+    act(() => {
+      const pending = frames;
+      frames = [];
+      pending.forEach((callback) => callback(now));
+    });
+
+  afterEach(() => {
+    frames = [];
+    vi.unstubAllGlobals();
+  });
+
+  const stubFrames = () => {
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => frames.push(callback));
+    vi.stubGlobal("cancelAnimationFrame", () => undefined);
+  };
+
+  it("shows the first value at once and counts to a new one, reading only the final number", () => {
+    stubFrames();
+    const { container, rerender } = render(<InterimCountUp value={10} format={String} />);
+    expect(container.textContent).toBe("10");
+    expect(frames).toHaveLength(0); // nothing moves on first render
+
+    rerender(<InterimCountUp value={110} format={String} />);
+    const counting = () => container.querySelector('[data-slot="counting"]');
+    expect(counting()?.textContent).toBe("10");
+    expect(counting()?.getAttribute("aria-hidden")).toBe("true");
+    expect(container.querySelector(".sr-only")?.textContent).toBe("110");
+    flush(0);
+    flush(375); // half way, ease-out quart: 10 + 100 × 0.9375
+    expect(counting()?.textContent).toBe("104");
+    flush(750);
+    expect(counting()).toBeNull();
+    expect(container.textContent).toBe("110");
+  });
+
+  it("jumps straight to the new value with reduced motion", () => {
+    stubFrames();
+    vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("reduce") }));
+    const { container, rerender } = render(<InterimCountUp value={3} format={String} />);
+    rerender(<InterimCountUp value={9} format={String} />);
+    expect(frames).toHaveLength(0);
+    expect(container.textContent).toBe("9");
   });
 });
 

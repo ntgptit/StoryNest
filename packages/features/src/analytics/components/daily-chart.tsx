@@ -18,7 +18,8 @@ const SLOTS = Math.max(...RANGE_DAYS);
 
 /**
  * Reads, likes and comments per day as three small multiples sharing one cursor (pointer, touch, ←/→), with the days
- * chapters were first published flagged when the chapter list is known. The same figures are offered as a table.
+ * chapters were first published flagged when the chapter list is known. The shared time axis zooms into a few days
+ * (mouse drag, Shift+←/→ then Enter, or "Zoom in" around the picked day). The same figures are offered as a table.
  */
 export function DailyChart({
   points,
@@ -81,6 +82,7 @@ export function DailyChart({
         tableCaption: t.tableCaption(series.days.length),
         dayColumn: t.dayColumn,
         noteColumn: t.publishedColumn,
+        zoom: t.zoom,
       }}
     />
   );

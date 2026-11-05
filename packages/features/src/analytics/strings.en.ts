@@ -24,11 +24,19 @@ export const en = {
     title: "By day",
     chartLabel: (days: number, reads: number, votes: number, comments: number) =>
       `${days}-day chart: ${reads} read${reads === 1 ? "" : "s"}, ${votes} like${votes === 1 ? "" : "s"}, ${comments} comment${comments === 1 ? "" : "s"}`,
-    note: "Daily reads are only available for the last 90 days. Days are in UTC. Touch or hover the charts to see each day; flags mark the days chapters were published.",
+    note: "Daily reads are only available for the last 90 days. Days are in UTC. Touch or hover the charts to see each day; drag across a few days (or pick a day and press Zoom in) to zoom in; flags mark the days chapters were published.",
     empty: "No activity in this range yet.",
     series: { reads: "Reads", votes: "Likes", comments: "Comments" },
     seriesChart: (series: string) => `${series} by day`,
-    hint: "Use ← and → to step through the days, Home and End to jump to the first and last day, Esc to clear. The three charts share one cursor.",
+    hint: "Use ← and → to step through the days, Home and End to jump to the first and last day, Esc to clear. The three charts share one cursor. Hold Shift and press ← or → to select a range of days, then Enter to zoom in; Esc with no day picked shows every day again.",
+    zoom: {
+      zoomIn: "Zoom in",
+      reset: "Show all",
+      selection: (from: string, to: string, days: number) =>
+        `Selected ${from} – ${to}, ${days} days. Release or press Enter to zoom in.`,
+      zoomed: (from: string, to: string, days: number, total: number) =>
+        `Showing ${from} – ${to}: ${days} of ${total} days.`,
+    },
     latest: (day: string) => `Latest · ${day}`,
     average: "avg",
     showTable: "Show as table",
@@ -40,6 +48,20 @@ export const en = {
       numbers.length === 1 ? `Chapter ${numbers[0]} published` : `Chapters ${numbers.join(", ")} published`,
     readout: (day: string, reads: number, votes: number, comments: number, published: string | null) =>
       `${day}: ${reads} read${reads === 1 ? "" : "s"}, ${votes} like${votes === 1 ? "" : "s"}, ${comments} comment${comments === 1 ? "" : "s"}${published ? `. ${published}` : ""}`,
+  },
+  heatmap: {
+    title: "Reads over the last 90 days",
+    label: "Reads per day over the last 90 days, one column per week",
+    hint: "Use ↑ and ↓ to move one day, ← and → to move one week, Home and End to jump to the first and last day, Esc to clear.",
+    legend: "Reads per day",
+    summary: (days: number, reads: string, busiest: string, busiestReads: string) =>
+      `${days} days: ${reads} read${reads === "1" ? "" : "s"}. Busiest on ${busiest} (${busiestReads} read${busiestReads === "1" ? "" : "s"}). Pick a square to see that day.`,
+    empty: "No reads in the last 90 days.",
+    note: "Each square is one UTC day, darker for more reads (a reader counts once per chapter per day, not as a distinct reader). Always the last 90 days, whatever range is picked above.",
+    showTable: "Show reads by week as a table",
+    hideTable: "Hide the weekly table",
+    tableCaption: "Reads per day over the last 90 days, by week, in UTC",
+    weekColumn: "Week of",
   },
   funnel: {
     title: "Read-through by chapter",

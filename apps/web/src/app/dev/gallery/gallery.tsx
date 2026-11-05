@@ -76,6 +76,7 @@ import { ShareDialog, type ShareAccessOption } from "@storynest/ui/widgets/share
 import { StickyActionBar } from "@storynest/ui/widgets/sticky-action-bar";
 import { StoryCover } from "@storynest/ui/widgets/story-cover";
 import { SyncedSmallMultiples, type SmallMultipleDay } from "@storynest/ui/widgets/synced-small-multiples";
+import { CalendarHeatmap, type HeatmapCell, type HeatLevel } from "@storynest/ui/widgets/calendar-heatmap";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -974,6 +975,128 @@ function ScheduledOutboxExample() {
   );
 }
 
+// Batch 2 · stats: brush-to-zoom on the small multiples (Lucian 170) and the reads heatmap (Lucian 151), on the demo data
+// above. The screen builds the heatmap from the feature model (weekColumns, heatLevel, heatLegend); this demo lays the
+// same 90 days out by hand.
+const BATCH2_ZOOM_TEXT = {
+  zoomIn: "Zoom in",
+  reset: "Show all",
+  selection: (from: string, to: string, days: number) => `Selected ${from} – ${to}, ${days} days. Release to zoom in.`,
+  zoomed: (from: string, to: string, days: number, total: number) =>
+    `Showing ${from} – ${to}: ${days} of ${total} days.`,
+};
+
+function batch2HeatLevel(value: number, max: number): HeatLevel {
+  if (value <= 0 || max <= 0) return 0;
+  return Math.min(4, Math.max(1, Math.ceil((value / max) * 4))) as HeatLevel;
+}
+
+function Batch2StatsExample() {
+  const [range, setRange] = useState<Range>(30);
+  const days = ALL_DAYS.slice(-range);
+  const reads = SERIES.reads.slice(-range);
+  const votes = SERIES.votes.slice(-range);
+  const comments = SERIES.comments.slice(-range);
+  const signed = new Intl.NumberFormat("en", { signDisplay: "exceptZero" });
+
+  const max = Math.max(...SERIES.reads);
+  const offset = (new Date(`${ALL_DAYS[0]?.key}T00:00:00Z`).getUTCDay() + 6) % 7; // Monday first
+  const weeks = Math.ceil((offset + ALL_DAYS.length) / 7);
+  const columns = Array.from({ length: weeks }, (_, week) =>
+    Array.from({ length: 7 }, (_, weekday): HeatmapCell | null => {
+      const index = week * 7 + weekday - offset;
+      const day = ALL_DAYS[index];
+      if (!day) return null;
+      const value = SERIES.reads[index] ?? 0;
+      return {
+        key: day.key,
+        level: batch2HeatLevel(value, max),
+        label: `${day.label}: ${value} reads, ${SERIES.votes[index]} likes, ${SERIES.comments[index]} comments`,
+        valueText: value.toLocaleString("en"),
+      };
+    }),
+  );
+  const columnLabels = columns.map((column, week) => {
+    const first = column.find((cell) => cell !== null);
+    const monthStart = column.find((cell) => cell?.key.endsWith("-01"));
+    const label = monthStart ?? (week === 0 ? first : undefined);
+    return {
+      short: label ? new Date(`${label.key}T00:00:00Z`).toLocaleString("en", { month: "short", timeZone: "UTC" }) : "",
+      long: `Week ${week + 1}`,
+    };
+  });
+  const quarter = (level: number) => Math.floor((max * level) / 4);
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <div className="flex flex-col gap-3">
+        <Tabs value={String(range)} onValueChange={(value) => setRange(Number(value) as Range)}>
+          <TabsList aria-label="Range">
+            {RANGES.map((option) => (
+              <TabsTrigger key={option} value={String(option)}>
+                {`${option} days`}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <SyncedSmallMultiples
+          days={days}
+          slots={STATS_DAYS}
+          series={[
+            { key: "reads", label: "Reads", values: reads, tone: 1 },
+            { key: "votes", label: "Likes", values: votes, tone: 2 },
+            { key: "comments", label: "Comments", values: comments, tone: 3 },
+          ]}
+          formatValue={(value) => value.toLocaleString("en")}
+          formatDelta={(delta) => signed.format(delta)}
+          describeDay={(index) =>
+            `${days[index]?.label}: ${reads[index]} reads, ${votes[index]} likes, ${comments[index]} comments`
+          }
+          summary={`Last ${range} days of reads, likes and comments`}
+          text={{
+            chartLabel: (series) => `${series} by day`,
+            hint: "Use the left and right arrows to move through the days; hold Shift to select days, then Enter to zoom in.",
+            latest: (day) => `Latest: ${day}`,
+            average: "avg",
+            showTable: "Show as a table",
+            hideTable: "Hide the table",
+            tableCaption: `Daily figures, last ${range} days`,
+            dayColumn: "Day",
+            noteColumn: "Published",
+            zoom: BATCH2_ZOOM_TEXT,
+          }}
+        />
+      </div>
+      <CalendarHeatmap
+        columns={columns}
+        rows={["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((label, index) => ({
+          label,
+          abbr: label.slice(0, 3),
+          showLabel: index % 2 === 0 && index < 5,
+        }))}
+        columnLabels={columnLabels}
+        legend={[
+          { level: 0, label: "0" },
+          ...([1, 2, 3, 4] as const).map((level) => ({
+            level,
+            label: `${quarter(level - 1) + 1}–${quarter(level)}`,
+          })),
+        ]}
+        label="Reads per day over the last 90 days, one column per week"
+        summary={`90 days: ${SERIES.reads.reduce((sum, value) => sum + value, 0).toLocaleString("en")} reads. Pick a square to see that day.`}
+        text={{
+          hint: "Use up and down to move one day, left and right to move one week.",
+          legend: "Reads per day",
+          showTable: "Show reads by week as a table",
+          hideTable: "Hide the weekly table",
+          tableCaption: "Reads per day by week",
+          columnHeader: "Week",
+        }}
+      />
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -1179,6 +1302,10 @@ export function Gallery() {
         <FindReplaceExample />
         <MergeChoiceExample />
         <ScheduledOutboxExample />
+      </Section>
+
+      <Section title="Batch 2 · stats">
+        <Batch2StatsExample />
       </Section>
     </AppShell>
   );
