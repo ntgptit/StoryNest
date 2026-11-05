@@ -13,7 +13,16 @@ export {
   type PlatformAdapter,
   type PlatformLinkProps,
 } from "./platform.tsx";
-export { ToastProvider, useAppToast, type AppToast, type ToastKind, type ToastPort } from "./toast.tsx";
+export {
+  ToastProvider,
+  useAppToast,
+  type AppToast,
+  type ToastAction,
+  type ToastKind,
+  type ToastOptions,
+  type ToastPort,
+} from "./toast.tsx";
+export { StoryPeekContext, useStoryPeek, type StoryPeekTarget } from "./story-peek.tsx";
 export { ErrorBoundary } from "./error-boundary.tsx";
 export { translateErrors } from "./form-resolver.ts";
 export {

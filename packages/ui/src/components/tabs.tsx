@@ -34,11 +34,35 @@ const tabsListVariants = cva(
 
 type IndicatorBox = { x: number; y: number; width: number; height: number };
 
-/** Position of the active trigger inside its list, or null when there is none or it is not laid out (e.g. jsdom). */
-function measureActiveTab(list: HTMLElement): IndicatorBox | null {
-  const active = list.querySelector<HTMLElement>('[role="tab"][data-state="active"]');
+const boxOf = (tab: HTMLElement): IndicatorBox => ({
+  x: tab.offsetLeft,
+  y: tab.offsetTop,
+  width: tab.offsetWidth,
+  height: tab.offsetHeight,
+});
+
+/**
+ * Position of the active trigger inside its list, or null when there is none or it is not laid out (e.g. jsdom).
+ * `swipe` (-1…1) moves it part of the way towards the previous (negative) or next (positive) trigger: the indicator
+ * follows a finger swiping between panels (Lucian 048), stretching a little half-way like the element's line.
+ */
+function measureActiveTab(list: HTMLElement, swipe = 0): IndicatorBox | null {
+  const tabs = Array.from(list.querySelectorAll<HTMLElement>('[role="tab"]'));
+  const index = tabs.findIndex((tab) => tab.dataset.state === "active");
+  const active = tabs[index];
   if (!active || active.offsetWidth === 0) return null;
-  return { x: active.offsetLeft, y: active.offsetTop, width: active.offsetWidth, height: active.offsetHeight };
+  const from = boxOf(active);
+  const neighbour = swipe === 0 ? undefined : tabs[index + Math.sign(swipe)];
+  if (!neighbour) return from;
+  const to = boxOf(neighbour);
+  const t = Math.min(1, Math.abs(swipe));
+  const stretch = Math.sin(t * Math.PI);
+  return {
+    x: from.x + (to.x - from.x) * t - stretch * 6,
+    y: from.y + (to.y - from.y) * t,
+    width: from.width + (to.width - from.width) * t + stretch * 12,
+    height: from.height,
+  };
 }
 
 function sameBox(a: IndicatorBox | null, b: IndicatorBox | null) {
@@ -50,15 +74,24 @@ function sameBox(a: IndicatorBox | null, b: IndicatorBox | null) {
  * Seokwoooo). `settled` turns on one frame after the first measurement, so the pill appears in place on load and only
  * slides on later changes. Until it is measured the active trigger keeps its own background (SSR, no-JS, jsdom).
  */
-function useActiveTabIndicator(listRef: React.RefObject<HTMLDivElement | null>) {
+function useActiveTabIndicator(listRef: React.RefObject<HTMLDivElement | null>, swipe: number) {
   const [box, setBox] = React.useState<IndicatorBox | null>(null);
   const [settled, setSettled] = React.useState(false);
+  const swipeRef = React.useRef(swipe);
+
+  React.useLayoutEffect(() => {
+    swipeRef.current = swipe;
+    const list = listRef.current;
+    if (!list) return;
+    const next = measureActiveTab(list, swipe);
+    setBox((current) => (sameBox(current, next) ? current : next));
+  }, [listRef, swipe]);
 
   React.useLayoutEffect(() => {
     const list = listRef.current;
     if (!list) return;
     const update = () => {
-      const next = measureActiveTab(list);
+      const next = measureActiveTab(list, swipeRef.current);
       setBox((current) => (sameBox(current, next) ? current : next));
     };
     update();
@@ -81,13 +114,20 @@ function useActiveTabIndicator(listRef: React.RefObject<HTMLDivElement | null>) 
 function TabsList({
   className,
   variant = "default",
+  swipe = 0,
   children,
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
+}: React.ComponentProps<typeof TabsPrimitive.List> &
+  VariantProps<typeof tabsListVariants> & {
+    /** Progress of a swipe between the panels (-1…1, see useSwipeTabs); the indicator follows it without a transition. */
+    swipe?: number;
+  }) {
   const listRef = React.useRef<HTMLDivElement>(null);
-  const { box, settled } = useActiveTabIndicator(listRef);
-  // The sliding pill replaces the active background of the default (segmented) look; the line variant keeps its underline.
-  const indicator = variant === "default" ? box : null;
+  const { box, settled } = useActiveTabIndicator(listRef, swipe);
+  // The sliding pill replaces the active background of the default (segmented) look; in the line variant one sliding
+  // underline replaces each trigger's own.
+  const indicator = box;
+  const line = variant === "line";
   return (
     <TabsPrimitive.List
       ref={listRef}
@@ -102,13 +142,17 @@ function TabsList({
           aria-hidden
           data-slot="tabs-indicator"
           className={cn(
-            "pointer-events-none absolute top-0 left-0 rounded-md border border-transparent bg-background shadow-sm dark:border-input dark:bg-input/30",
-            settled && "transition-[translate,width,height] duration-450 ease-spring",
+            "pointer-events-none absolute top-0 left-0",
+            line
+              ? "h-0.5 rounded-full bg-foreground"
+              : "rounded-md border border-transparent bg-background shadow-sm dark:border-input dark:bg-input/30",
+            settled && swipe === 0 && "transition-[translate,width,height] duration-450 ease-spring",
           )}
           style={{
             width: indicator.width,
-            height: indicator.height,
-            translate: `${indicator.x}px ${indicator.y}px`,
+            height: line ? undefined : indicator.height,
+            // The underline sits where each trigger drew its own (2px high, its bottom 5px below the trigger).
+            translate: `${indicator.x}px ${line ? indicator.y + indicator.height + 3 : indicator.y}px`,
           }}
         />
       ) : null}
@@ -126,6 +170,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
         "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:border-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent",
         "data-[state=active]:bg-background data-[state=active]:text-foreground dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:data-[state=active]:text-foreground",
         "group-data-[indicator=ready]/tabs-list:data-[state=active]:border-transparent group-data-[indicator=ready]/tabs-list:data-[state=active]:bg-transparent group-data-[indicator=ready]/tabs-list:data-[state=active]:shadow-none! dark:group-data-[indicator=ready]/tabs-list:data-[state=active]:border-transparent dark:group-data-[indicator=ready]/tabs-list:data-[state=active]:bg-transparent",
+        "group-data-[indicator=ready]/tabs-list:after:hidden",
         "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-[state=active]:after:opacity-100",
         className,
       )}

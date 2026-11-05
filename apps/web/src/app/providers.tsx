@@ -8,6 +8,7 @@ import {
   LanguageSync,
   PlatformProvider,
   QueryProvider,
+  StoryPeekProvider,
   ToastProvider,
   type DataClient,
 } from "@storynest/features";
@@ -38,7 +39,10 @@ export function Providers({ siteOrigin, children }: { siteOrigin: string; childr
               <AuthProvider>
                 {/* Outside the language provider on purpose: that one re-mounts what is below it when the language changes. */}
                 <LanguageSync />
-                <LanguageProvider>{children}</LanguageProvider>
+                <LanguageProvider>
+                  {/* Long-press / context menu on any story card opens a quick look with the story's actions. */}
+                  <StoryPeekProvider>{children}</StoryPeekProvider>
+                </LanguageProvider>
               </AuthProvider>
               <Toaster />
             </TooltipProvider>

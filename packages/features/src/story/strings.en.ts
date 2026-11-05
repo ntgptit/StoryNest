@@ -37,4 +37,5 @@ export const en = {
   },
   error: { title: "Couldn't load the story", description: "Check your connection and try again.", retry: "Try again" },
   chaptersError: { title: "Couldn't load the chapter list", retry: "Try again" },
+  peek: { open: "Open story", close: "Close quick look" },
 };

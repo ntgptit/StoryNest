@@ -117,6 +117,11 @@
 | Navigation | — |
 | Evidence | `author.test.tsx` (share, bio), `share/share.test.tsx` |
 
+### C.x Browse interactions (Lucian batch 2 · browse)
+
+- The follower count next to Follow is a RollingNumber (Lucian 054 / 098): after a follow or unfollow the changed digits roll to the count the database answered; nothing rolls on load; screen readers get the phrase once in a polite live region.
+- The author's stories have the grid / list toggle and the shared story-card behaviours (see home-discover).
+
 ## D. UI states
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |

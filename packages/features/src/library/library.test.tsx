@@ -347,4 +347,61 @@ describe("LibraryScreen", () => {
     fireEvent.click(await screen.findByRole("button", { name: t.remove.saved }));
     await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("error", t.errors.generic));
   });
+
+  it("offers Undo after unsaving or unfollowing, which saves / follows again through the same RPCs", async () => {
+    const c = fakeClient({ saved: [shelfRow(5)], following: [shelfRow(6)] });
+    renderLibrary(c);
+    openTab(t.tabs.saved);
+    fireEvent.click(await screen.findByRole("button", { name: t.remove.saved }));
+    await waitFor(() =>
+      expect(toasts.show).toHaveBeenCalledWith("success", t.removed.saved, {
+        action: { label: t.undo, onClick: expect.any(Function) },
+      }),
+    );
+    const undo = toasts.show.mock.calls.at(-1)?.[2] as { action: { onClick: () => void } };
+    undo.action.onClick();
+    await waitFor(() =>
+      expect(c.rpcCalls).toContainEqual({ name: "set_story_save", args: { p_story_id: sid(5), p_saved: true } }),
+    );
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.restored.saved));
+
+    openTab(t.tabs.following);
+    fireEvent.click(await screen.findByRole("button", { name: t.remove.following }));
+    await waitFor(() => expect(toasts.show.mock.calls.at(-1)?.[1]).toBe(t.removed.following));
+    (toasts.show.mock.calls.at(-1)?.[2] as { action: { onClick: () => void } }).action.onClick();
+    await waitFor(() =>
+      expect(c.rpcCalls).toContainEqual({ name: "set_story_follow", args: { p_story_id: sid(6), p_followed: true } }),
+    );
+  });
+
+  it("swipes a saved story away on touch: it disappears at once and is unsaved", async () => {
+    const c = fakeClient({ saved: [shelfRow(5)] });
+    renderLibrary(c);
+    openTab(t.tabs.saved);
+    const heading = await screen.findByRole("heading", { name: "Truyện 5" });
+    const row = heading.closest("[data-swiping], .touch-pan-y") as HTMLElement;
+    const touch = (x: number) => ({ pointerType: "touch", isPrimary: true, pointerId: 1, clientX: x, clientY: 0 });
+    fireEvent.pointerDown(row, touch(300));
+    fireEvent.pointerMove(row, touch(150));
+    fireEvent.pointerUp(row, touch(150));
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "Truyện 5" })).toBeNull());
+    await waitFor(() =>
+      expect(c.rpcCalls).toContainEqual({ name: "set_story_save", args: { p_story_id: sid(5), p_saved: false } }),
+    );
+  });
+
+  it("switches tabs by swiping the shelf sideways on touch", async () => {
+    const c = fakeClient({ reading: [readingRow(1)], saved: [shelfRow(5)] });
+    renderLibrary(c);
+    const list = await screen.findByRole("list", { name: t.listLabel(t.tabs.reading) });
+    const panels = list.closest(".touch-pan-y") as HTMLElement;
+    Object.defineProperty(panels, "clientWidth", { value: 400 });
+    const touch = (x: number) => ({ pointerType: "touch", isPrimary: true, pointerId: 2, clientX: x, clientY: 0 });
+    fireEvent.pointerDown(panels, touch(350));
+    fireEvent.pointerMove(panels, touch(300));
+    fireEvent.pointerMove(panels, touch(150));
+    fireEvent.pointerUp(panels, touch(150));
+    expect(await screen.findByRole("list", { name: t.listLabel(t.tabs.saved) })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: t.tabs.saved }).getAttribute("aria-selected")).toBe("true");
+  });
 });

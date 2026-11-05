@@ -76,7 +76,7 @@ export function StoryScreen({
     <AdultGate isMature={data.isMature}>
       <article className="flex flex-col gap-8">
         <header className="grid gap-6 sm:grid-cols-[12rem_1fr]">
-          <StoryCover title={data.title} coverUrl={coverUrl} eager className="mx-auto w-40 sm:w-full" />
+          <StoryCover title={data.title} coverUrl={coverUrl} eager morphTarget className="mx-auto w-40 sm:w-full" />
 
           <div className="flex flex-col gap-3">
             <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{data.title}</h1>

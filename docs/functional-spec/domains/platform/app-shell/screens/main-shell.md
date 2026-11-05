@@ -125,6 +125,10 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 
 Search, 18+ button and bell actions are specified by OBJ-SRCH, OBJ-MAT and OBJ-NOTI.
 
+### C.x Header search on phones (Lucian batch 2 · browse)
+
+Below `sm` the SearchBox icon is a button (`aria-expanded`) that opens the same combobox over the header row instead of navigating to `/search`; Escape, the close button, blur or a submit folds it back. The app also mounts `StoryPeekProvider`, so a long-press / context menu on any story card opens the quick-look sheet.
+
 ## D. UI states
 | State | Status | Evidence / note |
 | --- | --- | --- |

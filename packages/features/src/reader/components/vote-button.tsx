@@ -3,6 +3,7 @@
 import { formatCount } from "@storynest/utils";
 import { Button } from "@storynest/ui/components/button";
 import { HeartBurstIcon } from "@storynest/ui/widgets/heart-burst-icon";
+import { RollingNumber } from "@storynest/ui/widgets/rolling-number";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useChapterVote } from "../hooks/use-chapter-vote.ts";
@@ -42,9 +43,13 @@ export function VoteButton({ chapterId, locale = currentLocale() }: { chapterId:
         <HeartBurstIcon active={voted} />
         {!signedIn ? t.guest : voted ? t.remove : t.add}
       </Button>
-      <span className="text-sm text-muted-foreground" aria-live="polite">
-        {t.count(formatCount(votes, locale))}
-      </span>
+      {/* The digits roll to the new count after a vote (never on load); one polite announcement of the phrase. */}
+      <RollingNumber
+        value={votes}
+        format={(n) => t.count(formatCount(n, locale))}
+        live
+        className="text-sm text-muted-foreground"
+      />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppShell } from "./app-shell.tsx";
-import { BottomNav, isNavItemActive, type BottomNavItem, type NavLinkComponent } from "./bottom-nav.tsx";
+import { BottomNav, isNavItemActive, type BottomNavItem } from "./bottom-nav.tsx";
 import { ConfirmDialog } from "./confirm-dialog.tsx";
 import { EmptyState } from "./empty-state.tsx";
 import { ErrorState } from "./error-state.tsx";
@@ -12,16 +12,15 @@ import { InfiniteList } from "./infinite-list.tsx";
 import { PageHeader } from "./page-header.tsx";
 import { PageSkeleton } from "./page-skeleton.tsx";
 import { StatPill } from "./stat-pill.tsx";
-import { StoryCard, type StoryCardData } from "./story-card.tsx";
+import { StoryCard, type StoryCardData, type StoryLinkComponent } from "./story-card.tsx";
 
 afterEach(cleanup);
 
-const Anchor: NavLinkComponent = ({ href, children, ...rest }) => (
+const Anchor: StoryLinkComponent = ({ href, children, ...rest }) => (
   <a href={href} {...rest}>
     {children}
   </a>
 );
-
 describe("BottomNav", () => {
   const items: BottomNavItem[] = [
     { href: "/", label: "Home", icon: Home },

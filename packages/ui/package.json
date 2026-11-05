@@ -10,6 +10,8 @@
     "./lib/use-hide-on-scroll": "./src/lib/use-hide-on-scroll.ts",
     "./lib/use-media-query": "./src/lib/use-media-query.ts",
     "./lib/use-countdown": "./src/lib/use-countdown.ts",
+    "./lib/use-flip": "./src/lib/use-flip.ts",
+    "./lib/view-transition": "./src/lib/view-transition.ts",
     "./components/*": "./src/components/*.tsx",
     "./widgets/*": "./src/widgets/*.tsx"
   },

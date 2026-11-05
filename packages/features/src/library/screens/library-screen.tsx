@@ -1,6 +1,6 @@
 "use client";
 
-import { BookMarked, BookOpen, Bell, EyeOff, type LucideIcon } from "lucide-react";
+import { BookMarked, BookOpen, Bell, BellOff, BookmarkMinus, EyeOff, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { formatRelativeTime } from "@storynest/utils";
 import { Button } from "@storynest/ui/components/button";
@@ -9,12 +9,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@storynest/ui/componen
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
-import { StoryCard } from "@storynest/ui/widgets/story-card";
+import { SwipeToRemove } from "@storynest/ui/widgets/swipe-to-remove";
+import { useSwipeTabs } from "@storynest/ui/widgets/swipe-tabs";
+import type { AppError } from "../../_shared/errors.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { MyLists } from "../../lists/index.ts";
-import { discoveryText, storyHref, toStoryCardData } from "../../discovery/index.ts";
-import { useLibraryList, useRemoveFromLibrary } from "../hooks/use-library.ts";
+import { STORY_GRID, StoryTile, storyHref } from "../../discovery/index.ts";
+import {
+  isUndoable,
+  useLibraryList,
+  useRemoveFromLibrary,
+  useRestoreToLibrary,
+  type UndoableLibraryTab,
+} from "../hooks/use-library.ts";
 import { LIBRARY_TABS, libraryErrorMessage, type LibraryEntry, type LibraryTab } from "../model/library.ts";
 import { libraryText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
@@ -22,17 +30,21 @@ import { currentLocale } from "../../_shared/i18n.ts";
 const t = libraryText;
 /** The fourth tab belongs to the lists feature, so it is not one of the three the library loads itself. */
 const LISTS_TAB = "lists";
-
-/** Same grid as the home feed: a story card is a tile, not a full-width row. */
-const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
+type ShelfTab = LibraryTab | typeof LISTS_TAB;
+const SHELF_TABS: readonly ShelfTab[] = [...LIBRARY_TABS, LISTS_TAB];
 
 const EMPTY_ICON: Record<LibraryTab, LucideIcon> = {
   reading: BookOpen,
   saved: BookMarked,
   following: Bell,
 };
+const REMOVE_ICON: Record<UndoableLibraryTab, LucideIcon> = { saved: BookmarkMinus, following: BellOff };
 
-/** The reader's shelf: what they are reading (continue in one tap), what they saved and what they follow. */
+/**
+ * The reader's shelf: what they are reading (continue in one tap), what they saved and what they follow. On a touch
+ * screen the tabs also switch by swiping the shelf sideways, and a saved or followed story can be swiped away (the
+ * toast offers Undo).
+ */
 export function LibraryScreen({
   locale = currentLocale(),
   coverUrlFor,
@@ -40,27 +52,35 @@ export function LibraryScreen({
   locale?: string;
   coverUrlFor?: ((key: string) => string) | undefined;
 }) {
-  const [tab, setTab] = useState<LibraryTab | typeof LISTS_TAB>("reading");
+  const [tab, setTab] = useState<ShelfTab>("reading");
+  const swipe = useSwipeTabs({ values: SHELF_TABS, value: tab, onValueChange: setTab });
   return (
     <section aria-label={t.title} className="flex flex-col gap-6">
       <PageHeader title={t.title} description={t.description} />
-      <Tabs value={tab} onValueChange={(value) => setTab(value as LibraryTab | typeof LISTS_TAB)}>
-        <TabsList aria-label={t.tabsLabel}>
-          {LIBRARY_TABS.map((value) => (
-            <TabsTrigger key={value} value={value}>
-              {t.tabs[value]}
-            </TabsTrigger>
-          ))}
-          <TabsTrigger value={LISTS_TAB}>{t.tabs.lists}</TabsTrigger>
-        </TabsList>
-        {LIBRARY_TABS.map((value) => (
-          <TabsContent key={value} value={value} className="pt-4">
-            <LibraryList tab={value} locale={locale} coverUrlFor={coverUrlFor} />
-          </TabsContent>
-        ))}
-        <TabsContent value={LISTS_TAB} className="pt-4">
-          <MyLists locale={locale} />
-        </TabsContent>
+      <Tabs value={tab} onValueChange={(value) => setTab(value as ShelfTab)}>
+        {/* Four tabs can be wider than a phone: the row scrolls instead of the page. */}
+        <div className="-mx-4 overflow-x-auto px-4 pb-1.5 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+          <TabsList aria-label={t.tabsLabel} variant="line" swipe={swipe.swipe}>
+            {LIBRARY_TABS.map((value) => (
+              <TabsTrigger key={value} value={value}>
+                {t.tabs[value]}
+              </TabsTrigger>
+            ))}
+            <TabsTrigger value={LISTS_TAB}>{t.tabs.lists}</TabsTrigger>
+          </TabsList>
+        </div>
+        <div className="overflow-x-clip">
+          <div key={swipe.panelKey} {...swipe.panelProps}>
+            {LIBRARY_TABS.map((value) => (
+              <TabsContent key={value} value={value} className="pt-4">
+                <LibraryList tab={value} locale={locale} coverUrlFor={coverUrlFor} />
+              </TabsContent>
+            ))}
+            <TabsContent value={LISTS_TAB} className="pt-4">
+              <MyLists locale={locale} />
+            </TabsContent>
+          </div>
+        </div>
       </Tabs>
     </section>
   );
@@ -76,6 +96,15 @@ function LibraryList({
   coverUrlFor?: ((key: string) => string) | undefined;
 }) {
   const list = useLibraryList(tab);
+  // Stories swiped away are hidden at once, before the list is read again (and shown again on Undo or an error).
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
+  const setShown = (storyId: string, shown: boolean) =>
+    setHidden((current) => {
+      const next = new Set(current);
+      if (shown) next.delete(storyId);
+      else next.add(storyId);
+      return next;
+    });
 
   if (list.isError) {
     return (
@@ -89,22 +118,29 @@ function LibraryList({
   }
   if (list.isPending) {
     return (
-      <div className={GRID} aria-busy>
+      <div className={STORY_GRID} aria-busy>
         {Array.from({ length: 4 }, (_, i) => (
           <Skeleton key={i} className="aspect-[2/3] w-full rounded-xl" aria-hidden />
         ))}
       </div>
     );
   }
-  if (list.data.length === 0) {
+  const entries = list.data.filter((entry) => !hidden.has(entry.storyId));
+  if (entries.length === 0) {
     const Icon = EMPTY_ICON[tab];
     return <EmptyState icon={Icon} title={t.empty[tab].title} description={t.empty[tab].description} />;
   }
   return (
-    <ul aria-label={t.listLabel(t.tabs[tab])} className={GRID}>
-      {list.data.map((entry) => (
+    <ul aria-label={t.listLabel(t.tabs[tab])} className={STORY_GRID}>
+      {entries.map((entry) => (
         <li key={entry.storyId}>
-          <LibraryItem tab={tab} entry={entry} locale={locale} coverUrlFor={coverUrlFor} />
+          <LibraryItem
+            tab={tab}
+            entry={entry}
+            locale={locale}
+            coverUrlFor={coverUrlFor}
+            onShownChange={(shown) => setShown(entry.storyId, shown)}
+          />
         </li>
       ))}
     </ul>
@@ -120,29 +156,45 @@ function LibraryItem({
   entry,
   locale,
   coverUrlFor,
+  onShownChange,
 }: {
   tab: LibraryTab;
   entry: LibraryEntry;
   locale: string;
   coverUrlFor?: ((key: string) => string) | undefined;
+  onShownChange: (shown: boolean) => void;
 }) {
   const remove = useRemoveFromLibrary(tab);
+  const restore = useRestoreToLibrary(tab === "reading" ? "saved" : tab);
   const toast = useAppToast();
-  const labels = {
-    reads: discoveryText.card.reads,
-    votes: discoveryText.card.votes,
-    updated: discoveryText.card.updated,
+
+  // Promises (mutateAsync), not mutate callbacks: the item is gone from the list by the time the toast's Undo is
+  // pressed (and often by the time the removal settles), and mutate callbacks do not run for an unmounted component.
+  const undo = () => {
+    onShownChange(true);
+    restore.mutateAsync(entry.storyId).then(
+      () => isUndoable(tab) && toast.success(t.restored[tab]),
+      (error: AppError) => toast.error(libraryErrorMessage(error)),
+    );
   };
 
-  return (
-    <div className="flex h-full flex-col gap-2">
+  const removeNow = () => {
+    remove.mutateAsync(entry.storyId).then(
+      () =>
+        isUndoable(tab)
+          ? toast.success(t.removed[tab], { action: { label: t.undo, onClick: undo } })
+          : toast.success(t.removed[tab]),
+      (error: AppError) => {
+        onShownChange(true);
+        toast.error(libraryErrorMessage(error));
+      },
+    );
+  };
+
+  const card = (
+    <div className="flex h-full flex-col gap-2 bg-background">
       {entry.story ? (
-        <StoryCard
-          story={toStoryCardData(entry.story, coverUrlFor)}
-          labels={labels}
-          LinkComponent={AppLink}
-          locale={locale}
-        />
+        <StoryTile story={entry.story} locale={locale} coverUrlFor={coverUrlFor} />
       ) : (
         <div role="note" className="flex items-start gap-3 rounded-xl border border-dashed p-4 text-sm">
           <EyeOff aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
@@ -163,22 +215,26 @@ function LibraryItem({
             <AppLink href={storyHref(entry.story)}>{t.openStory}</AppLink>
           </Button>
         ) : null}
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={remove.isPending}
-          onClick={() =>
-            remove.mutate(entry.storyId, {
-              onSuccess: () => toast.success(t.removed[tab]),
-              onError: (error) => toast.error(libraryErrorMessage(error)),
-            })
-          }
-        >
+        <Button type="button" size="sm" variant="ghost" disabled={remove.isPending} onClick={removeNow}>
           {t.remove[tab]}
         </Button>
         <span className="w-full text-xs text-muted-foreground">{when(tab, formatRelativeTime(entry.at, locale))}</span>
       </div>
     </div>
+  );
+
+  if (!isUndoable(tab)) return card;
+  return (
+    <SwipeToRemove
+      label={t.remove[tab]}
+      icon={REMOVE_ICON[tab]}
+      disabled={remove.isPending}
+      onRemove={() => {
+        onShownChange(false);
+        removeNow();
+      }}
+    >
+      {card}
+    </SwipeToRemove>
   );
 }

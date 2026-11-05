@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
 import type { DataClient } from "../_shared/client.ts";
@@ -12,6 +12,8 @@ import { getLibraryState, setStoryFollow, setStorySave } from "./api/library.api
 import { storyKeys } from "./keys.ts";
 import type { StoryDetail } from "./model/story-detail.ts";
 import { StoryActions } from "./components/story-actions.tsx";
+import { StoryPeekProvider } from "./components/story-peek.tsx";
+import { StoryTile, toStorySummary } from "../discovery/index.ts";
 import { followersAfter, libraryErrorMessage, withFollowing, withSaved } from "./model/library.ts";
 import { storyText } from "./strings.ts";
 
@@ -259,5 +261,53 @@ describe("the follower count on the story page", () => {
     fireEvent.click(await screen.findByRole("button", { name: t.save }));
     await screen.findByRole("button", { name: t.saved });
     expect(screen.getByTestId("followers").textContent).toBe("5");
+  });
+});
+
+describe("StoryPeekProvider", () => {
+  it("opens a quick look from a story card's context menu, with the story page's own actions", async () => {
+    const c = fakeClient({ rpc: () => ({ data: 3, error: null }) });
+    const story = toStorySummary({
+      id: STORY_ID,
+      slug: "muoi-va-tro",
+      title: "Muối và tro",
+      synopsis: "Một ngọn hải đăng, một cơn bão.",
+      cover_storage_key: null,
+      status: "ongoing",
+      is_mature: false,
+      language_code: "vi",
+      updated_at: "2026-11-04T00:00:00.123456+00:00",
+      owner: { username: "an", display_name: "An Nhiên" },
+      category: null,
+      stats: null,
+      story_tags: [],
+    });
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <DataProvider client={withAuth(c, testSession())}>
+          <AuthProvider>
+            <PlatformProvider adapter={adapter}>
+              <ToastProvider port={toasts}>
+                <StoryPeekProvider>
+                  <StoryTile story={story} locale="vi" />
+                </StoryPeekProvider>
+              </ToastProvider>
+            </PlatformProvider>
+          </AuthProvider>
+        </DataProvider>
+      </QueryClientProvider>,
+    );
+    fireEvent.contextMenu(screen.getByRole("link", { name: /Muối và tro/ }));
+    const dialog = await screen.findByRole("dialog", { name: "Muối và tro" });
+    expect(within(dialog).getByText("Một ngọn hải đăng, một cơn bão.")).toBeTruthy();
+    expect(within(dialog).getByRole("link", { name: storyText.peek.open }).getAttribute("href")).toBe(
+      `/story/${STORY_ID}/muoi-va-tro`,
+    );
+    fireEvent.click(await within(dialog).findByRole("button", { name: t.follow }));
+    await waitFor(() =>
+      expect(c.rpcCalls).toContainEqual({ name: "set_story_follow", args: { p_story_id: STORY_ID, p_followed: true } }),
+    );
+    fireEvent.click(within(dialog).getByRole("button", { name: storyText.peek.close }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 });

@@ -4,6 +4,7 @@ export const en = {
   placeholder: "Search stories, authors, tags…",
   submit: "Search",
   openSearch: "Open search",
+  closeSearch: "Close search",
   hint: (min: number) => `Enter at least ${min} characters to search. Accents are optional.`,
   tooLong: (max: number) => `Search terms can be up to ${max} characters.`,
   tabs: { stories: "Stories", authors: "Authors", tags: "Tags" },

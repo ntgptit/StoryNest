@@ -7,10 +7,9 @@ import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { ExpandableText } from "@storynest/ui/widgets/expandable-text";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
-import { StoryCard } from "@storynest/ui/widgets/story-card";
+import { RollingNumber } from "@storynest/ui/widgets/rolling-number";
 import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
-import { AppLink } from "../../_shared/platform.tsx";
-import { discoveryText, toStoryCardData, useLatestStories } from "../../discovery/index.ts";
+import { STORY_GRID, StoryListFrame, StoryTile, useLatestStories, useStoryView } from "../../discovery/index.ts";
 import { ReportButton } from "../../moderation/index.ts";
 import { ShareButton, shareText } from "../../share/index.ts";
 import { FollowAuthorButton } from "../components/follow-author-button.tsx";
@@ -20,7 +19,6 @@ import { authorText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = authorText;
-const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
 /** An author's page: who they are, how many follow them, a follow button and their public stories. */
 export function AuthorScreen({
@@ -62,11 +60,7 @@ function AuthorPage({
 }) {
   const feed = useLatestStories({ authorId: profile.userId }, undefined);
   const stories = feed.data?.pages.flatMap((page) => page.items) ?? [];
-  const labels = {
-    reads: discoveryText.card.reads,
-    votes: discoveryText.card.votes,
-    updated: discoveryText.card.updated,
-  };
+  const storyView = useStoryView();
 
   return (
     <article className="flex flex-col gap-6">
@@ -79,7 +73,8 @@ function AuthorPage({
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h1 className="truncate text-2xl font-semibold tracking-tight">{profile.displayName}</h1>
           <p className="text-sm text-muted-foreground">
-            @{profile.username} · {t.followers(formatCount(profile.followers, locale))} ·{" "}
+            @{profile.username} · {/* Rolls to the new count after a follow or unfollow (never on load). */}
+            <RollingNumber value={profile.followers} format={(n) => t.followers(formatCount(n, locale))} live /> ·{" "}
             {t.stories(formatCount(profile.stories, locale))}
           </p>
           <div className="pt-1">
@@ -109,7 +104,10 @@ function AuthorPage({
       </header>
 
       <section aria-label={t.storiesTitle} className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">{t.storiesTitle}</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold tracking-tight">{t.storiesTitle}</h2>
+          {stories.length > 0 ? storyView.toggle : null}
+        </div>
         {feed.isError && stories.length === 0 ? (
           <ErrorState
             title={t.error.title}
@@ -118,7 +116,7 @@ function AuthorPage({
             onRetry={() => void feed.refetch()}
           />
         ) : feed.isPending ? (
-          <div className={GRID} aria-busy>
+          <div className={STORY_GRID} aria-busy>
             {Array.from({ length: 4 }, (_, i) => (
               <Skeleton key={i} className="aspect-[2/3] w-full rounded-xl" aria-hidden />
             ))}
@@ -126,25 +124,22 @@ function AuthorPage({
         ) : stories.length === 0 ? (
           <EmptyState icon={UserRound} title={t.emptyStories.title} description={t.emptyStories.description} />
         ) : (
-          <InfiniteList
-            items={stories}
-            getKey={(story) => story.id}
-            listClassName={GRID}
-            renderItem={(story) => (
-              <StoryCard
-                story={toStoryCardData(story, coverUrlFor)}
-                labels={labels}
-                LinkComponent={AppLink}
-                locale={locale}
-              />
-            )}
-            hasMore={feed.hasNextPage}
-            isLoadingMore={feed.isFetchingNextPage}
-            onLoadMore={() => void feed.fetchNextPage()}
-            loadMoreLabel={t.loadMore}
-            loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
-            endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfList}</p>}
-          />
+          <StoryListFrame frameRef={storyView.containerRef}>
+            <InfiniteList
+              items={stories}
+              getKey={(story) => story.id}
+              listClassName={storyView.listClassName}
+              renderItem={(story) => (
+                <StoryTile story={story} locale={locale} coverUrlFor={coverUrlFor} variant={storyView.view} />
+              )}
+              hasMore={feed.hasNextPage}
+              isLoadingMore={feed.isFetchingNextPage}
+              onLoadMore={() => void feed.fetchNextPage()}
+              loadMoreLabel={t.loadMore}
+              loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
+              endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfList}</p>}
+            />
+          </StoryListFrame>
         )}
       </section>
     </article>

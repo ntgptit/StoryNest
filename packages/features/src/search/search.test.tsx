@@ -287,6 +287,28 @@ describe("SearchScreen", () => {
     expect(calls).toEqual([]);
   });
 
+  it("switches result tabs by swiping the results sideways on touch (the address changes, as with a click)", async () => {
+    const { client } = fakeClient({ rpc: () => ({ data: [], error: null }) });
+    renderUi(client, <SearchScreen term="truyen" tab="authors" />);
+    await screen.findByRole("tab", { name: t.tabs.authors });
+    const target = document.querySelector<HTMLElement>(".touch-pan-y")!;
+    Object.defineProperty(target, "clientWidth", { value: 400 });
+    const touch = (x: number) => ({ pointerType: "touch", isPrimary: true, pointerId: 1, clientX: x, clientY: 0 });
+    fireEvent.pointerDown(target, touch(350));
+    fireEvent.pointerMove(target, touch(300));
+    fireEvent.pointerMove(target, touch(150));
+    fireEvent.pointerUp(target, touch(150));
+    expect(replace).toHaveBeenLastCalledWith(searchHref("truyen", "tags"));
+    // The panel is drawn again after a swipe (so the next one slides in): find it again.
+    const again = document.querySelector<HTMLElement>(".touch-pan-y")!;
+    Object.defineProperty(again, "clientWidth", { value: 400 });
+    fireEvent.pointerDown(again, touch(100));
+    fireEvent.pointerMove(again, touch(150));
+    fireEvent.pointerMove(again, touch(300));
+    fireEvent.pointerUp(again, touch(300));
+    expect(replace).toHaveBeenLastCalledWith(searchHref("truyen", "stories"));
+  });
+
   it("shows story results as cards linking to the story", async () => {
     const { client } = fakeClient({
       rpc: () => ({ data: scored([1, 2]), error: null }),
@@ -473,8 +495,36 @@ describe("SearchBox", () => {
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
-  it("has a link to the results page for narrow screens", () => {
+  it("on narrow screens opens the same field in place from the icon, and folds it back on Escape or close", async () => {
     renderUi(fakeClient({}).client, <SearchBox />);
-    expect(screen.getByRole("link", { name: t.openSearch }).getAttribute("href")).toBe("/search");
+    const toggle = screen.getByRole("button", { name: t.openSearch });
+    const form = screen.getByRole("search");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-controls")).toBe(form.id);
+    expect(form.className).toContain("hidden");
+
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(form.className).not.toMatch(/(^| )hidden( |$)/);
+    const input = screen.getByRole("combobox", { name: t.inputLabel });
+    await waitFor(() => expect(document.activeElement).toBe(input));
+
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(toggle);
+    fireEvent.click(screen.getByRole("button", { name: t.closeSearch }));
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("folds the narrow-screen field back when a search is submitted", () => {
+    renderUi(fakeClient({}).client, <SearchBox />);
+    const toggle = screen.getByRole("button", { name: t.openSearch });
+    fireEvent.click(toggle);
+    type("truyen");
+    fireEvent.submit(screen.getByRole("search"));
+    expect(push).toHaveBeenLastCalledWith("/search?q=truyen");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
   });
 });

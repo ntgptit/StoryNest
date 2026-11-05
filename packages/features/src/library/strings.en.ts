@@ -27,6 +27,8 @@ export const en = {
   followedAt: (relative: string) => `Followed ${relative}`,
   remove: { reading: "Remove from reading", saved: "Unsave", following: "Unfollow" },
   removed: { reading: "Removed from your reading list.", saved: "Unsaved.", following: "Unfollowed." },
+  undo: "Undo",
+  restored: { saved: "Saved again.", following: "Following again." },
   unavailable: {
     title: "Story no longer available",
     description: "The story was deleted, made private, or you no longer have permission to view it.",

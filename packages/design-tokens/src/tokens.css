@@ -627,6 +627,83 @@
 }
 
 /*
+ * Batch 2 · browse: discover, search, library, author and story cards. Adapted from Lucian UX/UI Prompt 027, 048,
+ * 054, 057, 071, 092, 098, 305, 308, 328 and 358 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their
+ * durations and curves: RollingNumber, the swipe-linked tab underline, FeaturedCarousel, SwipeToRemove, the story
+ * view toggle (FLIP), the card-to-story cover transition and the story peek in packages/ui.
+ */
+@theme {
+  /* Rolling digits (098): each column overshoots a little and settles; columns start 45ms apart. */
+  --ease-roll: cubic-bezier(0.3, 1.25, 0.5, 1);
+  /* Grid/list morph (308) and the cover that grows into the story page (328). */
+  --ease-morph: cubic-bezier(0.3, 1.15, 0.4, 1);
+  --ease-expand: cubic-bezier(0.3, 1.05, 0.35, 1);
+
+  /* A swiped tab panel slides in from the side it came from (048). */
+  --animate-panel-from-start: panel-from-start 0.35s var(--ease-soft);
+  --animate-panel-from-end: panel-from-end 0.35s var(--ease-soft);
+  /* Featured carousel (057): the new slide's text rises in; the timer bar fills over --featured-interval. */
+  --animate-featured-in: featured-in 0.6s var(--ease-spring);
+  --animate-featured-timer: featured-timer var(--featured-interval, 6s) linear forwards;
+  /* Header search on a phone (027): the field opens out of the search icon at the right edge of the header. */
+  --animate-search-expand: search-expand 0.6s var(--ease-spring);
+  /* Story peek (358): the card grows out of the pressed cover. */
+  --animate-peek-in: peek-in 0.44s var(--ease-rise);
+  /* Text of a card that changed layout fades back in after the covers have moved (308). */
+  --animate-morph-fade: morph-fade 0.4s var(--ease-soft) both;
+
+  @keyframes panel-from-start {
+    from {
+      opacity: 0;
+      transform: translateX(-12%);
+    }
+  }
+  @keyframes panel-from-end {
+    from {
+      opacity: 0;
+      transform: translateX(12%);
+    }
+  }
+  @keyframes featured-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+      filter: blur(4px);
+    }
+  }
+  @keyframes featured-timer {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  /* --search-from-left / --search-from-right: where the icon sat inside the header row (set by SearchBox). */
+  @keyframes search-expand {
+    from {
+      clip-path: inset(
+        0.375rem var(--search-from-right, 0) 0.375rem var(--search-from-left, calc(100% - 2.75rem)) round 0.75rem
+      );
+    }
+    to {
+      clip-path: inset(0 0 0 0 round 0);
+    }
+  }
+  @keyframes peek-in {
+    from {
+      opacity: 0.6;
+      transform: translateY(24px) scale(0.92);
+    }
+  }
+  @keyframes morph-fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+/*
  * Batch 2 · account (auth, settings, shell, uploads, team, connectivity), adapted from Lucian UX/UI Prompt #021, #032,
  * #034, #036, #045, #064, #085, #091 and #264 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their
  * durations and curves (their --ux-ease / --ux-spring are our ease-soft / ease-spring). Every movement answers
@@ -801,6 +878,35 @@
     30% {
       background-color: color-mix(in oklab, var(--chart-2) 16%, transparent);
     }
+  }
+}
+
+/*
+ * The cover the reader tapped grows into the story page's cover; the rest of the page cross-fades (328). The page's
+ * cover is marked `data-morph-target` (StoryCover `morphTarget`); the tapped card gets the same name for the moment
+ * the transition starts (packages/ui/src/lib/view-transition.ts). Nothing here runs without a view transition.
+ */
+[data-morph-target] {
+  view-transition-name: story-cover;
+}
+::view-transition-group(story-cover) {
+  animation-duration: 0.56s;
+  animation-timing-function: var(--ease-expand);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+/*
+ * RollingNumber's digit column (098): the ten digits are drawn as generated content, one per line, so they are
+ * neither read out nor copied with the text (the widget keeps the real number in a screen-reader-only span).
+ * "\A " is a line break; the space ends the escape so the next digit is not read as part of it.
+ */
+@utility digit-strip {
+  &::before {
+    content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9";
+    white-space: pre;
   }
 }
 

@@ -72,7 +72,7 @@ confirm dialogs (shared widget).
 | Screen | Bottom nav (mobile) | Header / user menu | Other entry points |
 | --- | --- | --- | --- |
 | Home | ✓ | brand link | — |
-| Search | — | SearchBox (desktop field, mobile icon) | — |
+| Search | — | SearchBox (desktop field; mobile icon opens the field over the header) | — |
 | Rankings | — | — | Only a link on Home ("Xem xếp hạng") → U-HOME-01 |
 | Following feed | — | — | Only a link on Home (members) → U-HOME-01 |
 | Library | ✓ | user menu | — |

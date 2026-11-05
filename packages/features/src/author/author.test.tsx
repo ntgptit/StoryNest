@@ -348,10 +348,17 @@ describe("AuthorScreen", () => {
     renderUi(f.client, <AuthorScreen username="tac_gia_a" />, TEST_USER_ID);
     const button = await screen.findByRole("button", { name: t.follow });
     expect(button.getAttribute("aria-pressed")).toBe("false");
+    const count = screen.getByText(/5 người theo dõi/);
+    // One polite live region for the phrase; the drawn digits roll only on a change, not on load.
+    expect(count.getAttribute("aria-live")).toBe("polite");
+    const column = () => count.parentElement!.querySelector<HTMLElement>("[data-digit]")!;
+    expect(column().getAttribute("data-digit")).toBe("5");
     fireEvent.click(button);
     expect(await screen.findByRole("button", { name: t.following })).toBeTruthy();
     expect(screen.getByRole("button", { name: t.following }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByText(/6 người theo dõi/)).toBeTruthy();
+    expect(column().getAttribute("data-digit")).toBe("6");
+    expect(column().className).toContain("transition-transform");
     expect(f.rpcCalls.find((c) => c.name === "set_user_follow")?.args).toEqual({
       p_user_id: AUTHOR_ID,
       p_followed: true,

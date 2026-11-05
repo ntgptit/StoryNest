@@ -1,9 +1,7 @@
 "use client";
 
 import { CardCarousel } from "@storynest/ui/widgets/card-carousel";
-import { StoryCard } from "@storynest/ui/widgets/story-card";
-import { AppLink } from "../../_shared/platform.tsx";
-import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
+import { StoryTile } from "../../discovery/index.ts";
 import { reasonText, type Recommendation } from "../model/recommendation.ts";
 import { useRecommendedForMe, useSimilarStories } from "../hooks/use-recommendations.ts";
 import { recommendationText } from "../strings.ts";
@@ -25,23 +23,13 @@ function RecommendationList({
   coverUrlFor?: ((key: string) => string) | undefined;
 }) {
   if (items.length === 0) return null;
-  const labels = {
-    reads: discoveryText.card.reads,
-    votes: discoveryText.card.votes,
-    updated: discoveryText.card.updated,
-  };
   return (
     <CardCarousel title={title} previousLabel={recommendationText.previous} nextLabel={recommendationText.next}>
       {items.map((item) => {
         const why = reasonText(item);
         return (
           <div key={item.story.id} className="flex flex-col gap-1">
-            <StoryCard
-              story={toStoryCardData(item.story, coverUrlFor)}
-              labels={labels}
-              LinkComponent={AppLink}
-              locale={locale}
-            />
+            <StoryTile story={item.story} locale={locale} coverUrlFor={coverUrlFor} />
             {why ? <p className="px-1 text-xs text-muted-foreground">{why}</p> : null}
           </div>
         );

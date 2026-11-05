@@ -29,6 +29,19 @@ export const discoveryKeys = {
         pageSize: filter.pageSize ?? DEFAULT_PAGE_SIZE,
       },
     ] as const,
+  /** Head-only count of the same filter (the page size does not matter). */
+  count: (filter: LatestStoriesFilter) =>
+    [
+      "discovery",
+      "count",
+      {
+        categorySlug: filter.categorySlug ?? null,
+        language: filter.language ?? null,
+        tagSlug: filter.tagSlug ?? null,
+        authorId: filter.authorId ?? null,
+        includeMature: filter.includeMature ?? false,
+      },
+    ] as const,
 };
 
 export const DEFAULT_PAGE_SIZE = 12;

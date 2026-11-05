@@ -96,6 +96,17 @@ import {
 import { PasswordStrengthMeter, type StrengthScore } from "@storynest/ui/widgets/password-strength-meter";
 import { PullToRefresh } from "@storynest/ui/widgets/pull-to-refresh";
 import { SkySwitch } from "@storynest/ui/widgets/sky-switch";
+// Batch 2 · browse
+import { SearchBox } from "@storynest/features";
+import { BookmarkMinus } from "lucide-react";
+import { useFlip } from "@storynest/ui/lib/use-flip";
+import { FeaturedCarousel } from "@storynest/ui/widgets/featured-carousel";
+import { RollingNumber } from "@storynest/ui/widgets/rolling-number";
+import { StoryCard, type StoryCardData } from "@storynest/ui/widgets/story-card";
+import { StoryPeekSheet } from "@storynest/ui/widgets/story-peek-sheet";
+import { StoryViewToggle, useStoredView } from "@storynest/ui/widgets/story-view-toggle";
+import { SwipeToRemove } from "@storynest/ui/widgets/swipe-to-remove";
+import { useSwipeTabs } from "@storynest/ui/widgets/swipe-tabs";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -1116,6 +1127,154 @@ function Batch2StatsExample() {
   );
 }
 
+// Batch 2 · browse: demos for the discover / search / library / author widgets.
+const BROWSE_CARD_LABELS = { reads: "Reads", votes: "Votes", updated: (relative: string) => `Updated ${relative}` };
+
+function browseStory(index: number): StoryCardData {
+  return {
+    href: `/dev/gallery#story-${index}`,
+    title: DEMO_TITLES[index % DEMO_TITLES.length]!,
+    authorName: ["An Nhiên", "Minh Thư", "Bảo Lâm"][index % 3]!,
+    synopsis:
+      "A lighthouse keeper finds a letter that arrived forty years late, and follows it up the coast through three storms and one wedding.",
+    coverUrl: index % 4 === 3 ? null : demoCoverUrl(index),
+    categoryName: ["Fantasy", "Romance", "Mystery"][index % 3]!,
+    statusLabel: index % 2 ? "Completed" : "Ongoing",
+    reads: 1200 + index * 731,
+    votes: 40 + index * 13,
+    updatedAt: new Date(Date.now() - (index + 1) * 3_600_000).toISOString(),
+  };
+}
+
+function BrowseHeaderSearchExample() {
+  return (
+    <div className="relative flex h-14 items-center gap-3 rounded-xl border px-4">
+      <span className="font-semibold tracking-tight">StoryNest</span>
+      <div className="ml-auto flex w-full max-w-sm items-center justify-end gap-2">
+        <SearchBox />
+        <Button type="button" size="icon" variant="ghost" aria-label="Notifications">
+          <Heart aria-hidden />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function BrowseRollingExample() {
+  const [votes, setVotes] = useState(1204);
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button type="button" variant="outline" onClick={() => setVotes((n) => n + 1)}>
+        Vote +1
+      </Button>
+      <Button type="button" variant="outline" onClick={() => setVotes((n) => Math.max(0, n - 37))}>
+        −37
+      </Button>
+      <Button type="button" variant="outline" onClick={() => setVotes((n) => n + 98_765)}>
+        +98,765
+      </Button>
+      <RollingNumber value={votes} format={(n) => `${n.toLocaleString("en")} votes`} live className="text-sm" />
+      <RollingNumber value={votes} format={(n) => `${n} followers`} className="text-2xl font-semibold" />
+    </div>
+  );
+}
+
+function BrowseFeaturedExample() {
+  return (
+    <FeaturedCarousel
+      title="Featured this week"
+      labels={{
+        pause: "Pause auto-advance",
+        play: "Resume auto-advance",
+        dots: "Choose a featured story",
+        slide: (index, count) => `Story ${index + 1} of ${count}: ${DEMO_TITLES[index]}`,
+      }}
+    >
+      {[0, 1, 2, 3].map((index) => {
+        const story = browseStory(index);
+        return (
+          <a
+            key={story.title}
+            href={story.href}
+            className="flex gap-4 rounded-2xl border bg-card p-4 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <StoryCover title={story.title} coverUrl={story.coverUrl} className="w-28 shrink-0 self-start" />
+            <span className="flex min-w-0 flex-col gap-2">
+              <span className="text-lg leading-snug font-semibold">{story.title}</span>
+              <span className="text-sm text-muted-foreground">{story.authorName}</span>
+              <span className="line-clamp-3 text-sm text-muted-foreground">{story.synopsis}</span>
+            </span>
+          </a>
+        );
+      })}
+    </FeaturedCarousel>
+  );
+}
+
+function BrowseGridExample() {
+  const toast = useAppToast();
+  const frame = useRef<HTMLDivElement>(null);
+  const capture = useFlip(frame);
+  const [view, setView] = useStoredView("storynest.gallery-view");
+  const [peek, setPeek] = useState<StoryCardData | null>(null);
+  const stories = [0, 1, 2, 3, 4, 5].map(browseStory);
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">Right-click or long-press a card for the quick look.</p>
+        <StoryViewToggle
+          value={view}
+          onChange={(next) => {
+            capture();
+            setView(next);
+          }}
+          labels={{ label: "Display", grid: "Grid", list: "List" }}
+        />
+      </div>
+      <div ref={frame} className="group/stories">
+        <ul
+          className={
+            view === "list"
+              ? "grid grid-cols-1 gap-3 lg:grid-cols-2"
+              : "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
+          }
+        >
+          {stories.map((story) => (
+            <li key={story.href}>
+              <StoryCard
+                story={story}
+                labels={BROWSE_CARD_LABELS}
+                LinkComponent={AppLink}
+                locale="en"
+                variant={view}
+                onPeek={() => setPeek(story)}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+      <StoryPeekSheet
+        story={peek}
+        open={peek !== null}
+        onOpenChange={(open) => !open && setPeek(null)}
+        LinkComponent={AppLink}
+        locale="en"
+        labels={{ reads: "Reads", votes: "Votes", open: "Open story", close: "Close quick look" }}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={() => toast.success("Following")}>
+              Follow
+            </Button>
+            <Button type="button" variant="outline" onClick={() => toast.success("Saved")}>
+              Save to library
+            </Button>
+          </div>
+        }
+      />
+    </div>
+  );
+}
+
 // ---- Batch 2 · manage: row context menu, bulk dock, drag reorder with flying rows, diff folds, detail panel --------
 
 const MANAGE_ROWS = [
@@ -1690,6 +1849,66 @@ function AccountBatchExample() {
   );
 }
 
+const BROWSE_TABS = ["reading", "saved", "following", "lists"] as const;
+type BrowseTab = (typeof BROWSE_TABS)[number];
+
+function BrowseShelfExample() {
+  const toast = useAppToast();
+  const [tab, setTab] = useState<BrowseTab>("saved");
+  const [saved, setSaved] = useState([0, 1, 2]);
+  const swipe = useSwipeTabs({ values: BROWSE_TABS, value: tab, onValueChange: setTab });
+  const remove = (index: number) => {
+    setSaved((current) => current.filter((i) => i !== index));
+    toast.success("Unsaved.", {
+      action: { label: "Undo", onClick: () => setSaved((current) => [...current, index].sort()) },
+    });
+  };
+  return (
+    <Tabs value={tab} onValueChange={(value) => setTab(value as BrowseTab)} className="max-w-xl">
+      <TabsList variant="line" swipe={swipe.swipe} aria-label="Library">
+        {BROWSE_TABS.map((value) => (
+          <TabsTrigger key={value} value={value} className="capitalize">
+            {value}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      <div className="overflow-x-clip">
+        <div key={swipe.panelKey} {...swipe.panelProps}>
+          {BROWSE_TABS.map((value) => (
+            <TabsContent key={value} value={value} className="min-h-40 pt-4">
+              {value === "saved" ? (
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {saved.map((index) => (
+                    <li key={index}>
+                      <SwipeToRemove label="Unsave" icon={BookmarkMinus} onRemove={() => remove(index)}>
+                        <div className="flex flex-col gap-2 bg-background">
+                          <StoryCard
+                            story={browseStory(index)}
+                            labels={BROWSE_CARD_LABELS}
+                            LinkComponent={AppLink}
+                            locale="en"
+                          />
+                          <Button type="button" size="sm" variant="ghost" onClick={() => remove(index)}>
+                            Unsave
+                          </Button>
+                        </div>
+                      </SwipeToRemove>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  The {value} panel. Swipe sideways on a touch screen to switch tabs.
+                </p>
+              )}
+            </TabsContent>
+          ))}
+        </div>
+      </div>
+    </Tabs>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -1912,6 +2131,14 @@ export function Gallery() {
         <div id="batch2-account">
           <AccountBatchExample />
         </div>
+      </Section>
+
+      <Section title="Batch 2 · browse">
+        <BrowseHeaderSearchExample />
+        <BrowseRollingExample />
+        <BrowseFeaturedExample />
+        <BrowseGridExample />
+        <BrowseShelfExample />
       </Section>
     </AppShell>
   );

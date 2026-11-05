@@ -10,11 +10,11 @@ import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
-import { StoryCard } from "@storynest/ui/widgets/story-card";
+import { useSwipeTabs } from "@storynest/ui/widgets/swipe-tabs";
 import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
 import { useNavigation, AppLink } from "../../_shared/platform.tsx";
 import { authorHref } from "../../author/index.ts";
-import { discoveryText, homeHref, toStoryCardData } from "../../discovery/index.ts";
+import { STORY_GRID, StoryListFrame, StoryTile, homeHref, useStoryView } from "../../discovery/index.ts";
 import { useSearchAuthors, useSearchStories, useSearchTags } from "../hooks/use-search.ts";
 import {
   SEARCH_MAX_LENGTH,
@@ -31,7 +31,6 @@ import { searchText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = searchText;
-const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
 /**
  * Results page. The term and the tab come from the address (props), so a search can be shared and survives a reload;
@@ -84,27 +83,62 @@ export function SearchScreen({
       ) : (
         <>
           <h2 className="text-lg font-semibold tracking-tight">{t.resultsFor(term)}</h2>
-          <Tabs value={tab} onValueChange={(next) => navigation.replace(searchHref(term, next as SearchTab))}>
-            <TabsList>
-              {SEARCH_TABS.map((name) => (
-                <TabsTrigger key={name} value={name}>
-                  {t.tabs[name]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          {tab === "stories" ? <StoryResults term={term} locale={locale} coverUrlFor={coverUrlFor} /> : null}
-          {tab === "authors" ? <AuthorResults term={term} /> : null}
-          {tab === "tags" ? <TagResults term={term} /> : null}
+          <ResultTabs term={term} tab={tab} locale={locale} coverUrlFor={coverUrlFor} />
         </>
       )}
     </section>
   );
 }
 
+/**
+ * The three result tabs. The tab lives in the address: clicking, the arrow keys or swiping the results sideways on a
+ * touch screen (the underline follows the finger) all replace the address.
+ */
+function ResultTabs({
+  term,
+  tab,
+  locale,
+  coverUrlFor,
+}: {
+  term: string;
+  tab: SearchTab;
+  locale: string;
+  coverUrlFor?: ((key: string) => string) | undefined;
+}) {
+  const navigation = useNavigation();
+  const select = (next: SearchTab) => navigation.replace(searchHref(term, next));
+  const swipe = useSwipeTabs({ values: SEARCH_TABS, value: tab, onValueChange: select });
+  const storyView = useStoryView();
+  return (
+    <>
+      <div className="flex items-end justify-between gap-3">
+        <Tabs value={tab} onValueChange={(next) => select(next as SearchTab)}>
+          <TabsList variant="line" swipe={swipe.swipe}>
+            {SEARCH_TABS.map((name) => (
+              <TabsTrigger key={name} value={name}>
+                {t.tabs[name]}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        {tab === "stories" ? storyView.toggle : null}
+      </div>
+      <div className="overflow-x-clip">
+        <div key={swipe.panelKey} {...swipe.panelProps}>
+          {tab === "stories" ? (
+            <StoryResults term={term} locale={locale} coverUrlFor={coverUrlFor} storyView={storyView} />
+          ) : null}
+          {tab === "authors" ? <AuthorResults term={term} /> : null}
+          {tab === "tags" ? <TagResults term={term} /> : null}
+        </div>
+      </div>
+    </>
+  );
+}
+
 function Loading({ grid = false }: { grid?: boolean }) {
   return (
-    <div className={grid ? GRID : "flex flex-col gap-2"} aria-busy role="status" aria-label={t.searching}>
+    <div className={grid ? STORY_GRID : "flex flex-col gap-2"} aria-busy role="status" aria-label={t.searching}>
       {Array.from({ length: grid ? 8 : 4 }, (_, i) => (
         <Skeleton key={i} className={grid ? "aspect-[2/3] w-full rounded-xl" : "h-14 w-full rounded-xl"} aria-hidden />
       ))}
@@ -126,42 +160,36 @@ function StoryResults({
   term,
   locale,
   coverUrlFor,
+  storyView,
 }: {
   term: string;
   locale: string;
   coverUrlFor?: ((key: string) => string) | undefined;
+  storyView: ReturnType<typeof useStoryView>;
 }) {
   const results = useSearchStories(term);
   const stories = results.data?.pages.flatMap((page) => page.items) ?? [];
-  const labels = {
-    reads: discoveryText.card.reads,
-    votes: discoveryText.card.votes,
-    updated: discoveryText.card.updated,
-  };
 
   if (results.isError && stories.length === 0) return <Failed onRetry={() => void results.refetch()} />;
   if (results.isPending) return <Loading grid />;
   if (stories.length === 0) return <Empty tab="stories" icon={Search} />;
   return (
-    <InfiniteList
-      items={stories}
-      getKey={(story) => story.id}
-      listClassName={GRID}
-      renderItem={(story) => (
-        <StoryCard
-          story={toStoryCardData(story, coverUrlFor)}
-          labels={labels}
-          LinkComponent={AppLink}
-          locale={locale}
-        />
-      )}
-      hasMore={results.hasNextPage}
-      isLoadingMore={results.isFetchingNextPage}
-      onLoadMore={() => void results.fetchNextPage()}
-      loadMoreLabel={t.loadMore}
-      loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
-      endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfResults}</p>}
-    />
+    <StoryListFrame frameRef={storyView.containerRef}>
+      <InfiniteList
+        items={stories}
+        getKey={(story) => story.id}
+        listClassName={storyView.listClassName}
+        renderItem={(story) => (
+          <StoryTile story={story} locale={locale} coverUrlFor={coverUrlFor} variant={storyView.view} />
+        )}
+        hasMore={results.hasNextPage}
+        isLoadingMore={results.isFetchingNextPage}
+        onLoadMore={() => void results.fetchNextPage()}
+        loadMoreLabel={t.loadMore}
+        loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
+        endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfResults}</p>}
+      />
+    </StoryListFrame>
   );
 }
 

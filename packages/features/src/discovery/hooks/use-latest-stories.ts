@@ -1,11 +1,11 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import type { AppError } from "../../_shared/errors.ts";
 import { useShowMature } from "../../adult-content/index.ts";
 import { toAppError } from "../../_shared/errors.ts";
-import { listPopularTags, type StoryPage } from "../api/discovery.api.ts";
+import { countLatestStories, listPopularTags, type StoryPage } from "../api/discovery.api.ts";
 import { discoveryKeys, type LatestStoriesFilter } from "../keys.ts";
 import type { Category } from "../model/categories.ts";
 import { POPULAR_TAGS_LIMIT, type PopularTag } from "../model/popular-tags.ts";
@@ -32,6 +32,34 @@ export function useLatestStories(filterWanted: LatestStoriesFilter, categories: 
   >({
     ...latestStoriesQueryOptions(getClient, filter, categories ?? []),
     enabled: !needsCategories || categories !== undefined,
+  });
+}
+
+const COUNT_STALE_MS = 60_000;
+
+/**
+ * How many stories a filter would list (head-only count on the feed's query). `enabled` keeps it idle until it is
+ * needed (the filter sheet is open, the feed came back empty). Like the feed, it waits for the category tree.
+ */
+export function useStoryCount(
+  filterWanted: LatestStoriesFilter,
+  categories: readonly Category[] | undefined,
+  enabled = true,
+) {
+  const getClient = useDataClientGetter();
+  const showMature = useShowMature();
+  const filter: LatestStoriesFilter = { ...filterWanted, includeMature: showMature };
+  const needsCategories = Boolean(filter.categorySlug);
+  return useQuery<number, AppError>({
+    queryKey: discoveryKeys.count(filter),
+    queryFn: () =>
+      countLatestStories(getClient(), { ...filter, categories: categories ?? [] }).catch((error: unknown) =>
+        Promise.reject(toAppError(error)),
+      ),
+    enabled: enabled && (!needsCategories || categories !== undefined),
+    staleTime: COUNT_STALE_MS,
+    // Keep the last number while the next filter is being counted, so the button does not flash back to "counting".
+    placeholderData: keepPreviousData,
   });
 }
 
