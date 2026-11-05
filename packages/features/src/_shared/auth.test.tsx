@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -157,6 +157,78 @@ describe("AuthProvider", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     expect(() => render(<Status />)).toThrow(/AuthProvider/);
     spy.mockRestore();
+  });
+});
+
+describe("AuthProvider: the query cache belongs to one user at a time", () => {
+  // Per-user data cached under keys that do not carry the user id (reading progress, studio, history...).
+  const PRIVATE_KEY = ["progress", "story", "s1"] as const;
+
+  function setup(initial: Session | null) {
+    const f = fakeClient({ initial, profile: profileRow });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const resolvers: ((value: string) => void)[] = []; // one per request, in call order
+    const queryFn = vi.fn(() => new Promise<string>((resolve) => resolvers.push(resolve)));
+    const seen: { user: string; data: string | undefined }[] = [];
+    function Probe() {
+      const auth = useAuth();
+      const query = useQuery({ queryKey: PRIVATE_KEY, queryFn, enabled: auth.status === "authenticated" });
+      seen.push({ user: auth.user?.id ?? auth.status, data: query.data });
+      return <span data-testid="probe">{query.data ?? "-"}</span>;
+    }
+    const ui = render(
+      <QueryClientProvider client={queryClient}>
+        <DataProvider client={f.client}>
+          <AuthProvider>
+            <Probe />
+          </AuthProvider>
+        </DataProvider>
+      </QueryClientProvider>,
+    );
+    const resolve = (value: string, call = resolvers.length - 1) => act(() => resolvers[call]?.(value));
+    return { ...f, queryClient, queryFn, seen, ui, resolve };
+  }
+
+  it("keeps data hydrated from the server for the first session and across token refreshes", async () => {
+    const t = setup(session("u1"));
+    t.queryClient.setQueryData(PRIVATE_KEY, "u1-data");
+    await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("u1-data"));
+    act(() => t.emit("TOKEN_REFRESHED", session("u1")));
+    act(() => t.emit("USER_UPDATED", session("u1")));
+    expect(t.queryClient.getQueryData(PRIVATE_KEY)).toBe("u1-data");
+  });
+
+  it("drops the previous user's data on sign-out", async () => {
+    const t = setup(session("u1"));
+    t.queryClient.setQueryData(PRIVATE_KEY, "u1-data");
+    await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("u1-data"));
+    act(() => t.emit("SIGNED_OUT", null));
+    await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("-"));
+    expect(t.queryClient.getQueryData(PRIVATE_KEY)).toBeUndefined();
+  });
+
+  it("never renders the previous user's data for the next user", async () => {
+    const t = setup(session("u1"));
+    t.queryClient.setQueryData(PRIVATE_KEY, "u1-data");
+    await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("u1-data"));
+
+    act(() => t.emit("SIGNED_IN", session("u2"))); // another account signs in (e.g. in another tab)
+    expect(t.seen.filter((render) => render.user === "u2" && render.data === "u1-data")).toEqual([]);
+    expect(screen.getByTestId("probe").textContent).toBe("-");
+
+    t.resolve("u2-data"); // the screen loads the new user's data
+    await waitFor(() => expect(screen.getByTestId("probe").textContent).toBe("u2-data"));
+  });
+
+  it("does not let a late answer to the previous user's request write their data back", async () => {
+    const t = setup(session("u1"));
+    await waitFor(() => expect(t.queryFn).toHaveBeenCalledTimes(1)); // u1's request is in flight
+    act(() => t.emit("SIGNED_OUT", null));
+    t.resolve("u1-late", 0); // the answer to u1's request arrives after the sign-out
+    await act(() => new Promise((resolve) => setTimeout(resolve, 20))); // let the query settle
+
+    expect(t.queryClient.getQueryData(PRIVATE_KEY)).toBeUndefined();
+    expect(screen.getByTestId("probe").textContent).toBe("-");
   });
 });
 
