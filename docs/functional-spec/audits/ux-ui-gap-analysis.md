@@ -96,7 +96,7 @@ sheet, TOC, search and rankings worked as specified.
 | U-EDT-05 | EDT | No confirmation before the first publish, which irreversibly notifies followers. | `editor/components/publish-panel.tsx` | FP-034 |
 | U-HIST-01 | HIST | Compare ignores title changes, says "paragraphs" for images/dividers, no "before" for a changed image. | `history/model/history.ts` | Quick fix |
 | U-HIST-02 | HIST / SCR-HIST-02 | Preview lacks "Chapter n" label and end marker; reuses history error text. | `history/screens/preview-screen.tsx` | Quick fix |
-| U-MOD-01 | MOD / SCR-MOD-01 | Queue card lacks date, comment author, closed-by, consequence text. | `moderation/components/report-card.tsx:155-186,245-249` | FP-024 |
+| U-MOD-01 | MOD / SCR-MOD-01 | Queue card lacks date, comment author, closed-by, consequence text. | `moderation/components/report-card.tsx:68-99,158-162` | FP-024 |
 | U-MOD-02 | MOD / SCR-MOD-01 | Only Pending/Resolved tabs; no status/kind filter; tab not in URL. | `moderation-screen.tsx:45-60` | FP-024 |
 | U-MAT-01 | MAT / SCR-MAT-01 | Gate "Go back" does nothing when there is no history (shared links). | `adult-content/components/adult-gate.tsx:24-26` | FP-005 |
 | U-MAT-02 | MAT / header | 18+ control is icon-only, announced as a toggle but opens a dialog. | `adult-content/components/adult-content-button.tsx:29-38` | FP-022 |

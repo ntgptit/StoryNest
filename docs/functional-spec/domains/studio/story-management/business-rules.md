@@ -315,7 +315,7 @@
 | Expected behavior | After sign-in the user returns to the requested Studio page; pages are `noindex` |
 | Exceptions | — |
 | Related screens | All D-STUDIO screens |
-| Evidence | `apps/web/src/lib/auth/route-guard.ts:4-12,35-48`; `apps/web/src/lib/auth/require-user.ts:78-82`; `apps/web/src/app/(main)/studio/page.tsx:8-13`; `apps/web/src/app/(main)/studio/new/page.tsx:8-13`; `apps/web/src/app/(main)/studio/story/[id]/page.tsx:8-14` |
+| Evidence | `apps/web/src/lib/auth/route-guard.ts:4-12,35-48`; `apps/web/src/lib/auth/require-user.ts:29-33`; `apps/web/src/app/(main)/studio/page.tsx:8-13`; `apps/web/src/app/(main)/studio/new/page.tsx:8-13`; `apps/web/src/app/(main)/studio/story/[id]/page.tsx:8-14` |
 | Status | Verified |
 
 ### BR-STM-024 — Cache refresh after a story write
