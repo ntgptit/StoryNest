@@ -125,3 +125,203 @@ Status for all rows: **Open**. "Blocks" lists the proposals that cannot be final
 | Q-X-03 | Owner actions in Supabase dashboard: leaked-password protection, Auth redirect URLs, Google OAuth keys, staging project (WBS 0.0) | FP-009 |
 
 Total open questions: 56 domain questions + 3 cross-cutting.
+
+
+---
+
+## 4. Phase 2 consolidation decisions (2026-11-05)
+
+Documentation decisions taken while merging the Phase 2 reviews. They organise the proposals; they do **not**
+approve any of them.
+
+| ID | Decision | Rationale |
+| --- | --- | --- |
+| DEC-013 | Phase 2 identifiers (`JRN-`, `CAP-`, `SE-`, `BRC-`, `BM-`) and the six verification tags are added to [CONVENTIONS](../CONVENTIONS.md#3-identifiers) | Traceability from journey → capability → screen → proposal |
+| DEC-014 | **BRC-SHELL-01** is read as one pattern for both focused frames: the shell-less reader (FP-043, WBS §1.2 `(reader)`) and the studio writing frame (FP-058, WBS §1.2 `(studio)`) | Same root cause (sticky bars under the site header, verified at runtime for the reader); one `AppShell` variant |
+| DEC-015 | Story card variants live in FP-037 (`grid`, `row`, `rail`); FP-045 only chooses the variant per screen ("compact" = `rail`) | Two reviews proposed the same component |
+| DEC-016 | FP-052 is merged into FP-044 (in-story continuity); the Home "Continue reading" rail moves from FP-044 to FP-047 (cross-story "what's new") | Three proposals overlapped; one resolver (FP-012) |
+| DEC-017 | Legal page content and copyright requests: FP-065. Footer, icons, manifest, default share card: FP-039 | Two reviews proposed legal pages |
+| DEC-018 | FP-060 (pre-publish review) reuses the reader-visibility model of FP-054 and delivers FP-034's first-publish confirmation | Avoid two visibility indicators |
+| DEC-019 | FP-066 (operations area) displays job health specified in FP-010 and leaves per-target history to FP-024 | Avoid three specifications of the same data |
+| DEC-020 | Colliding IDs renumbered at merge: engagement & library Q-NOTI-04/05 → **Q-NOTI-06/07**, Q-CMT-03 → **Q-CMT-04**; account & platform BRC-SHELL-01 → **BRC-SHELL-02** | Two reviews picked the same next number |
+| DEC-021 | Phase 1 line citations corrected: `report-button.tsx` (−278), `report-card.tsx` (−87), `require-user.ts` lines 78–82 → 29–33, `moderation.api.ts` lines 221–228 → `model/report.ts` lines 161–162; all 1,924 citations now point inside their files | Found during Phase 2; see [coverage report](../audits/coverage-report.md#7-phase-2-update-2026-11-05) |
+| DEC-022 | Breakpoint conflict resolved: one review proposed header section links from `md`, another a bottom nav below `lg`. Adopted (as a proposal): **bottom nav below `lg`, header section links from `lg`** (BRC-SHELL-02); the FP-019 amendment was aligned | Avoids two navigation systems at 768–1023 px; keeps a touch-friendly nav on tablets |
+| DEC-023 | QA test accounts and data created on `storynest-dev` with the Product Owner's approval (2026-11-05), under the rules in [verification-plan §1](verification-plan.md#1-safety-rules-all-mandatory); supersedes the DEC-011 restriction for verification runs | Signed-in flows had never been run |
+| DEC-024 | Phase 2.5 recommendations are recorded as `PD-01…PD-10` with status **Recommended / Pending Approval** in [product-decisions.md](product-decisions.md); none is approved | Keep proposal and decision separate |
+
+### Decisions that block the highest-value Phase 2 proposals
+
+| Question / BRC | Blocks | Why it matters first |
+| --- | --- | --- |
+| Q-READ-02 + BRC-SHELL-01 | FP-043 (P1), FP-058 | Shell-less reader and writing frames; default of paragraph-comment markers |
+| Q-X-02 (+ Q-MOD-08) | FP-065 (P1), FP-039 | Legal content for terms, privacy, guidelines, copyright channel |
+| Q-STM-03 (optional) | FP-054 default change only | FP-054 itself needs no decision; changing the default visibility does |
+| Q-EDT-06 | FP-058 priority (P1 vs P2) | Is mobile web authoring a launch target? |
+| Q-LIB-03 + BRC-LIB-01 | FP-048 stages B/C | One "keep" model replaces save vs follow |
+| Q-HOME-02 + BRC-HOME-01 | FP-040/FP-041 ordering | Meaning of "recently updated" |
+| Q-STORY-02 + BRC-STORY-01 | FP-044 | Caught-up / read-again behaviour |
+| Q-CMT-04, Q-NOTI-06 + BRC-CMT-01, BRC-NOTI-01 | FP-049 | Reply-to-reply and thread notifications |
+| Q-MOD-06 + BRC-MOD-02 | FP-063 | Appeal window and reviewer |
+| Q-MOD-07 | FP-064 | Scope of a block |
+
+## 5. Phase 2 business-rule change proposals
+
+Each `BRC-*` proposes a change to a rule documented as Verified in `domains/**`. The rule stays in force until the
+proposal is approved here and implemented. Status for all: **Proposed — awaiting approval**.
+
+#### From the account & platform review
+
+| ID | Current rule | Proposed change | Why | Blocks |
+| --- | --- | --- | --- | --- |
+| BRC-AUTH-01 | BR-AUTH-003: username and display name are optional fields on the sign-up form, sent as metadata | Remove them from the sign-up form; collect them in the welcome step (FP-035) where availability is checked. The trigger keeps deriving defaults (BR-AUTH-004 unchanged). | Shorter form, no silent username changes at sign-up (F-AUTH-01) | FP-035, FP-009 |
+| BRC-SHELL-02 | BR-SHELL-004: bottom nav shown below `md` (768 px) | Show it below `lg` (1024 px); header section links from `lg` | Tablet portrait has no navigation today (runtime) | FP-019 |
+| BRC-I18N-01 | BR-I18N-006: language button in the main header for everyone | Move it into the user menu (members), guest "⋯" menu, footer and auth layout; Settings keeps the full control | Header density at 390 px; label-in-name fix | FP-019, FP-021 |
+
+#### From the discovery & reading review
+
+| ID | Rule(s) affected | Current (Verified) | Proposed | Raised by | Question |
+| --- | --- | --- | --- | --- | --- |
+| BRC-HOME-01 | BR-HOME-002 (order), BR-HOME-009 ("Updated <relative>"), BR-AUTHOR-008 (following order) | Order by `stories.updated_at`, which moves on any story-row update including metadata edits and republished edits (N-03) | "Recently updated" and the card's "Updated" mean **a new chapter was published**: order by `last_chapter_published_at` (FP-040), then `first_published_at`, then id. Metadata edits no longer move a story. | FP-040, FP-041, SE-AUTHOR-02 | Q-HOME-02 |
+| BRC-HOME-02 | BR-HOME-009 (card content) | One card layout; cover, title, author, category, status, synopsis excerpt, reads, votes, updated | Card variants `grid` / `row` / `compact` with an optional facts line (chapters, words/reading time) and in-card reason/rank/progress slots | FP-040, FP-045 | — (design approval only) |
+| BRC-STORY-01 | BR-STORY-012, BR-PROG-008 | No target after the last chapter is completed → "Start reading" (chapter 1) | Five CTA states: Start reading · Continue · Ch. N · Caught up (ongoing/hiatus, all read; action Follow) · Read again (completed story, all read) · plus "Continue · Ch. N+1" when new chapters appear | FP-044 | Q-STORY-02 |
+| BRC-SRCH-01 | BR-SRCH-003 (matching and relevance), BR-SRCH-009 (suggestions) | Stories match by title only (LIKE or trigram) | Weighted match over title, author name, tag names (and synopsis if approved), with `match_field`. Suggestions include top authors and tags. | FP-042 | Q-SRCH-02 |
+| BRC-READ-01 | BR-READ-013 (four preferences) | Size, spacing, font, background | Add a fifth closed-list preference `paragraphComments` (`all` / `withComments` / `off`) with a default per Q-READ-02. Same storage, sync and ≤ 512-byte limit (BR-READ-014…017). | FP-043 | Q-READ-02 |
+| BRC-RANK-01 | BR-RANK-004 (positions), BR-RANK-006 (URL params) | Positions over all eligible stories; `period` only | Optional `scope` (category slug or `new`). Positions are continuous within the scope. | FP-046 | Q-RANK-02 |
+
+#### From the engagement & library review — BRC-LIB-01 — Save and story-follow become one "keep" with a notify setting
+
+| Field | Value |
+| --- | --- |
+| Rules affected | BR-LIB-001 (independence), BR-LIB-008 (tab content and Following sort), BR-LIB-005 (button set) — all Verified; WBS 4.3 note "hai khái niệm tách biệt" |
+| Proposed text | "A story is *in my library* when I saved it or follow it. Following is shown as the notify setting of a library story. Saving a story for the first time also follows it unless the reader's 'notify by default' setting is off. Unfollowing keeps the save. Unsaving removes both. Existing save-only rows keep notify off; existing follow-only rows show as saved with notify on. The Following list is ordered by latest chapter publish time." |
+| Unchanged | Tables, RPCs `set_story_follow`/`set_story_save`, counters (BR-LIB-004), notification audience (BR-NOTI-003 still = follows) |
+| Migration | Staged A → B → C (§1.6); no backfill; rollback = UI revert |
+| Approval | Product owner; open question Q-LIB-03 |
+
+#### From the engagement & library review — BRC-CMT-01 — "Reply" available on replies (storage stays one level)
+
+| Field | Value |
+| --- | --- |
+| Rules affected | BR-CMT-005 (one level; reply inherits paragraph) — kept for storage; SCR-CMT-01-AC10 "a reply has no Reply button" — changed |
+| Proposed text | "A reply may be answered. The answer is stored as a reply to the same top-level comment, with `reply_to_comment_id` naming the reply it answers and a '@Name ' text prefix the writer may edit. Replying to a reply via API with a `parent_comment_id` that is itself a reply still fails with 22023." |
+| Approval | Product owner; Q-CMT-04 |
+
+#### From the engagement & library review — BRC-NOTI-01 — Reply notifications reach thread participants
+
+| Field | Value |
+| --- | --- |
+| Rules affected | BR-NOTI-004 (recipient = parent author only), BR-NOTI-002 catalogue row |
+| Proposed text | "For each visible reply, notify: the parent comment's author; the author of the addressed reply; and up to 10 most recent other distinct repliers of the thread. Exclude the replier, inactive accounts, users who muted the thread (BR-NOTI-018) and users who switched off `notify_comment_replied`. One notification per recipient per reply." |
+| Approval | Product owner; Q-NOTI-06 |
+
+#### From the studio management review
+
+| ID | Rule | Current (Verified) | Proposed | Reason |
+| --- | --- | --- | --- | --- |
+| BRC-STM-01 | BR-STM-003 Studio row content | "n chapters" = all chapter rows the team can read (drafts, archived, deleted included) | Card shows "n published · m drafts" (deleted excluded, archived counted only in Chapters tab) and, for owner/co-author, reads + followers | The current count misleads; supports FP-055 |
+| BRC-TEAM-01 | BR-TEAM-009 Team screen is owner-only | Co-authors/editors see "Only the owner can manage this" | Viewing members is open to every team role; managing (invite, cancel, remove others, change role) stays owner-only | Transparency; RLS already allows reading |
+| BRC-STAT-01 | BR-STAT-003 Retention | Ratio of lifetime reads N / N−1, shown for every chapter but the first | Keep the stored value; **display** "Too early" when chapter N was first published < 7 days ago (threshold configurable in the client constant) | Avoid false drop-off alarms for new chapters |
+
+#### From the writing & history review
+
+| ID | Rule affected | Proposed change | Why | Linked |
+| --- | --- | --- | --- | --- |
+| BRC-SHELL-01 | BR-SHELL-001 "Every regular page uses the main shell" | Studio writing screens (SCR-EDT-01, SCR-HIST-01, SCR-HIST-02) render in a studio writing frame without the mobile bottom navigation and with a screen-specific sticky action bar instead of the browsing header (route group `(studio)` as planned in WBS §1.2). | Keyboard + bottom nav + header leave little writing space; sticky bars collide (preview). | FP-058, Q-EDT-06; consolidate with the reader agent's shell-less `(reader)` proposal |
+| BRC-HIST-01 | BR-HIST-006 "Restore a version into the draft" (step 4: delete the device backup; no undo) | Before writing, store the current saved draft as a `before_restore` checkpoint (server) and keep the device backup until the restore succeeds; offer Undo. | F-HIST-01; Q-HIST-01 | FP-059, FP-003 |
+| BRC-EDT-01 | BR-EDT-021/022 "snapshot taken from the draft as it is at the due time" | (Only if Q-EDT-02/Q-EDT-05 decide so) store `scheduled_revision` at scheduling; at due time publish only if the draft revision still equals it, otherwise keep the chapter scheduled-failed and notify the author (FP-010 failure path). | Half-finished edits going live; enables scheduling the next version of a live chapter. | FP-010, Q-EDT-02, Q-EDT-05 |
+
+#### From the trust & safety review
+
+| ID | Rule affected | Current (Verified) | Proposed | Why | Linked |
+| --- | --- | --- | --- | --- | --- |
+| BRC-MOD-01 | BR-MOD-001 Moderator role | Role = JWT `app_metadata.role`, set by service role; revocation effective at token refresh | Role stored in `staff_roles` (moderator/admin) and projected into the JWT by a Custom Access Token hook; sensitive RPCs also check the table | Role UI with audit (WBS 6.1 not done); immediate revocation for sensitive actions (Q-MOD-02) | FP-066, Q-MOD-02, Q-MOD-09 |
+| BRC-MOD-02 | BR-MOD-016 Effects of a suspension | Every write gated by `is_active_account()` is refused | Exception: a suspended account may submit an appeal against its own suspension or against actions on its content, and may manage its blocks | A suspension must be contestable; blocking only protects the user | FP-063, FP-064, FP-002 |
+| BRC-MOD-03 | BR-MOD-004 Who may report (guest behaviour) | Guest → `/login?next=<pathname>`; query string and hash not kept | `next` keeps path + query + hash and a `report=<kind>:<id>` intent; the dialog reopens after sign-in | Guest intent is lost, especially for comments (JRN-MOD-07) | SE-MOD-02-AC03 |
+| BRC-MAT-01 | BR-MAT-003 Changing the choice | Every control re-asks the age statement when going hidden → shown | When `ageConfirmed` is true, turning 18+ on needs no repeated age statement | Matches WBS 5.6 "ẩn rồi bật lại không hỏi hai lần" (Documented) | Q-MAT-01, SE-MAT-01-AC08 |
+| BRC-MAT-02 | BR-MAT-011 The 18+ mark belongs to the author | Only owner/co-author set `is_mature`; moderators have no action | A moderator may set `is_mature = true` through `moderate('set_mature')` with an audit row. While that action is the latest on the story, the author cannot clear the flag (guard trigger like `stories_guard_removal`) but can appeal (FP-063) | Proportionate remedy for mis-rated stories instead of removal | Q-MAT-04, FP-024 |
+
+
+## 6. Phase 2 open questions
+
+Status for all rows: **Open**. Numbering continues each code's Phase 1 sequence.
+
+#### From the account & platform review
+
+| ID | Question | Why it matters | Blocks | Raised in |
+| --- | --- | --- | --- | --- |
+| Q-AUTH-04 | Should the first-run welcome be offered to every new member (skippable) and should username/display name move from sign-up into it? | Conversion vs. identity quality; changes BR-AUTH-003 | FP-035, BRC-AUTH-01 | JRN-ACC-01 |
+| Q-AUTH-05 | Deactivation and deletion semantics: is a deactivated account hidden like a suspended one, can it reactivate by signing in, and is there a grace period (proposed 14 days) before anonymisation? | Irreversible data change; needs legal input with Q-X-01 | FP-008 | JRN-ACC-04 |
+| Q-AUTH-06 | After a password reset or change, should other sessions be ended (default on, user can untick)? | Security remedy for compromised accounts; tied to Q-AUTH-01 | FP-009 | JRN-ACC-03 |
+| Q-SET-01 | Should app theme and reduced-motion follow the account across devices (like language) or stay on the device (like the reader preferences on Royal Road, BM-01)? | Schema columns vs. device-only | FP-036 | JRN-ACC-05 |
+| Q-SHELL-02 | Tablet and header layout: bottom nav up to `lg`? Where do the 18+ toggle and language control live when they leave the header? | Navigation at 768 px; trust-safety owns the 18+ control | FP-019, BRC-SHELL-02, BRC-I18N-01 | SE-SHELL-01 |
+| Q-SHELL-03 | Who supplies brand assets (logo, app icon, default share image) and the footer's About/Contact text? | Needed for FP-039 and WBS 7.5 | FP-039 | SE-SHELL-01 |
+| Q-SEO-03 | Should filtered Home pages (`/?category=…`, `/?tag=…`) be indexable landing pages with their own canonical/title, or canonicalise to `/`? | Duplicate content vs. category landing SEO | FP-039 (defaults) | CAP-PLAT-07 |
+
+Existing questions this draft relies on: Q-AUTH-01, Q-AUTH-02, Q-SHELL-01, Q-I18N-01, Q-X-01, Q-X-02, Q-X-03.
+
+---
+
+#### From the discovery & reading review
+
+| ID | Question | Why it matters | Blocks | Raised in |
+| --- | --- | --- | --- | --- |
+| Q-HOME-02 | Should "Recently updated" (feed order, card "Updated", following feed) mean "a new chapter was published" instead of "the story row changed"? | Today a typo fix or a republished edit moves a story to the top (N-03). This is a ranking-fairness and trust question. | FP-040 ordering use, FP-041 default sort, BRC-HOME-01 | SE-HOME-01, SE-AUTHOR-02 |
+| Q-HOME-03 | Which length buckets and reading speed should be used (e.g. short < 20k words, medium 20–100k, long > 100k; ~200 words/min for Vietnamese)? Per language or global? | Filter semantics and the reading-time label | FP-040 (reading time), FP-041 (length filter) | FP-040 |
+| Q-STORY-02 | What should a reader who read every published chapter see: "Caught up · Follow" (ongoing), "Read again" (completed)? Should finished, completed stories leave the library "Reading" tab and the continue rail? | Today they are told to "Start reading" (N-04). This overlaps library behaviour. | FP-044, BRC-STORY-01 | SE-STORY-01 |
+| Q-SRCH-02 | Should story search also match author names, tags and the synopsis, and with which relative weights? | Relevance vs noise. The synopsis needs a new index. | FP-042, BRC-SRCH-01 | SE-SRCH-01 |
+| Q-READ-02 | In the immersive reader: (a) is the shell-less layout (no site header, no bottom nav) approved as planned in WBS §1.2? (b) auto-hide bars on mobile? (c) default for paragraph-comment markers (`all` / `withComments` / `off`)? | Comment visibility drives comment engagement (WBS Q6 made paragraph comments an M2 feature). Hiding markers by default may reduce it. | FP-043, BRC-READ-01 | SE-READ-01 |
+| Q-RANK-02 | Which stories count as "new" for the New & rising scope: first published within 30 days? Only an author's first story? A minimum number of chapters? | Prevents gaming (re-creating stories) and defines exposure fairness | FP-046, BRC-RANK-01 | SE-RANK-01 |
+
+---
+
+#### From the engagement & library review
+
+| ID | Question | Why it matters | Blocks | Raised in |
+| --- | --- | --- | --- | --- |
+| Q-LIB-03 | Approve the unified keep model (BRC-LIB-01)? Should "notify by default on save" be on, and should it apply only to new saves? | Changes an approved WBS 4.3 decision and notification volume | FP-048 stages B and C | JRN-RDR-08, §1.6 |
+| Q-LIB-04 | Which count does the Library show: chapters published since my last read ("new") or published chapters after my continue chapter ("left")? Both? | Badge meaning, sort order, and consistency with Q-PROG-01 | FP-047 | SE-LIB-01 |
+| Q-CMT-04 | Allow answering a reply in place (stored one level, @Name prefix) — BRC-CMT-01? | Changes SCR-CMT-01-AC10; moderation and abuse surface | FP-049 | JRN-RDR-09 |
+| Q-NOTI-06 | Who is notified in a thread (parent author, addressed reply author, other participants), with what cap, and is a thread mute needed — BRC-NOTI-01? | Notification volume vs. conversation continuity | FP-049 | JRN-RDR-09 |
+| Q-NOTI-07 | Email digest: opt-in or opt-out, daily or weekly default, which email provider, legal text for unsubscribe and consent? | First out-of-app channel; legal (relates to Q-X-02) | FP-026 (amended) | JRN-RDR-10/11 |
+
+---
+
+#### From the studio management review
+
+| ID | Question | Why it matters | Blocks | Raised in |
+| --- | --- | --- | --- | --- |
+| Q-STM-03 | Should new stories still default to Private (BR-STM-006), or default to Public/Unlisted, given that first publish keeps visibility? | Every author who keeps the default publishes invisibly; FP-054 mitigates but does not change the default | FP-054 (optional part) | studio-manage draft, JRN-AUT-01 |
+| Q-STM-04 | Should followers be notified when a story changes to Completed or Hiatus (new notification types)? | Readers learn lifecycle changes only from a badge | FP-026 scope | JRN-AUT-03 |
+| Q-TEAM-04 | Is ownership transfer needed (owner leaves, or owner account deleted under DEC-007 while co-authors remain)? | Shared stories may become unmanageable | — (no FP yet) | CAP-AUTH-11 |
+| Q-STAT-02 | May authors see *who* follows a story, or only counts and daily totals? | Privacy of `story_follows` (own-read RLS today) | FP-056 | JRN-AUT-05/06 |
+| Q-CMT-03 | Should editors see the author comments tab (read-only), and is a cross-story comments inbox wanted later? | Role matrix BR-TEAM-010 excludes editors from moderation | FP-057 | JRN-AUT-05 |
+
+#### From the writing & history review
+
+| ID | Question | Why it matters | Linked |
+| --- | --- | --- | --- |
+| Q-EDT-06 | Is writing chapters in the mobile **web** app (390 px) a launch target, or is mobile authoring deferred to the Capacitor app (WP 7.1 "studio rút gọn")? | Sets FP-058 priority (P1 vs P2) and whether the docked toolbar is built for web or only for Capacitor. | FP-058 |
+| Q-EDT-07 | Should chapters have a structured author's note (before/after the chapter), outside the body, word count, diff and paragraph comments? | Authors otherwise write notes into the body, inflating counts and creating comment anchors on notes. | CAP-AUTH-28 |
+| Q-EDT-08 | Should the editor open offline (recently edited chapters cached on the device) and sync on reconnect, with CAS conflicts handled as today? | Commute writing; scope of WP 7.4 (offline is planned for reading only). | CAP-AUTH-34 |
+| Q-HIST-03 | Checkpoint retention and visibility: how many automatic checkpoints per chapter / how long; may named checkpoints be deleted and by whom; purge on account deletion (WBS Q7)? | Storage, privacy of removed text. | FP-059 |
+| Q-NOTI-04 | When a chapter's first publish produced no follower notification (story private/suppressed at processing), should the announcement be re-armed for the next time the chapter is published while the story is public? | Today `first_published_at` is set anyway, so followers are never told. | FP-060, BR-NOTI-003 |
+
+Existing questions this draft depends on: Q-EDT-01, Q-EDT-02, Q-EDT-04, Q-EDT-05, Q-HIST-01, Q-NOTI-02, Q-NOTI-03,
+Q-READ-01 (chapter number shown in the editor header).
+
+---
+
+#### From the trust & safety review
+
+| ID | Question | Why it matters | Blocks | Raised in |
+| --- | --- | --- | --- | --- |
+| Q-MOD-05 | Should the queue group reports by target ("cases") and sort by severity tier? Which reasons form which tier (proposal: tier 1 sexual/violence/hate, tier 2 harassment/copyright, tier 3 spam/other)? | Time-to-action on the most harmful content | FP-024 (amendment), SE-MOD-01 | JRN-MOD-01 |
+| Q-MOD-06 | Appeals: who may appeal (affected party only?), within what window (proposal 30 days), one per action, and must a different moderator decide? | Due process vs. a small team | FP-063 | JRN-MOD-05 |
+| Q-MOD-07 | Scope of a block: also stop the blocked user commenting on the blocker's stories and remove their follow? | Author protection vs. openness of public stories | FP-064 | JRN-MOD-07 |
+| Q-MOD-08 | Copyright requests from non-members: published contact address only, or an anonymous form once captcha (FP-009) exists? Who owns the address? | Legal reachability vs. anonymous abuse | FP-065 | JRN-MOD-05 |
+| Q-MOD-09 | Is a separate `admin` role needed for staff and threshold changes, or are all moderators trusted with them? | Least privilege | FP-066 | JRN-MOD-06 |
+| Q-MAT-05 | Should sign-up ask for a birth year (or an "I am 18+" statement) so that accounts declared under 18 cannot turn on 18+ content? | Age-appropriate experience for minors (CAP-TNS-14); today any account can self-declare at any time | — (no FP until decided) | JRN-MOD-04 |
+| Q-MAT-06 | Should "continue" at the gate reveal only that story (per-story pass) instead of turning 18+ on for every list? The current behaviour is documented in WBS 5.6. | Readers who follow one shared link may not want their lists to change. The proposal keeps global + explains + Undo (SE-MAT-01) | SE-MAT-01 copy | JRN-MOD-04 |
+
+---
+

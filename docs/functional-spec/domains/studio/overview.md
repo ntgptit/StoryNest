@@ -11,7 +11,7 @@ audience statistics. Documented scope: `docs/WBS.md` Phase 3 (WP 3.1–3.9) and 
 
 | Actor | Who | How the system knows |
 | --- | --- | --- |
-| Guest | Not signed in | Redirected to `/login?next=…` by the proxy and by `requireUser` (`apps/web/src/lib/auth/route-guard.ts:4-12`, `apps/web/src/lib/auth/require-user.ts:78-82`) |
+| Guest | Not signed in | Redirected to `/login?next=…` by the proxy and by `requireUser` (`apps/web/src/lib/auth/route-guard.ts:4-12`, `apps/web/src/lib/auth/require-user.ts:29-33`) |
 | Member (no role on a story) | Any signed-in user | `story_role(story) IS NULL` (`supabase/migrations/20261103000100_auth_and_rls.sql:83-91`) — sees "not found" on studio pages of that story |
 | Owner | `stories.owner_id = auth.uid()` | `story_role = 'owner'` |
 | Co-author | Accepted invitation as `co_author` | `story_role = 'co_author'` |

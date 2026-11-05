@@ -13,7 +13,7 @@
 | Postconditions | Report appears at the bottom of the moderators' "Pending" tab (oldest first) |
 | Affected objects | OBJ-MOD, OBJ-ABU (quota) |
 | Related screens | SCR-MOD-02, SCR-STORY-*, SCR-READ-*, SCR-AUTHOR-01, comment thread (OBJ-CMT) |
-| Status | Verified (`moderation/components/report-button.tsx:309-421`, `moderation/moderation.test.tsx:263-326`, `docs/WBS.md:219` runtime note) |
+| Status | Verified (`moderation/components/report-button.tsx:31-143`, `moderation/moderation.test.tsx:263-326`, `docs/WBS.md:219` runtime note) |
 
 ### WF-MOD-02 — Triage the queue
 | Field | Value |
@@ -28,7 +28,7 @@
 | Postconditions | Report `reviewing` (still in Pending) or closed (in Resolved) |
 | Affected objects | OBJ-MOD |
 | Related screens | SCR-MOD-01 |
-| Status | Verified (`moderation/components/report-card.tsx:119-278`, `moderation/hooks/use-moderation.ts:57-99`, `moderation/moderation.test.tsx:343-535`) |
+| Status | Verified (`moderation/components/report-card.tsx:32-191`, `moderation/hooks/use-moderation.ts:57-99`, `moderation/moderation.test.tsx:343-535`) |
 
 ### WF-MOD-03 — Act on the reported content
 | Field | Value |
