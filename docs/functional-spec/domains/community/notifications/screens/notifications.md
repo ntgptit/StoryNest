@@ -132,7 +132,7 @@
 
 ## F. Findings referenced
 
-F-NOTI-01, F-NOTI-02, F-NOTI-03, F-NOTI-04, U-NOTI-01, U-NOTI-02 (scratchpad `findings-community-library.md`).
+F-NOTI-01, F-NOTI-02, F-NOTI-03, F-NOTI-04, U-NOTI-01, U-NOTI-02 (reported by the analysis run; to be merged into `audits/`).
 
 ## G. Open questions
 

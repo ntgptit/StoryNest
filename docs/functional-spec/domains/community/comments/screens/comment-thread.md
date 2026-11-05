@@ -7,7 +7,7 @@
 | Screen ID | `SCR-CMT-01` |
 | Name | Comment thread (`CommentThread` widget) |
 | Type | Embedded panel — no own route |
-| Mounted in | (1) Chapter reader (OBJ-READ) route `/story/[id]/[slug]/[chapterSlug]` (`apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx`), as `<section id="comments">` after the vote and report buttons: `packages/features/src/reader/screens/reader-screen.tsx:117-124` (chapter scope, newest first). (2) Same reader, bottom `Sheet` opened from the trailing button of each paragraph/heading: `packages/features/src/reader/components/reader-blocks.tsx:64-76` (paragraph scope, oldest first). |
+| Mounted in | (1) Chapter reader SCR-READ-01 (OBJ-READ) route `/story/[id]/[slug]/[chapterSlug]` (`apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx`), as `<section id="comments">` after the vote and report buttons: `packages/features/src/reader/screens/reader-screen.tsx:117-124` (chapter scope, newest first). (2) Same reader, bottom `Sheet` opened from the trailing button of each paragraph/heading: `packages/features/src/reader/components/reader-blocks.tsx:64-76` (paragraph scope, oldest first). |
 | Component files | `packages/features/src/comments/components/comment-thread.tsx`, `comment-item.tsx`, `comment-composer.tsx`; hooks `packages/features/src/comments/hooks/use-comments.ts`; API `packages/features/src/comments/api/comments.api.ts`; model `packages/features/src/comments/model/comment.ts` |
 | Roles | Guest (read), signed-in reader (write/reply/like/edit/delete own), story owner & co-author (hide/unhide), moderator (sees hidden) |
 | Access guard | None at route level (reader is public); data guarded by `can_read_chapter` + `comment_listable` |
@@ -199,8 +199,8 @@
 
 ## F. Findings referenced
 
-F-CMT-01, F-CMT-02, F-CMT-03, F-CMT-04, U-CMT-01, U-CMT-02, U-CMT-03, U-CMT-04, U-NOTI-01, F-NOTI-02 (scratchpad
-`findings-community-library.md`; to be merged into `audits/`).
+F-CMT-01, F-CMT-02, F-CMT-03, F-CMT-04, U-CMT-01, U-CMT-02, U-CMT-03, U-CMT-04, U-NOTI-01, F-NOTI-02 (reported by the analysis
+run; to be merged into `audits/`).
 
 ## G. Open questions
 

@@ -131,7 +131,7 @@
 
 ## F. Findings referenced
 
-F-LIB-01, U-LIB-01, U-LIB-02, U-LIB-03 (scratchpad `findings-community-library.md`).
+F-LIB-01, U-LIB-01, U-LIB-02, U-LIB-03 (reported by the analysis run; to be merged into `audits/`).
 
 ## G. Open questions
 

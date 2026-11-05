@@ -180,8 +180,8 @@
 
 ## F. Findings referenced
 
-F-LIST-01, F-LIST-02, F-LIST-03, F-LIST-04, U-LIST-01, U-LIST-02, U-LIST-03, U-LIB-01 (scratchpad
-`findings-community-library.md`).
+F-LIST-01, F-LIST-02, F-LIST-03, F-LIST-04, U-LIST-01, U-LIST-02, U-LIST-03, U-LIB-01 (reported by the analysis
+run; to be merged into `audits/`).
 
 ## G. Open questions
 

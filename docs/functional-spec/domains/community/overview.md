@@ -21,8 +21,8 @@ notification inbox used by every signed-in user.
 
 | ID | Name | Folder | Screens | Rules / workflows |
 | --- | --- | --- | --- | --- |
-| `OBJ-VOTE` | Chapter votes | [`vote/`](vote/) | — (vote button embedded in the chapter reader, OBJ-READ) | [business rules](vote/business-rules.md) · [workflows](vote/workflows.md) |
-| `OBJ-CMT` | Comments (chapter & paragraph comments, replies, likes, author moderation) | [`comments/`](comments/) | [SCR-CMT-01 Comment thread](comments/screens/comment-thread.md) — embedded panel in the chapter reader (end-of-chapter section `#comments` and paragraph bottom sheet) | [business rules](comments/business-rules.md) (BR-CMT-001…021) · [workflows](comments/workflows.md) (WF-CMT-01…10) |
+| `OBJ-VOTE` | Chapter votes | [`vote/`](vote/) | — (vote button embedded in the chapter reader SCR-READ-01) | [business rules](vote/business-rules.md) · [workflows](vote/workflows.md) |
+| `OBJ-CMT` | Comments (chapter & paragraph comments, replies, likes, author moderation) | [`comments/`](comments/) | [SCR-CMT-01 Comment thread](comments/screens/comment-thread.md) — embedded panel in the chapter reader SCR-READ-01 (end-of-chapter section `#comments` and paragraph bottom sheet) | [business rules](comments/business-rules.md) (BR-CMT-001…021) · [workflows](comments/workflows.md) (WF-CMT-01…10) |
 | `OBJ-NOTI` | In-app notifications | [`notifications/`](notifications/) | [SCR-NOTI-01 Notifications](notifications/screens/notifications.md) `/notifications`, incl. the header bell | [business rules](notifications/business-rules.md) (BR-NOTI-001…017) · [workflows](notifications/workflows.md) (WF-NOTI-01…08) |
 
 ## Event → notification map (summary)

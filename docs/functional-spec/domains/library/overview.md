@@ -19,8 +19,8 @@ shared (unlisted link / public). This domain owns the story **follow** and **sav
 
 | ID | Name | Folder | Screens | Rules / workflows |
 | --- | --- | --- | --- | --- |
-| `OBJ-LIB` | Library, story follow & save | [`library/`](library/) | [SCR-LIB-01 Library](library/screens/library.md) `/library` (tabs Reading / Saved / Following / Lists); follow & save buttons on the story page (OBJ-STORY) | [business rules](library/business-rules.md) (BR-LIB-001…012) · [workflows](library/workflows.md) (WF-LIB-01…06) |
-| `OBJ-LIST` | Reading lists | [`reading-lists/`](reading-lists/) | [SCR-LIST-01 Reading list](reading-lists/screens/reading-list.md) `/lists/[id]`; components: list form dialog (list page + Library Lists tab), My lists (Library Lists tab), Add-to-list sheet (story page) | [business rules](reading-lists/business-rules.md) (BR-LIST-001…014) · [workflows](reading-lists/workflows.md) (WF-LIST-01…09) |
+| `OBJ-LIB` | Library, story follow & save | [`library/`](library/) | [SCR-LIB-01 Library](library/screens/library.md) `/library` (tabs Reading / Saved / Following / Lists); follow & save buttons on the story page SCR-STORY-01 (OBJ-STORY) | [business rules](library/business-rules.md) (BR-LIB-001…012) · [workflows](library/workflows.md) (WF-LIB-01…06) |
+| `OBJ-LIST` | Reading lists | [`reading-lists/`](reading-lists/) | [SCR-LIST-01 Reading list](reading-lists/screens/reading-list.md) `/lists/[id]`; components: list form dialog (list page + Library Lists tab), My lists (Library Lists tab), Add-to-list sheet (story page SCR-STORY-01) | [business rules](reading-lists/business-rules.md) (BR-LIST-001…014) · [workflows](reading-lists/workflows.md) (WF-LIST-01…09) |
 
 ## Behaviour when a story becomes private or is deleted
 
