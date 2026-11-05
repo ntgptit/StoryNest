@@ -138,3 +138,15 @@ VER-RDR-10).
 | --- | --- | --- | --- | --- | --- |
 | U-STM-08 | P3 | STM / SCR-STM-01 | When every story is deleted, Studio shows the empty state "Bạn chưa có truyện nào" above "Hiện truyện đã xóa (1)" — the author is told they have no stories | Runtime (VER-AUT-15 debug capture) | FP-055 |
 | U-MOD-05 | P3 | MOD / SCR-MOD-01 | Every moderation action confirms with the same toast "Đã thực hiện." and the card moves to the other tab without saying where | Runtime (VER-MOD-04…09) | FP-024 |
+
+## 7. After PR #60 (Lucian UX/UI trial)
+
+| ID | Status | Note |
+| --- | --- | --- |
+| U-SHELL-01 no desktop/tablet navigation | **Fixed** | Verified (Runtime) at 768 and 1280 px; phone has a full-screen menu |
+| U-STAT-02 chart values mouse-only | **Addressed** | Synced small multiples with keyboard scrub and "Show as table" (code + REG-STAT table toggle) |
+| U-SHELL-04 header "Đăng nhập" without `next` | Still open | REG-SHELL-04: `/login` |
+| U-STAT-01 stats page does not name the story | Still open | REG-STAT-01: h1 "Thống kê truyện" |
+| U-TAX-02 "##Kiemhiep" | Still open | REG-NAV-768 chip list |
+| Bottom nav overlaps the last lines of text at 390 px | Still open | `reg-reader-down-390.png` |
+| U-NOTI-01, U-SHELL-02, U-CMT-01 | Not re-tested | |

@@ -19,7 +19,7 @@ Entry point: [README](../README.md).
   the later [runtime verification](../verification/README.md) (2026-11-05) confirmed their main findings.
 - Existing findings (`F-*`, `U-*`) and proposals (`FP-001…034`) are referenced, not repeated. A screen's
   improvements usually ship through the FP listed in "Related"; the AC here are the screen-level checks.
-- Consolidation decisions that affect several screens are listed in §3 and recorded as DEC-013…DEC-022 in the
+- Consolidation decisions that affect several screens are listed in §3 and recorded as DEC-013…DEC-027 (DEC-025 is the separate Lucian trial decision) in the
   decision register.
 
 ## 2. Summary

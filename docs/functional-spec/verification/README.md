@@ -122,3 +122,28 @@ repeated.
 Kept for repeatable runs until the Product Owner asks for removal. [cleanup.sql](cleanup.sql) removes only rows tied
 to the six QA account ids (reports, comments, QA stories with their cascades, then the accounts). It never touches
 non-QA rows; moderation audit rows are kept as history by default.
+
+## Regression after PR #60
+
+2026-11-05, `main` at `e17014b` (Lucian UX/UI trial), same QA accounts. Scripts were run ad hoc (not added to the
+run-book yet). Results:
+
+| Check | Result |
+| --- | --- |
+| REG-READ-390 / 1280 reader toolbar after scroll | **Fixed** |
+| REG-NAV-768 / 1280 primary navigation | **Fixed** (second header row; phone has "Mở menu") |
+| REG-EDT-01 Schedule on a published chapter | **Fixed** |
+| REG-EDT-02 leaving the editor via an in-app link | **Still open** (3 warm runs) |
+| REG-STM-09 owner restores a deleted story | **Still open** (42501) |
+| REG-TEAM-05 / 06 editor deletes chapter / co-author deletes story | **Still open** |
+| REG-404 missing story status | Still open (HTTP 200) |
+| REG-MAT-01 18+ title in HTML | Still open |
+| REG-SHELL-04 header sign-in without `next` | Still open |
+| REG-LIB, REG-SET, REG-MOD, REG-X-02 | Pass |
+
+**Run-book change needed:** the chapter editor shows a first-run tour per device (`SpotlightTour`) whose overlay
+intercepts clicks. Scripts that open the editor must click "Bỏ qua" first (or set the tour-seen flag). The 13 scripts
+were not re-run end to end.
+
+The QA story was soft-deleted by REG-TEAM-06 (as VER-TEAM-06 does) and restored through the admin channel because of
+F-STM-09; one more QA row repair, no other data touched.

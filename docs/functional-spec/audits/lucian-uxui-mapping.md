@@ -1,6 +1,6 @@
 # Lucian UX/UI Prompt mapping (all 400 elements)
 
-Every element of [Lucian UX/UI Prompt](https://lucianlabs.dev/uxui-prompt/) checked one by one against StoryNest: the element's description and code (`get <id>`) were read and the StoryNest surface was opened in code before a verdict was given. Catalog version `34c4b3e61d`, checked 2026-11-05. Decision: [DEC-013](../proposals/decision-register.md). Porting rules: `.claude/skills/lucian-uxui/SKILL.md` (StoryNest project rules). Entry point: [README](../README.md).
+Every element of [Lucian UX/UI Prompt](https://lucianlabs.dev/uxui-prompt/) checked one by one against StoryNest: the element's description and code (`get <id>`) were read and the StoryNest surface was opened in code before a verdict was given. Catalog version `34c4b3e61d`, checked 2026-11-05. Decision: [DEC-025](../proposals/decision-register.md). Porting rules: `.claude/skills/lucian-uxui/SKILL.md` (StoryNest project rules). Entry point: [README](../README.md).
 
 > This replaces a first version that judged most elements by category and title only; that version marked 317 elements as no match and was rejected by the project owner.
 

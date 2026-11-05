@@ -21,6 +21,20 @@ Evidence: [runtime verification](../verification/README.md) (2026-11-05).
 An item can carry a secondary flag (e.g. *Ready · part A*). **Fix-now** marks verified defects that should get a
 separate fix task first (§3); fixing them is outside this documentation task.
 
+## 1b. Changes from PR #60 (2026-11-05)
+
+PR #60 delivered parts of several proposals (UI only, no SQL). Regression results: [verification](../verification/README.md#regression-after-pr-60).
+
+| FP | Effect on readiness |
+| --- | --- |
+| FP-019 | Navigation delivered at `md` (DEC-026); remaining only if tablets also need the bottom nav → treat as **done** pending PO review |
+| FP-043 | Overlap with the header fixed and header auto-hides; the shell-less reader frame (PD-01) is **still not built** |
+| FP-051 | Share UI done; 18+ preview content (Q-SEO-01) still open |
+| FP-033, FP-036, FP-038, FP-062 | Delivered (drag reorder; theme System/Light/Dark per device; connection banner; find and replace) |
+| FP-003, FP-010, FP-030, FP-032, FP-037, FP-041, FP-056 | Partly delivered (see WBS Phase 9 notes); remaining parts keep their previous status |
+| F-EDT-01 | Fixed (nothing left to do under FP-010 for it) |
+| Test tooling | The editor first-run tour must be skipped in automated runs |
+
 ## 2. Readiness by proposal
 
 ### 2.1 Phase 1 proposals

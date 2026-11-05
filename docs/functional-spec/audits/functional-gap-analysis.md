@@ -189,3 +189,26 @@ and PD-05. Behaviour verified as working: invitations and acceptance, role-limit
 guests, follow/save/lists, progress restore, votes, comments, likes, edits, follower and reply notifications (< 1
 min), notification switch (BR-SET-006), scheduled publishing by cron, unpublish, archive/unarchive, delete/restore of
 chapters, moderation hide/unhide/remove/restore/suspend/reinstate, story counters.
+
+## 7. After PR #60 (Lucian UX/UI trial, 2026-11-05)
+
+Regression run on `main` at `e17014b` against `storynest-dev` ([verification](../verification/README.md#regression-after-pr-60)).
+No SQL changed in PR #60, so database findings are unchanged.
+
+| Finding | Status after PR #60 | Evidence |
+| --- | --- | --- |
+| F-READ-01 reader toolbar under the header | **Fixed** | REG-READ-390/1280: toolbar visible after scrolling down and up; header hides on scroll-down |
+| F-EDT-01 Schedule offered on a published chapter | **Fixed** | REG-EDT-01 |
+| F-EDT-02 text lost when leaving the editor | **Still open** | REG-EDT-02: 3 warm runs, never saved to the server. A first run looked fixed only because navigation was slow enough for the debounced autosave; discard that result |
+| F-STM-09, F-STM-01, F-CHM-01 | **Still open** | REG-STM-09, REG-TEAM-05/06 (same API results as before) |
+| F-SHELL-01 soft 404 | **Still open** | REG-404: HTTP 200 |
+| F-MAT-01 18+ title in HTML | **Still open** | REG-MAT-01 |
+| F-HIST-03 preview bar | Not re-tested | |
+
+Totals after PR #60: **74** functional findings; F-READ-01 and F-EDT-01 are now fixed, the rest are unchanged.
+
+### New observation (UX, ID `U-EDT-06`)
+
+| ID | Cat | Pri | Finding | Evidence | FP |
+| --- | --- | --- | --- | --- | --- |
+| U-EDT-06 | C | P3 | The editor's first-visit tour (`SpotlightTour`) is per device and blocks pointer input until "Bỏ qua"; automated checks and any new device or browser profile meet it on every first open. Acceptable as designed, but it is a hazard for tests and for authors who share a device | `packages/features/src/editor/screens/chapter-editor-screen.tsx:391-407`; Playwright click timeout | FP-058 / test run-book |
