@@ -168,7 +168,7 @@ product view on top of them.
 | Expected value | Higher return-reading rate. Continue from the first screen of the app. No restart confusion for caught-up readers. |
 | Affected screens | SCR-HOME-01, SCR-STORY-01, SCR-READ-01, SCR-LIB-01 (reference), SCR-NOTI-01 (reference) |
 | Dependencies | FP-012 (shared resolver), FP-027, FP-011, FP-013, Q-PROG-01, Q-STORY-02 |
-| Evidence | `progress/model/progress.ts:51-59`, `story-screen.tsx:60-62,105-109`, `use-reading-tracker.ts:69-70`, `rt/shots/mobile-reader-last.png`, F-PROG-02/04, F-NOTI-01 |
+| Evidence | `progress/model/progress.ts:51-59`, `story-screen.tsx:69-73,115-119`, `use-reading-tracker.ts:74-78`, `rt/shots/mobile-reader-last.png`, F-PROG-02/04, F-NOTI-01 |
 
 ---
 
@@ -409,7 +409,7 @@ Rollback at any stage: restore the two buttons. Data was never merged.
 | Expected value | Authors can write a whole chapter on a phone without fighting the layout; fewer formatting round-trips to Preview; faster serial cadence. |
 | Affected screens | SCR-EDT-01 (primary), SCR-CHM-01 (create next chapter reuse), SCR-SHELL-01 (frame) |
 | Dependencies | BRC-SHELL-01 (studio frame without bottom nav), Q-EDT-06 (is mobile web authoring a launch target), WP 7.1/7.3 (Capacitor keyboard), FP-022 (toolbar a11y). |
-| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:290-390`, `editor/components/editor-toolbar.tsx:46-121`, `packages/ui/src/components/button.tsx:21-28`, `packages/ui/src/widgets/app-shell.tsx:24-29`, `packages/ui/src/widgets/bottom-nav.tsx:47`, `packages/design-tokens/src/tokens.css:74,1131-1132`, WBS §1.2 `(studio)` group (`docs/WBS.md:64`), WBS 3.5 note. |
+| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:410-562`, `editor/components/editor-toolbar.tsx:69-146`, `packages/ui/src/components/button.tsx:21-28`, `packages/ui/src/widgets/app-shell.tsx:87-103`, `packages/ui/src/widgets/bottom-nav.tsx:47`, `packages/design-tokens/src/tokens.css:74,1131-1132`, WBS §1.2 `(studio)` group (`docs/WBS.md:64`), WBS 3.5 note. |
 
 #### JRN-AUT-09 — Saving and recovering drafts
 
@@ -437,7 +437,7 @@ Rollback at any stage: restore the two buttons. Data was never merged.
 | Expected value | No accidental announcements; authors see the consequence of every publish (who is told, what changes, which reader comments are affected); scheduling becomes trustworthy. |
 | Affected screens | SCR-EDT-01, SCR-HIST-02, SCR-HIST-01 (diff reuse), SCR-NOTI-01, SCR-CHM-01 |
 | Dependencies | Q-EDT-01, Q-EDT-02, Q-EDT-05, Q-NOTI-02, Q-NOTI-04 (new); outbox + pg_cron. |
-| Evidence | BR-EDT-016…028, BR-HIST-005/007, BR-NOTI-003; `packages/features/src/editor/components/publish-panel.tsx:39-216`, `history/screens/preview-screen.tsx:29-99`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:161-212`, `supabase/migrations/20261104000800_story_follows_saves.sql:27-37` (`story_stats.followers`). |
+| Evidence | BR-EDT-016…028, BR-HIST-005/007, BR-NOTI-003; `packages/features/src/editor/components/publish-panel.tsx:44-208`, `history/screens/preview-screen.tsx:29-99`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:161-212`, `supabase/migrations/20261104000800_story_follows_saves.sql:27-37` (`story_stats.followers`). |
 
 #### JRN-AUT-11 — Revision management (history, compare, restore)
 
@@ -451,7 +451,7 @@ Rollback at any stage: restore the two buttons. Data was never merged.
 | Expected value | History becomes a real safety net for drafting, and diffs answer "what changed?" in seconds on a phone. |
 | Affected screens | SCR-HIST-01, SCR-EDT-01 |
 | Dependencies | Q-HIST-01, Q-HIST-03; BR-HIST-002 (immutability unchanged). |
-| Evidence | BR-HIST-001…009; `packages/features/src/history/screens/history-screen.tsx:79-333`, `history/model/history.ts:90-172`, `history/hooks/use-history.ts:36-62`. |
+| Evidence | BR-HIST-001…009; `packages/features/src/history/screens/history-screen.tsx:79-333`, `_shared/block-diff.ts:49-113` (the diff, moved there by PR #60), `history/model/history.ts:60-105`, `history/hooks/use-history.ts:36-62`. |
 
 ---
 
