@@ -117,11 +117,47 @@ repeated.
 | 11 | VER-RDR-09…11, VER-X-01…06 |
 | 12–13 | VER-MOD-01…09 |
 
+## Full re-run after PR #60
+
+2026-11-05, `main` at `e17014b`, `storynest-dev`, the same six QA accounts, a new QA story (`[QA] Câu chuyện kiểm thử A`,
+slug suffix from `QA_SLUG_SUFFIX`). The first story of the earlier runs was renamed "(lượt chạy 1)" and the second
+"(lượt chạy 2)" so scripts find the new one. Nothing was deleted from the shared project (see Cleanup below).
+
+Run-book fixes needed to start (committed with this section): `lib.mjs` exported a `URL` that hid the global `URL`
+(the scripts did not start at all); the story form now has a link ("Đường dẫn") that must be unique per author, so
+`01-stage1.mjs` fills it from `QA_SLUG_SUFFIX`; visibility is a radio-card group (`01`, `02`); `02-stage1b.mjs` no
+longer fails when `01` already published chapter 1; `pw.mjs` marks the editor tour as seen. One step is outside the
+scripts: after `04-stage2b.mjs` the owner cannot restore the deleted story (F-STM-09), so the QA story was restored
+with an admin `update public.stories set deleted_at = null where id = '<QA story>'` (QA-owned row only).
+
+| Result | Count |
+| --- | --- |
+| PASS | 21 |
+| CONFIRMED (known finding reproduced) | 10 |
+| CHECK (needs a person's reading of the note) | 5 |
+| NEW DEFECT (F-STM-09 again) | 1 |
+| INFO | 1 |
+
+Scripts `01`–`04`, `07`, `08`, `11` and the parts of `05`, `12`, `13` before the failing step ran to the end with the
+same verdicts as before. **Not green yet — the steps below stop on selectors that PR #60 changed, so their cases were
+not re-run (the earlier results above still stand for the pre-PR #60 UI):**
+
+| Script | Stops at | Likely cause |
+| --- | --- | --- |
+| `05-stage3.mjs` | edit own comment: button "Sửa" not found | comment menu / edit control changed |
+| `09-stage6.mjs` | chapter row button "Đổi đường dẫn" | chapter manager rebuilt (row actions, bulk actions) |
+| `10-stage6b.mjs`, `09` (schedule step) | button "Hẹn giờ…" | schedule is now an option of the publish split button |
+| `12-stage8.mjs`, `13-stage8c.mjs` | moderator queue card "QA Outsider" | depends on the reports `05`/`12` create; not reached |
+
+Next step for the run-book: re-record these selectors against the new UI (a separate task; no app code involved).
+
 ## Cleanup
 
 Kept for repeatable runs until the Product Owner asks for removal. [cleanup.sql](cleanup.sql) removes only rows tied
 to the six QA account ids (reports, comments, QA stories with their cascades, then the accounts). It never touches
 non-QA rows; moderation audit rows are kept as history by default.
+
+**Known limit (2026-11-05):** deleting a QA story fails on `deny_published_version_mutation` (published chapter versions are immutable, also through cascade), so the script cannot remove a story that has a published chapter. Use new story names (`QA_SLUG_SUFFIX`) for repeat runs; deleting would need that trigger disabled on dev, which was not done.
 
 ## Regression after PR #60
 
