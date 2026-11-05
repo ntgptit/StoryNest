@@ -42,7 +42,7 @@
 | Expected behavior | Each row: "Chapter n" (position), title (struck through if deleted), status badge (Draft/Scheduled/Published/Archived), "Deleted" badge, `/slug` |
 | Exceptions | The scheduled date (`scheduled_for`) is loaded but not shown (U-CHM-01). No pagination |
 | Related screens | SCR-CHM-01 |
-| Evidence | `packages/features/src/studio/api/chapters.api.ts:6-21`; `packages/features/src/studio/model/studio-chapter.ts:28-55`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:134-156`; `packages/features/src/studio/chapter-management.test.tsx:64,72,268` |
+| Evidence | `packages/features/src/studio/api/chapters.api.ts:6-21`; `packages/features/src/studio/model/studio-chapter.ts:28-55`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:135-157`; `packages/features/src/studio/chapter-management.test.tsx:67,75,307` |
 | Status | Verified |
 
 ### BR-CHM-002 — Creating a chapter
@@ -54,7 +54,7 @@
 | Expected behavior | Toast "Chapter added."; form cleared; list refreshed |
 | Exceptions | 42501 not active; 22023 bad input; PT404 story missing/deleted/no role (shown as "Chapter not found."); 23505 slug taken → slug field. A retry after a lost response hits the primary key (23505) and is shown as "slug taken" (F-STM-04) |
 | Related screens | SCR-CHM-01 |
-| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:29-58`; `packages/features/src/studio/api/chapters.api.ts:23-34`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:360-384`; `packages/validation/src/chapter.ts:13-29`; `supabase/tests/100_chapter_management.test.sql:48`; `supabase/scripts/concurrency-checks.sh` (WBS 3.4); `packages/features/src/studio/chapter-management.test.tsx:390,408,423` |
+| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:29-58`; `packages/features/src/studio/api/chapters.api.ts:23-34`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:360-384`; `packages/validation/src/chapter.ts:13-29`; `supabase/tests/100_chapter_management.test.sql:48`; `supabase/scripts/concurrency-checks.sh` (WBS 3.4); `packages/features/src/studio/chapter-management.test.tsx:429,447,462` |
 | Status | Verified |
 
 ### BR-CHM-003 — Chapter slug unique per story
@@ -66,7 +66,7 @@
 | Expected behavior | Slug field shows "This story already has a chapter with this URL slug." |
 | Exceptions | — |
 | Related screens | SCR-CHM-01 |
-| Evidence | `supabase/migrations/20261103000000_init_schema.sql:109`; `packages/features/src/studio/model/studio-chapter.ts:168-173`; `packages/features/src/studio/strings.en.ts:117` |
+| Evidence | `supabase/migrations/20261103000000_init_schema.sql:109`; `packages/features/src/studio/model/studio-chapter.ts:172-177`; `packages/features/src/studio/strings.en.ts:153` |
 | Status | Verified |
 
 ### BR-CHM-004 — Slug proposal from the chapter title
@@ -90,7 +90,7 @@
 | Expected behavior | New order shown immediately (optimistic), list reloaded afterwards |
 | Exceptions | Refused (stale list) → old order restored + toast "The chapter list was changed elsewhere. It has been reloaded, please try again." |
 | Related screens | SCR-CHM-01 |
-| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:60-99`; `packages/features/src/studio/hooks/use-chapter-management.ts:57-86`; `packages/features/src/studio/model/studio-chapter.ts:66-92`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:105-109,177-196`; `supabase/tests/100_chapter_management.test.sql:64-92`; `packages/features/src/studio/chapter-management.test.tsx:310,332,365,377` |
+| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:60-99`; `packages/features/src/studio/hooks/use-chapter-management.ts:57-86`; `packages/features/src/studio/model/studio-chapter.ts:70-96`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:106-110,178-197`; `supabase/tests/100_chapter_management.test.sql:64-92`; `packages/features/src/studio/chapter-management.test.tsx:349,371,404,416` |
 | Status | Verified |
 
 ### BR-CHM-006 — Renaming a chapter slug
@@ -102,7 +102,7 @@
 | Expected behavior | Toast "URL slug changed."; dialog closes |
 | Exceptions | Old chapter links stop working — there is no redirect for chapter slugs (dialog text: "Old links to this chapter will stop working."); F-CHM-03 proposes one |
 | Related screens | SCR-CHM-01 |
-| Evidence | `packages/features/src/studio/api/chapters.api.ts:49-53`; `packages/features/src/studio/components/rename-slug-dialog.tsx:26-64`; `supabase/migrations/20261103000100_auth_and_rls.sql:236-240`; `packages/features/src/studio/strings.en.ts:41-46`; `packages/features/src/studio/chapter-management.test.tsx:198,437` |
+| Evidence | `packages/features/src/studio/api/chapters.api.ts:49-53`; `packages/features/src/studio/components/rename-slug-dialog.tsx:26-64`; `supabase/migrations/20261103000100_auth_and_rls.sql:236-240`; `packages/features/src/studio/strings.en.ts:77-82`; `packages/features/src/studio/chapter-management.test.tsx:211,476` |
 | Status | Verified |
 
 ### BR-CHM-007 — Archiving a chapter
@@ -114,7 +114,7 @@
 | Expected behavior | Confirm "Archive this chapter?" / "The chapter will be hidden from readers but not deleted. You can unarchive and publish it again." → toast "Chapter archived." |
 | Exceptions | Editor → 42501; already archived → PT409 ("The chapter's status has changed. Reload and try again.") |
 | Related screens | SCR-CHM-01 |
-| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:101-124`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:220-229,267-283`; `supabase/tests/100_chapter_management.test.sql:103`; `packages/features/src/studio/chapter-management.test.tsx:452` |
+| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:101-124`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:221-230,265-281`; `supabase/tests/100_chapter_management.test.sql:103`; `packages/features/src/studio/chapter-management.test.tsx:491` |
 | Status | Verified |
 
 ### BR-CHM-008 — Unarchiving a chapter
@@ -126,7 +126,7 @@
 | Expected behavior | No confirmation; toast "Unarchived. The chapter is back to draft." |
 | Exceptions | Not archived → PT409; editor → 42501 |
 | Related screens | SCR-CHM-01 |
-| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:126-147`; `packages/features/src/studio/components/chapter-row.tsx:186-202`, `packages/features/src/studio/screens/chapter-manager-screen.tsx:194-200`; `supabase/tests/100_chapter_management.test.sql:121` |
+| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:126-147`; `packages/features/src/studio/components/chapter-row.tsx:186-202`, `packages/features/src/studio/screens/chapter-manager-screen.tsx:195-201`; `supabase/tests/100_chapter_management.test.sql:121` |
 | Status | Verified |
 
 ### BR-CHM-009 — An archived chapter cannot be published or scheduled
@@ -138,7 +138,7 @@
 | Expected behavior | Publishing UI hides publish for archived chapters (OBJ-EDT) |
 | Exceptions | — |
 | Related screens | SCR-CHM-01, SCR-EDT-01 |
-| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:149-161`; `packages/features/src/editor/model/publishing.ts:11-13` |
+| Evidence | `supabase/migrations/20261104000400_chapter_management.sql:149-161`; `packages/features/src/editor/model/publishing.ts:12-14` |
 | Status | Verified |
 
 ### BR-CHM-010 — Soft delete and restore of a chapter
@@ -150,7 +150,7 @@
 | Expected behavior | Delete: "Delete this chapter?" / "The chapter will be hidden from everyone. You can restore it later." → toast "Chapter deleted."; row moves to the end, struck through, "Deleted" badge, only "Restore" offered. Restore → toast "Chapter restored." |
 | Exceptions | Documented rule "biên tập viên … không lưu trữ hay xóa" (WBS 3.4) is UI-only for delete/restore: an editor can soft-delete or restore through the API (F-CHM-01). 0 rows → "Chapter not found." |
 | Related screens | SCR-CHM-01 |
-| Evidence | `packages/features/src/studio/api/chapters.api.ts:55-65`; `supabase/migrations/20261103000100_auth_and_rls.sql:235-240`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:158-175,230-238,267-283`; `packages/features/src/studio/chapter-management.test.tsx:466,482`; `docs/WBS.md` WP 3.4 |
+| Evidence | `packages/features/src/studio/api/chapters.api.ts:55-65`; `supabase/migrations/20261103000100_auth_and_rls.sql:235-240`; `packages/features/src/studio/screens/chapter-manager-screen.tsx:158-175,230-238,267-283`; `packages/features/src/studio/chapter-management.test.tsx:505,521`; `docs/WBS.md` WP 3.4 |
 | Status | Verified (RLS weaker than documented rule) |
 
 ### BR-CHM-011 — Chapter numbering and gaps
@@ -162,7 +162,7 @@
 | Expected behavior | Same numbers are used by the stats table (BR-STAT-002) |
 | Exceptions | — |
 | Related screens | SCR-CHM-01, SCR-STAT-01 |
-| Evidence | `packages/features/src/studio/strings.en.ts:62`; `packages/features/src/studio/components/chapter-row.tsx:132`, `packages/features/src/studio/screens/chapter-manager-screen.tsx:265`; `docs/WBS.md` WP 3.4 |
+| Evidence | `packages/features/src/studio/strings.en.ts:98`; `packages/features/src/studio/components/chapter-row.tsx:132`, `packages/features/src/studio/screens/chapter-manager-screen.tsx:263`; `docs/WBS.md` WP 3.4 |
 | Status | Verified |
 
 ### BR-CHM-012 — Reader effect of chapter states
@@ -186,7 +186,7 @@
 | Expected behavior | Editor rows: Move up/down, Write, Change URL slug; deleted rows show nothing for an editor |
 | Exceptions | See BR-CHM-010 for the delete gap |
 | Related screens | SCR-CHM-01 |
-| Evidence | `packages/features/src/studio/screens/chapter-manager-screen.tsx:78,92-93,158-175,203-240`; `packages/features/src/studio/chapter-management.test.tsx:482` |
+| Evidence | `packages/features/src/studio/screens/chapter-manager-screen.tsx:78,92-93,158-175,203-240`; `packages/features/src/studio/chapter-management.test.tsx:521` |
 | Status | Verified |
 
 ### BR-CHM-014 — Error mapping
@@ -198,7 +198,7 @@
 | Expected behavior | Toast for list actions; slug conflicts on the field |
 | Exceptions | 22023 from `create_chapter` (bad title/slug that passed the client) would also show the "list was changed" text — Inferred |
 | Related screens | SCR-CHM-01 |
-| Evidence | `packages/features/src/studio/model/studio-chapter.ts:175-191`; `packages/features/src/studio/strings.en.ts:116-122` |
+| Evidence | `packages/features/src/studio/model/studio-chapter.ts:179-195`; `packages/features/src/studio/strings.en.ts:152-158` |
 | Status | Verified |
 
 ### BR-CHM-015 — Refresh after a chapter change

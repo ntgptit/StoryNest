@@ -59,7 +59,7 @@
 | Expected behavior | Table columns: Chapter, Reads (with relative bar), Likes, Comments, Retention. Empty: "No chapters have been published yet." |
 | Exceptions | Rows without id/slug are dropped client-side |
 | Related screens | SCR-STAT-01 |
-| Evidence | `supabase/migrations/20261104002100_author_stats.sql:25-63`; `packages/features/src/analytics/model/stats.ts:51-63`; `packages/features/src/analytics/screens/story-stats-screen.tsx:182-237` |
+| Evidence | `supabase/migrations/20261104002100_author_stats.sql:25-63`; `packages/features/src/analytics/model/stats.ts:51-63`; `packages/features/src/analytics/screens/story-stats-screen.tsx:240-295` |
 | Status | Verified |
 
 ### BR-STAT-003 — Retention
@@ -71,7 +71,7 @@
 | Expected behavior | Note under the table: "“Retention” is the chapter's reads compared with the previous chapter." |
 | Exceptions | — |
 | Related screens | SCR-STAT-01 |
-| Evidence | `supabase/migrations/20261104002100_author_stats.sql:59-62`; `packages/features/src/analytics/model/stats.ts:88-93`; `packages/features/src/analytics/analytics.test.tsx:106` |
+| Evidence | `supabase/migrations/20261104002100_author_stats.sql:59-62`; `packages/features/src/analytics/model/stats.ts:88-93`; `packages/features/src/analytics/analytics.test.tsx:109` |
 | Status | Verified |
 
 ### BR-STAT-004 — Daily series and ranges
@@ -83,7 +83,7 @@
 | Expected behavior | Switching a tab requests that window (separately cached per range) |
 | Exceptions | A withdrawn vote or a hidden comment leaves the series like it leaves the counters (WBS 6.5) |
 | Related screens | SCR-STAT-01 |
-| Evidence | `supabase/migrations/20261104002100_author_stats.sql:68-120`; `packages/features/src/analytics/model/stats.ts:42-46`; `packages/features/src/analytics/screens/story-stats-screen.tsx:56-58,108-122`; `packages/features/src/analytics/analytics.test.tsx:491` |
+| Evidence | `supabase/migrations/20261104002100_author_stats.sql:68-120`; `packages/features/src/analytics/model/stats.ts:42-46`; `packages/features/src/analytics/screens/story-stats-screen.tsx:56-58,108-122`; `packages/features/src/analytics/analytics.test.tsx:577` |
 | Status | Verified |
 
 ### BR-STAT-005 — Totals of the selected range
@@ -119,7 +119,7 @@
 | Expected behavior | Header and "Back to Studio" stay visible on the generic error; not on forbidden/notFound |
 | Exceptions | A non-UUID id gives the generic error instead of not-found (F-STM-06, Inferred) |
 | Related screens | SCR-STAT-01 |
-| Evidence | `packages/features/src/analytics/screens/story-stats-screen.tsx:54-60,77-86`; `packages/features/src/analytics/hooks/use-analytics.ts:23,34`; `packages/features/src/analytics/analytics.test.tsx:536,544` |
+| Evidence | `packages/features/src/analytics/screens/story-stats-screen.tsx:54-60,77-86`; `packages/features/src/analytics/hooks/use-analytics.ts:32,43`; `packages/features/src/analytics/analytics.test.tsx:622,630` |
 | Status | Verified |
 
 ### BR-STAT-008 — Entry point visibility
@@ -155,7 +155,7 @@
 | Expected behavior | — |
 | Exceptions | — |
 | Related screens | SCR-STAT-01 |
-| Evidence | `packages/features/src/analytics/keys.ts:1-7`; `packages/features/src/analytics/analytics.test.tsx:124` |
+| Evidence | `packages/features/src/analytics/keys.ts:1-7`; `packages/features/src/analytics/analytics.test.tsx:127` |
 | Status | Verified |
 
 ### BR-STAT-011 — Read-through funnel

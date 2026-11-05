@@ -129,7 +129,7 @@
 | Expected behavior | Target found → CTA "Continue reading · Chapter N" (vi "Đọc tiếp · Chương N"). None → "Start reading" (BR-STORY-012). |
 | Exceptions | The library computes its "Continue with chapter N" differently: always the current chapter (F-PROG-02). The cache key is not user-scoped (F-PROG-03). |
 | Related screens | SCR-STORY-01, SCR-LIB-01 |
-| Evidence | `packages/features/src/progress/model/progress.ts:47-59`, `packages/features/src/progress/api/progress.api.ts:39-53`, `packages/features/src/story/screens/story-screen.tsx:61-66,107`, `packages/features/src/progress/strings.en.ts:2`, `packages/features/src/story/story.test.tsx:354-371` |
+| Evidence | `packages/features/src/progress/model/progress.ts:47-59`, `packages/features/src/progress/api/progress.api.ts:40-54`, `packages/features/src/story/screens/story-screen.tsx:70-75,129`, `packages/features/src/progress/strings.en.ts:2`, `packages/features/src/story/story.test.tsx:361-378` |
 | Status | Verified |
 
 ### BR-PROG-009 — Progress privacy and deletion

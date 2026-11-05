@@ -23,7 +23,7 @@ collaborator's role (F-TEAM-03).
 | Postconditions | Invitee is **not** a collaborator until they accept |
 | Affected objects | OBJ-TEAM, OBJ-NOTI |
 | Related screens | SCR-TEAM-01 |
-| Status | Verified — `team-screen.tsx:213-292`, `20261104000500_collaboration_invitations.sql:54-103` |
+| Status | Verified — `team-screen.tsx:257-336`, `20261104000500_collaboration_invitations.sql:54-103` |
 
 ### WF-TEAM-02 — Answer an invitation
 | Field | Value |
@@ -38,7 +38,7 @@ collaborator's role (F-TEAM-03).
 | Postconditions | New collaborator may read the (even private) story and act per BR-TEAM-010 |
 | Affected objects | OBJ-TEAM, OBJ-STM, OBJ-NOTI |
 | Related screens | Notifications → SCR-STM-01; owner: notification → SCR-TEAM-01 |
-| Status | Verified — `my-invitations.tsx:13-75`, `notification.ts:102-112` |
+| Status | Verified — `my-invitations.tsx:13-75`, `notification.ts:112-122` |
 
 ### WF-TEAM-03 — Cancel a pending invitation
 | Field | Value |
@@ -68,4 +68,4 @@ collaborator's role (F-TEAM-03).
 | Postconditions | They can be invited again; they are not notified |
 | Affected objects | OBJ-TEAM |
 | Related screens | SCR-TEAM-01 |
-| Status | Verified — `team-screen.tsx:188-208` |
+| Status | Verified — `team-screen.tsx:190-210` |

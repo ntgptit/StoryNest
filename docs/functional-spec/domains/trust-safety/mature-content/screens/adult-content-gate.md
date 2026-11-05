@@ -10,7 +10,7 @@
 | Name | Adult content gate; component of the app header: "Mature content (18+)" toggle + dialog |
 | Route | Embedded on `/story/[id]/[slug]` and `/story/[id]/[slug]/[chapterSlug]` (gate); header on every `(main)` page (toggle) |
 | Route file | `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx`, `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx` (hosts) |
-| Screen component | Gate `packages/features/src/adult-content/components/adult-gate.tsx` (used by `story/screens/story-screen.tsx:76`, `reader/screens/reader-screen.tsx:101`); toggle `adult-content/components/adult-content-button.tsx` (mounted in `shell/components/site-header.tsx:22`); sync `adult-content/components/adult-content-sync.tsx` (`shell/components/main-shell.tsx:45`) |
+| Screen component | Gate `packages/features/src/adult-content/components/adult-gate.tsx` (used by `story/screens/story-screen.tsx:91`, `reader/screens/reader-screen.tsx:111`); toggle `adult-content/components/adult-content-button.tsx` (mounted in `shell/components/site-header.tsx:22`); sync `adult-content/components/adult-content-sync.tsx` (`shell/components/main-shell.tsx:49`) |
 | Roles | Guest, Member, Moderator (no difference) |
 | Workflows | WF-MAT-01, WF-MAT-02, WF-MAT-03 |
 | Rules | BR-MAT-001…005, BR-MAT-009, BR-MAT-010 |
@@ -25,7 +25,7 @@
 | SCR-MAT-01-C04 | Header toggle | Ghost icon button, `aria-label="Mature content (18+)"` (`button`), `aria-pressed = show`; icon ShieldAlert (hidden) / ShieldCheck (shown); no visible text | `adult-content-button.tsx:29-38` |
 | SCR-MAT-01-C05 | Toggle dialog | Title "Mature content"; description by state (`dialog.hiddenDescription` / `dialog.shownDescription`); note "This choice is saved on this device; when you sign in, it is also saved to your account so it applies on all your devices." | `adult-content-button.tsx:39-46`, `strings.en.ts:3-8` |
 | SCR-MAT-01-C06 | Dialog actions | Hidden: "Keep hidden" (outline) + "I'm 18 or older, show 18+ stories". Shown: "Hide 18+ stories again" | `adult-content-button.tsx:47-73`, `strings.en.ts:9-11` |
-| SCR-MAT-01-C07 | "18+" badge | Destructive badge on the story page header and on story cards (`discoveryText.mature`) | `story/screens/story-screen.tsx:100`, `discovery/model/story-card.ts:75` |
+| SCR-MAT-01-C07 | "18+" badge | Destructive badge on the story page header and on story cards (`discoveryText.mature`) | `story/screens/story-screen.tsx:122`, `discovery/model/story-card.ts:75` |
 
 ## C. User actions & system responses
 
@@ -100,7 +100,7 @@
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
 | Initial | Implemented | Server and first client render use the safe default (hidden) → gate rendered on the server for 18+ stories, then switches after hydration if the device says "shown" (`store.ts:52-55`) |
-| Loading | Implemented | Reader shows its skeleton until both chapter and story are loaded, so no chapter block flashes (`reader-screen.tsx:64-65`) |
+| Loading | Implemented | Reader shows its skeleton until both chapter and story are loaded, so no chapter block flashes (`reader-screen.tsx:73-74`) |
 | Empty | Not applicable | — |
 | Populated | Implemented | Gate panel / dialog |
 | Validation error | Not applicable | — |
@@ -116,7 +116,7 @@
 
 - **SCR-MAT-01-AC01** Given a guest with no stored choice, when they open an 18+ story by link, then they see only the gate (no title, cover, synopsis, read button, report button or comments). *(Verified)*
 - **SCR-MAT-01-AC02** Given the gate, when the reader clicks "I'm 18 or older, continue", then the story renders and the header toggle reports pressed. *(Verified)*
-- **SCR-MAT-01-AC03** Given an 18+ chapter whose story loads after the chapter, then nothing of the chapter is shown before the story is known. *(Verified, `packages/features/src/reader/reader.test.tsx:282-284`)*
+- **SCR-MAT-01-AC03** Given an 18+ chapter whose story loads after the chapter, then nothing of the chapter is shown before the story is known. *(Verified, `packages/features/src/reader/reader.test.tsx:285-287`)*
 - **SCR-MAT-01-AC04** Given the header dialog in hidden state, when "Keep hidden" is clicked, then no list changes. *(Verified)*
 - **SCR-MAT-01-AC05** Given 18+ shown, when "Hide 18+ stories again" is clicked on an 18+ story page, then the gate appears again and lists drop 18+ stories. *(Verified)*
 - **SCR-MAT-01-AC06** Given a stored value `{"ageConfirmed":false,"show":true}`, then 18+ content stays hidden. *(Verified)*

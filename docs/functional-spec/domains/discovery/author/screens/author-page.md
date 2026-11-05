@@ -18,10 +18,10 @@
 ## B. Components
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-AUTHOR-01-C01 | Profile skeleton | `h-40` block `aria-busy` while session/profile load | `author-screen.tsx:35` |
+| SCR-AUTHOR-01-C01 | Profile skeleton | `h-40` block `aria-busy` while session/profile load | `author-screen.tsx:38` |
 | SCR-AUTHOR-01-C02 | Header | Avatar (size-16), `h1` display name, "@username · N followers · M stories", bio or "This author hasn't written a bio yet." A long bio is clamped to 4 lines with a fade and "Show more / Show less" (`ExpandableText`, Lucian #288): toggle only when it really overflows, `aria-expanded`, full text always in the DOM | `author-screen.tsx`, `strings.en.ts`, `ui/widgets/expandable-text.tsx` |
 | SCR-AUTHOR-01-C03 | Follow button | "Follow"/"Following" with icon, `aria-pressed`, hidden on own page | `follow-author-button.tsx:18-44` |
-| SCR-AUTHOR-01-C04 | Report button | Report this person (OBJ-MOD) | `author-screen.tsx:102` |
+| SCR-AUTHOR-01-C04 | Report button | Report this person (OBJ-MOD) | `author-screen.tsx:117` |
 | SCR-AUTHOR-01-C08 | Share button | "Share" under Follow: dialog with the absolute author link `https://<site>/author/<username>` (canonical origin), "Copy" that turns into a check (Lucian #008 / #254) and "Share with another app" where `navigator.share` exists | `author-screen.tsx`, `features/share/components/share-button.tsx` |
 | SCR-AUTHOR-01-C05 | Stories section | `h2` "Author's stories"; card grid + infinite list; end "No more stories." | `author-screen.tsx:106-144`, `strings.en.ts:4,23-24` |
 | SCR-AUTHOR-01-C06 | Not found | Empty state "Author not found" | `author-screen.tsx:46-48` |
@@ -93,7 +93,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `author-screen.tsx:102`, `author.test.tsx:409` |
+| Evidence | `author-screen.tsx:117`, `author.test.tsx:409` |
 
 | Field | SCR-AUTHOR-01-A07 — Retry |
 | --- | --- |

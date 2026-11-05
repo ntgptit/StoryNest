@@ -123,5 +123,5 @@ No own screen: controls live in SCR-SHELL-01 (header) and SCR-SET-01.
 | Expected behavior | — |
 | Exceptions | English literals without diacritics and attribute values set via expressions are not detected (e.g. `"Back"`/`"Retry"` fallbacks in `packages/ui`) — F-I18N-01 |
 | Related screens | — |
-| Evidence | `scripts/check-hardcode.mjs:1-90`, `package.json:9,20`, `packages/ui/src/widgets/page-header.tsx:30`, `packages/ui/src/widgets/error-state.tsx:37` |
+| Evidence | `scripts/check-hardcode.mjs:1-90`, `package.json:9,20`, `packages/ui/src/widgets/page-header.tsx:33`, `packages/ui/src/widgets/error-state.tsx:88` |
 | Status | Verified |

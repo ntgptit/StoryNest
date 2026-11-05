@@ -47,7 +47,7 @@
 | Validation | Cursor has both parts |
 | Error behavior | Silent (U-SRCH-01) |
 | Navigation | — |
-| Evidence | `following-screen.tsx:51-54`, `author.test.tsx:504` |
+| Evidence | `following-screen.tsx:52-55`, `author.test.tsx:504` |
 
 | Field | SCR-AUTHOR-02-A03 — Open a story |
 | --- | --- |

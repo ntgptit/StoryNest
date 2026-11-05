@@ -19,17 +19,17 @@
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
 | SCR-SRCH-01-C01 | Header SearchBox | `form role=search`; input `role=combobox` "Search stories, authors or tags", placeholder "Search stories, authors, tags…"; listbox "Suggestions" with ≤ 5 titles + "See all results for “term”"; below `sm` an icon link "Open search" | `search-box.tsx:65-135`, `strings.en.ts:3-6,11-12` |
-| SCR-SRCH-01-C02 | Page header | `PageHeader` "Search" | `search-screen.tsx:63` |
-| SCR-SRCH-01-C03 | Search form | Input (aria-label as C01, `maxLength` 120) + "Search" button | `search-screen.tsx:64-78` |
+| SCR-SRCH-01-C02 | Page header | `PageHeader` "Search" | `search-screen.tsx:72` |
+| SCR-SRCH-01-C03 | Search form | Input (aria-label as C01, `maxLength` 120) + "Search" button | `search-screen.tsx:73-87` |
 | SCR-SRCH-01-C04 | Hint / length message | `role=status` text when term not searchable | `search-screen.tsx:80-83` |
 | SCR-SRCH-01-C12 | Trending searches (empty box only) | Line "Trending · rank · term · marker" rolling every 2.5 s (not under reduced motion, while open, hovered or focused); pressing it unfolds the top 10 (rank, term, up n / down n / NEW / same); picking a term replaces the address with its search; note "Terms searched by at least 3 people…"; hidden when there are none | `search-screen.tsx` (`Trending`), `ui/widgets/trending-terms.tsx` (Lucian #322) (BR-SRCH-012) |
-| SCR-SRCH-01-C05 | Results heading | `h2` "Results for “term”" | `search-screen.tsx:86` |
-| SCR-SRCH-01-C06 | Tabs | Stories / Authors / Tags (Radix tabs); also switchable by swiping the results sideways on touch (changed by PR #60) | `search-screen.tsx:87-95` |
+| SCR-SRCH-01-C05 | Results heading | `h2` "Results for “term”" | `search-screen.tsx:103` |
+| SCR-SRCH-01-C06 | Tabs | Stories / Authors / Tags (Radix tabs); also switchable by swiping the results sideways on touch (changed by PR #60) | `search-screen.tsx:104-112` |
 | SCR-SRCH-01-C07 | Story results | Card grid + infinite list, end "No more results." | `search-screen.tsx:125-166` |
 | SCR-SRCH-01-C08 | Author results | List of rows (avatar, name, @username · N stories) + "Load more" button | `search-screen.tsx:168-209` |
-| SCR-SRCH-01-C09 | Tag results | List of "#name / N stories" rows (≤ 10) | `search-screen.tsx:211-231` |
-| SCR-SRCH-01-C10 | Loading | Skeletons, `role=status` "Searching…" | `search-screen.tsx:105-113` |
-| SCR-SRCH-01-C11 | Empty / error | Per-tab empty texts; "Can't search right now" + "Try again" | `search-screen.tsx:115-123`, `strings.en.ts:17-22` |
+| SCR-SRCH-01-C09 | Tag results | List of "#name / N stories" rows (≤ 10) | `search-screen.tsx:256-276` |
+| SCR-SRCH-01-C10 | Loading | Skeletons, `role=status` "Searching…" | `search-screen.tsx:122-130` |
+| SCR-SRCH-01-C11 | Empty / error | Per-tab empty texts; "Can't search right now" + "Try again" | `search-screen.tsx:132-140`, `strings.en.ts:17-22` |
 
 ## C. User actions and system responses
 
@@ -42,7 +42,7 @@
 | Validation | Short term → no list |
 | Error behavior | Request failure → no titles, only "See all" (silent) |
 | Navigation | — |
-| Evidence | `search-box.tsx:36-49,168-173`, `use-search.ts:66-80` |
+| Evidence | `search-box.tsx:36-49,168-173`, `use-search.ts:76-90` |
 
 | Field | SCR-SRCH-01-A02 — Keyboard in the header box |
 | --- | --- |
@@ -53,7 +53,7 @@
 | Validation | Enter with short term does nothing |
 | Error behavior | — |
 | Navigation | `/story/{id}/{slug}` or `/search?q=` |
-| Evidence | `search-box.tsx:45-63`, `search.test.tsx:463,482` |
+| Evidence | `search-box.tsx:45-63`, `search.test.tsx:495,514` |
 
 | Field | SCR-SRCH-01-A03 — Pick a suggestion / "See all" with the mouse |
 | --- | --- |
@@ -75,7 +75,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-SRCH-01 |
-| Evidence | `search-box.tsx:57-78,125-137`, `search.test.tsx:498-529` |
+| Evidence | `search-box.tsx:57-78,125-137`, `search.test.tsx:530-561` |
 
 | Field | SCR-SRCH-01-A05 — Submit the page form |
 | --- | --- |
@@ -86,7 +86,7 @@
 | Validation | Short/long term → C04 message, no request |
 | Error behavior | — |
 | Navigation | Same screen |
-| Evidence | `search-screen.tsx:55-58`, `search-view.tsx:8-9`, `search.test.tsx:353,364` |
+| Evidence | `search-screen.tsx:64-67`, `search-view.tsx:8-9`, `search.test.tsx:385,396` |
 
 | Field | SCR-SRCH-01-A06 — Switch tab |
 | --- | --- |
@@ -108,7 +108,7 @@
 | Validation | Offset cap 200 |
 | Error behavior | Silent: no inline error; button reappears (U-SRCH-01) |
 | Navigation | — |
-| Evidence | `search-screen.tsx:178-191,212-216` |
+| Evidence | `search-screen.tsx:223-236,257-261` |
 
 | Field | SCR-SRCH-01-A08 — Open a result |
 | --- | --- |
@@ -119,7 +119,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-STORY-01 / SCR-AUTHOR-01 / SCR-HOME-01 |
-| Evidence | `search-screen.tsx:182-184,224-235,249-255` |
+| Evidence | `search-screen.tsx:227-229,269-280,294-300` |
 
 | Field | SCR-SRCH-01-A09 — Retry |
 | --- | --- |
@@ -130,7 +130,7 @@
 | Validation | — |
 | Error behavior | Stays on error |
 | Navigation | — |
-| Evidence | `search-screen.tsx:173,200,242`, `search.test.tsx:324` |
+| Evidence | `search-screen.tsx:173,200,242`, `search.test.tsx:356` |
 
 ### C.x Browse interactions (Lucian batch 2 · browse)
 

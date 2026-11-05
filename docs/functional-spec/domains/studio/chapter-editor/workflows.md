@@ -136,7 +136,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | `chapters.status='scheduled'`, `scheduled_for` set → later `published`. |
 | Affected objects | `chapters`, then as WF-EDT-07 |
 | Related screens | SCR-EDT-01 |
-| Status | Verified (`publishing.test.tsx:413,435`, `20_publish.test.sql:172-202`; WBS 3.7 dev check) |
+| Status | Verified (`publishing.test.tsx:451,473`, `20_publish.test.sql:172-202`; WBS 3.7 dev check) |
 
 ### WF-EDT-09 — Unpublish or cancel a schedule
 | Field | Value |
@@ -151,7 +151,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | `status='draft'`, `published_version_id=NULL`, `scheduled_for=NULL`; republish later is silent (no re-notification). |
 | Affected objects | `chapters` |
 | Related screens | SCR-EDT-01 |
-| Status | Verified (`publishing.test.tsx:394,407`, `20_publish.test.sql:142-170`) |
+| Status | Verified (`publishing.test.tsx:432,445`, `20_publish.test.sql:142-170`) |
 
 ### WF-EDT-10 — Leave the editor
 | Field | Value |

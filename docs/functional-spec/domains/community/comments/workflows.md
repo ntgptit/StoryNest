@@ -45,7 +45,7 @@ thread in a bottom sheet.
 | Postconditions | `comments` row `visible`; stats +1 |
 | Affected objects | OBJ-CMT, OBJ-ABU, OBJ-STORY (stat) |
 | Related screens | SCR-CMT-01 |
-| Status | Verified (`packages/features/src/comments/components/comment-thread.tsx:44-60`, `packages/features/src/comments/hooks/use-comments.ts:83-96`, `packages/features/src/comments/comments.test.tsx:292-358`) |
+| Status | Verified (`packages/features/src/comments/components/comment-thread.tsx:44-60`, `packages/features/src/comments/hooks/use-comments.ts:95-108`, `packages/features/src/comments/comments.test.tsx:292-358`) |
 
 ### WF-CMT-03 — Comment on a paragraph
 | Field | Value |
@@ -60,7 +60,7 @@ thread in a bottom sheet.
 | Postconditions | `comments.block_id` set |
 | Affected objects | OBJ-CMT, OBJ-READ |
 | Related screens | SCR-CMT-01 (sheet variant) |
-| Status | Verified (`packages/features/src/reader/components/reader-blocks.tsx:35-76`, `packages/features/src/comments/comments.test.tsx:367`, `:566-590`) |
+| Status | Verified (`packages/features/src/reader/components/reader-blocks.tsx:35-76`, `packages/features/src/comments/comments.test.tsx:375`, `:566-590`) |
 
 ### WF-CMT-04 — Reply to a comment (and notify its author)
 | Field | Value |
@@ -75,7 +75,7 @@ thread in a bottom sheet.
 | Postconditions | Reply row; outbox event; later a notification |
 | Affected objects | OBJ-CMT, OBJ-NOTI, OBJ-JOB |
 | Related screens | SCR-CMT-01, SCR-NOTI-01 |
-| Status | Verified (`packages/features/src/comments/components/comment-item.tsx:193-206`; no success toast for replies, see U-CMT-03) |
+| Status | Verified (`packages/features/src/comments/components/comment-item.tsx:231-244`; no success toast for replies, see U-CMT-03) |
 
 ### WF-CMT-05 — Like / unlike a comment
 | Field | Value |
@@ -90,7 +90,7 @@ thread in a bottom sheet.
 | Postconditions | `comment_likes` row inserted/deleted |
 | Affected objects | OBJ-CMT |
 | Related screens | SCR-CMT-01 |
-| Status | Verified (`packages/features/src/comments/hooks/use-comments.ts:146-177`) |
+| Status | Verified (`packages/features/src/comments/hooks/use-comments.ts:158-189`) |
 
 ### WF-CMT-06 — Edit my comment
 | Field | Value |
@@ -105,7 +105,7 @@ thread in a bottom sheet.
 | Postconditions | `body`, `updated_at` changed |
 | Affected objects | OBJ-CMT, OBJ-ABU |
 | Related screens | SCR-CMT-01 |
-| Status | Verified (`packages/features/src/comments/components/comment-item.tsx:140-153`, `packages/features/src/comments/comments.test.tsx:478`) |
+| Status | Verified (`packages/features/src/comments/components/comment-item.tsx:140-153`, `packages/features/src/comments/comments.test.tsx:503`) |
 
 ### WF-CMT-07 — Delete my comment
 | Field | Value |
@@ -120,7 +120,7 @@ thread in a bottom sheet.
 | Postconditions | `status='deleted'`, `deleted_at` set |
 | Affected objects | OBJ-CMT |
 | Related screens | SCR-CMT-01 |
-| Status | Verified (`packages/features/src/comments/components/comment-item.tsx:224-241`, `packages/features/src/comments/comments.test.tsx:496`) |
+| Status | Verified (`packages/features/src/comments/components/comment-item.tsx:262-279`, `packages/features/src/comments/comments.test.tsx:521`) |
 
 ### WF-CMT-08 — Story author hides / unhides a comment
 | Field | Value |
@@ -135,7 +135,7 @@ thread in a bottom sheet.
 | Postconditions | `comments.status`, `comment_hides` row |
 | Affected objects | OBJ-CMT, OBJ-MOD (precedence) |
 | Related screens | SCR-CMT-01 |
-| Status | Verified (`packages/features/src/comments/comments.test.tsx:619-687`, `supabase/tests/240_comment_moderation_by_author.test.sql`) |
+| Status | Verified (`packages/features/src/comments/comments.test.tsx:644-712`, `supabase/tests/240_comment_moderation_by_author.test.sql`) |
 
 ### WF-CMT-09 — Guest tries to interact
 | Field | Value |

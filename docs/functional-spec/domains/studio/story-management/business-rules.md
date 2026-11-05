@@ -100,7 +100,7 @@
 | Expected behavior | On success: toast `studioText.form.created` ("Story created."), tags saved (BR-STM-013), navigation to `/studio/story/{id}` |
 | Exceptions | Owner spoofing → 403 (WBS 3.2 REST attack check). A retry after a lost response hits the primary key (unique violation 23505) and is reported as "slug taken" — see finding F-STM-04 |
 | Related screens | SCR-STM-02 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:203-208`; `packages/features/src/studio/api/story-write.api.ts:31-39`; `packages/features/src/studio/screens/story-form-screen.tsx:71-80,172-182`; `packages/features/src/studio/story-editing.test.tsx:309,348` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:203-208`; `packages/features/src/studio/api/story-write.api.ts:34-42`; `packages/features/src/studio/screens/story-form-screen.tsx:76-85,179-189`; `packages/features/src/studio/story-editing.test.tsx:309,348` |
 | Status | Verified |
 
 ### BR-STM-006 — Defaults of a new story
@@ -124,7 +124,7 @@
 | Expected behavior | Field messages from `studioText.validation.*` (e.g. "Please enter a story title.", "The slug can only contain lowercase letters, numbers and hyphens."); nothing is sent while invalid |
 | Exceptions | The slug *format* is not checked by the database (only non-blank and length) — a direct API write could store an invalid slug. Inferred from `supabase/migrations/20261103000000_init_schema.sql:59,75` |
 | Related screens | SCR-STM-02, SCR-STM-03 |
-| Evidence | `packages/validation/src/story.ts:8-42`; `packages/features/src/studio/model/story-form.ts:39-61,84-97`; `supabase/migrations/20261103000000_init_schema.sql:55-76`; `packages/features/src/studio/strings.en.ts:307-315`; `packages/features/src/studio/story-editing.test.tsx:328` |
+| Evidence | `packages/validation/src/story.ts:8-42`; `packages/features/src/studio/model/story-form.ts:39-61,84-97`; `supabase/migrations/20261103000000_init_schema.sql:55-76`; `packages/features/src/studio/strings.en.ts:384-392`; `packages/features/src/studio/story-editing.test.tsx:328` |
 | Status | Verified |
 
 ### BR-STM-008 — Slug proposal from the title
@@ -136,7 +136,7 @@
 | Expected behavior | "Đừng Bỏ Cuộc!" → `dung-bo-cuoc` |
 | Exceptions | A title without Latin letters/digits gives an empty slug and the "Please enter a URL slug." error (Inferred from `slugify` + schema) |
 | Related screens | SCR-STM-02, SCR-STM-03 |
-| Evidence | `packages/features/src/studio/screens/story-form-screen.tsx:142-143,249-254,274-276`; `packages/features/src/studio/model/story-form.ts:34-37`; `packages/features/src/studio/story-editing.test.tsx:98,298,401` |
+| Evidence | `packages/features/src/studio/screens/story-form-screen.tsx:149-150,256-261,281-283`; `packages/features/src/studio/model/story-form.ts:35-38`; `packages/features/src/studio/story-editing.test.tsx:98,298,401` |
 | Status | Verified |
 
 ### BR-STM-009 — Slug unique per owner
@@ -148,7 +148,7 @@
 | Expected behavior | A unique violation (`conflict` + code 23505) is shown on the slug field: `studioText.errors.slugTaken` ("You already have a story with this URL slug. Choose a different one.") instead of the banner |
 | Exceptions | No check while typing (WBS 3.2 "Chưa làm: kiểm tra trùng slug ngay khi gõ"). Any 23505 is treated as a slug conflict (see F-STM-04) |
 | Related screens | SCR-STM-02, SCR-STM-03 |
-| Evidence | `supabase/migrations/20261103000000_init_schema.sql:73`; `packages/features/src/studio/model/story-form.ts:99-104`; `packages/features/src/studio/screens/story-form-screen.tsx:152-154,216`; `packages/features/src/studio/story-editing.test.tsx:335` |
+| Evidence | `supabase/migrations/20261103000000_init_schema.sql:73`; `packages/features/src/studio/model/story-form.ts:101-106`; `packages/features/src/studio/screens/story-form-screen.tsx:159-161,227`; `packages/features/src/studio/story-editing.test.tsx:335` |
 | Status | Verified |
 
 ### BR-STM-010 — Canonical public address and slug change
@@ -172,7 +172,7 @@
 | Expected behavior | Toast `studioText.form.saved` ("Changes saved."); form reset to the saved values |
 | Exceptions | Zero matched rows → `notFound` → banner "Story not found."; `forbidden` → "You don't have permission to do this."; `network` → "No connection. Check your network and try again." |
 | Related screens | SCR-STM-03 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:205-211`; `packages/features/src/studio/api/story-write.api.ts:41-45`; `packages/features/src/studio/screens/story-form-screen.tsx:184-197,427`; `packages/features/src/studio/model/story-form.ts:106-118`; `packages/features/src/studio/story-editing.test.tsx:167,388`; `packages/features/src/studio/story-tags.test.tsx:410,439,450` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:205-211`; `packages/features/src/studio/api/story-write.api.ts:44-48`; `packages/features/src/studio/screens/story-form-screen.tsx:184-197,427`; `packages/features/src/studio/model/story-form.ts:108-120`; `packages/features/src/studio/story-editing.test.tsx:167,388`; `packages/features/src/studio/story-tags.test.tsx:428,461,472` |
 | Status | Verified |
 
 ### BR-STM-012 — Editor is read-only on story settings
@@ -184,7 +184,7 @@
 | Expected behavior | Matches RLS: an editor's UPDATE of `stories` matches 0 rows (SQL test "editor cannot change story") |
 | Exceptions | — |
 | Related screens | SCR-STM-03 |
-| Evidence | `packages/features/src/studio/screens/story-form-screen.tsx:109-113`; `packages/features/src/studio/strings.en.ts:295`; `supabase/tests/10_rls.test.sql:143`; `packages/features/src/studio/story-editing.test.tsx:408` |
+| Evidence | `packages/features/src/studio/screens/story-form-screen.tsx:114-118`; `packages/features/src/studio/strings.en.ts:372`; `supabase/tests/10_rls.test.sql:143`; `packages/features/src/studio/story-editing.test.tsx:408` |
 | Status | Verified |
 
 ### BR-STM-013 — Attaching tags to a story
@@ -196,7 +196,7 @@
 | Expected behavior | Create: tags saved after the story; edit: saved after the story update or alone. The stored set (as cleaned by the DB) replaces the chips |
 | Exceptions | RPC errors: 22023 → `tags.errors.invalid`; PT409 (quota) → `tags.errors.quota` ("You've created 10 new tags in the past 24 hours…"); 42501 → `tags.errors.forbidden`. The story stays saved; toast `tags.savedWithoutTags` ("Story saved, but the tags couldn't be saved. …") and the message under the field |
 | Related screens | SCR-STM-02, SCR-STM-03 |
-| Evidence | `supabase/migrations/20261104001400_tags.sql:1-13,23,33-99`; `packages/features/src/studio/model/tags.ts:7-12,23-91`; `packages/features/src/studio/components/tag-editor.tsx:46-62,66,115-121`; `packages/features/src/studio/screens/story-form-screen.tsx:128-160`; `packages/features/src/studio/story-tags.test.tsx:45,76,90,391,461` |
+| Evidence | `supabase/migrations/20261104001400_tags.sql:1-13,23,33-99`; `packages/features/src/studio/model/tags.ts:7-12,23-91`; `packages/features/src/studio/components/tag-editor.tsx:46-62,66,115-121`; `packages/features/src/studio/screens/story-form-screen.tsx:128-160`; `packages/features/src/studio/story-tags.test.tsx:45,76,90,409,483` |
 | Status | Verified |
 
 ### BR-STM-014 — Cover upload
@@ -208,7 +208,7 @@
 | Expected behavior | Upload → set `stories.cover_storage_key` → delete the previous object (best effort) → toast "Cover updated." |
 | Exceptions | Set-key failure removes the just-uploaded object; 0 rows → notFound. Error texts: wrong type "Only JPG, PNG or WebP pictures can be used.", > 10 MB "That picture is too large (10 MB at most).", unreadable, 400/413/415 → "The server did not accept this picture…", 401/403 → "You are not allowed to change this story's cover.", network. Create mode shows `form.cover.saveFirst` ("Save the story first, then you can add a cover.") |
 | Related screens | SCR-STM-03 (SCR-STM-02 shows the hint) |
-| Evidence | `packages/features/src/studio/components/cover-editor.tsx:21-34,54-59,84-95`; `packages/features/src/studio/api/story-write.api.ts:138-181`; `packages/features/src/_shared/image-prepare.ts:5,84`; `supabase/migrations/20261104002400_story_image_buckets.sql:22-54,59-66`; `supabase/migrations/20261104000300_storage_key_convention.sql:24-34`; `packages/features/src/studio/screens/story-form-screen.tsx:234-238`; `packages/features/src/studio/cover.test.tsx:69,97,106,201`; `supabase/tests/300_story_image_buckets.test.sql` |
+| Evidence | `packages/features/src/studio/components/cover-editor.tsx:21-34,54-59,84-95`; `packages/features/src/studio/api/story-write.api.ts:138-181`; `packages/features/src/_shared/image-prepare.ts:6,92`; `supabase/migrations/20261104002400_story_image_buckets.sql:22-54,59-66`; `supabase/migrations/20261104000300_storage_key_convention.sql:24-34`; `packages/features/src/studio/screens/story-form-screen.tsx:234-238`; `packages/features/src/studio/cover.test.tsx:71,99,108,236`; `supabase/tests/300_story_image_buckets.test.sql` |
 | Status | Verified |
 
 ### BR-STM-015 — Cover removal
@@ -220,7 +220,7 @@
 | Expected behavior | Toast "Cover removed."; title initial shows again everywhere |
 | Exceptions | Object deletion failure is ignored (orphan object possible). Old URLs may stay in caches (WBS 3.3 note) |
 | Related screens | SCR-STM-03 |
-| Evidence | `packages/features/src/studio/api/story-write.api.ts:183-195`; `packages/features/src/studio/components/cover-editor.tsx:70-83`; `packages/features/src/studio/cover.test.tsx:124,209` |
+| Evidence | `packages/features/src/studio/api/story-write.api.ts:205-217`; `packages/features/src/studio/components/cover-editor.tsx:70-83`; `packages/features/src/studio/cover.test.tsx:126,244` |
 | Status | Verified |
 
 ### BR-STM-016 — Soft delete of a story
@@ -232,7 +232,7 @@
 | Expected behavior | Confirm dialog "Delete this story?" / "The story will be hidden from everyone. You can restore it from "Deleted stories" in Studio." → toast "Story deleted." → navigate to `/studio` |
 | Exceptions | Documented rule (WBS 3.2 "chỉ chủ sở hữu mới xóa") is enforced only by the UI: a co-author can soft-delete (and restore) through the API — finding F-STM-01. A failed delete leaves the dialog open with no message — finding F-STM-03 |
 | Related screens | SCR-STM-03 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:205-212`; `packages/features/src/studio/api/story-write.api.ts:47-57`; `packages/features/src/studio/screens/story-form-screen.tsx:433-479`; `packages/features/src/studio/strings.en.ts:298-303`; `packages/features/src/studio/story-editing.test.tsx:179,419,431` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:205-212`; `packages/features/src/studio/api/story-write.api.ts:50-60`; `packages/features/src/studio/screens/story-form-screen.tsx:469-515`; `packages/features/src/studio/strings.en.ts:375-380`; `packages/features/src/studio/story-editing.test.tsx:179,419,431` |
 | Status | Verified (RLS weaker than documented rule) |
 
 ### BR-STM-017 — Restore of a story
@@ -244,7 +244,7 @@
 | Expected behavior | `deleted_at = NULL`, toast "Story restored."; the story returns to the Studio list and to readers (if its visibility/status allow) |
 | Exceptions | Moderator-removed story: the Restore button is still offered and fails with "You don't have permission to do this." — finding F-STM-02. Co-authors never see the deleted list |
 | Related screens | SCR-STM-01, SCR-STM-03 |
-| Evidence | `packages/features/src/studio/api/story-write.api.ts:115-127`; `packages/features/src/studio/screens/studio-screen.tsx:155-209`; `packages/features/src/studio/screens/story-form-screen.tsx:434-451`; `supabase/migrations/20261104002000_moderation.sql:15-18,103-116`; `packages/features/src/studio/story-editing.test.tsx:238,437,464,474` |
+| Evidence | `packages/features/src/studio/api/story-write.api.ts:120-132`; `packages/features/src/studio/screens/studio-screen.tsx:155-209`; `packages/features/src/studio/screens/story-form-screen.tsx:470-487`; `supabase/migrations/20261104002000_moderation.sql:15-18,103-116`; `packages/features/src/studio/story-editing.test.tsx:238,437,464,474` |
 | Status | Verified |
 
 ### BR-STM-018 — Effects of a deleted story
@@ -255,7 +255,7 @@
 | Conditions / Expected behavior | Readers cannot read it or its chapters (`can_read_story`/`can_read_chapter` require `deleted_at IS NULL` for non-managers); excluded from the Studio list (BR-STM-001); `create_chapter`/`reorder_chapters` → PT404; `publish_chapter` → 22023 "story is deleted"; `invite_collaborator` → PT404; `list_my_invitations` hides it; accepting its invitation → PT409. The edit form still opens with the notice "This story is deleted." and remains editable |
 | Exceptions | Chapter manager does not show the deleted state (finding U-CHM-02) |
 | Related screens | SCR-STM-01, SCR-STM-03, SCR-CHM-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:93-112`; `supabase/migrations/20261104000400_chapter_management.sql:49-52,72-75`; `supabase/migrations/20261103000200_publish_chapter_rpc.sql:131-133`; `supabase/migrations/20261104000500_collaboration_invitations.sql:70-73,128-131,178`; `packages/features/src/studio/screens/story-form-screen.tsx:108` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:93-112`; `supabase/migrations/20261104000400_chapter_management.sql:49-52,72-75`; `supabase/migrations/20261103000200_publish_chapter_rpc.sql:131-133`; `supabase/migrations/20261104000500_collaboration_invitations.sql:70-73,128-131,178`; `packages/features/src/studio/screens/story-form-screen.tsx:113` |
 | Status | Verified |
 
 ### BR-STM-019 — Visibility and reader access
@@ -267,7 +267,7 @@
 | Expected behavior | Hints: private "Only you and your collaborators can view it.", unlisted "Anyone with the link can view it; it won't appear on the home page or in search.", public "Everyone can see and find it." |
 | Exceptions | A `public` story whose status is still `draft` is invisible to readers; the hint does not say so (finding U-STM-01). First publish of a chapter moves `draft` → `ongoing` (BR-STM-020) |
 | Related screens | SCR-STM-02, SCR-STM-03 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:93-101,198-202`; `packages/features/src/studio/strings.en.ts:230-235` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:93-101,198-202`; `packages/features/src/studio/strings.en.ts:291-296` |
 | Status | Verified |
 
 ### BR-STM-020 — Story status
@@ -279,7 +279,7 @@
 | Expected behavior | Setting `draft` again hides the whole story from readers (BR-STM-019) |
 | Exceptions | No warning when switching a live story back to draft (finding U-STM-01) |
 | Related screens | SCR-STM-02, SCR-STM-03 |
-| Evidence | `supabase/migrations/20261103000000_init_schema.sql:64-65`; `supabase/migrations/20261103000200_publish_chapter_rpc.sql:194-196`; `packages/features/src/studio/screens/story-form-screen.tsx:359-382` |
+| Evidence | `supabase/migrations/20261103000000_init_schema.sql:64-65`; `supabase/migrations/20261103000200_publish_chapter_rpc.sql:194-196`; `packages/features/src/studio/screens/story-form-screen.tsx:366-389` |
 | Status | Verified |
 
 ### BR-STM-021 — Mature (18+) flag
@@ -291,7 +291,7 @@
 | Expected behavior | — |
 | Exceptions | — |
 | Related screens | SCR-STM-01..03 |
-| Evidence | `packages/features/src/studio/screens/story-form-screen.tsx:410-424`; `packages/features/src/studio/strings.en.ts:236-237`; `packages/features/src/studio/screens/studio-screen.tsx:53` |
+| Evidence | `packages/features/src/studio/screens/story-form-screen.tsx:441-455`; `packages/features/src/studio/strings.en.ts:303-304`; `packages/features/src/studio/screens/studio-screen.tsx:53` |
 | Status | Verified |
 
 ### BR-STM-022 — Opening a story in the Studio

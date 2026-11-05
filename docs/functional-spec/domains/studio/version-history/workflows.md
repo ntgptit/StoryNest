@@ -25,7 +25,7 @@ Rules: [business-rules.md](business-rules.md) · Screens: [SCR-HIST-01](screens/
 | Postconditions | No data changed. |
 | Affected objects | `chapter_versions`, `chapter_version_blocks`, `chapters`, `chapter_drafts` (read) |
 | Related screens | SCR-HIST-01 |
-| Status | Verified (`history.test.tsx:286,301`) |
+| Status | Verified (`history.test.tsx:294,309`) |
 
 ### WF-HIST-02 — Compare a version with the draft or another version
 | Field | Value |
@@ -40,7 +40,7 @@ Rules: [business-rules.md](business-rules.md) · Screens: [SCR-HIST-01](screens/
 | Postconditions | No data changed. |
 | Affected objects | as WF-HIST-01 |
 | Related screens | SCR-HIST-01 |
-| Status | Verified (`history.test.tsx:309,322`) |
+| Status | Verified (`history.test.tsx:318,331`) |
 
 ### WF-HIST-03 — Restore a version into the draft and continue editing (cross-screen)
 | Field | Value |
@@ -70,4 +70,4 @@ Rules: [business-rules.md](business-rules.md) · Screens: [SCR-HIST-01](screens/
 | Postconditions | No content changed (reader preferences may change). |
 | Affected objects | `chapter_drafts` (read), reader preferences |
 | Related screens | SCR-HIST-02, SCR-EDT-01 |
-| Status | Verified (`history.test.tsx:465,503`) |
+| Status | Verified (`history.test.tsx:473,511`) |

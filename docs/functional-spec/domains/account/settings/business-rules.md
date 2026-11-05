@@ -27,7 +27,7 @@ Screen: [SCR-SET-01 Settings](screens/settings.md).
 | Expected behavior | Client `toSettings(null)` returns the same defaults; saves use upsert on `user_id` |
 | Exceptions | Row deleted with the profile (`ON DELETE CASCADE`) |
 | Related screens | SCR-SET-01 |
-| Evidence | `supabase/migrations/20261104001900_user_settings.sql:20-30`, `packages/features/src/settings/model/settings.ts:15-44`, `packages/features/src/settings/api/settings.api.ts:5-13`, `supabase/tests/250_user_settings.test.sql:28-35` |
+| Evidence | `supabase/migrations/20261104001900_user_settings.sql:20-30`, `packages/features/src/settings/model/settings.ts:20-49`, `packages/features/src/settings/api/settings.api.ts:5-13`, `supabase/tests/250_user_settings.test.sql:28-35` |
 | Status | Verified (SQL test) |
 
 ### BR-SET-002 — Own row only
@@ -51,7 +51,7 @@ Screen: [SCR-SET-01 Settings](screens/settings.md).
 | Expected behavior | Settings select offers "Tiếng Việt" and "English"; choosing calls the global `setLanguage` (BR-I18N-005) — the change is immediate, no Save button |
 | Exceptions | `xx` → `23514` |
 | Related screens | SCR-SET-01 |
-| Evidence | `supabase/migrations/20261104001900_user_settings.sql:22`, `packages/features/src/settings/model/settings.ts:31-38`, `packages/features/src/settings/api/language.api.ts:5-9`, `packages/features/src/settings/screens/settings-screen.tsx:139-155`, `supabase/tests/250_user_settings.test.sql:43` |
+| Evidence | `supabase/migrations/20261104001900_user_settings.sql:22`, `packages/features/src/settings/model/settings.ts:36-43`, `packages/features/src/settings/api/language.api.ts:5-9`, `packages/features/src/settings/screens/settings-screen.tsx:240-256`, `supabase/tests/250_user_settings.test.sql:43` |
 | Status | Verified |
 
 ### BR-SET-004 — Account language sync (LanguageSync)
@@ -75,7 +75,7 @@ Screen: [SCR-SET-01 Settings](screens/settings.md).
 | Expected behavior | Text: "Choose which in-app notifications you want. Collaboration invitations sent to you are always delivered." |
 | Exceptions | No email/push channels (BR-SET-008) |
 | Related screens | SCR-SET-01 |
-| Evidence | `packages/features/src/settings/model/settings.ts:3-8`, `supabase/migrations/20261104001900_user_settings.sql:46-57`, `packages/features/src/settings/strings.en.ts:39-49` |
+| Evidence | `packages/features/src/settings/model/settings.ts:8-13`, `supabase/migrations/20261104001900_user_settings.sql:46-57`, `packages/features/src/settings/strings.en.ts:39-49` |
 | Status | Verified |
 
 ### BR-SET-006 — Switched-off notifications are dropped at insert time
@@ -99,7 +99,7 @@ Screen: [SCR-SET-01 Settings](screens/settings.md).
 | Expected behavior | UI flips at once; on failure the previous values are restored and toast "Could not save your settings. The previous value was restored." |
 | Exceptions | No per-switch pending/disabled state; no refetch after settle (U-SET-02) |
 | Related screens | SCR-SET-01 |
-| Evidence | `packages/features/src/settings/hooks/use-settings.ts:26-50`, `packages/features/src/settings/screens/settings-screen.tsx:119-122,157-168`, `packages/features/src/settings/api/settings.api.ts:10-13` |
+| Evidence | `packages/features/src/settings/hooks/use-settings.ts:28-52`, `packages/features/src/settings/screens/settings-screen.tsx:119-122,157-168`, `packages/features/src/settings/api/settings.api.ts:10-13` |
 | Status | Verified |
 
 ### BR-SET-008 — Channels

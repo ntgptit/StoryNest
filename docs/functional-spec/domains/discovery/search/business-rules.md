@@ -36,7 +36,7 @@
 | Expected behavior | Client: no request; results page shows "Enter at least 3 characters to search. Accents are optional." or "Search terms can be up to 100 characters."; header box shows no list and Enter does nothing. DB: `22023` |
 | Exceptions | Input `maxLength` is 120 so an overlong term can be typed and explained |
 | Related screens | SCR-SRCH-01 (incl. header SearchBox) |
-| Evidence | `20261104001300_search.sql:48-53`, `search/model/search.ts:3-4,21-33`, `search/screens/search-screen.tsx:69,79-82`, `search/components/search-box.tsx:97`, `search/strings.en.ts:8-9`, `search/search.test.tsx:84,93,247,275,283,434`, `supabase/tests/190_search.test.sql:91-96` |
+| Evidence | `20261104001300_search.sql:48-53`, `search/model/search.ts:3-4,21-33`, `search/screens/search-screen.tsx:69,79-82`, `search/components/search-box.tsx:97`, `search/strings.en.ts:8-9`, `search/search.test.tsx:86,95,249,280,289,466`, `supabase/tests/190_search.test.sql:91-96` |
 | Status | Verified |
 
 ### BR-SRCH-003 — Matching and relevance
@@ -60,7 +60,7 @@
 | Expected behavior | Same for every caller incl. moderators and the owner |
 | Exceptions | — |
 | Related screens | SCR-SRCH-01 (Stories tab, header suggestions) |
-| Evidence | `20261104001300_search.sql:78-81`, `search/hooks/use-search.ts:27-40`, `search/keys.ts:5,8`, `supabase/tests/190_search.test.sql:46,69-71,114,129-132` |
+| Evidence | `20261104001300_search.sql:78-81`, `search/hooks/use-search.ts:37-50`, `search/keys.ts:5,8`, `supabase/tests/190_search.test.sql:46,69-71,114,129-132` |
 | Status | Verified (SQL test) |
 
 ### BR-SRCH-005 — Author results
@@ -96,7 +96,7 @@
 | Expected behavior | At most 17 pages (204 rows). After the cap the list shows the normal end message "No more results." |
 | Exceptions | The prepared "Only the first results are shown. Try a more specific search." (`capReached`) is never displayed → F-SRCH-01 |
 | Related screens | SCR-SRCH-01 |
-| Evidence | `20261104001300_search.sql:54-59`, `search/model/search.ts:5-7,49-54`, `search/api/search.api.ts:48-58,72-83`, `search/strings.en.ts:16-17`, `search/search.test.tsx:112,173` |
+| Evidence | `20261104001300_search.sql:54-59`, `search/model/search.ts:5-7,49-54`, `search/api/search.api.ts:49-59,73-84`, `search/strings.en.ts:16-17`, `search/search.test.tsx:114,175` |
 | Status | Verified |
 
 ### BR-SRCH-008 — The URL holds the search
@@ -108,7 +108,7 @@
 | Expected behavior | Search can be shared and survives reload; page open to guests; `robots: noindex`; `/search` disallowed in robots.txt |
 | Exceptions | — |
 | Related screens | SCR-SRCH-01 |
-| Evidence | `apps/web/src/app/(main)/search/page.tsx:7-19`, `search/search-view.tsx:7-9`, `search/model/search.ts:35-47`, `search/screens/search-screen.tsx:56-59,87`, `apps/web/src/app/robots.ts:18`, `search/search.test.tsx:98,105,353,364` |
+| Evidence | `apps/web/src/app/(main)/search/page.tsx:7-19`, `search/search-view.tsx:7-9`, `search/model/search.ts:35-47`, `search/screens/search-screen.tsx:65-68,104`, `apps/web/src/app/robots.ts:18`, `search/search.test.tsx:100,107,385,396` |
 | Status | Verified |
 
 ### BR-SRCH-009 — Header suggestions
@@ -120,7 +120,7 @@
 | Expected behavior | ArrowDown/Up cycle through rows, Enter opens the active story or the results page, Escape closes, mouse-down on a row navigates, blur closes after 120 ms. Below `sm` only a search icon button that opens the same field over the header row; Escape, the close button or leaving the form folds it back (changed by PR #60) |
 | Exceptions | Loading, no-match and error states of the list are not shown (only the "See all" row) → U-SRCH-02 |
 | Related screens | SCR-SRCH-01-C01 (renders in the shell on every page) |
-| Evidence | `search/components/search-box.tsx:26-228`, `search/model/search.ts:8-9`, `search/hooks/use-search.ts:66-80`, `search/search.test.tsx:415-497` |
+| Evidence | `search/components/search-box.tsx:26-228`, `search/model/search.ts:8-9`, `search/hooks/use-search.ts:76-90`, `search/search.test.tsx:447-529` |
 | Status | Verified |
 
 ### BR-SRCH-010 — Story results reuse the home card
@@ -132,7 +132,7 @@
 | Expected behavior | A result card is identical to a home card (BR-HOME-009) |
 | Exceptions | A dropped story can make a page shorter than 12 |
 | Related screens | SCR-SRCH-01 |
-| Evidence | `search/api/search.api.ts:29-59`, `discovery/model/order-by-ids.ts:1-8`, `search/search.test.tsx:120-149` |
+| Evidence | `search/api/search.api.ts:30-60`, `discovery/model/order-by-ids.ts:1-8`, `search/search.test.tsx:122-151` |
 | Status | Verified |
 
 ### BR-SRCH-011 — Access

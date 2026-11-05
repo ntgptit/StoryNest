@@ -18,8 +18,8 @@
 ## B. Components
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
-| SCR-STAT-01-C01 | Header "Story statistics" / "Who reads your story and where they stop." (no story title) | `story-stats-screen.tsx:83`, `strings.en.ts:2-3` |
-| SCR-STAT-01-C02 | Link "← Back to Studio" → `/studio` | `story-stats-screen.tsx:84-90` |
+| SCR-STAT-01-C01 | Header "Story statistics" / "Who reads your story and where they stop." (no story title) | `story-stats-screen.tsx:97`, `strings.en.ts:2-3` |
+| SCR-STAT-01-C02 | Link "← Back to Studio" → `/studio` | `story-stats-screen.tsx:98-104` |
 | SCR-STAT-01-C03 | Section "In the selected range": tabs 7/30/90 days ("Time range", sliding pill), three tiles Reads / New likes / New comments (dimmed, `aria-busy`, while a new range loads; on a switch each tile's digits roll to the new total, BR-STAT-005) | `story-stats-screen.tsx`, `packages/ui/src/widgets/rolling-number.tsx` |
 | SCR-STAT-01-C04 | Section "By day": three small multiples (Reads `--chart-1`, Likes `--chart-2`, Comments `--chart-3`) on one day axis with a shared cursor, per-chart value + change from the day before, dashed average line, first/middle/last day ticks, dotted flags on days a chapter was first published; a `figure` captioned with the summary ("30-day chart: n reads, …"); zoom row ("Zoom in", "Show all" while zoomed, live status "Showing <from> – <to>: n of N days." / "Selected <from> – <to>, n days. …"); "Show as table" toggle; or "No activity in this range yet."; note | `components/daily-chart.tsx`, `ui/widgets/synced-small-multiples.tsx` (BR-STAT-009, BR-STAT-012, BR-STAT-014) |
 | SCR-STAT-01-C08 | Section "Reads over the last 90 days": weeks × weekdays heatmap (Monday first, Mon/Wed/Fri labelled, month labels above the weeks), status line (summary, or the picked day's reads, likes, comments and publish note), legend "Reads per day" with the whole-number range of each shade, "Show reads by week as a table" toggle, note (UTC days, reads are not distinct readers, always 90 days); "No reads in the last 90 days." when every day has 0 reads | `components/reads-heatmap.tsx`, `ui/widgets/calendar-heatmap.tsx` (BR-STAT-013) |
@@ -50,13 +50,13 @@
 | --- | --- |
 | Trigger | "Try again" |
 | Expected behavior | Refetch chapters, the selected daily series and the 90-day heatmap series |
-| Evidence | `story-stats-screen.tsx:77-86`; `analytics.test.tsx:544` |
+| Evidence | `story-stats-screen.tsx:91-100`; `analytics.test.tsx:630` |
 
 | Field | SCR-STAT-01-A03 Back to Studio |
 | --- | --- |
 | Trigger | Link |
 | Expected behavior | Navigate to SCR-STM-01 |
-| Evidence | `story-stats-screen.tsx:84-90` |
+| Evidence | `story-stats-screen.tsx:98-104` |
 
 | Field | SCR-STAT-01-A04 Read a day's values (scrub) |
 | --- | --- |

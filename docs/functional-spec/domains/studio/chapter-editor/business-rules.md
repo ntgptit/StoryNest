@@ -59,7 +59,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | (1) redirect; (2) and (3) show "Chapter not found" / "The chapter doesn't exist or you don't have permission to edit it." (`notFound`). Existence of the chapter is not revealed. |
 | Exceptions | `can_edit_chapter` does not check `chapters.deleted_at` or `stories.deleted_at`, and `chapter_drafts` RLS does not check `is_active_account()`: drafts of soft-deleted chapters/stories and drafts of suspended accounts remain openable and savable (see F-EDT-07, F-EDT-10). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/page.tsx:13`, `apps/web/src/lib/auth/route-guard.ts:4-12`, `supabase/migrations/20261103000100_auth_and_rls.sql:115-120`, `…auth_and_rls.sql:247-252`, `packages/features/src/editor/api/draft.api.ts:16-24`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:105-107`, `packages/features/src/editor/strings.en.ts:184-187`, test `editor-screen.test.tsx:288` |
+| Evidence | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/page.tsx:13`, `apps/web/src/lib/auth/route-guard.ts:4-12`, `supabase/migrations/20261103000100_auth_and_rls.sql:115-120`, `…auth_and_rls.sql:247-252`, `packages/features/src/editor/api/draft.api.ts:16-24`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:114-116`, `packages/features/src/editor/strings.en.ts:238-241`, test `editor-screen.test.tsx:288` |
 | Status | Verified |
 
 ### BR-EDT-002 — A draft body the editor cannot represent is never opened
@@ -71,7 +71,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Invalid body → `AppError("invalid")` → empty state "Can't open the draft" / "The draft content is in a format that can't be read, so it wasn't opened to avoid overwriting data." No editor, no autosave. Empty body → editor shows one empty paragraph with a fresh block id. |
 | Exceptions | Network/server failure → "Couldn't load the draft" + "Try again" (refetch). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/api/draft.api.ts:28-32`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:91-104`, `packages/features/src/editor/model/body-converter.ts:161`, `packages/features/src/editor/strings.en.ts:188-192`, tests `editor-screen.test.tsx:118,260,272` |
+| Evidence | `packages/features/src/editor/api/draft.api.ts:28-32`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:91-104`, `packages/features/src/editor/model/body-converter.ts:161`, `packages/features/src/editor/strings.en.ts:242-246`, tests `editor-screen.test.tsx:118,260,272` |
 | Status | Verified |
 
 ### BR-EDT-003 — Supported content set (Tiptap features)
@@ -119,7 +119,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Blank title → "Please enter a chapter title."; > 200 → "The chapter title can be up to 200 characters."; body problems → "Part of the content can't be saved. Remove it and try again." Shown under the title field (`role="alert"`), autosave status `invalid`, no request sent; the next edit retries. |
 | Exceptions | Title `<input maxLength=400>` allows typing past the 200 limit (U-EDT-02). There is no minimum content: one empty paragraph is a valid body (Q-EDT-01). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/model/draft-form.ts:6-26`, `packages/validation/src/chapter-body.ts:28-62`, `packages/validation/src/limits.ts:7,16-23`, `packages/validation/src/inputs.ts:61-66`, `packages/features/src/editor/api/draft.api.ts:55-60`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:192-198,498,505-509`, `packages/features/src/editor/strings.en.ts:193-197`, tests `editor-screen.test.tsx:172,238` |
+| Evidence | `packages/features/src/editor/model/draft-form.ts:6-26`, `packages/validation/src/chapter-body.ts:28-62`, `packages/validation/src/limits.ts:7,21-28`, `packages/validation/src/inputs.ts:66-71`, `packages/features/src/editor/api/draft.api.ts:55-60`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:204-210,514,521-525`, `packages/features/src/editor/strings.en.ts:247-251`, tests `editor-screen.test.tsx:172,238` |
 | Status | Verified |
 
 ### BR-EDT-007 — Word count
@@ -131,7 +131,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Footer shows "{n} words" (locale formatted). Stored on publish as `chapter_versions.word_count`. |
 | Exceptions | — |
 | Related screens | SCR-EDT-01, SCR-HIST-01 |
-| Evidence | `packages/validation/src/chapter-body.ts:68-77`, `packages/features/src/editor/model/draft-form.ts:43-49`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:100,217-219,383`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:155-159`, test `editor.test.ts:124` |
+| Evidence | `packages/validation/src/chapter-body.ts:68-77`, `packages/features/src/editor/model/draft-form.ts:43-49`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:109,229-231,395`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:155-159`, test `editor.test.ts:124` |
 | Status | Verified |
 
 ### BR-EDT-008 — Optimistic lock on draft save (revision)
@@ -167,7 +167,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Runs the same save attempt now (cancels the pending timer); on success toast "Draft saved."; button label "Saving…" while running. Invalid/conflict/failed outcomes show the same status as autosave and no success toast. |
 | Exceptions | After a conflict the button stays enabled; pressing it re-sends against the stale revision and gets the conflict again (harmless). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:170-171,212,366-369,558-560`, `packages/features/src/editor/model/autosaver.ts:130-133`, `packages/features/src/editor/strings.en.ts:40-42` |
+| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:182-183,224,378-381,578-580`, `packages/features/src/editor/model/autosaver.ts:130-133`, `packages/features/src/editor/strings.en.ts:40-42` |
 | Status | Verified |
 
 ### BR-EDT-011 — Local backup on this device
@@ -191,7 +191,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | (a)/(b) as stated; after (c) the text is offered back by the backup banner on return. |
 | Exceptions | Path (c) means Preview shows the last saved draft and a History restore deletes the backup (F-EDT-02). |
 | Related screens | SCR-EDT-01, SCR-HIST-01, SCR-HIST-02 |
-| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:312-337`, `packages/features/src/editor/strings.en.ts:53`, tests `editor-screen.test.tsx:383,400` |
+| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:324-349`, `packages/features/src/editor/strings.en.ts:53`, tests `editor-screen.test.tsx:383,400` |
 | Status | Verified |
 
 ### BR-EDT-013 — Two-device conflict handling
@@ -203,7 +203,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Backup written; autosave stops; alert "The draft was edited elsewhere" + description + "Load latest version". Reload refetches the draft and remounts the editor; the backup banner then offers the author's text on top of the newer version (with the older-base warning). |
 | Exceptions | Banner text says "unsaved changes here will be lost" although they are offered back (U-EDT-01). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:47-49,76-79,162-167,287,335-346`, `packages/features/src/editor/hooks/use-chapter-draft.ts:12-23`, `packages/features/src/editor/strings.en.ts:198-203`, tests `editor-screen.test.tsx:247,462` |
+| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:50-52,80-83,174-179,299,347-358`, `packages/features/src/editor/hooks/use-chapter-draft.ts:12-23`, `packages/features/src/editor/strings.en.ts:252-257`, tests `editor-screen.test.tsx:247,462` |
 | Status | Verified |
 
 ### BR-EDT-014 — Picture preparation and upload (client)
@@ -215,7 +215,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Success → image block with `storageKey` inserted at the current selection (new block id). Errors (toast): type "Only JPG, PNG or WebP pictures can be inserted.", tooLarge "That picture is too large (10 MB at most).", unreadable "This picture could not be read. Try another one.", 400/413/415 "The server did not accept this picture. Try another one.", 401/403 "You are not allowed to insert pictures into this story.", network "No connection. Check your network and try again.", other "The picture could not be inserted. Please try again." |
 | Exceptions | Uploaded objects are never deleted (unused, removed or aborted inserts stay in the bucket) — F-EDT-08. No alt text/caption (F-EDT-09). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/_shared/image-prepare.ts:3-5,53-90`, `packages/features/src/editor/hooks/use-chapter-image.ts:10-26`, `packages/features/src/editor/api/images.api.ts:6-35`, `packages/features/src/editor/model/image-messages.ts:6-14`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:299-308`, `packages/features/src/editor/components/editor-toolbar.tsx:68-77,104-118`, `packages/utils/src/storage.ts:33-38`, `packages/features/src/editor/strings.en.ts:39-50`, tests `chapter-image.test.tsx:47-145` |
+| Evidence | `packages/features/src/_shared/image-prepare.ts:4-6,61-98`, `packages/features/src/editor/hooks/use-chapter-image.ts:10-26`, `packages/features/src/editor/api/images.api.ts:6-35`, `packages/features/src/editor/model/image-messages.ts:6-14`, `packages/features/src/editor/screens/chapter-editor-screen.tsx:311-320`, `packages/features/src/editor/components/editor-toolbar.tsx:68-77,104-118`, `packages/utils/src/storage.ts:33-38`, `packages/features/src/editor/strings.en.ts:39-50`, tests `chapter-image.test.tsx:47-145` |
 | Status | Verified |
 
 ### BR-EDT-015 — `chapter-images` bucket policy
@@ -263,7 +263,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | null → inline alert "The draft couldn't be saved, so it wasn't published. Check the chapter title and content and try again." and no RPC call. Stale revision (someone saved meanwhile) → PT409 → "The draft or chapter status was changed elsewhere. Reload the page and try again." |
 | Exceptions | The save-first message is the same whether the cause is conflict or offline (U-EDT-01). Invalid content (e.g. a blank title) no longer reaches it: the readiness checklist keeps Publish locked until the draft rules hold (changed by PR #60). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:359-364,534-539`, `packages/features/src/editor/components/publish-panel.tsx:57-79`, `packages/features/src/editor/hooks/use-publishing.ts:82-107`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:140-143,263-266`, tests `publishing.test.tsx:303,349,377`, `supabase/tests/20_publish.test.sql:70` |
+| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:371-376,550-555`, `packages/features/src/editor/components/publish-panel.tsx:57-79`, `packages/features/src/editor/hooks/use-publishing.ts:82-107`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:140-143,263-266`, tests `publishing.test.tsx:313,387,415`, `supabase/tests/20_publish.test.sql:70` |
 | Status | Verified |
 
 ### BR-EDT-019 — Server-side publish validation
@@ -287,7 +287,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Insert `chapter_versions` (title trimmed, word count, `created_by` = actor) → missing `chapter_blocks` rows → `chapter_version_blocks` in reading order → set `published_at` (immutable from then on, `BR-HIST-002`). Chapter: `status='published'`, `published_version_id` = new version, `first_published_at` kept or set, `scheduled_for` cleared. Story: `first_published_at` set once; `status` `draft` → `ongoing` (visibility unchanged). `chapter_stats`/`story_stats` rows ensured. First publish of the chapter only: outbox event `chapter.published` (dedupe key per chapter) → follower notification `BR-NOTI-*`; republish/unpublish+republish is silent. Returns the version id. UI toast "Chapter published." / "New version published." |
 | Exceptions | Republishing an unchanged draft still creates a new identical version (F-EDT-06). |
 | Related screens | SCR-EDT-01, SCR-HIST-01 |
-| Evidence | `supabase/migrations/20261103000200_publish_chapter_rpc.sql:161-212`, `packages/features/src/editor/components/publish-panel.tsx:69`, tests `supabase/tests/20_publish.test.sql:24-56,84-106,169` |
+| Evidence | `supabase/migrations/20261103000200_publish_chapter_rpc.sql:161-212`, `packages/features/src/editor/components/publish-panel.tsx:92`, tests `supabase/tests/20_publish.test.sql:24-56,84-106,169` |
 | Status | Verified (SQL test) |
 
 ### BR-EDT-021 — Scheduling and timezone handling
@@ -299,7 +299,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | `status='scheduled'`, `scheduled_for` set; dialog closes; toast "Publication scheduled."; badge "Scheduled for {date, time} ({zone})" formatted in the UI locale and browser zone. The snapshot is taken from the draft **as it is at the due time** (dialog: "…using the draft as it is then"). Re-scheduling a scheduled chapter replaces the time. |
 | Exceptions | Schedule is offered for published chapters although the RPC refuses it (F-EDT-01). No per-account timezone setting exists; the device's zone is used. |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/model/publishing.ts:40-71`, `packages/features/src/editor/components/publish-panel.tsx:97-118,162-199`, `packages/validation/src/rpc.ts:13-18`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:234-274`, `packages/features/src/editor/strings.en.ts:129,160-169`, tests `publishing.test.tsx:94-115,271,413,435`, `supabase/tests/20_publish.test.sql:151,173-180` |
+| Evidence | `packages/features/src/editor/model/publishing.ts:40-71`, `packages/features/src/editor/components/publish-panel.tsx:97-118,162-199`, `packages/validation/src/rpc.ts:13-18`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:234-274`, `packages/features/src/editor/strings.en.ts:179,214-223`, tests `publishing.test.tsx:95-116,281,451,473`, `supabase/tests/20_publish.test.sql:151,173-180` |
 | Status | Verified |
 
 ### BR-EDT-022 — Due-chapter job
@@ -323,7 +323,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | `status='draft'`, `published_version_id=NULL`, `scheduled_for=NULL`. Versions are kept (history intact), `first_published_at` kept so publishing again does not re-notify followers. Readers lose access (`BR-READ-*`). Toast "Chapter unpublished and returned to draft." |
 | Exceptions | The cancel-schedule path reuses the unpublish dialog and toast text (U-EDT-01). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `supabase/migrations/20261103000200_publish_chapter_rpc.sql:276-308`, `packages/features/src/editor/components/publish-panel.tsx:149-158,201-213`, `packages/features/src/editor/strings.en.ts:137-138,159,170-174`, tests `publishing.test.tsx:394,407`, `supabase/tests/20_publish.test.sql:142-170` |
+| Evidence | `supabase/migrations/20261103000200_publish_chapter_rpc.sql:276-308`, `packages/features/src/editor/components/publish-panel.tsx:180-189,232-244`, `packages/features/src/editor/strings.en.ts:187-188,213,224-228`, tests `publishing.test.tsx:432,445`, `supabase/tests/20_publish.test.sql:142-170` |
 | Status | Verified (SQL test) |
 
 ### BR-EDT-024 — Role- and state-based enablement of publish controls
@@ -335,7 +335,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Badge: draft "Draft, not visible to readers"; scheduled "Scheduled for … (zone)"; published "Published, readers see the published version"; archived "Archived, hidden from readers". |
 | Exceptions | While the state is loading or if it fails, the whole panel renders nothing (F-EDT-04). Schedule is shown for published chapters (F-EDT-01). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/model/publishing.ts:6-19`, `packages/features/src/editor/components/publish-panel.tsx:49-59,113-160`, `packages/features/src/editor/api/publishing.api.ts:24-39`, `packages/features/src/editor/strings.en.ts:126-138`, tests `publishing.test.tsx:66,271,387,407` |
+| Evidence | `packages/features/src/editor/model/publishing.ts:7-20`, `packages/features/src/editor/components/publish-panel.tsx:49-59,113-160`, `packages/features/src/editor/api/publishing.api.ts:24-39`, `packages/features/src/editor/strings.en.ts:176-188`, tests `publishing.test.tsx:67,281,425,445` |
 | Status | Verified |
 
 ### BR-EDT-025 — Error mapping to messages
@@ -347,7 +347,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Shown inline in the panel as `role="alert"`; cleared on the next action. |
 | Exceptions | Same message for different 22023 causes (deleted story, foreign image key, past time). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/validation/src/rpc.ts:26-39`, `packages/features/src/_shared/errors.ts:57-122`, `packages/features/src/editor/model/publishing.ts:21-38`, `packages/features/src/editor/components/publish-panel.tsx:81-83,130-137`, `packages/features/src/editor/strings.en.ts:175-182`, test `publishing.test.tsx:80` |
+| Evidence | `packages/validation/src/rpc.ts:26-39`, `packages/features/src/_shared/errors.ts:57-122`, `packages/features/src/editor/model/publishing.ts:22-39`, `packages/features/src/editor/components/publish-panel.tsx:104-106,161-168`, `packages/features/src/editor/strings.en.ts:229-236`, test `publishing.test.tsx:81` |
 | Status | Verified |
 
 ### BR-EDT-026 — Double-submit protection
@@ -359,7 +359,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | One RPC per click burst (test clicks three times in one `act`). |
 | Exceptions | Client-only: the server does not deduplicate two concurrent publishes with the same expected revision (WBS 3.7 note) — F-EDT-06. |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/components/publish-panel.tsx:56-57,64-88,141`, `packages/ui/src/widgets/confirm-dialog.tsx:38-66`, test `publishing.test.tsx:315`; WBS WP 3.7 |
+| Evidence | `packages/features/src/editor/components/publish-panel.tsx:56-57,64-88,141`, `packages/ui/src/widgets/confirm-dialog.tsx:38-66`, test `publishing.test.tsx:325`; WBS WP 3.7 |
 | Status | Verified |
 
 ### BR-EDT-027 — Keyboard shortcuts and input rules

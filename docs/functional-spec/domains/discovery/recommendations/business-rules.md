@@ -11,7 +11,7 @@
 | Actors / roles | Guest (similar only), Member (similar + personal) |
 | Related entities | RPCs `similar_stories` (SECURITY DEFINER), `recommend_for_me` (SECURITY INVOKER); sources `story_tags`, `categories`, `chapter_read_events`, `user_follows`, `story_saves`, `story_follows`, `user_story_progress` |
 | Dependencies | BR-TAX-*, BR-PROG-*, BR-LIB-*, BR-AUTHOR-*, BR-STORY-*, BR-MAT-*, BR-MOD-* |
-| Own screen | **None.** Rendered by `SimilarStories` at the end of the story page (`packages/features/src/story/screens/story-screen.tsx:210`, inside `AdultGate`) and by `ForYouStories` above the home feed (`apps/web/src/app/(main)/discover-home.tsx:15`) |
+| Own screen | **None.** Rendered by `SimilarStories` at the end of the story page (`packages/features/src/story/screens/story-screen.tsx:243`, inside `AdultGate`) and by `ForYouStories` above the home feed (`apps/web/src/app/(main)/discover-home.tsx:24`) |
 | Code | `supabase/migrations/20261104001700_recommendations.sql`, `packages/features/src/recommendations/**` |
 
 ## 2. Rules
@@ -73,7 +73,7 @@
 | Expected behavior | Titled section (`h2`) with a swipeable/draggable row of home cards (`CardCarousel`, previous/next arrows) instead of a 2/3/4-column grid (changed by PR #60), each followed by its reason sentence |
 | Exceptions | — |
 | Related screens | SCR-HOME-01, SCR-STORY-01 |
-| Evidence | `recommendations/components/recommendation-list.tsx:10-79`, `apps/web/src/app/(main)/discover-home.tsx:11-15`, `story/screens/story-screen.tsx:239-240`, `recommendations/recommendations.test.tsx:219,235` |
+| Evidence | `recommendations/components/recommendation-list.tsx:10-79`, `apps/web/src/app/(main)/discover-home.tsx:11-15`, `story/screens/story-screen.tsx:272-273`, `recommendations/recommendations.test.tsx:219,235` |
 | Status | Verified |
 
 ### BR-REC-006 — Sizes and limits

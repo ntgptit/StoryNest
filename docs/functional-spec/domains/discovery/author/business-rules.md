@@ -36,7 +36,7 @@
 | Expected behavior | Numbers formatted per locale |
 | Exceptions | When the reader shows mature content the list below may contain more stories than M → U-AUTHOR-02 |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `author/screens/author-screen.tsx:67-104`, `20261104001600_author_follows.sql:41-45`, `supabase/tests/220_author_follows.test.sql:56,73`, `docs/WBS.md:211` |
+| Evidence | `author/screens/author-screen.tsx:82-119`, `20261104001600_author_follows.sql:41-45`, `supabase/tests/220_author_follows.test.sql:56,73`, `docs/WBS.md:211` |
 | Status | Verified |
 
 ### BR-AUTHOR-003 — Follower count counts active followers only
@@ -60,7 +60,7 @@
 | Expected behavior | Empty → "No public stories yet / When the author publishes a story, it will appear here." |
 | Exceptions | — |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `author/screens/author-screen.tsx:61,93-131`, `discovery/api/discovery.api.ts:84`, `author/author.test.tsx:302,310` |
+| Evidence | `author/screens/author-screen.tsx:61,93-131`, `discovery/api/discovery.api.ts:94`, `author/author.test.tsx:302,310` |
 | Status | Verified |
 
 ### BR-AUTHOR-005 — Follow eligibility
@@ -84,7 +84,7 @@
 | Expected behavior | Toast "You're following the maximum of 1000 authors. Unfollow some before following more." |
 | Exceptions | — |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `20261104001600_author_follows.sql:57,75-78`, `author/model/author.ts:69-79`, `author/strings.en.ts:27-31`, `docs/WBS.md:209` |
+| Evidence | `20261104001600_author_follows.sql:57,75-78`, `author/model/author.ts:69-79`, `author/strings.en.ts:28-32`, `docs/WBS.md:209` |
 | Status | Verified (SQL test) |
 
 ### BR-AUTHOR-007 — Follow button behaviour
@@ -96,7 +96,7 @@
 | Expected behavior | Success → toast "You're now following this author." / "Unfollowed."; profile cache updated with returned count; followed-feed and all discovery queries invalidated |
 | Exceptions | Errors → toast: limit (PT409), "This author is no longer visible." (PT404), else "That didn't work. Please try again." |
 | Related screens | SCR-AUTHOR-01 |
-| Evidence | `author/components/follow-author-button.tsx:14-44`, `author/hooks/use-author.ts:30-47`, `author/strings.en.ts:8-11,27-31`, `author/author.test.tsx:334-399` |
+| Evidence | `author/components/follow-author-button.tsx:14-44`, `author/hooks/use-author.ts:30-47`, `author/strings.en.ts:8-11,28-32`, `author/author.test.tsx:334-399` |
 | Status | Verified |
 
 ### BR-AUTHOR-008 — Following feed eligibility and order

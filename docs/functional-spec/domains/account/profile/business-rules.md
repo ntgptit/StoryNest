@@ -27,7 +27,7 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Expected behavior | Messages: "Username can only contain letters, numbers and underscores (3-30 characters).", "Please enter a display name.", "Display name can be at most 100 characters.", "Bio can be at most 1000 characters." |
 | Exceptions | Unknown codes → generic text |
 | Related screens | SCR-PRF-02 |
-| Evidence | `packages/validation/src/profile.ts:5-30`, `packages/validation/src/limits.ts:3-4,17`, `packages/features/src/profile/model/messages.ts:7-17`, `packages/features/src/profile/profile.test.tsx` |
+| Evidence | `packages/validation/src/profile.ts:5-30`, `packages/validation/src/limits.ts:3-4,22`, `packages/features/src/profile/model/messages.ts:7-17`, `packages/features/src/profile/profile.test.tsx` |
 | Status | Verified |
 
 ### BR-PRF-002 — Username uniqueness and storage
@@ -39,7 +39,7 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Expected behavior | Duplicate → `23505` → `AppError.kind = conflict` → field error "This username is already taken." |
 | Exceptions | Usernames created at sign-up are always lower-case and ≤ 20 chars (BR-AUTH-004); edited ones may be mixed-case and up to 30 |
 | Related screens | SCR-PRF-02 |
-| Evidence | `supabase/migrations/20261103000000_init_schema.sql:13-25`, `packages/features/src/_shared/errors.ts:61`, `packages/features/src/profile/model/messages.ts:19-22`, `packages/features/src/profile/screens/edit-profile-screen.tsx:81-86` |
+| Evidence | `supabase/migrations/20261103000000_init_schema.sql:13-25`, `packages/features/src/_shared/errors.ts:61`, `packages/features/src/profile/model/messages.ts:19-22`, `packages/features/src/profile/screens/edit-profile-screen.tsx:83-88` |
 | Status | Verified |
 
 ### BR-PRF-003 — Only the owner edits, only safe columns
@@ -111,7 +111,7 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Expected behavior | Other folders, nested paths, `..`, upper-case uid, wrong extension, other buckets → refused (HTTP 400/403 → "The server did not accept this picture. Try another one." or forbidden text) |
 | Exceptions | Guests read through the public URL only |
 | Related screens | SCR-PRF-02 |
-| Evidence | `supabase/migrations/20261104002300_avatars_bucket.sql:21-46`, `supabase/tests/290_avatars_bucket.test.sql`, `packages/features/src/profile/api/profile.api.ts:30-38` |
+| Evidence | `supabase/migrations/20261104002300_avatars_bucket.sql:21-46`, `supabase/tests/290_avatars_bucket.test.sql`, `packages/features/src/profile/api/profile.api.ts:40-48` |
 | Status | Verified (SQL test) |
 
 ### BR-PRF-009 — Avatar storage key
@@ -123,7 +123,7 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Expected behavior | A new picture always gets a new address (cache 1 year, `upsert: false`) |
 | Exceptions | — |
 | Related screens | SCR-PRF-02 |
-| Evidence | `packages/utils/src/storage.ts:33-38`, `supabase/migrations/20261104000300_storage_key_convention.sql:34-35`, `packages/features/src/profile/api/profile.api.ts:51-58` |
+| Evidence | `packages/utils/src/storage.ts:33-38`, `supabase/migrations/20261104000300_storage_key_convention.sql:34-35`, `packages/features/src/profile/api/profile.api.ts:61-68` |
 | Status | Verified |
 
 ### BR-PRF-010 — Avatar replace / remove ordering
@@ -135,7 +135,7 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Expected behavior | Replace: upload new → set key → delete old (best effort). If setting the key fails, the new object is deleted and the old picture stays. Remove: set key `NULL` → delete object (best effort) |
 | Exceptions | Cleanup failures are swallowed (harmless leftover file) |
 | Related screens | SCR-PRF-02 |
-| Evidence | `packages/features/src/profile/api/profile.api.ts:40-97` |
+| Evidence | `packages/features/src/profile/api/profile.api.ts:50-107` |
 | Status | Verified |
 
 ### BR-PRF-011 — Avatar changes apply immediately

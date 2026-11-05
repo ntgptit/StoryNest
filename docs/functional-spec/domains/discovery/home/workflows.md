@@ -58,4 +58,4 @@
 | Postconditions | — |
 | Affected objects | OBJ-HOME, OBJ-RANK, OBJ-AUTHOR |
 | Related screens | SCR-HOME-01 → SCR-RANK-01 / SCR-AUTHOR-02 |
-| Status | Verified (`discovery/screens/discover-screen.tsx:53-62`). These links are the only in-app entry points (U-HOME-01). |
+| Status | Verified (`discovery/screens/discover-screen.tsx:59-68`). These links are the only in-app entry points (U-HOME-01). |

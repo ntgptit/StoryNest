@@ -66,7 +66,7 @@ Rule summary
 | `event_type` | Produced by | When | Recipient | Not produced when | Switchable (OBJ-SET) | Dedupe key | Destination (link check) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `chapter_published` | Worker handler `notify_chapter_published` for outbox event `chapter.published` | First publish of a chapter (re-publishing an edit is silent) | Every follower of the story with an active, non-deleted account | Recipient is the publisher; chapter no longer published/deleted at processing; story deleted, private, or draft | Yes `notify_chapter_published` | `chapter_published:<chapter>` | `/story/{storyId}/{story_slug}/{chapter_slug}` — route exists; stale story slug redirects; **stale chapter slug → 404** (F-NOTI-01) |
-| `comment_replied` | Worker handler `notify_comment_replied` for outbox event `comment.replied` | Insert of a reply | Author of the parent comment (active account) | Reply or parent not visible/deleted at processing; self-reply; chapter not published / story deleted | Yes `notify_comment_replied` | `comment_replied:<reply>` | Same chapter URL + `#b-<block_id>` (paragraph) or `#comments` — anchors exist (`block-view.tsx:33`, `reader-screen.tsx:162`); sheet/reply not opened (U-NOTI-01); stale chapter slug → 404 |
+| `comment_replied` | Worker handler `notify_comment_replied` for outbox event `comment.replied` | Insert of a reply | Author of the parent comment (active account) | Reply or parent not visible/deleted at processing; self-reply; chapter not published / story deleted | Yes `notify_comment_replied` | `comment_replied:<reply>` | Same chapter URL + `#b-<block_id>` (paragraph) or `#comments` — anchors exist (`block-view.tsx:44`, `reader-screen.tsx:183`); sheet/reply not opened (U-NOTI-01); stale chapter slug → 404 |
 | `collaboration_invited` | `invite_collaborator` (same transaction) | Owner invites a user | Invitee | — | **No** (always delivered) | `collab-invite:<invitation>` | `/studio` — Studio shows "My invitations" with accept/decline (`studio-screen.tsx:127`); after the invitation is answered/cancelled the link leads to nothing specific |
 | `collaboration_accepted` | `respond_invitation` (same transaction) | Invitee accepts | Inviter | — | Yes `notify_collaboration_answers` | `collab-reply:<invitation>` | `/studio/story/{storyId}/team` — route exists |
 | `collaboration_declined` | `respond_invitation` | Invitee declines | Inviter | — | Yes `notify_collaboration_answers` | `collab-reply:<invitation>` | `/studio/story/{storyId}/team` — route exists |
@@ -80,7 +80,7 @@ Rule summary
 | Expected behavior | Payload: `story_title`, `chapter_title` (published version), `chapter_sort_order`, `chapter_slug`, `story_slug`. Text: `"<story>" just published chapter <n>: <title>`. Saving a story (without following) produces nothing. |
 | Exceptions | Unpublished before the worker runs → nothing (returns 0). No filter for mature content vs. the follower's age confirmation (Q-NOTI-02). Author-follow (OBJ-AUTHOR) produces no notification. |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `supabase/migrations/20261103000200_publish_chapter_rpc.sql:202-210`, `supabase/migrations/20261103000300_outbox_worker_and_cron.sql:31-56`, `supabase/tests/140_follows_saves.test.sql:71-72`, `supabase/tests/30_outbox.test.sql`, `packages/features/src/notifications/strings.en.ts:24-25` |
+| Evidence | `supabase/migrations/20261103000200_publish_chapter_rpc.sql:202-210`, `supabase/migrations/20261103000300_outbox_worker_and_cron.sql:31-56`, `supabase/tests/140_follows_saves.test.sql:71-72`, `supabase/tests/30_outbox.test.sql`, `packages/features/src/notifications/strings.en.ts:35-36` |
 | Status | Verified (SQL test) |
 
 ### BR-NOTI-004 — `comment_replied` (someone replied to my comment)
@@ -104,7 +104,7 @@ Rule summary
 | Expected behavior | Text: `<actor> invited you to co-author "<story>"`; link `/studio` where pending invitations are answered. |
 | Exceptions | Text always says "co-author" even when the role is `editor` (payload `role` is not used in the text). Cancelling the invitation does not remove the notification. |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:98-101`, `:16`, `supabase/migrations/20261104001900_user_settings.sql:12`, `:50-56`, `supabase/tests/250_user_settings.test.sql:58`, `:88`, `packages/features/src/notifications/model/notification.ts:102-103`, `packages/features/src/notifications/strings.en.ts:28`, `docs/WBS.md:195` |
+| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:98-101`, `:16`, `supabase/migrations/20261104001900_user_settings.sql:12`, `:50-56`, `supabase/tests/250_user_settings.test.sql:58`, `:88`, `packages/features/src/notifications/model/notification.ts:112-113`, `packages/features/src/notifications/strings.en.ts:41`, `docs/WBS.md:195` |
 | Status | Verified (SQL test) |
 
 ### BR-NOTI-006 — `collaboration_accepted` / `collaboration_declined`
@@ -116,7 +116,7 @@ Rule summary
 | Expected behavior | Text `<actor> accepted/declined your invitation to co-author "<story>"`; link `/studio/story/{id}/team`. |
 | Exceptions | — |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:142-147`, `supabase/tests/250_user_settings.test.sql:92`, `packages/features/src/notifications/model/notification.ts:104-113` |
+| Evidence | `supabase/migrations/20261104000500_collaboration_invitations.sql:142-147`, `supabase/tests/250_user_settings.test.sql:92`, `packages/features/src/notifications/model/notification.ts:114-123` |
 | Status | Verified (SQL test) |
 
 ### BR-NOTI-007 — Suppression by the recipient's preferences
@@ -128,7 +128,7 @@ Rule summary
 | Expected behavior | Dropped rows are never stored; turning the switch on later does not back-fill. |
 | Exceptions | Not callable by clients. |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `supabase/migrations/20261104001900_user_settings.sql:11-14`, `:46-74`, `supabase/tests/250_user_settings.test.sql:57-92`, `packages/features/src/settings/model/settings.ts:24-50` |
+| Evidence | `supabase/migrations/20261104001900_user_settings.sql:11-14`, `:46-74`, `supabase/tests/250_user_settings.test.sql:57-92`, `packages/features/src/settings/model/settings.ts:29-55` |
 | Status | Verified (SQL test) |
 
 ### BR-NOTI-008 — Delivery timing and retries
@@ -164,7 +164,7 @@ Rule summary
 | Expected behavior | "Load more" / "Loading…" while more pages exist. |
 | Exceptions | No retention: rows are never purged (F-NOTI-03). |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `packages/features/src/notifications/api/notifications.api.ts:19-37`, `packages/features/src/notifications/model/notification.ts:119-139`, `packages/features/src/notifications/hooks/use-notifications.ts:19-31` |
+| Evidence | `packages/features/src/notifications/api/notifications.api.ts:19-37`, `packages/features/src/notifications/model/notification.ts:193-213`, `packages/features/src/notifications/hooks/use-notifications.ts:19-31` |
 | Status | Verified |
 
 ### BR-NOTI-011 — Unread count and bell badge
@@ -176,7 +176,7 @@ Rule summary
 | Expected behavior | Badge hidden at 0. |
 | Exceptions | — |
 | Related screens | SCR-NOTI-01 (C01) |
-| Evidence | `packages/features/src/notifications/components/notification-bell.tsx:10-38`, `packages/features/src/notifications/api/notifications.api.ts:40-48`, `packages/features/src/notifications/model/notification.ts:141-144`, `packages/features/src/shell/components/site-header.tsx:25` |
+| Evidence | `packages/features/src/notifications/components/notification-bell.tsx:10-38`, `packages/features/src/notifications/api/notifications.api.ts:40-48`, `packages/features/src/notifications/model/notification.ts:215-218`, `packages/features/src/shell/components/site-header.tsx:25` |
 | Status | Verified |
 
 ### BR-NOTI-012 — Mark one read on open
@@ -188,7 +188,7 @@ Rule summary
 | Expected behavior | Optimistic: item shows as read and badge decreases at once; on refusal both revert; then all notification queries refresh. |
 | Exceptions | Item without link is a `<button>` that only marks read. |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `packages/features/src/notifications/screens/notifications-screen.tsx:91-122`, `packages/features/src/notifications/hooks/use-notifications.ts:90-137`, `packages/features/src/notifications/api/notifications.api.ts:51-61`, `packages/features/src/notifications/notifications.test.tsx:407-426` |
+| Evidence | `packages/features/src/notifications/screens/notifications-screen.tsx:91-122`, `packages/features/src/notifications/hooks/use-notifications.ts:90-137`, `packages/features/src/notifications/api/notifications.api.ts:51-61`, `packages/features/src/notifications/notifications.test.tsx:439-458` |
 | Status | Verified |
 
 ### BR-NOTI-013 — Mark all read
@@ -200,7 +200,7 @@ Rule summary
 | Expected behavior | Toast "All notifications marked as read."; error toast on failure. |
 | Exceptions | — |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `packages/features/src/notifications/screens/notifications-screen.tsx:33-46`, `packages/features/src/notifications/hooks/use-notifications.ts:139-177`, `packages/features/src/notifications/api/notifications.api.ts:63-71` |
+| Evidence | `packages/features/src/notifications/screens/notifications-screen.tsx:58-71`, `packages/features/src/notifications/hooks/use-notifications.ts:139-177`, `packages/features/src/notifications/api/notifications.api.ts:63-71` |
 | Status | Verified |
 
 ### BR-NOTI-014 — Realtime updates and reconnect catch-up
@@ -212,7 +212,7 @@ Rule summary
 | Expected behavior | Badge rises without reload. |
 | Exceptions | — |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `supabase/migrations/20261104001000_notifications_realtime.sql:1-20`, `packages/features/src/notifications/hooks/use-notifications.ts:50-84`, `packages/features/src/notifications/notifications.test.tsx:338-384`, `supabase/tests/160_notifications_rls.test.sql:44` |
+| Evidence | `supabase/migrations/20261104001000_notifications_realtime.sql:1-20`, `packages/features/src/notifications/hooks/use-notifications.ts:50-84`, `packages/features/src/notifications/notifications.test.tsx:370-416`, `supabase/tests/160_notifications_rls.test.sql:44` |
 | Status | Verified |
 
 ### BR-NOTI-015 — Text and destination link per type
@@ -224,7 +224,7 @@ Rule summary
 | Expected behavior | Unread items are bold with a dot and an sr-only "Unread:" prefix; each shows relative time in the current locale. |
 | Exceptions | Links are frozen at event time (F-NOTI-01). |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `packages/features/src/notifications/model/notification.ts:39-117`, `packages/features/src/notifications/screens/notifications-screen.tsx:97-111` |
+| Evidence | `packages/features/src/notifications/model/notification.ts:39-117`, `packages/features/src/notifications/screens/notifications-screen.tsx:157-171` |
 | Status | Verified |
 
 ### BR-NOTI-016 — Unknown types and missing data
@@ -236,7 +236,7 @@ Rule summary
 | Expected behavior | List never breaks on new server types. |
 | Exceptions | — |
 | Related screens | SCR-NOTI-01 |
-| Evidence | `packages/features/src/notifications/model/notification.ts:68-71`, `:114-115`, `packages/features/src/notifications/notifications.test.tsx:108` |
+| Evidence | `packages/features/src/notifications/model/notification.ts:74-77`, `:114-115`, `packages/features/src/notifications/notifications.test.tsx:111` |
 | Status | Verified |
 
 ### BR-NOTI-017 — Channels not built (push, e-mail)

@@ -68,7 +68,7 @@
 | Expected behavior | A `draft` story is hidden from everyone outside the team, **even if** its visibility is `public` or `unlisted`. The other statuses don't change access. The status is shown as an outline badge with the labels "Draft" / "Ongoing" / "Completed" / "On hiatus" (vi: `discoveryText.status.*`). |
 | Exceptions | Team and moderators still see a draft story (BR-STORY-005). |
 | Related screens | SCR-STORY-01 |
-| Evidence | `supabase/migrations/20261103000000_init_schema.sql:64-65`, `supabase/migrations/20261103000100_auth_and_rls.sql:97-99,199`, `packages/features/src/story/screens/story-screen.tsx:99`, `packages/features/src/discovery/strings.en.ts:17-22` |
+| Evidence | `supabase/migrations/20261103000000_init_schema.sql:64-65`, `supabase/migrations/20261103000100_auth_and_rls.sql:97-99,199`, `packages/features/src/story/screens/story-screen.tsx:121`, `packages/features/src/discovery/strings.en.ts:17-22` |
 | Status | Verified |
 
 ### BR-STORY-004 — Soft-deleted and removed stories
@@ -80,7 +80,7 @@
 | Expected behavior | Hidden from the public by RLS. The story page query additionally filters `deleted_at IS NULL`, so a deleted story is a **404 for everyone on the public page, team and moderators included**. Its chapters are unreadable to the public (`can_read_chapter` checks `s.deleted_at`). A story removed by a moderator cannot be restored by its owner (trigger raises 42501). |
 | Exceptions | The team can still see the row through RLS (for the studio and restore, see OBJ-STM). |
 | Related screens | SCR-STORY-01, SCR-READ-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:97-99,108-109,205-206,212`, `packages/features/src/story/api/story.api.ts:33`, `supabase/migrations/20261104002000_moderation.sql:15-18,104-116,381-395`, `packages/features/src/story/story.test.tsx:108` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:97-99,108-109,205-206,212`, `packages/features/src/story/api/story.api.ts:33`, `supabase/migrations/20261104002000_moderation.sql:15-18,104-116,381-395`, `packages/features/src/story/story.test.tsx:115` |
 | Status | Verified |
 
 ### BR-STORY-005 — Team and moderator access
@@ -104,7 +104,7 @@
 | Expected behavior | The server answers a **real HTTP 404** (`notFound()`), and the metadata is the fallback title "Truyện" with `robots: {index:false}`. A client-side render shows "Story not found" / "This story doesn't exist, was taken down or is private." (vi `storyText.notFound`). |
 | Exceptions | A load *error* is not a 404: the server logs it and the client shows the error state with retry (BR in SCR-STORY-01, state "Request error"). |
 | Related screens | SCR-STORY-01 |
-| Evidence | `packages/features/src/story/api/story.api.ts:22-38`, `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:20,48`, `apps/web/src/lib/story/load-story.ts:10,24-34`, `packages/features/src/story/strings.en.ts:34-37`, `packages/features/src/story/story.test.tsx:100,123,303` |
+| Evidence | `packages/features/src/story/api/story.api.ts:22-38`, `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:20,48`, `apps/web/src/lib/story/load-story.ts:10,24-34`, `packages/features/src/story/strings.en.ts:43-46`, `packages/features/src/story/story.test.tsx:107,130,310` |
 | Status | Verified |
 
 ### BR-STORY-007 — Discovery exclusion
@@ -116,7 +116,7 @@
 | Expected behavior | Unlisted, private, draft and deleted stories never appear in listings. Each listing implements this filter itself (rule defined here; implemented in `OBJ-HOME`, `OBJ-SRCH`, `OBJ-RANK`, `OBJ-REC`, `OBJ-AUTHOR`). |
 | Exceptions | A reader's own library, reading lists and progress may still show an unlisted story they opened (owned by `BR-LIB-*` / `BR-LIST-*`). |
 | Related screens | SCR-STORY-01 (source); discovery screens (consumers) |
-| Evidence | `packages/features/src/discovery/api/discovery.api.ts:69`, `supabase/migrations/20261104001300_search.sql:78,106,134`, `supabase/migrations/20261104001500_rankings.sql:104`, `supabase/migrations/20261104001700_recommendations.sql:37,102`, `supabase/migrations/20261104001600_author_follows.sql:111`, `supabase/migrations/20261103000000_init_schema.sql:344-345` |
+| Evidence | `packages/features/src/discovery/api/discovery.api.ts:75`, `supabase/migrations/20261104001300_search.sql:78,106,134`, `supabase/migrations/20261104001500_rankings.sql:104`, `supabase/migrations/20261104001700_recommendations.sql:37,102`, `supabase/migrations/20261104001600_author_follows.sql:111`, `supabase/migrations/20261103000000_init_schema.sql:344-345` |
 | Status | Verified |
 
 ### BR-STORY-008 — Search-engine indexability
@@ -128,7 +128,7 @@
 | Expected behavior | Indexable → no `robots` override, plus `Book` JSON-LD (story) / `Chapter` JSON-LD (chapter) with absolute URLs. Not indexable (unlisted, private, team view, mature) → `robots: {index:false, follow:false}` and **no** JSON-LD. Missing story → `robots: {index:false}`. Metadata: title = story title, description = synopsis excerpt (160), OG type `book` with authors and cover. |
 | Exceptions | — |
 | Related screens | SCR-STORY-01, SCR-READ-01 (SEO details: `OBJ-SEO`) |
-| Evidence | `packages/features/src/story/model/story-detail.ts:21-27`, `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:18-39,55-63`, `apps/web/src/app/(main)/story/[id]/[slug]/page.test.tsx:64-102`, `packages/features/src/story/story.test.tsx:158-172` |
+| Evidence | `packages/features/src/story/model/story-detail.ts:34-40`, `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:18-39,55-63`, `apps/web/src/app/(main)/story/[id]/[slug]/page.test.tsx:64-102`, `packages/features/src/story/story.test.tsx:165-179` |
 | Status | Verified |
 
 ### BR-STORY-009 — Mature stories
@@ -140,7 +140,7 @@
 | Expected behavior | The story page and every chapter are wrapped in the adult gate. Content is shown only after the reader confirms they are 18+ (rules owned by `BR-MAT-009`, see [trust-safety](../../trust-safety/overview.md)). A red "18+" badge is shown. Never indexed (BR-STORY-008). Excluded from rankings unless asked for (`BR-RANK-*`). |
 | Exceptions | — |
 | Related screens | SCR-STORY-01, SCR-READ-01 |
-| Evidence | `packages/features/src/story/screens/story-screen.tsx:76,100`, `packages/features/src/adult-content/components/adult-gate.tsx:13-34`, `packages/features/src/story/story.test.tsx:208-235` |
+| Evidence | `packages/features/src/story/screens/story-screen.tsx:91,122`, `packages/features/src/adult-content/components/adult-gate.tsx:13-34`, `packages/features/src/story/story.test.tsx:215-242` |
 | Status | Verified |
 
 ### BR-STORY-010 — Published chapter list
@@ -152,7 +152,7 @@
 | Expected behavior | Draft, scheduled and archived chapters are never listed, not even for the team. Each row shows "Chapter N", the title and "N words". With none, the page shows "This story has no published chapters yet." Count: "N chapter(s)". |
 | Exceptions | Chapter without a published snapshot → empty title, 0 words (defensive; the CHECK makes it impossible). No pagination (F-STORY-02). |
 | Related screens | SCR-STORY-01, SCR-READ-01 (TOC, prev/next use the same list) |
-| Evidence | `packages/features/src/story/api/story.api.ts:40-55`, `packages/features/src/story/model/story-detail.ts:37-65`, `supabase/migrations/20261103000000_init_schema.sql:113`, `packages/features/src/story/story.test.tsx:133,173`, `packages/features/src/story/strings.en.ts:3-8` |
+| Evidence | `packages/features/src/story/api/story.api.ts:40-55`, `packages/features/src/story/model/story-detail.ts:37-65`, `supabase/migrations/20261103000000_init_schema.sql:113`, `packages/features/src/story/story.test.tsx:140,180`, `packages/features/src/story/strings.en.ts:3-8` |
 | Status | Verified |
 
 ### BR-STORY-011 — Chapter URL and numbering
@@ -164,7 +164,7 @@
 | Expected behavior | Links are built with `chapterHref()`. `sort_order` is renumbered 1..n over all **non-deleted** chapters (drafts and archived included) by `reorder_chapters`, so published numbering can have gaps (U-READ-03). |
 | Exceptions | Renaming a chapter slug is allowed in the studio. Old chapter links then 404, and the studio warns about this (F-STORY-03). |
 | Related screens | SCR-STORY-01, SCR-READ-01 |
-| Evidence | `packages/features/src/story/model/story-detail.ts:49,56-70`, `supabase/migrations/20261103000000_init_schema.sql:110-111`, `supabase/migrations/20261104000400_chapter_management.sql:13-16`, `packages/features/src/studio/strings.en.ts:43-44` |
+| Evidence | `packages/features/src/story/model/story-detail.ts:49,56-70`, `supabase/migrations/20261103000000_init_schema.sql:110-111`, `supabase/migrations/20261104000400_chapter_management.sql:13-16`, `packages/features/src/studio/strings.en.ts:79-80` |
 | Status | Verified |
 
 ### BR-STORY-012 — Primary reading CTA
@@ -176,7 +176,7 @@
 | Expected behavior | The continue target is resolved by [BR-PROG-008](../reading-progress/business-rules.md#br-prog-008--continue-reading-target). There is no button when there are no published chapters. |
 | Exceptions | While the chapter list is loading, `chapters.data` is empty, so no button is shown yet. |
 | Related screens | SCR-STORY-01 |
-| Evidence | `packages/features/src/story/screens/story-screen.tsx:59-66,105-109`, `packages/features/src/progress/strings.en.ts:2`, `packages/features/src/story/story.test.tsx:266,293,331-371` |
+| Evidence | `packages/features/src/story/screens/story-screen.tsx:68-75,127-131`, `packages/features/src/progress/strings.en.ts:2`, `packages/features/src/story/story.test.tsx:273,300,338-378` |
 | Status | Verified |
 
 ### BR-STORY-013 — Story statistics
@@ -188,7 +188,7 @@
 | Expected behavior | Locale-formatted (`StatPill`). Semantics are owned elsewhere: reads = aggregated read events ([BR-PROG-014](../reading-progress/business-rules.md#br-prog-014--read-aggregation)), votes ([BR-VOTE-005](../../community/vote/business-rules.md#br-vote-005--counter-maintenance)), comments (`BR-CMT-*`), followers (`BR-LIB-*`). Followers move optimistically on Follow (`BR-LIB-*`). Stats rows are readable wherever the story is (`story_stats_read`). |
 | Exceptions | Reads lag by ≤ 1 min (aggregation job) plus the 30 s client cache. Votes cast in the reader are not pushed into the story-page cache (they refresh when the cache goes stale). |
 | Related screens | SCR-STORY-01 |
-| Evidence | `packages/features/src/story/screens/story-screen.tsx:103-113`, `packages/features/src/discovery/model/story-card.ts:57`, `packages/features/src/discovery/api/discovery.api.ts:17`, `supabase/migrations/20261103000100_auth_and_rls.sql:364-365`, `packages/features/src/_shared/query.ts:24` |
+| Evidence | `packages/features/src/story/screens/story-screen.tsx:125-135`, `packages/features/src/discovery/model/story-card.ts:57`, `packages/features/src/discovery/api/discovery.api.ts:17`, `supabase/migrations/20261103000100_auth_and_rls.sql:364-365`, `packages/features/src/_shared/query.ts:24` |
 | Status | Verified |
 
 ### BR-STORY-014 — Author attribution
@@ -200,7 +200,7 @@
 | Expected behavior | Visible owner → link. Hidden owner → plain text "Anonymous author" (vi `discoveryText.unknownAuthor`), no link. Collaborators are not shown. |
 | Exceptions | JSON-LD still emits `/author/` for a hidden owner (F-STORY-04). |
 | Related screens | SCR-STORY-01 |
-| Evidence | `packages/features/src/story/screens/story-screen.tsx:83-95`, `packages/features/src/discovery/model/story-card.ts:51-54`, `supabase/migrations/20261103000100_auth_and_rls.sql:182-184` |
+| Evidence | `packages/features/src/story/screens/story-screen.tsx:105-117`, `packages/features/src/discovery/model/story-card.ts:51-54`, `supabase/migrations/20261103000100_auth_and_rls.sql:182-184` |
 | Status | Verified |
 
 ### BR-STORY-015 — Engagement actions need an account
@@ -212,7 +212,7 @@
 | Expected behavior | Follow / Save semantics, optimistic UI and errors: `BR-LIB-001…005` ([library](../../library/library/business-rules.md)). Add to list: `BR-LIST-*`. Report: `BR-MOD-004…006` ([trust-safety](../../trust-safety/overview.md)). The server allows follow/save only when `can_read_story` is true. |
 | Exceptions | The Report button is shown to the author on their own story, and the server refuses it (F-STORY-01). |
 | Related screens | SCR-STORY-01 |
-| Evidence | `packages/features/src/story/components/story-actions.tsx:15-60`, `packages/features/src/story/screens/story-screen.tsx:111-114`, `supabase/migrations/20261103000100_auth_and_rls.sql:290-297`, `packages/features/src/story/library.test.tsx:147` |
+| Evidence | `packages/features/src/story/components/story-actions.tsx:15-60`, `packages/features/src/story/screens/story-screen.tsx:133-136`, `supabase/migrations/20261103000100_auth_and_rls.sql:290-297`, `packages/features/src/story/library.test.tsx:147` |
 | Status | Verified |
 
 ### BR-STORY-016 — Author account status does not gate readability

@@ -68,7 +68,7 @@
 | Validation | — |
 | Error behavior | Inline error |
 | Navigation | Stays |
-| Evidence | `avatar-editor.tsx:52-66`, `profile.api.ts:71-84` |
+| Evidence | `avatar-editor.tsx:52-66`, `profile.api.ts:81-94` |
 
 | Field | SCR-PRF-02-A04 Cancel |
 | --- | --- |
@@ -79,7 +79,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/me` |
-| Evidence | `edit-profile-screen.tsx:165-167` |
+| Evidence | `edit-profile-screen.tsx:170-172` |
 
 ## D. UI states
 | State | Status | Evidence / note |

@@ -125,7 +125,7 @@
 | Expected behavior | Success → the state becomes (requested voted, **server count**), and the server count replaces the guess. Error → previous state restored + toast by kind: forbidden "You can't vote for this chapter.", network "No connection. Check your network and try again.", other "Couldn't vote. Please try again." No success toast. |
 | Exceptions | The story page's Votes stat is not updated optimistically (it refreshes when its cache goes stale). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/hooks/use-chapter-vote.ts:11-50`, `packages/features/src/reader/model/vote.ts:10-19`, `packages/features/src/reader/components/vote-button.tsx:24-30,40`, `packages/features/src/reader/strings.en.ts:46-56`, `packages/features/src/reader/vote.test.tsx:23-36,158-194` |
+| Evidence | `packages/features/src/reader/hooks/use-chapter-vote.ts:11-50`, `packages/features/src/reader/model/vote.ts:10-19`, `packages/features/src/reader/components/vote-button.tsx:24-30,40`, `packages/features/src/reader/strings.en.ts:70-80`, `packages/features/src/reader/vote.test.tsx:23-36,158-194` |
 | Status | Verified (WBS 4.1 runtime, 1.5 s latency) |
 
 ### BR-VOTE-009 — Guests

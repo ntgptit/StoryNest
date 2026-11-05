@@ -63,7 +63,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | Landmark `<nav aria-label="Main navigation">`; items use the `touch-target` utility (≥ 44 px); respects bottom safe area |
 | Exceptions | Library/Write/Me are protected → guests are sent to sign-in (BR-AUTH-008) |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/main-shell.tsx:12-18,27`, `packages/ui/src/widgets/bottom-nav.tsx:22-74`, `packages/design-tokens/src/tokens.css:1130` |
+| Evidence | `packages/features/src/shell/components/main-shell.tsx:12-18,27`, `packages/ui/src/widgets/bottom-nav.tsx:22-74`, `packages/design-tokens/src/tokens.css:1698` |
 | Status | Verified |
 
 ### BR-SHELL-005 — Route loading placeholder
@@ -159,7 +159,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | Expected behavior | Not run on `(auth)` pages |
 | Exceptions | — |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/main-shell.tsx:9,45` |
+| Evidence | `packages/features/src/shell/components/main-shell.tsx:9,49` |
 | Status | Verified |
 
 ### BR-SHELL-013 — Environment configuration

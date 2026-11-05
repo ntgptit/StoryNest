@@ -37,7 +37,7 @@
 | Postconditions | Reader TOC follows the new order (OBJ-STORY) |
 | Affected objects | OBJ-CHM |
 | Related screens | SCR-CHM-01 |
-| Status | Verified — `use-chapter-management.ts:57-86`, `chapter-management.test.tsx:310-377` |
+| Status | Verified — `use-chapter-management.ts:57-86`, `chapter-management.test.tsx:349-416` |
 
 ### WF-CHM-03 — Change a chapter's URL slug
 | Field | Value |

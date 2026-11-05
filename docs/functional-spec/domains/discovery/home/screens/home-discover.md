@@ -20,15 +20,15 @@
 | --- | --- | --- | --- |
 | SCR-HOME-01-C01 | Hero | `h1` "Where stories are written and read." + intro "Discover newly updated stories and follow the authors you love." Same for all roles | `apps/web/src/app/(main)/home-hero.tsx:6-12` |
 | SCR-HOME-01-C02 | "Recommended for you" block | Member + unfiltered only; up to 8 cards with a reason line; hidden while loading/empty/error | `discover-home.tsx:10-13`, `recommendation-list.tsx:63-79` |
-| SCR-HOME-01-C03 | Section heading | `h2` "Recently updated" (`title`) | `discover-screen.tsx:50-52` |
-| SCR-HOME-01-C04 | Shortcuts nav (`aria-label` "Shortcuts") | "From authors you follow" (member), "See rankings" (all) | `discover-screen.tsx:53-62` |
+| SCR-HOME-01-C03 | Section heading | `h2` "Recently updated" (`title`) | `discover-screen.tsx:56-58` |
+| SCR-HOME-01-C04 | Shortcuts nav (`aria-label` "Shortcuts") | "From authors you follow" (member), "See rankings" (all) | `discover-screen.tsx:59-68` |
 | SCR-HOME-01-C05 | Category chips (nav "Categories") | "All" + root categories as links; horizontally scrollable; skeleton while tree loads. Shown from `sm` up only: on a phone the filters sit in a bottom sheet (`DiscoverFilterBar`) instead (changed by PR #60) | `category-chips.tsx:31-38`, `discover-screen.tsx:65-77` |
 | SCR-HOME-01-C06 | Active-tag line | "Filtering by tag #name" + "Clear tag filter" (X icon) | `tag-filters.tsx:31-41` |
 | SCR-HOME-01-C07 | Popular tags (nav "Popular tags") | Up to 12 `#tag` chips, toggling | `tag-filters.tsx:43-61`, `model/popular-tags.ts:1` |
 | SCR-HOME-01-C13 | Length filter | `sm`+: button "Filter by length" / "Length: 2k – 30k words" unfolding a histogram of stories per length bucket with two thumbs ("Shortest", "Longest"), rolling "n stories", note, Apply, and "Remove length filter"; phone: section "Length" in the filter sheet (counts in the footer) and an active chip; empty result: "Remove length filter · n stories" | `discovery/screens/length-filter.tsx`, `filter-sheet.tsx`, `ui/widgets/range-histogram.tsx` (Lucian #024) (BR-HOME-014) |
 | SCR-HOME-01-C08 | Story grid | 2/3/4 columns; `StoryCard` per story | `discover-screen.tsx:19,98-116` |
 | SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:110-115` |
-| SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:90-95` |
+| SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:112-117` |
 | SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:74-83,117-124` |
 | SCR-HOME-01-C12 | Event popup (Lucian 311, batch 4 · platform4) | Unfiltered home only: dialog "Events" with the active popup announcements as sliding cards ("Until …", title, text, "View details"), "Don't show today" / "Close", then a gift button "Show events again" (BR-HOME-013) | `announcements/components/home-event-popup.tsx`, `packages/ui/src/widgets/event-popup.tsx` |
 
@@ -54,7 +54,7 @@
 | Validation | Unknown slug → empty list |
 | Error behavior | Tree error with category active → full error |
 | Navigation | Same screen |
-| Evidence | `category-chips.tsx:34-35`, `discovery.api.ts:76-81` |
+| Evidence | `category-chips.tsx:34-35`, `discovery.api.ts:82-87` |
 
 | Field | SCR-HOME-01-A03 — Clear category ("All") |
 | --- | --- |
@@ -120,7 +120,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-RANK-01 / SCR-AUTHOR-02 |
-| Evidence | `discover-screen.tsx:54-61` |
+| Evidence | `discover-screen.tsx:60-67` |
 
 | Field | SCR-HOME-01-A09 — Retry after failure |
 | --- | --- |
@@ -131,7 +131,7 @@
 | Validation | — |
 | Error behavior | Stays on error state if it fails again |
 | Navigation | — |
-| Evidence | `discover-screen.tsx:84-87`, `discovery.test.tsx:340` |
+| Evidence | `discover-screen.tsx:106-109`, `discovery.test.tsx:340` |
 
 ### C.x Browse interactions (Lucian batch 2 · browse)
 
@@ -147,11 +147,11 @@
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
 | Initial | Implemented | SSR first page (`page.tsx:24-40`) |
-| Loading | Implemented | Route `RouteLoading`; chip skeleton; 8-tile skeleton grid `aria-busy` (`discover-screen.tsx:89-94`) |
+| Loading | Implemented | Route `RouteLoading`; chip skeleton; 8-tile skeleton grid `aria-busy` (`discover-screen.tsx:111-116`) |
 | Empty | Implemented | "No stories yet / Check back later, or try another category." or tag variant (`strings.en.ts:12-13`) |
 | Populated | Implemented | Grid + infinite footer |
 | Validation error | Not applicable | No input; bad params ignored or produce empty state |
-| Request error | Implemented | Full and inline error states (`discover-screen.tsx:79-88,122-129`) |
+| Request error | Implemented | Full and inline error states (`discover-screen.tsx:101-110,154-161`) |
 | Success | Not applicable | Read-only |
 | Disabled | Not applicable | "Load more" hidden while loading (`infinite-list.tsx:63`) |
 | Unauthorized | Not applicable | Public; member-only parts simply hidden |

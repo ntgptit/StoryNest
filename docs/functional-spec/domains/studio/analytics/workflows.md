@@ -33,4 +33,4 @@
 | Postconditions | Range not remembered between visits |
 | Affected objects | OBJ-STAT |
 | Related screens | SCR-STAT-01 |
-| Status | Verified — `story-stats-screen.tsx:56-58,108-122`, `analytics.test.tsx:491` |
+| Status | Verified — `story-stats-screen.tsx:56-58,108-122`, `analytics.test.tsx:577` |

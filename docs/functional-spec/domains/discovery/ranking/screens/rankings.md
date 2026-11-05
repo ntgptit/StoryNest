@@ -19,12 +19,12 @@
 ## B. Components
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-RANK-01-C01 | Page header | "Ranking" / "The most read and most voted stories." | `ranking-screen.tsx:44`, `strings.en.ts:2-3` |
+| SCR-RANK-01-C01 | Page header | "Ranking" / "The most read and most voted stories." | `ranking-screen.tsx:46`, `strings.en.ts:2-3` |
 | SCR-RANK-01-C02 | Period tabs | `TabsList` "Time period": Today, This week, This month, All time | `ranking-screen.tsx:45-53`, `strings.en.ts:4-5` |
 | SCR-RANK-01-C03 | Freshness note | "Updated <relative>" | `ranking-screen.tsx:54-58` |
 | SCR-RANK-01-C07 | Last 7 days | Card "Ranks over the last 7 days" with tabs "Race" (bar race of the top 6 by score per snapshot day: Play / Pause, day slider, big day label) and "Ups and downs" (slope chart of today's ranks against the first day, Rank / Score switch, names to focus one line, status line); note on daily snapshots; "The ranking history is recorded once a day…" with one day; hidden with none or on error | `ranking/components/ranking-history.tsx`, `ui/widgets/bar-race.tsx` (Lucian #246), `ui/widgets/slope-chart.tsx` (Lucian #359) (BR-RANK-009) |
 | SCR-RANK-01-C04 | Ranked grid | Infinite list of ranked cards; a story opened from it is a read from "ranking" (BR-PROG-016) | `ranking-screen.tsx:76-87` |
-| SCR-RANK-01-C05 | Ranked card | Rank badge (aria-label "Rank N"), `StoryCard`, "<n> reads · <m> votes" | `ranking-screen.tsx:93-123` |
+| SCR-RANK-01-C05 | Ranked card | Rank badge (aria-label "Rank N"), `StoryCard`, "<n> reads · <m> votes" | `ranking-screen.tsx:100-130` |
 | SCR-RANK-01-C06 | Empty / error | "No ranking yet…", "Couldn't load the ranking" + "Try again" | `ranking-screen.tsx:60-74`, `strings.en.ts:12-17` |
 
 ## C. User actions and system responses
@@ -38,7 +38,7 @@
 | Validation | `periodFromParam` |
 | Error behavior | Error state with retry |
 | Navigation | — |
-| Evidence | `ranking/page.tsx:11-14`, `ranking-screen.tsx:30-33` |
+| Evidence | `ranking/page.tsx:11-14`, `ranking-screen.tsx:32-35` |
 
 | Field | SCR-RANK-01-A02 — Change period |
 | --- | --- |
@@ -49,7 +49,7 @@
 | Validation | — |
 | Error behavior | As A01 |
 | Navigation | Same screen |
-| Evidence | `ranking-screen.tsx:38`, `ranking.test.tsx:254,285` |
+| Evidence | `ranking-screen.tsx:40`, `ranking.test.tsx:254,285` |
 
 | Field | SCR-RANK-01-A03 — Load more |
 | --- | --- |
@@ -71,7 +71,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-STORY-01 |
-| Evidence | `ranking-screen.tsx:103` |
+| Evidence | `ranking-screen.tsx:110` |
 
 | Field | SCR-RANK-01-A05 — Retry |
 | --- | --- |
@@ -88,7 +88,7 @@
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
 | Initial | Implemented | Default week tab selected |
-| Loading | Implemented | 8-tile skeleton `aria-busy` (`ranking-screen.tsx:60-65`) |
+| Loading | Implemented | 8-tile skeleton `aria-busy` (`ranking-screen.tsx:63-68`) |
 | Empty | Implemented | "No ranking yet" |
 | Populated | Implemented | Ranked cards |
 | Validation error | Not applicable | Bad period silently → week |

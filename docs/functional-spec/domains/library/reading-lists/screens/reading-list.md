@@ -22,9 +22,9 @@
 | --- | --- | --- | --- | --- |
 | SCR-LIST-01-C01 | Page header | This page | Title = list title; description if non-empty; owner actions "Edit" (outline) and "Delete list" (ghost, destructive). Owner: the title is an inline editor (Lucian #033, `InlineEditTitle`): pressing it (or the pencil shown on hover / always on touch) turns it into a field "List name" with save (check, "Save name") and cancel; Enter or leaving the field saves through the same `useUpdateList` (description and visibility unchanged), Esc restores; the name rules are `checkListForm` (blank / over 120 refused, field shakes, reason under it); a failed save keeps the field open with the message; success toast "List renamed." and a short gleam. The edit dialog stays for description and visibility | `list-screen.tsx`, `packages/ui/src/widgets/inline-edit-title.tsx` |
 | SCR-LIST-01-C02 | Meta line | This page | Owner: visibility badge (lock / link / globe) + "Back to library"; visitor: "<name>'s list"; both: "N stories" | `list-screen.tsx:109-124` |
-| SCR-LIST-01-C03 | Story grid | This page | `ul` "Stories in this list", 2/3/4 columns, `StoryCard` | `list-screen.tsx:133-186` |
-| SCR-LIST-01-C04 | Owner item controls | This page | ↑ "Move up: <title>", ↓ "Move down: <title>" (icon buttons), "Remove from list" | `list-screen.tsx:142-182` |
-| SCR-LIST-01-C05 | Empty / not-found / error | This page | EmptyState (owner/visitor variants), "List not found", ErrorState + retry; skeleton block while loading | `list-screen.tsx:54-67`, `:126-131` |
+| SCR-LIST-01-C03 | Story grid | This page | `ul` "Stories in this list", 2/3/4 columns, `StoryCard` | `list-screen.tsx:186-239` |
+| SCR-LIST-01-C04 | Owner item controls | This page | ↑ "Move up: <title>", ↓ "Move down: <title>" (icon buttons), "Remove from list" | `list-screen.tsx:195-235` |
+| SCR-LIST-01-C05 | Empty / not-found / error | This page | EmptyState (owner/visitor variants), "List not found", ErrorState + retry; skeleton block while loading | `list-screen.tsx:65-78`, `:126-131` |
 | SCR-LIST-01-C06 | Delete confirm dialog | This page | "Delete this list?" destructive | `list-screen.tsx:207-225` |
 | SCR-LIST-01-C07 | List form dialog (`ListFormDialog`) | This page (edit mode, `list-screen.tsx:188-205`) and Library → Lists tab (create mode, `my-lists.tsx:84-100`) | Fields List name (Input), Description (Textarea + hint), Visibility (Select, led by a padlock icon — Lucian #350, `PadlockIcon`, decorative — closed for private, its shackle lifts for unlisted / public on change); description line shows the visibility hint; inline field errors; `role="alert"` failure; Cancel / "Create list" or "Save changes" / "Saving…" | `packages/features/src/lists/components/list-form-dialog.tsx:28-140` |
 | SCR-LIST-01-C08 | My lists (`MyLists`) | Library page, "Lists" tab (`packages/features/src/library/screens/library-screen.tsx:61-63`) | "New list" button; rows (cover pile, title, "N stories · Updated …", visibility badge) linking to `/lists/{id}`; empty / error / skeleton. Cover pile (Lucian #369, `CoverStack`, decorative): the first 3 readable, non-deleted stories' covers in list order (embedded `preview:reading_list_items` in the same My lists query, ordered and limited in the embed; blank card for no cover / empty list); fans out a little on row hover or focus, motion-safe only | `packages/features/src/lists/components/my-lists.tsx:29-102` |
@@ -43,7 +43,7 @@
 | Validation | — |
 | Error behavior | "List not found" (private/nonexistent); ErrorState on failure |
 | Navigation | — |
-| Evidence | `use-lists.ts:40-49`, `lists.api.ts:32-50` |
+| Evidence | `use-lists.ts:40-49`, `lists.api.ts:38-56` |
 
 | Field | SCR-LIST-01-A02 Edit list |
 | --- | --- |
@@ -54,7 +54,7 @@
 | Validation | BR-LIST-003 inline |
 | Error behavior | Inline alert in dialog |
 | Navigation | None |
-| Evidence | `list-screen.tsx:235-252`, `list-form-dialog.tsx:52-68` |
+| Evidence | `list-screen.tsx:280-297`, `list-form-dialog.tsx:53-69` |
 
 | Field | SCR-LIST-01-A03 Move a story up/down |
 | --- | --- |
@@ -65,7 +65,7 @@
 | Validation | Server: exact set of ids |
 | Error behavior | Old order restored + toast |
 | Navigation | None |
-| Evidence | `list-screen.tsx:114-118`, `:144-163` |
+| Evidence | `list-screen.tsx:154-158`, `:144-163` |
 
 | Field | SCR-LIST-01-A04 Remove a story |
 | --- | --- |
@@ -87,7 +87,7 @@
 | Validation | — |
 | Error behavior | Error toast; dialog stays |
 | Navigation | `/library` (Reading tab) |
-| Evidence | `list-screen.tsx:254-272` |
+| Evidence | `list-screen.tsx:299-317` |
 
 | Field | SCR-LIST-01-A06 Open a story |
 | --- | --- |
@@ -98,7 +98,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/story/{id}/{slug}` |
-| Evidence | `list-screen.tsx:180-185` |
+| Evidence | `list-screen.tsx:233-238` |
 
 | Field | SCR-LIST-01-A07 Back to library |
 | --- | --- |
@@ -109,7 +109,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/library` |
-| Evidence | `list-screen.tsx:163-167` |
+| Evidence | `list-screen.tsx:216-220` |
 
 | Field | SCR-LIST-01-A08 Create a list (C07 in My lists) |
 | --- | --- |
@@ -120,7 +120,7 @@
 | Validation | BR-LIST-003 |
 | Error behavior | Inline alert, id reused |
 | Navigation | None (stays on Lists tab) |
-| Evidence | `my-lists.tsx:84-100` |
+| Evidence | `my-lists.tsx:100-116` |
 
 | Field | SCR-LIST-01-A09 Toggle a story in a list (C09) |
 | --- | --- |

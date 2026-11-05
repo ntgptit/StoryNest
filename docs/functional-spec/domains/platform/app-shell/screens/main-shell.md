@@ -50,10 +50,10 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | `/settings` | — | — | Settings | — | Menu only; not on `/me` (U-PRF-01) |
 | `/notifications` | Bell (members) | — | — | — | OK for members |
 | `/search` | Search box / icon | — | — | — | OK |
-| `/ranking` | Desktop nav "Rankings" ▾ (≥ md); mobile menu (C15) | — | — | Home "see ranking" link (`discover-screen.tsx:60`), sitemap | OK |
-| `/following` | Desktop nav "Following" (≥ md, members); mobile menu (C15, members) | — | — | Home "see following" link for members (`discover-screen.tsx:55-58`) | OK |
+| `/ranking` | Desktop nav "Rankings" ▾ (≥ md); mobile menu (C15) | — | — | Home "see ranking" link (`discover-screen.tsx:66`), sitemap | OK |
+| `/following` | Desktop nav "Following" (≥ md, members); mobile menu (C15, members) | — | — | Home "see following" link for members (`discover-screen.tsx:61-64`) | OK |
 | `/author/<me>` (own public page) | — | — | — | Own story pages only | Missing from `/me` and menu (U-PRF-01) |
-| `/lists/<id>` | — | — | — | Library "my lists" (`lists/components/my-lists.tsx:64`) | OK |
+| `/lists/<id>` | — | — | — | Library "my lists" (`lists/components/my-lists.tsx:75`) | OK |
 | `/moderation` | — | — | Moderation (moderators) | — | OK |
 | `/login` | Sign in (guests, no `next`) | via protected items | — | redirects | Loses current page (U-SHELL-04) |
 | `/dev/gallery` | — | — | — | — | Intended (dev only) |

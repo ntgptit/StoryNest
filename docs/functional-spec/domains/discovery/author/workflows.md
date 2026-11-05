@@ -4,7 +4,7 @@
 | Field | Value |
 | --- | --- |
 | User goal | Learn who wrote a story and what else they wrote |
-| Trigger | Author name link on the story page (`story/screens/story-screen.tsx:87`), author row in SCR-SRCH-01, moderation report card, or a typed `/author/<username>` |
+| Trigger | Author name link on the story page (`story/screens/story-screen.tsx:109`), author row in SCR-SRCH-01, moderation report card, or a typed `/author/<username>` |
 | Preconditions | — |
 | Main flow | 1. Skeleton until the session is known. 2. `author_profile` → header (avatar, name, @username, followers, stories, bio), Follow and Report buttons. 3. Story grid loads (BR-AUTHOR-004), infinite paging. 4. Card → story page. |
 | Alternative flows | 2a. Own page → no Follow button. 2b. Unknown/suspended/deleted → "Author not found". |

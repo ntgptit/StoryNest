@@ -85,15 +85,15 @@ link and width:
 | Screen | Names the story | Up/back link | Links to sibling story tools | Content width | Browser tab title |
 | --- | --- | --- | --- | --- | --- |
 | SCR-STM-01 Studio home | — | — | Per row: Edit, Manage chapters, Collaborators (O), Stats (O, CA), View story page (`studio-screen.tsx:60-97`) | main column | "Studio" |
-| SCR-STM-03 Edit story | **No** ("Edit story", `story-form-screen.tsx:101`) | none (Cancel → `/studio`) | "Manage chapters" only (`:93-98`) | `max-w-xl` 576 px | static "Chỉnh sửa truyện" |
+| SCR-STM-03 Edit story | **No** ("Edit story", `story-form-screen.tsx:106`) | none (Cancel → `/studio`) | "Manage chapters" only (`:93-98`) | `max-w-xl` 576 px | static "Chỉnh sửa truyện" |
 | SCR-CHM-01 Chapters | In description (`chapter-manager-screen.tsx:230`) | "Back to story details" → Edit (`:123-128`) | none | `max-w-2xl` 672 px | static |
 | SCR-TEAM-01 Team | In description (`team-screen.tsx:103`) | "Back to story details" | none | `max-w-2xl` | static |
-| SCR-STAT-01 Stats | **No** (`story-stats-screen.tsx:83`) | "← Back to Studio" (`:69-75`) | none | `max-w-3xl` 768 px | static |
-| SCR-EDT-01 Editor (ref) | — | → Chapters (`chapter-editor-screen.tsx:412-417`) | Preview, History | (other agent) | static |
+| SCR-STAT-01 Stats | **No** (`story-stats-screen.tsx:97`) | "← Back to Studio" (`:69-75`) | none | `max-w-3xl` 768 px | static |
+| SCR-EDT-01 Editor (ref) | — | → Chapters (`chapter-editor-screen.tsx:424-429`) | Preview, History | (other agent) | static |
 
 Consequences (`Verified (Code)` unless marked): moving between Edit, Chapters, Team and Stats of one story always
 goes back through the Studio list (Stats is not linked from anywhere but the list — U-STAT-01); "Back to story
-details" sends an **editor** to a page that only shows the read-only notice (`story-form-screen.tsx:109-111`) — a dead
+details" sends an **editor** to a page that only shows the read-only notice (`story-form-screen.tsx:114-116`) — a dead
 end; the story's state (visibility, status, removed/deleted) is visible only on the Studio row; the public story page
 offers no way back into the Studio. WBS §1.2 planned a separate `(studio)/studio/` area (`docs/WBS.md:64`) that was
 not built (`Documented`). Recommendation: **FP-053 story workspace** (shared header + role-aware tabs), applied to
@@ -143,7 +143,7 @@ bg-card rounded-xl`; interactive adds `hover:bg-accent/40` + the focus ring; das
 
 **DS-04 Control sizing and density (touch targets vs. density)** — Button `default` `h-9` (36 px), `sm` `h-8` (32 px),
 `icon` `size-9` (36 px); Input `h-9` (`button.tsx:22-27`, `input.tsx:10`). The project token `--size-touch: 2.75rem` and the
-`touch-target` utility exist (`tokens.css:73-74,1130-1133`) but the `touch` button size is used **nowhere in
+`touch-target` utility exist (`tokens.css:73-74,1698-1701`) but the `touch` button size is used **nowhere in
 `packages/features`**: outside `packages/ui` the only `touch-target`/`size="touch"` uses are the two Home chip rows and the gallery (plus `BottomNav` inside `packages/ui`), while
 `size="sm"` appears 58 times and `size="icon"` 12 times. Runtime density signal: controls under 44 px — login 5/5,
 reader 17/21, story 13/22 at 390 px (`metrics.json`; includes inline links, so it over-states). Verified (Code + Runtime).
@@ -179,13 +179,13 @@ outlines; dark `--input` (16 % white, 3.85:1) already passes. Do not lighten `--
 y≈413 and ends at ≈864, i.e. below the 844 px fold and behind the bottom nav, so the first screen shows no complete card
 (`m-home.png`). Badges wrap to two lines on long category names ("Lãng mạn học đường"), making rows uneven between
 rows (`t-home.png` row 2). Ranking puts the rank badge over the cover corner and the period stats **under** the card
-(`ranking-screen.tsx:86-108`, `d-ranking.png`); recommendations put the reason under the card
+(`ranking-screen.tsx:93-115`, `d-ranking.png`); recommendations put the reason under the card
 (`recommendation-list.tsx:27-37`); the lists are now a swipeable `CardCarousel` row, so the single full-height card seen on the story page (`d-story.png`) is gone (changed by PR #60); Library renders a
-full card plus buttons below it (`library-screen.tsx:194-224`); the author page repeats the author's name on every card
+full card plus buttons below it (`library-screen.tsx:195-225`); the author page repeats the author's name on every card
 (`m-author.png`). The grid class string was copy-pasted in 8 files; PR #60 moved it into one shared `STORY_GRID`
-(`discovery/components/story-tile.tsx:13`, used by `ranking-screen.tsx:12`, `discover-screen.tsx:10`, `library-screen.tsx:18`,
-`search-screen.tsx:17`, `following-screen.tsx:9`, `author-screen.tsx:12`); `list-screen.tsx:27` still has its own copy (changed by PR #60). Placeholder covers are a single 36 px letter on `bg-secondary`
-(`story-cover.tsx:34`). Verified (Code + Runtime).
+(`discovery/components/story-tile.tsx:13`, used by `ranking-screen.tsx:12`, `discover-screen.tsx:10`, `library-screen.tsx:19`,
+`search-screen.tsx:17`, `following-screen.tsx:9`, `author-screen.tsx:13`); `list-screen.tsx:36` still has its own copy (changed by PR #60). Placeholder covers are a single 36 px letter on `bg-secondary`
+(`story-cover.tsx:40`). Verified (Code + Runtime).
 
 Recommendation — StoryCard variants (FP-037):
 | Variant | Anatomy | Target size | Notes |
@@ -207,17 +207,17 @@ stories tab → `row`; Rankings → `row` with `leading` rank (top 3 may use `gr
 `hideAuthor`; Following feed → `row` with new-chapter meta; Library → `row` with progress footer; Reading list → `row`;
 Welcome step 3 → `row` with Save toggle.
 
-**DS-07 Chips and badges** — The same "tag" concept has three looks: 44 px outline chips on Home (`tag-filters.tsx:9-11`),
+**DS-07 Chips and badges** — The same "tag" concept has three looks: 44 px outline chips on Home (`tag-filters.tsx:10-12`),
 small `Badge variant="outline"` "#Tình yêu" on the story page (`d-story.png`), and category/status badges in cards that look
 like buttons although they are not interactive. Category and tag chip rows on Home share one style, so the two filter
-levels are not distinguishable (`m-home.png`). `CHIP` constants are duplicated (`category-chips.tsx:6`, `tag-filters.tsx:9`).
+levels are not distinguishable (`m-home.png`). `CHIP` constants are duplicated (`category-chips.tsx:10`, `tag-filters.tsx:10`).
 Verified (Code + Runtime). Recommendation: `Chip` component (`variant: "filter" | "tag"`, `selected`, `size` from
 `--size-control-sm` with coarse hit-area extension): category filters = `filter` (filled when selected); tags = `tag`
 (outline, "#" prefix rendered once, U-TAX-02); non-interactive status/category in cards = plain meta text (DS-06), so only
 interactive things look like pills.
 
 **DS-08 Form layout** — Auth forms are clean single-column cards. Inconsistencies: Edit profile builds its own `h1` and
-error banner instead of `PageHeader` and the auth `FormError` (`edit-profile-screen.tsx:104-117` vs. `auth-card.tsx:31-41`);
+error banner instead of `PageHeader` and the auth `FormError` (`edit-profile-screen.tsx:108-121` vs. `auth-card.tsx:31-41`);
 forms (`max-w-xl`) sit left-aligned in the 1024 px column at 1280 px while auth forms are centred; settings switches use
 18 × 32 px controls. Verified (Code). Recommendation: move `FormError` to `packages/ui` as `FormAlert`; all form pages use
 `PageHeader` + `narrow` width token (centred `max-w-2xl`); sticky save bar on phones for long forms (edit profile, story
@@ -420,7 +420,7 @@ availability only on save (SCR-PRF-02-AC10 [Proposed]), rename breaks old links 
 **Identified opportunities**
 - UX: no live bio counter; picture removal has no confirmation or undo. Verified (Code).
 - UX: username change consequences ("your address changes; old links stop working") are in a hint only. Verified (Code).
-- Consistency: own heading markup and own error banner duplicate `PageHeader` and `FormError` (`edit-profile-screen.tsx:105-117` vs `auth-card.tsx:31-41`). Verified (Code).
+- Consistency: own heading markup and own error banner duplicate `PageHeader` and `FormError` (`edit-profile-screen.tsx:109-121` vs `auth-card.tsx:31-41`). Verified (Code).
 - Missing: preview of how the profile looks publicly. Inferred value.
 
 **Proposed experience** — `PageHeader` with back to `/me`; sections as `Surface`s: "Picture" (avatar editor; "Remove"
@@ -445,7 +445,7 @@ guard per FP-003. "Preview public page" opens `/author/<username>` in the same t
 ### SE-SET-01 — Settings (SCR-SET-01)
 
 **Current experience** — `PageHeader` "Settings — Saved in your account, used on every device." then four bordered
-sections (`settings-screen.tsx:31-40`, no `bg-card`): Language (select), Notifications (3 switches), Reading (opens the
+sections (`settings-screen.tsx:65-74`, no `bg-card`): Language (select), Notifications (3 switches), Reading (opens the
 reader settings sheet), Adult content (switch + age dialog). Entry only from the user menu. No account, security,
 privacy or data management (F-AUTH-07); language save failure silent (U-SET-01); switches have no pending state (U-SET-02).
 
@@ -483,7 +483,7 @@ privacy or data management (F-AUTH-07); language save failure silent (U-SET-01);
 ### SE-HOME-01 — Home / Discover (SCR-HOME-01)
 
 **Current experience** — Purpose: the public entry and browse page. Structure: hero (h1 + intro, all roles, also on
-filtered views, `apps/web/src/app/(main)/page.tsx:66-70`), "Recommended for you" (member, unfiltered), section h2
+filtered views, `apps/web/src/app/(main)/page.tsx:68-72`), "Recommended for you" (member, unfiltered), section h2
 "Recently updated" with shortcuts "From authors you follow" (member) and "See rankings", category chips (root only),
 popular tags (≤ 12), 2/3/4-column card grid with infinite load (SCR-HOME-01-C01…C11). Actions: filter, open story,
 shortcuts, load more. Known limitations: F-HOME-01 (suspended authors listed), F-HOME-02 (language filter not exposed),
@@ -691,14 +691,14 @@ row variant · Business rules: BR-AUTHOR-008 (BRC-HOME-01 applies) · Other scre
 **Current experience** — Purpose: decide and start or continue reading. Structure: cover, title, author, badges,
 icon-only stats, CTA, Follow / Save / Add to list, Report (own row), synopsis, tags, chapter list, similar stories
 (SCR-STORY-01-C01…C15). Layout: one column on mobile, `sm:grid-cols-[12rem_1fr]` header at ≥ 640 px
-(`story-screen.tsx:78`), everything else full-width in the 1024 px column. Limitations: F-STORY-01, F-STORY-02,
+(`story-screen.tsx:93`), everything else full-width in the 1024 px column. Limitations: F-STORY-01, F-STORY-02,
 F-STORY-03, F-STORY-04, U-STORY-01, U-STORY-02, U-READ-03, F-PROG-02/03, N-04, N-07.
 
 **Identified opportunities**
 - **Information for deciding.** No total words or reading time, no chapter count in the header, no last-update or new-chapter date, no chapter dates. Completion appears only as a small outline badge. Verified (Code) + Verified (Runtime).
 - **Social proof unreadable.** The counters are icon + number, with labels only for screen readers or mouse hover. Verified (Code) `stat-pill.tsx:21-29` + Verified (Runtime).
 - **Action hierarchy.** On mobile the CTA (190 px wide, not full width), then Follow + Save, then "Thêm vào danh sách" on its own row, then "Báo cáo" on its own row: four rows of actions, ≈ 160 px. Report is too prominent. Verified (Runtime) `m-story.png`.
-- **Desktop layout.** The header uses about 690 of 1024 px, the synopsis is `max-w-prose`, and the right side of the page is empty below the header. Similar stories come only after the full chapter list. Verified (Runtime) `d-story.png` + Verified (Code) `story-screen.tsx:210`.
+- **Desktop layout.** The header uses about 690 of 1024 px, the synopsis is `max-w-prose`, and the right side of the page is empty below the header. Similar stories come only after the full chapter list. Verified (Runtime) `d-story.png` + Verified (Code) `story-screen.tsx:243`.
 - **Long stories.** Unbounded chapter list (F-STORY-02) with no "jump to my chapter", no newest-first toggle and no read marks. Verified (Code).
 - **Continue states.** A caught-up member sees "Start reading" (N-04). Verified (Code).
 - **No share action.** Story links are the main growth channel (OG images exist), but there is no copy-link / native share. Verified (Code): no share component in `story/`.
@@ -772,7 +772,7 @@ U-CMT-01, F-STORY-01, N-01, N-02, N-05, N-08, N-09.
 - **Resume notice.** When the saved position is restored, a toast "Resumed where you left off" with the action "Start from the beginning" (FP-044).
 - **Mobile (390):** shell-less, auto-hide bars, text column full width with 16 px gutters. The end panel cards are full width.
 - **Tablet (768):** same as mobile, wider margins. The 66ch measure is kept (BR-READ-018).
-- **Desktop (1280):** top bar always visible, centred 66ch column, toolbar content aligned to the column (today the toolbar spans `max-w-3xl` while the text is 66ch, `reader-screen.tsx:105,127`). The TOC can be pinned as a left rail on ≥ xl (optional, P3).
+- **Desktop (1280):** top bar always visible, centred 66ch column, toolbar content aligned to the column (today the toolbar spans `max-w-3xl` while the text is 66ch, `reader-screen.tsx:115,145`). The TOC can be pinned as a left rail on ≥ xl (optional, P3).
 
 **Acceptance criteria**
 - SE-READ-01-AC01 [Proposed] — Given any viewport, When a chapter URL opens, Then neither the site header nor the bottom nav is rendered, and the reader top bar shows back-to-story, "Ch. n / N", Display and Contents.
@@ -814,9 +814,9 @@ names), U-NOTI-01 (reply deep link stops at the paragraph).
 
 **Identified opportunities**
 - Missing functionality: answering a reply and notifying participants — Verified (Code) `comment-item.tsx:174`, reply SQL `:45-66` → FP-049. Author badge — Verified (Code) `comment-item.tsx:108` → FP-025.
-- UX/UI: the heading has no count — Verified (Code) `reader-screen.tsx:166`. The paragraph trigger is 14 px at 50 % opacity — Verified (Runtime) `m-reader.png`, `metrics.json` (17 of 21 controls < 44 px). Item actions are `h-7` (28 px) — Verified (Code) `comment-item.tsx:178-180`. The sheet loads as two tall blank skeleton blocks — Verified (Runtime) `m-reader-paragraph-sheet.png`.
+- UX/UI: the heading has no count — Verified (Code) `reader-screen.tsx:187`. The paragraph trigger is 14 px at 50 % opacity — Verified (Runtime) `m-reader.png`, `metrics.json` (17 of 21 controls < 44 px). Item actions are `h-7` (28 px) — Verified (Code) `comment-item.tsx:178-180`. The sheet loads as two tall blank skeleton blocks — Verified (Runtime) `m-reader-paragraph-sheet.png`.
 - Workflow: guest sign-in returns to the top of the chapter — Verified (Code) `comment-thread.tsx:38`. Unsent text is discarded when the sheet closes — Verified (Code) (UI states table, "Unsaved changes: Missing").
-- IA: on desktop the paragraph sheet is a bottom sheet covering the text — Inferred (`reader-blocks.tsx:161-178`, `detent-sheet.tsx:153` (`side="bottom"`, now with three heights: changed by PR #60); no desktop sheet screenshot). The paragraph under discussion is not highlighted in the text — Inferred.
+- IA: on desktop the paragraph sheet is a bottom sheet covering the text — Inferred (`reader-blocks.tsx:261-278`, `detent-sheet.tsx:153` (`side="bottom"`, now with three heights: changed by PR #60); no desktop sheet screenshot). The paragraph under discussion is not highlighted in the text — Inferred.
 
 **Proposed experience**
 - Heading "Bình luận (N)" from `chapter_stats.comments` (already on the story page). An optional sort control "Mới nhất / Cũ nhất" (the unused `newestFirst` prop, `comment-thread.tsx:21-25`), subject to Q-CMT-02. "Hay nhất" (most liked) is out of scope until Q-CMT-02 is answered.
@@ -855,7 +855,7 @@ U-NOTI-01 (reply not opened), U-NOTI-02 (invite copy, empty copy omits replies).
 
 **Identified opportunities**
 - Missing functionality: per-story mute, delete, settings link — Verified (Code) (no `/settings` link in `notifications-screen.tsx`; no item menu). Out-of-app digest — Verified (Code) BR-NOTI-017.
-- UX/UI: items are undifferentiated text (no cover, avatar or type icon) — Verified (Code) `notifications-screen.tsx:97-111`. Bell target is 36 px — Verified (Code) `notification-bell.tsx:29`. Hypothesised: the list gets hard to scan once a reader follows many stories.
+- UX/UI: items are undifferentiated text (no cover, avatar or type icon) — Verified (Code) `notifications-screen.tsx:157-171`. Bell target is 36 px — Verified (Code) `notification-bell.tsx:29`. Hypothesised: the list gets hard to scan once a reader follows many stories.
 - Workflow: N chapters published together produce N items — Verified (Code) dedupe `chapter_published:<chapter>` (BR-NOTI-003). Opening the first one doesn't clear the siblings — Verified (Code) `use-notifications.ts:90-137` (one id).
 - IA: the inbox is reachable only through the bell, not the user menu or `/me` — Verified (Code) screen-inventory §4. On desktop the page uses the 1024 px column for one-line items — Inferred (main width from `metrics.json`; page not captured).
 
@@ -895,7 +895,7 @@ U-LIB-03 (aria label), F-PROG-02 (continue target).
 
 **Identified opportunities**
 - Missing functionality: no new-chapter or caught-up state per entry — Verified (Code) `library/model/library.ts:49-58`. No followed-authors tab — Verified (Code) F-AUTHOR-01. No progress ("chapter 3 of 12") — Verified (Code) (only `number`).
-- UX/UI: full discovery cards (synopsis, counters, tags) are used for a shelf the reader already knows — Verified (Code) `library-screen.tsx:103-111`. The same `StoryCard` measures ~451 px tall at 390 px on Home (Verified (Runtime) `metrics.json` m/home); with entry actions, Inferred ~520 px per row of 2, so 50 entries ≈ 13,000 px. Empty states have no action although `EmptyState` supports one — Verified (Code) `library-screen.tsx:130-131`, `ui/src/widgets/empty-state.tsx:10-29`.
+- UX/UI: full discovery cards (synopsis, counters, tags) are used for a shelf the reader already knows — Verified (Code) `library-screen.tsx:104-112`. The same `StoryCard` measures ~451 px tall at 390 px on Home (Verified (Runtime) `metrics.json` m/home); with entry actions, Inferred ~520 px per row of 2, so 50 entries ≈ 13,000 px. Empty states have no action although `EmptyState` supports one — Verified (Code) `library-screen.tsx:131-132`, `ui/src/widgets/empty-state.tsx:10-29`.
 - Workflow: Following is ordered by follow time, not by update — Verified (Code) `library.api.ts:55-58`. Removal is immediate without undo — Verified (Code) BR-LIB-011.
 - IA: Saved vs Following split (§1.6). The "Đang theo dõi" tab name collides with author following — Verified (Code).
 
@@ -934,8 +934,8 @@ quick-create (private). Known limitations: F-LIST-01 (reorder blocked), F-LIST-0
 not-found state is a dead end with no action — Verified (Runtime) `m-list-missing.png`.
 
 **Identified opportunities**
-- Missing functionality: share or copy link — Verified (Code) (`list-screen.tsx:87-124`; no share code in `features/`). Add stories from the list page — Verified (Code) `lists/strings.en.ts` `page.emptyOwner` sends the owner to each story. Visitor cannot reach the owner — Verified (Code) `list-screen.tsx:159-160` (plain `span`).
-- UX/UI: a list of ≤ 500 items in a full-card grid with one-step ↑/↓ — Verified (Code) `list-screen.tsx:186-208`. Hypothesised: reordering long lists is tedious (same pattern as U-CHM-03). C08 rows are text-only with no visual cue of content — Verified (Code) `my-lists.tsx:29-102`. C09 quick-create silently ignores > 120 characters (U-LIST-02).
+- Missing functionality: share or copy link — Verified (Code) (`list-screen.tsx:87-124`; no share code in `features/`). Add stories from the list page — Verified (Code) `lists/strings.en.ts` `page.emptyOwner` sends the owner to each story. Visitor cannot reach the owner — Verified (Code) `list-screen.tsx:212-213` (plain `span`).
+- UX/UI: a list of ≤ 500 items in a full-card grid with one-step ↑/↓ — Verified (Code) `list-screen.tsx:239-261`. Hypothesised: reordering long lists is tedious (same pattern as U-CHM-03). C08 rows are text-only with no visual cue of content — Verified (Code) `my-lists.tsx:29-102`. C09 quick-create silently ignores > 120 characters (U-LIST-02).
 - Workflow: shared links preview as the generic "Danh sách đọc" title — Verified (Code) BR-LIST-014 (`apps/web/src/app/(main)/lists/[id]/page.tsx:7-14`). The not-found state has no way forward — Verified (Runtime).
 - IA: C09 is a third keep-action next to Follow and Save (§1.6) → it moves into the unified Save sheet (FP-048).
 
@@ -1036,7 +1036,7 @@ Limitations: F-STM-04, U-STM-01, U-STM-03, U-STM-05, U-STM-06.
 - Workflow: after creation the author lands on the same form again (edit mode) rather than on the next step (cover,
   first chapter) — `Verified (Code)` (`use-story-editing` → `/studio/story/{id}`, SCR-STM-02-A04).
 - UX: all fields carry equal weight; Language, Status and URL slug are rarely changed at creation; Status offers
-  "Ongoing/Completed/Hiatus" for a story with no chapters — `Verified (Code)` (`story-form-screen.tsx:359-382`).
+  "Ongoing/Completed/Hiatus" for a story with no chapters — `Verified (Code)` (`story-form-screen.tsx:366-389`).
 - Expectation: Visibility defaults to Private with hint "Only you and your collaborators can view it." but nothing says
   the author must change it later to be read — `Verified (Code)` (`strings.en.ts:181-185`, `story-form.ts:29`).
 - No live preview of the story card — `Verified (Code)`.
@@ -1163,7 +1163,7 @@ updated_by` and stats embed — or a `studio_chapter_list(story)` RPC if embeds 
 ### SE-EDT-01 — Chapter editor (SCR-EDT-01)
 
 **Current experience** — Purpose: write the chapter's working draft and publish it (BR-EDT-*). Structure (top→bottom,
-single left-aligned column `max-w-3xl`, `chapter-editor-screen.tsx:585`; PR #60 added an optional side-by-side live preview, `:593-623`): "Back to chapters" + outline buttons
+single left-aligned column `max-w-3xl`, `chapter-editor-screen.tsx:605`; PR #60 added an optional side-by-side live preview, `:593-623`): "Back to chapters" + outline buttons
 Preview / Version history (32 px) → backup banner / conflict alert → title input (36 px, `maxLength 400`) → toolbar (9
 icon buttons, 36 px, wraps) → body (`reader-text`, min 50vh) → publish panel (H2, state badge, Publish / Schedule… /
 Unpublish) → footer "n words · status" + "Save draft". Lives in the main shell (sticky header, mobile bottom nav,
@@ -1176,7 +1176,7 @@ Unpublish) → footer "n words · status" + "Save draft". Lives in the main shel
 - *UX/UI*: status and Save below the chapter (Verified (Code) `:542-561`); toolbar not sticky (Verified (Code));
   targets < 44 px (Verified (Code) `button.tsx:22-25`); 2-row toolbar at 390 px (Inferred (Code)); keyboard covers
   toolbar + bottom nav eats space (Hypothesised); on desktop the column is left-aligned leaving ~256 px empty on the
-  right of the 1024 px main column at 1280 (Inferred (Code), `app-shell.tsx:99` + `chapter-editor-screen.tsx:585`).
+  right of the 1024 px main column at 1280 (Inferred (Code), `app-shell.tsx:99` + `chapter-editor-screen.tsx:605`).
 - *Workflow*: Preview/History exits lose unsaved text (Verified (Code), FP-003); publishing requires scrolling past the
   whole chapter (Verified (Code)); after publish there is no "next chapter" path (Verified (Code)).
 - *IA*: no H1 / story / chapter number (Verified (Code), `strings.en.ts:2` unused); Save draft is a primary-looking
@@ -1238,7 +1238,7 @@ Business rules: BRC-SHELL-01; BR-EDT-024 panel location text. Other screens: SCR
 **Current experience** — Purpose: list published versions, view one read-only with reader rendering, compare
 (block-level) with the draft or another version, restore into the draft (BR-HIST-001…009). Structure: PageHeader →
 "Back to editor" → `<ol>` of version cards (full width) → viewer section (Content/Compare toggle, Restore, content or
-diff). Single column `max-w-3xl` at every width (`history-screen.tsx:107`). Limitations: F-HIST-01 (restore without
+diff). Single column `max-w-3xl` at every width (`history-screen.tsx:118`). Limitations: F-HIST-01 (restore without
 undo), F-HIST-02 (endless skeleton), U-HIST-01 (title/wording), no checkpoints, no entry from chapter manager.
 
 **Identified opportunities**
@@ -1301,7 +1301,7 @@ Rendered inside the main shell. Limitations: stale (saved draft only, F-EDT-02);
   (Code) absent.
 - *UX/UI*: the preview bar is `sticky top-0 z-10` while the site header is `sticky top-0 z-30`
   (`preview-screen.tsx:64`, `app-shell.tsx:88`): both stick at 0, so once the page scrolls the bar slides under the
-  header and "Back to editor" is hidden — Inferred (Code); same pattern in the reader (`reader-screen.tsx:104`; changed by PR #60: the reader bar now uses `top-below-header` and the header hides on scroll-down), flagged
+  header and "Back to editor" is hidden — Inferred (Code); same pattern in the reader (`reader-screen.tsx:114`; changed by PR #60: the reader bar now uses `top-below-header` and the header hides on scroll-down), flagged
   for the reader agent. Header differs from the real reader, which shows "Chương 2" above the title
   (Verified (Runtime) guest reader `m-reader.png`; preview code has no label — Verified (Code)).
 - *Workflow*: Preview → back → scroll → publish (Verified (Code)); the preview cannot tell the author whether it
@@ -1428,7 +1428,7 @@ BRC-STAT-01, BR-STAT-004 extension (followers series). Other screens: SCR-STM-01
   "(admin)/moderation/"). Verified (Code).
 - *Structure:* PageHeader "Moderation" + description; Tabs "Pending" / "Resolved"; `InfiniteList` of `ReportCard`
   (badges → title → "Status · Open content" → details → "Reported by" → button row); a reason dialog per card
-  (`moderation-screen.tsx:49-86`, `report-card.tsx:67-190`). Max width `max-w-3xl` (`moderation-screen.tsx:77`).
+  (`moderation-screen.tsx:55-92`, `report-card.tsx:67-190`). Max width `max-w-3xl` (`moderation-screen.tsx:83`).
 - *Actions:* content actions (hide/unhide, remove/restore, suspend/reinstate) and report actions (under review,
   resolve, dismiss). Each needs a 3–1000 char reason.
 - *Known limitations:* U-MOD-01 (no date, comment author, closed-by, consequence), U-MOD-02 (no filters or URL),
@@ -1546,7 +1546,7 @@ Spec file `flag-content-dialog.md`.
   - No reason descriptions and no guideline link. Verified (Code) `report-button.tsx:102-113`.
   - No structured copyright claim. Verified (Code).
   - No "Reported" state or status. Verified (Code), U-MOD-03.
-  - No next step after sending (block, my reports). Verified (Code): toast only, `report-button.tsx:71-74`.
+  - No next step after sending (block, my reports). Verified (Code): toast only, `report-button.tsx:74-77`.
   - No passage anchor for chapter reports. Verified (Code): `submit_report(kind, target, reason, description)`,
     `moderation.sql:119`.
 - *UX/UI:*
@@ -1556,7 +1556,7 @@ Spec file `flag-content-dialog.md`.
     `m-reader` (`metrics.json`). The Report control's own height is Inferred from the screenshot.
   - A long form in a centred Dialog at 390 px may sit under the keyboard. Inferred.
 - *Workflow:* guest → login → back to the pathname only. The dialog does not reopen and `#comments` is lost.
-  Verified (Code) `report-button.tsx:86-88`.
+  Verified (Code) `report-button.tsx:89-91`.
 - *Information architecture:* Report is a destructive/rare action, yet on the story page it is placed at the same
   visual level as engagement actions. Inferred.
 
@@ -1599,7 +1599,7 @@ Spec file `flag-content-dialog.md`.
 
 **Impact**
 - *Frontend:* `report-button.tsx` (success view, reported state, copyright branch, sheet on mobile, intent restore);
-  hosts `story-screen.tsx:111-114`, `reader-screen.tsx:158-160`, `author-screen.tsx:102`, `comment-item.tsx:187`; the
+  hosts `story-screen.tsx:133-136`, `reader-screen.tsx:179-181`, `author-screen.tsx:117`, `comment-item.tsx:187`; the
   sign-in `next` handling (`withNext`).
 - *Backend/API:* `submit_report` + optional `p_evidence jsonb` and `p_paragraph_id`; `my_reports()` / RLS read
   (FP-031); `withdraw_report(id)`.
@@ -1644,7 +1644,7 @@ end for authors. AC10 (paragraph anchor) is P3.
 - *Workflow:* the decline path ends in "Go back", which fails for shared links (U-MAT-01). There is no route onward
   ("Browse other stories"). Verified (Code) `adult-gate.tsx:25-27`.
 - *Information architecture:* the 18+ setting has three entry points (header, gate, Settings) with three different
-  wordings. Verified (Code) BR-MAT-003. The Studio hint misstates the effect (`studio/strings.en.ts:237`).
+  wordings. Verified (Code) BR-MAT-003. The Studio hint misstates the effect (`studio/strings.en.ts:304`).
 
 **Proposed experience**
 - *Gate panel (keep `EmptyState`; content stays generic per FP-005, no title or cover):*

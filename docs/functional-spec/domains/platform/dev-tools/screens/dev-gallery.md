@@ -18,8 +18,8 @@
 | --- | --- | --- |
 | SCR-DEV-01-C01 | Own `AppShell` header "StoryNest · gallery" + `BottomNav` (Home, Gallery, Library, Me) | English literals |
 | SCR-DEV-01-C02 | `PageHeader` "Component gallery" | |
-| SCR-DEV-01-C03 | Sections: Buttons, Form controls, Display, Navigation and overlays, States, Infinite list | `gallery.tsx:2353-2499` |
-| SCR-DEV-01-C04 | Demo form with zod validation | `gallery.tsx:143-183` |
+| SCR-DEV-01-C03 | Sections: Buttons, Form controls, Display, Navigation and overlays, States, Infinite list | `gallery.tsx:4182-4328` |
+| SCR-DEV-01-C04 | Demo form with zod validation | `gallery.tsx:199-239` |
 | SCR-DEV-01-C05 | ConfirmDialog demo "Unpublish this chapter?" and toast buttons | |
 
 ## C. User actions & system responses

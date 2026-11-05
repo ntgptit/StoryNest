@@ -69,7 +69,7 @@
 | Postconditions | — |
 | Affected objects | OBJ-NOTI, OBJ-SHELL |
 | Related screens | SCR-NOTI-01 (C01) |
-| Status | Verified — `packages/features/src/notifications/notifications.test.tsx:338-384` |
+| Status | Verified — `packages/features/src/notifications/notifications.test.tsx:370-416` |
 
 ### WF-NOTI-05 — Open a notification
 | Field | Value |

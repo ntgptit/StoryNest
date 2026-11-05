@@ -19,7 +19,7 @@
 | Preconditions | None (public route). |
 | Main flow | 1. Server `loadChapter(id, chapterSlug)` loads the story and the chapter **in parallel** into the same per-request query client (`apps/web/src/lib/story/load-chapter.ts:14-17`). 2. Both found and the story slug matches → metadata (BR-READ-011), JSON-LD when indexable, dehydrate → `ReaderView` → `ReaderScreen`. 3. The bootstrap script has already applied stored reader preferences before paint (BR-READ-015). 4. Client: skeleton until story and chapter are known (BR-READ-010). Then the sticky toolbar (back to story, Display, Contents, progress bar), the chapter label + title, the blocks, the "— End of chapter —" marker, vote, report, the comment thread, and prev/next. 5. The reading tracker starts: progress restore/save for members ([WF-PROG-01/02](../reading-progress/workflows.md)) and read recording after 10 s ([WF-PROG-04](../reading-progress/workflows.md#wf-prog-04--count-a-read)). 6. Preference sync starts for members (BR-READ-016). |
 | Alternative flows | A1 Wrong story slug → 308 (BR-READ-003). A2 Mature story → adult gate (BR-READ-010). A3 Zero blocks → "This chapter has no content yet." (BR-READ-012). |
-| Exception flows | E1 Not found / unpublished / archived / deleted / hidden story → 404 (BR-READ-002). E2 Load error → client retries; still failing → "Couldn't load the chapter" + "Try again", which refetches both chapter and story (`reader-screen.tsx:66-77`). |
+| Exception flows | E1 Not found / unpublished / archived / deleted / hidden story → 404 (BR-READ-002). E2 Load error → client retries; still failing → "Couldn't load the chapter" + "Try again", which refetches both chapter and story (`reader-screen.tsx:75-86`). |
 | Success criteria | The published text is readable at the chosen typography with no flash. |
 | Postconditions | Members: progress row written on open (BR-PROG-005). Everyone: a read event after the dwell time (BR-PROG-010). |
 | Affected objects | OBJ-READ, OBJ-STORY, OBJ-PROG, OBJ-VOTE, OBJ-CMT |
@@ -63,7 +63,7 @@
 | Trigger | A member opens a chapter (or settings) on a device. |
 | Preconditions | Signed in. |
 | Main flow | 1. The account copy is fetched (`staleTime 0`). 2. If one exists and differs from the device copy, the device copy is replaced and applied. 3. If none exists and the device has non-default settings, those are uploaded. 4. From then on, changes on the device are pushed (debounced). |
-| Alternative flows | Account copy unreadable → the device copy keeps working (`preferences.test.tsx:315`). |
+| Alternative flows | Account copy unreadable → the device copy keeps working (`preferences.test.tsx:317`). |
 | Exception flows | — |
 | Success criteria | A setting chosen on device A appears on device B after sign-in (WBS 2.7 runtime check). |
 | Postconditions | — |

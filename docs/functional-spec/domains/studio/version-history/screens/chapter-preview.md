@@ -14,7 +14,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/preview/page.tsx` → `preview-view.tsx` (passes `getImageUrlResolver()`) |
 | Screen component | `packages/features/src/history/screens/preview-screen.tsx` (`PreviewScreen`) |
 | Roles | owner, co_author, editor (`BR-TEAM-*`) |
-| Entry points | Editor "Preview" button (`packages/features/src/editor/screens/chapter-editor-screen.tsx:431-433`) |
+| Entry points | Editor "Preview" button (`packages/features/src/editor/screens/chapter-editor-screen.tsx:443-445`) |
 | Workflows | WF-HIST-04 |
 
 ## B. Components

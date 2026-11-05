@@ -37,7 +37,7 @@ BR-MAT-*, suspension by BR-MOD-* / BR-AUTH-*. This matrix records where each lis
 
 | List (screen) | Data source | `visibility = public` (unlisted excluded) | not draft | not deleted | owner account active | mature only on opt-in | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Home feed (SCR-HOME-01) | `listLatestStories` (PostgREST) | Yes | Yes | Yes | **No** — suspended/deactivated owners' stories are listed with "Anonymous author" | Yes (`useShowMature`) | `packages/features/src/discovery/api/discovery.api.ts:66-73`, `discovery/model/story-card.ts:51-54`, `supabase/migrations/20261103000100_auth_and_rls.sql:198-202` → [F-HOME-01](#findings-index) |
+| Home feed (SCR-HOME-01) | `listLatestStories` (PostgREST) | Yes | Yes | Yes | **No** — suspended/deactivated owners' stories are listed with "Anonymous author" | Yes (`useShowMature`) | `packages/features/src/discovery/api/discovery.api.ts:72-79`, `discovery/model/story-card.ts:51-54`, `supabase/migrations/20261103000100_auth_and_rls.sql:198-202` → [F-HOME-01](#findings-index) |
 | Author page stories (SCR-AUTHOR-01) | `listLatestStories({authorId})` | Yes | Yes | Yes | Indirect: list renders only after `author_profile` returned an active author | Yes | `author/screens/author-screen.tsx:46-49,61`, `20261104001600_author_follows.sql:50` |
 | Popular tags (SCR-HOME-01) | `popular_tags` RPC | Yes | Yes | Yes | Yes | Never counted (always excluded) | `20261104001400_tags.sql:110-120` |
 | Search stories + header suggestions (SCR-SRCH-01) | `search_stories` RPC | Yes | Yes | Yes | Yes | Yes | `20261104001300_search.sql:78-81` |
@@ -60,17 +60,17 @@ that disappeared between the two requests (`discovery/model/order-by-ids.ts:1-8`
 
 | Destination | Header (desktop) | Header (mobile) | Bottom nav | User menu | In-page links | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
-| `/` Home | Brand link | Brand link | "Home" | — | — | `shell/components/site-header.tsx:17`, `main-shell.tsx:14` |
+| `/` Home | Brand link | Brand link | "Home" | — | — | `shell/components/site-header.tsx:17`, `main-shell.tsx:15` |
 | `/search` | SearchBox (combobox) | Search icon → expands the field in place over the header (no navigation; changed by PR #60) | — | — | Tag/author results | `search/components/search-box.tsx:125-137` |
-| `/ranking` | — | — | — | — | Home section link "See rankings" only | `discovery/screens/discover-screen.tsx:59-61` → U-HOME-01 |
-| `/following` | — | — | — | — | Home section link "From authors you follow" (signed-in only) | `discover-screen.tsx:54-58` → U-HOME-01 |
-| `/author/[username]` | — | — | — | — | Story page author name, search Authors tab, moderation report card | `story/screens/story-screen.tsx:87`, `search/screens/search-screen.tsx:225`, `moderation/model/report.ts:122` |
+| `/ranking` | — | — | — | — | Home section link "See rankings" only | `discovery/screens/discover-screen.tsx:65-67` → U-HOME-01 |
+| `/following` | — | — | — | — | Home section link "From authors you follow" (signed-in only) | `discover-screen.tsx:60-64` → U-HOME-01 |
+| `/author/[username]` | — | — | — | — | Story page author name, search Authors tab, moderation report card | `story/screens/story-screen.tsx:109`, `search/screens/search-screen.tsx:270`, `moderation/model/report.ts:122` |
 
 ## Cross-domain dependencies
 
 | Depends on | What | Reference |
 | --- | --- | --- |
-| D-READING / OBJ-STORY | Story visibility (public/unlisted/private), status, soft delete; story page hosts SimilarStories and links tags/author | BR-STORY-*; `story/screens/story-screen.tsx:87,153,210` |
+| D-READING / OBJ-STORY | Story visibility (public/unlisted/private), status, soft delete; story page hosts SimilarStories and links tags/author | BR-STORY-*; `story/screens/story-screen.tsx:109,183,243` |
 | D-READING / OBJ-PROG | `chapter_read_events` (rankings, co-readers), `user_story_progress` (excluded from For-you) | BR-PROG-* |
 | D-COMMUNITY / OBJ-VOTE | `chapter_votes` in rankings (score = reads + 5 × votes) | BR-VOTE-* |
 | D-LIBRARY / OBJ-LIB | `story_saves`, `story_follows` feed "Recommended for you" | BR-LIB-* |

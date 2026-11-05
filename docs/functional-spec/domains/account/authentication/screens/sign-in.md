@@ -50,7 +50,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `sign-in-screen.tsx:92-97`, `auth-screens.test.tsx:150-158` |
+| Evidence | `sign-in-screen.tsx:105-110`, `auth-screens.test.tsx:150-158` |
 
 | Field | SCR-AUTH-01-A03 Go to sign-up |
 | --- | --- |
@@ -61,7 +61,7 @@
 | Validation | `withNext` drops unsafe or `/` values |
 | Error behavior | — |
 | Navigation | `/register[?next]` |
-| Evidence | `sign-in-screen.tsx:43-47`, `auth-urls.ts:10-14`, `auth-screens.test.tsx:141-148` |
+| Evidence | `sign-in-screen.tsx:49-53`, `auth-urls.ts:10-14`, `auth-screens.test.tsx:141-148` |
 
 | Field | SCR-AUTH-01-A04 Forgot password |
 | --- | --- |
@@ -72,7 +72,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/forgot-password` (the original `next` is lost) |
-| Evidence | `sign-in-screen.tsx:103-105` |
+| Evidence | `sign-in-screen.tsx:116-118` |
 
 ## D. UI states
 | State | Status | Evidence / note |

@@ -42,7 +42,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | Only `vi`/`en` accepted (`isLanguage`) |
 | Error behavior | Account save failure is silent (U-SET-01) |
 | Navigation | Stays |
-| Evidence | `settings-screen.tsx:139-155`, `use-language-sync.ts:45-75` |
+| Evidence | `settings-screen.tsx:240-256`, `use-language-sync.ts:45-75` |
 
 | Field | SCR-SET-01-A02 Toggle a notification type |
 | --- | --- |
@@ -53,7 +53,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | — |
 | Error behavior | Rollback + toast "Could not save your settings. The previous value was restored." |
 | Navigation | Stays |
-| Evidence | `settings-screen.tsx:121-122,157-168`, `use-settings.ts:27-50` |
+| Evidence | `settings-screen.tsx:121-122,157-168`, `use-settings.ts:29-52` |
 
 | Field | SCR-SET-01-A09 Toggle one notification type |
 | --- | --- |
@@ -86,7 +86,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | BR-READ-* |
 | Error behavior | BR-READ-* |
 | Navigation | Sheet overlay |
-| Evidence | `settings-screen.tsx:117,174-178` |
+| Evidence | `settings-screen.tsx:218,266-270` |
 
 | Field | SCR-SET-01-A04 Turn 18+ on |
 | --- | --- |
@@ -97,7 +97,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | — |
 | Error behavior | Per BR-MAT-* |
 | Navigation | Dialog |
-| Evidence | `settings-screen.tsx:180-200` |
+| Evidence | `settings-screen.tsx:276-296` |
 
 | Field | SCR-SET-01-A05 Turn 18+ off |
 | --- | --- |
@@ -108,7 +108,7 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Validation | — |
 | Error behavior | Per BR-MAT-* |
 | Navigation | Stays |
-| Evidence | `settings-screen.tsx:186` |
+| Evidence | `settings-screen.tsx:282` |
 
 | Field | SCR-SET-01-A06 Retry loading |
 | --- | --- |
