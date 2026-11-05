@@ -19,6 +19,10 @@ improvements. Baseline: commit `204a1ea`, analysed 2026-11-04; Phase 2 product d
 | Know how much is verified | [audits/coverage-report.md](audits/coverage-report.md) |
 | Understand what the product still needs (journeys, capability gaps, benchmark) | [proposals/product-discovery.md](proposals/product-discovery.md) |
 | See how each screen should improve (mobile / tablet / desktop) | [proposals/screen-enhancements.md](proposals/screen-enhancements.md) |
+| See which decisions are approved, recommended or open | [proposals/product-decisions.md](proposals/product-decisions.md) |
+| Know what can be built now and how (dependencies, migration, rollback, tests, gates) | [proposals/implementation-readiness.md](proposals/implementation-readiness.md) |
+| Check which features are actually approved (index only; WBS is the authority) | [proposals/approved-feature-backlog.md](proposals/approved-feature-backlog.md) |
+| Re-run or read the signed-in runtime checks | [proposals/verification-plan.md](proposals/verification-plan.md), [verification/README.md](verification/README.md) |
 | Plan the next work | [proposals/feature-backlog.md](proposals/feature-backlog.md), [proposals/implementation-roadmap.md](proposals/implementation-roadmap.md) |
 | Answer open business questions | [proposals/decision-register.md](proposals/decision-register.md) |
 | Edit this spec | [CONVENTIONS.md](CONVENTIONS.md) (IDs, templates, verification tags, rule ownership) |
@@ -51,6 +55,8 @@ Each object folder has `business-rules.md`, `workflows.md` and, where it owns sc
 | **Phase 2:** screens assessed · enhancement ACs | 32 / 32 · 205 |
 | **Phase 2:** new proposals · rule-change proposals · new questions | 32 (`FP-035…066`, 31 active) · 23 `BRC-*` · 35 |
 | Findings after Phase 2 (functional · UX) | 73 · 71 |
+| **Phase 2.5:** runtime cases · findings after the run | 50 (32 pass · 16 confirmed · 1 new defect · 1 not conclusive) · 74 functional, 73 UX |
+| **Phase 2.5:** decisions approved · recommended · open | 7 (WBS §4) · 10 (`PD-01…10`, pending approval) · 91 + 3 |
 
 Top issues before launch: role limits enforced only in the UI (FP-001), inconsistent suspension (FP-002),
 text loss when leaving the editor (FP-003), missing not-found/error pages (FP-004), client-only 18+ gate (FP-005),

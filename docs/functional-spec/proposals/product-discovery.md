@@ -1157,7 +1157,7 @@ criteria and technical impact are in the [feature backlog](feature-backlog.md#ph
 
 | # | Risk / assumption | Mitigation |
 | --- | --- | --- |
-| R1 | Member, author and moderator friction is inferred from code; real behaviour (keyboard overlap, IME, toast placement, Realtime) may differ | Run the Playwright e2e with seeded test users (WBS 0.7) before implementing P1/P2 items; re-check each `Inferred` item |
+| R1 | Member, author and moderator friction is inferred from code; real behaviour (keyboard overlap, IME, toast placement, Realtime) may differ. *Update 2026-11-05: 50 signed-in runtime cases confirmed 18 findings and found F-STM-09 ([verification](../verification/README.md)); keyboard/IME/Realtime presence are still unverified* | Run the Playwright e2e with seeded test users (WBS 0.7) before implementing P1/P2 items; re-check each `Inferred` item |
 | R2 | No analytics: growth/retention value is hypothesised | Add a cheap measurement first (SQL views over `chapter_read_events`, follows, notifications → reads) and review after 4 weeks |
 | R3 | Benchmark ≠ demand: patterns from Wattpad/AO3/Royal Road reflect their audiences | Every FP is justified by a StoryNest journey; benchmark is supporting evidence only |
 | R4 | Scope pressure from 31 new proposals on a single developer (WBS capacity) | Roadmap orders by journey; P3/Optional items are parked; several FPs are explicitly staged (A/B/C) |

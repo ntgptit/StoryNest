@@ -125,3 +125,16 @@ now **Verified (Runtime)** at 768 px as well (`t-home.png`: no section navigatio
 | U-HOME-04 | P3 | HOME, AUTHOR | "Updated" and the default order move on any story-row update (metadata edit, republish), not only on a new chapter (Q-HOME-02) | `discovery.api.ts` order by `updated_at` | FP-040, FP-041 |
 | U-STORY-03 | P3 | STORY / SCR-STORY-01 | A member who has read every published chapter is offered "Start reading" (chapter 1) again; no "caught up" state | BR-STORY-012, BR-PROG-008 | FP-044 |
 | U-LIB-04 | P3 | LIB, MOD / SCR-STORY-01 | A guest's Follow / Save / Vote / Report intent is lost at sign-in (the action is not completed afterwards) | `story-actions.tsx`, `report-button.tsx:86-88` | FP-048 |
+
+## 6. Runtime verification of signed-in flows (2026-11-05)
+
+New UX findings from the [runtime verification](../verification/README.md). Totals after this run: **73** UX/UI
+findings (9 P2 · 64 P3). Confirmed at runtime: U-NOTI-01 (reply notification lands on `#comments`, nothing opened or
+highlighted — VER-RDR-08), U-SHELL-04 (header "Đăng nhập" links to `/login` without `next` — VER-RDR-11), U-STAT-01
+(stats page does not name the story — VER-AUT-13), U-READ-03 (library label uses the position after reordering —
+VER-RDR-10).
+
+| ID | Pri | Object / screen | Current behaviour → improvement | Evidence | FP |
+| --- | --- | --- | --- | --- | --- |
+| U-STM-08 | P3 | STM / SCR-STM-01 | When every story is deleted, Studio shows the empty state "Bạn chưa có truyện nào" above "Hiện truyện đã xóa (1)" — the author is told they have no stories | Runtime (VER-AUT-15 debug capture) | FP-055 |
+| U-MOD-05 | P3 | MOD / SCR-MOD-01 | Every moderation action confirms with the same toast "Đã thực hiện." and the card moves to the other tab without saying where | Runtime (VER-MOD-04…09) | FP-024 |

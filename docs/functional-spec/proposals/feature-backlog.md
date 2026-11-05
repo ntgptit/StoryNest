@@ -56,6 +56,10 @@ FP numbers are stable identifiers, not an order; the table is sorted by phase.
 > **Phase 2 (2026-11-05):** 32 further proposals `FP-035…FP-066` (31 active) and amendments to existing proposals are in
 > [Phase 2 proposals](#phase-2-proposals-product-discovery) and [Phase 2 amendments](#phase-2-amendments-to-existing-proposals).
 > The combined ranking is in the [roadmap](implementation-roadmap.md#phase-2-update-product-discovery-2026-11-05).
+>
+> **Phase 2.5 (2026-11-05):** readiness of every FP is in [implementation-readiness.md](implementation-readiness.md);
+> decisions in [product-decisions.md](product-decisions.md). The new runtime defect F-STM-09 (owner cannot restore a
+> deleted story on Supabase) belongs with [FP-001](#fp-001) (same RPC/trigger area) and is listed as a fix-now item.
 
 ---
 

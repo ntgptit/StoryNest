@@ -148,3 +148,24 @@ spec itself, PR #57), so the Phase 1 counts in §1 (8 domains, 31 objects, 32 sc
 | Contrast ratios | Calculated from token values, not measured on screen |
 | Dark mode, toasts over the bottom nav, Vietnamese IME in the editor, keyboard overlap on phones | Not observed |
 | Phase 2 `_drafts` | Merged into the final documents and removed; per-review notes for consolidation are summarised in DEC-014…DEC-022 |
+
+## 8. Phase 2.5 runtime verification (2026-11-05)
+
+Signed-in flows were exercised with six QA accounts on `storynest-dev` after the Product Owner approved test data
+(see [runtime verification](../verification/README.md) and DEC-023).
+
+| Measure | Before | After |
+| --- | --- | --- |
+| Route screens rendered at runtime | 13 of 28 (46 %) | **26 of 28 (93 %)** — not rendered: `/me/edit`, `/following` (redirect only) |
+| Signed-in flows exercised | none | Reader, author, co-author, editor, moderator, cross-role (50 cases) |
+| Findings Verified (Runtime) | 8 (guest checks RT-01…RT-15, F-READ-01) | 8 + 18 confirmed in this run + 1 new defect (F-STM-09) |
+| Functional · UX findings | 73 · 71 | 74 · 73 |
+
+**Environment-parity lesson.** F-STM-09 passes the SQL suite on the local PostgreSQL shim (`260_moderation.test.sql:218`)
+but fails on Supabase because of function privileges. Until the SQL suite runs against a Supabase branch or the dev
+project, RLS/trigger/privilege changes must be re-checked on `storynest-dev` (quality gate in
+[implementation-readiness §7](../proposals/implementation-readiness.md#7-quality-gates)).
+
+Still unverified at runtime: sign-up submission, password reset and email change (would send email), Google OAuth
+(not implemented), suspended author on the public home feed and sitemap (would need a public QA story), the 95 %
+completion rule on a long chapter (F-PROG-01, QA chapters too short), offline behaviour, dark mode.

@@ -15,7 +15,8 @@ Entry point: [README](../README.md).
   → related FPs and findings → priority.
 - Verification tags: `Verified (Runtime)` = observed in a browser as a guest on 2026-11-04/05 (screenshots at
   390/768/1280 px); `Verified (Code)` = read in source; `Inferred`; `Hypothesised` (friction not yet observed).
-  **Signed-in screens (library, notifications, settings, Studio, editor, moderation) were assessed from code only.**
+  **Signed-in screens (library, notifications, settings, Studio, editor, moderation) were assessed from code only;**
+  the later [runtime verification](../verification/README.md) (2026-11-05) confirmed their main findings.
 - Existing findings (`F-*`, `U-*`) and proposals (`FP-001…034`) are referenced, not repeated. A screen's
   improvements usually ship through the FP listed in "Related"; the AC here are the screen-level checks.
 - Consolidation decisions that affect several screens are listed in §3 and recorded as DEC-013…DEC-022 in the

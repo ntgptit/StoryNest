@@ -146,6 +146,8 @@ approve any of them.
 | DEC-020 | Colliding IDs renumbered at merge: engagement & library Q-NOTI-04/05 → **Q-NOTI-06/07**, Q-CMT-03 → **Q-CMT-04**; account & platform BRC-SHELL-01 → **BRC-SHELL-02** | Two reviews picked the same next number |
 | DEC-021 | Phase 1 line citations corrected: `report-button.tsx` (−278), `report-card.tsx` (−87), `require-user.ts:78-82` → `:29-33`, `moderation.api.ts:221-228` → `model/report.ts:161-162`; all 1,924 citations now point inside their files | Found during Phase 2; see [coverage report](../audits/coverage-report.md#7-phase-2-update-2026-11-05) |
 | DEC-022 | Breakpoint conflict resolved: one review proposed header section links from `md`, another a bottom nav below `lg`. Adopted (as a proposal): **bottom nav below `lg`, header section links from `lg`** (BRC-SHELL-02); the FP-019 amendment was aligned | Avoids two navigation systems at 768–1023 px; keeps a touch-friendly nav on tablets |
+| DEC-023 | QA test accounts and data created on `storynest-dev` with the Product Owner's approval (2026-11-05), under the rules in [verification-plan §1](verification-plan.md#1-safety-rules-all-mandatory); supersedes the DEC-011 restriction for verification runs | Signed-in flows had never been run |
+| DEC-024 | Phase 2.5 recommendations are recorded as `PD-01…PD-10` with status **Recommended / Pending Approval** in [product-decisions.md](product-decisions.md); none is approved | Keep proposal and decision separate |
 
 ### Decisions that block the highest-value Phase 2 proposals
 

@@ -58,6 +58,8 @@ Phase 2 (product discovery) identifiers:
 | Screen enhancement AC | `SE-<CODE>-NN-ACnn` (always `[Proposed]` until implemented) | `SE-READ-01-AC03` |
 | Business-rule change proposal | `BRC-<CODE>-NN` — proposes a change to a Verified rule; never edits the rule until approved | `BRC-READ-01` |
 | External benchmark | `BM-NN` | `BM-12` |
+| Product decision (recommended → approved) | `PD-NN` in [product-decisions.md](proposals/product-decisions.md) | `PD-04` |
+| Runtime verification case | `VER-<AREA>-NN`, AREA ∈ `AUT`, `TEAM`, `RDR`, `MOD`, `X` | `VER-TEAM-05` |
 
 Verification tags used from Phase 2 on: `Verified (Code)`, `Verified (Runtime)`, `Documented`, `Inferred`,
 `Proposed`, `Unknown`. Phase 1's plain "Verified" means `Verified (Code)` unless the text says runtime or SQL test.

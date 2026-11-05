@@ -144,7 +144,48 @@ New defects and gaps found during [product discovery](../proposals/product-disco
 | ID | Cat | Pri | Object / screen | Finding | Evidence | Verif. | FP |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | F-READ-01 | A | P1 | READ / SCR-READ-01 | Once the reader scrolls, the reader toolbar (Display, Contents) and the progress bar are covered by the sticky site header — both use `sticky top-0` and the header sits above; the mobile bottom nav also covers the last lines of text. The documented `ReaderToolbar`/`ReadingProgress` (WBS 2.4) are therefore unavailable while reading. | `reader-screen.tsx:74`, `packages/ui/src/widgets/app-shell.tsx:24`; scrolled screenshots at 390 and 1280 px (`elementFromPoint` returns a header control) | **Runtime** | FP-043 |
-| F-STM-08 | B | P1 | STM, EDT / SCR-STM-02, SCR-STM-03, SCR-EDT-01 | A new story starts Private + Draft; the first publish moves status to `ongoing` but keeps it private, so the chapter reaches no reader and no follower — and no screen says so. | `packages/features/src/studio/model/story-form.ts:28-29`, `…/20261103000200_publish_chapter_rpc.sql:193-196`, `…/20261103000300_outbox_worker_and_cron.sql:50` | Code | FP-054 |
+| F-STM-08 | B | P1 | STM, EDT / SCR-STM-02, SCR-STM-03, SCR-EDT-01 | A new story starts Private + Draft; the first publish moves status to `ongoing` but keeps it private, so the chapter reaches no reader and no follower. **Runtime (2026-11-05): the publish panel even says "Đã đăng, người đọc thấy bản đã đăng" (published, readers see it) while readers get not-found** (VER-AUT-04). | `packages/features/src/studio/model/story-form.ts:28-29`, `…/20261103000200_publish_chapter_rpc.sql:193-196`, `…/20261103000300_outbox_worker_and_cron.sql:50` | Code | FP-054 |
 | F-MOD-09 | B | P2 | MOD / SCR-MOD-01 | "Open content" on a story a moderator removed leads to not-found: public queries filter `deleted_at`, although RLS lets moderators read it. Moderators cannot re-read what they removed when reversing or handling an appeal. | `packages/features/src/story/api/story.api.ts:33`, `packages/features/src/reader/api/reader.api.ts:31` | Code | FP-024 |
 | F-STM-07 | A | P3 | STM / SCR-STM-01 | Studio "n chapters" counts every chapter visible to the team (drafts, archived, deleted), not published chapters. | `packages/features/src/studio/api/studio.api.ts:11` (`chapters(count)`) | Code | FP-055 |
 | F-HIST-03 | A | P3 | HIST / SCR-HIST-02 | Preview's sticky bar has the same `top-0` collision with the site header as F-READ-01, so "Back to editor" is likely hidden after scrolling. | `packages/features/src/history/screens/preview-screen.tsx:48` | Inferred | FP-058 |
+
+## 6. Runtime verification of signed-in flows (2026-11-05)
+
+[Runtime verification](../verification/README.md) with six QA accounts on `storynest-dev` (50 cases: 32 pass,
+16 confirmed findings, 1 new defect, 1 not conclusive). Totals after this run: **74** functional findings
+(31 A · 43 B; 9 P1 · 35 P2 · 30 P3).
+
+### New defect
+
+| ID | Cat | Pri | Object / screen | Finding | Evidence | Verif. | FP |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| F-STM-09 | A | **P1** | STM / SCR-STM-01, SCR-STM-03 | **An owner cannot restore their own soft-deleted story on Supabase.** The trigger `stories_guard_removal` → `refuse_restoring_removed_story()` is SECURITY INVOKER and calls `last_moderation_action()`, whose EXECUTE is revoked from `authenticated`, so every restore by a signed-in owner fails with 42501 "permission denied for function last_moderation_action"; the UI shows "Bạn không có quyền thực hiện thao tác này." The SQL test that expects the owner to succeed (`260_moderation.test.sql:218`) passes only on the local PostgreSQL shim — an environment-parity gap. | `supabase/migrations/20261104002000_moderation.sql:92-116`; `pg_proc` on dev: `refuse_restoring_removed_story` prosecdef = false, `authenticated` cannot execute `last_moderation_action`; VER-AUT-15 | **Runtime** | FP-001 / FP-006 (fix in a separate task) |
+
+### Findings now Verified (Runtime)
+
+| Finding | Case | What was observed |
+| --- | --- | --- |
+| F-STM-01 | VER-TEAM-06 | Co-author set `stories.deleted_at` through the API: 1 row updated |
+| F-CHM-01 | VER-TEAM-05 | Editor set `chapters.deleted_at` through the API: 1 row updated |
+| F-TEAM-01 | VER-TEAM-04 | Editor published a new version ("Đã đăng bản mới.") although the invite hint says editors cannot publish |
+| F-TEAM-02, U-TEAM-02 | VER-TEAM-07 | Co-author sees only "Chỉ chủ sở hữu quản lý được": no member list, no Leave |
+| F-STM-08 | VER-AUT-02/04 | Defaults Private + Draft; after first publish readers get not-found and the panel claims readers can see it |
+| F-EDT-02 | VER-AUT-06 | Typed, clicked "Xem trước": no warning, no server save, preview shows the old text; only a device backup remains |
+| F-HIST-01 | VER-AUT-08 | The device backup offered before a version restore is gone after it |
+| F-HIST-03 | VER-AUT-14 | "Về trình soạn" is covered by a header link after scrolling the preview at 390 px |
+| F-EDT-01 | VER-AUT-10 | Schedule on a published chapter → "…đã thay đổi ở nơi khác. Tải lại trang rồi thử lại." |
+| F-STM-07 | VER-AUT-12 | Studio row "3 chương" while 1 chapter was published |
+| F-STORY-03, F-NOTI-01 | VER-AUT-07 | Old chapter URL after a slug rename renders not-found (HTTP 200); the follower notification for it dead-ends |
+| F-PROG-02 | VER-RDR-10 | Story page "Đọc tiếp · Chương 4" vs library "Đọc tiếp chương 2" linking to chapter 1 |
+| F-MOD-02 | VER-MOD-05 | Moderator-removed story shown to its author under "Truyện đã xóa" with Restore → "Bạn không có quyền…"; no moderation notice |
+| F-MOD-09 | VER-MOD-06 | "Mở nội dung" on a removed story → Next default English 404 |
+| F-CMT-02 | VER-MOD-08 | Suspended member's new comment refused (42501) but editing their existing comment succeeds |
+| F-MOD-06, F-AUTH-08 | VER-MOD-08 | No notice anywhere for the suspended member |
+| F-STM-06 | VER-X-06 | `/studio/story/not-a-uuid` → "Không tải được danh sách truyện · Kiểm tra kết nối…" |
+| F-SHELL-01 (RT-01) | VER-AUT-11, VER-MOD-02, VER-X-05 | Not-found pages for chapters, `/moderation` and studio return HTTP 200 |
+
+Also observed: a suspended member can still **follow** a story (`set_story_follow` succeeds) — evidence for Q-LIB-01
+and PD-05. Behaviour verified as working: invitations and acceptance, role-limited UI, RLS negatives for outsiders and
+guests, follow/save/lists, progress restore, votes, comments, likes, edits, follower and reply notifications (< 1
+min), notification switch (BR-SET-006), scheduled publishing by cron, unpublish, archive/unarchive, delete/restore of
+chapters, moderation hide/unhide/remove/restore/suspend/reinstate, story counters.
