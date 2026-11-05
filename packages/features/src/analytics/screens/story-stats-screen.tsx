@@ -3,6 +3,7 @@
 import { ArrowLeft, FileQuestion, Lock } from "lucide-react";
 import { useState } from "react";
 import { Skeleton } from "@storynest/ui/components/skeleton";
+import { RollingNumber } from "@storynest/ui/widgets/rolling-number";
 import { Tabs, TabsList, TabsTrigger } from "@storynest/ui/components/tabs";
 import { cn } from "@storynest/ui/lib/utils";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
@@ -13,7 +14,6 @@ import { useAuth } from "../../_shared/auth.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useStoryChapters } from "../../story/index.ts";
 import { DailyChart } from "../components/daily-chart.tsx";
-import { InterimCountUp } from "../components/interim-count-up.tsx";
 import { ReadsHeatmap } from "../components/reads-heatmap.tsx";
 import { ReadThroughFunnel } from "../components/read-through-funnel.tsx";
 import { useChapterStats, useDailyStats } from "../hooks/use-analytics.ts";
@@ -139,7 +139,7 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
                     <dt className="text-xs text-muted-foreground">{label}</dt>
                     <dd className="text-2xl font-semibold tabular-nums">
                       {/* Counts from the previous range's total on a switch (Lucian 047), never on first load. */}
-                      <InterimCountUp value={value} format={(n) => formatCount(n, locale)} />
+                      <RollingNumber value={value} format={(n) => formatCount(n, locale)} />
                     </dd>
                   </div>
                 ))}

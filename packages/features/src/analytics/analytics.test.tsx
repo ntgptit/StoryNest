@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../_shared/auth.tsx";
 import type { DataClient } from "../_shared/client.ts";
@@ -34,7 +34,6 @@ import {
   type DailyRow,
 } from "./model/stats.ts";
 import { DailyChart } from "./components/daily-chart.tsx";
-import { InterimCountUp } from "./components/interim-count-up.tsx";
 import { ReadsHeatmap } from "./components/reads-heatmap.tsx";
 import { ReadThroughFunnel } from "./components/read-through-funnel.tsx";
 import { StoryStatsScreen } from "./index.ts";
@@ -682,54 +681,6 @@ describe("ReadsHeatmap", () => {
     render(<ReadsHeatmap points={[{ day: "2026-11-05", reads: 0, votes: 2, comments: 1 }]} />);
     expect(screen.getByText(t.heatmap.empty)).toBeTruthy();
     expect(screen.queryByRole("grid")).toBeNull();
-  });
-});
-
-describe("InterimCountUp", () => {
-  let frames: FrameRequestCallback[] = [];
-  const flush = (now: number) =>
-    act(() => {
-      const pending = frames;
-      frames = [];
-      pending.forEach((callback) => callback(now));
-    });
-
-  afterEach(() => {
-    frames = [];
-    vi.unstubAllGlobals();
-  });
-
-  const stubFrames = () => {
-    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => frames.push(callback));
-    vi.stubGlobal("cancelAnimationFrame", () => undefined);
-  };
-
-  it("shows the first value at once and counts to a new one, reading only the final number", () => {
-    stubFrames();
-    const { container, rerender } = render(<InterimCountUp value={10} format={String} />);
-    expect(container.textContent).toBe("10");
-    expect(frames).toHaveLength(0); // nothing moves on first render
-
-    rerender(<InterimCountUp value={110} format={String} />);
-    const counting = () => container.querySelector('[data-slot="counting"]');
-    expect(counting()?.textContent).toBe("10");
-    expect(counting()?.getAttribute("aria-hidden")).toBe("true");
-    expect(container.querySelector(".sr-only")?.textContent).toBe("110");
-    flush(0);
-    flush(375); // half way, ease-out quart: 10 + 100 × 0.9375
-    expect(counting()?.textContent).toBe("104");
-    flush(750);
-    expect(counting()).toBeNull();
-    expect(container.textContent).toBe("110");
-  });
-
-  it("jumps straight to the new value with reduced motion", () => {
-    stubFrames();
-    vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("reduce") }));
-    const { container, rerender } = render(<InterimCountUp value={3} format={String} />);
-    rerender(<InterimCountUp value={9} format={String} />);
-    expect(frames).toHaveLength(0);
-    expect(container.textContent).toBe("9");
   });
 });
 

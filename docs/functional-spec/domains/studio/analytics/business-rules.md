@@ -10,7 +10,7 @@
 | User goals | See the trend over 7/30/90 days; spot the chapter where readers stop |
 | Actors / roles | Owner, co-author (editor excluded) |
 | Related entities | RPCs `author_chapter_stats(story)`, `author_story_daily(story, days)`; tables `chapter_stats`, `chapter_read_events`, `chapter_votes`, `comments`, `chapter_versions`; index `idx_chapter_read_events_story_day` |
-| Code | `packages/features/src/analytics/{api/analytics.api.ts,hooks/use-analytics.ts,model/stats.ts,components/daily-chart.tsx,components/reads-heatmap.tsx,components/interim-count-up.tsx,screens/story-stats-screen.tsx,keys.ts}`; `packages/ui/src/widgets/{synced-small-multiples,calendar-heatmap,funnel-steps}.tsx`; `supabase/migrations/20261104002100_author_stats.sql` |
+| Code | `packages/features/src/analytics/{api/analytics.api.ts,hooks/use-analytics.ts,model/stats.ts,components/daily-chart.tsx,components/reads-heatmap.tsx,screens/story-stats-screen.tsx,keys.ts}`; `packages/ui/src/widgets/{synced-small-multiples,calendar-heatmap,funnel-steps,rolling-number}.tsx`; `supabase/migrations/20261104002100_author_stats.sql` |
 | Dependencies | OBJ-PROG (read events / read counting), OBJ-VOTE, OBJ-CMT, OBJ-JOB (stats aggregation job, event purge) |
 
 | Rule | Name | Status |
@@ -86,7 +86,7 @@
 | Description | "In the selected range": Reads, New likes, New comments = sums of the daily series |
 | Preconditions | Daily series loaded |
 | Conditions | Not derived from the per-chapter table (which is all-time) |
-| Expected behavior | Locale-formatted numbers (`formatCount`). On a range switch each tile counts from the previous range's total to the new one (750 ms, ease-out quart; Lucian 047), never on first load, and jumps with reduced motion; while it counts the moving digits are `aria-hidden` and the final value is read. The helper is private to the feature (`InterimCountUp`) until the shared RollingNumber widget replaces it |
+| Expected behavior | Locale-formatted numbers (`formatCount`). On a range switch each tile's digits roll to the new range's total (shared `RollingNumber` widget; Lucian 047/098), never on first load, and they jump with reduced motion; the rolling digits are `aria-hidden` and screen readers read the formatted number once |
 | Exceptions | — |
 | Related screens | SCR-STAT-01 |
 | Evidence | `packages/features/src/analytics/model/stats.ts:79-84`; `packages/features/src/analytics/screens/story-stats-screen.tsx:62,108-125` |
