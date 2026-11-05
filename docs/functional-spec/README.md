@@ -1,7 +1,7 @@
 # StoryNest — Living Functional Specification
 
 What the application actually does, screen by screen, with its business rules, workflows, known gaps and proposed
-improvements. Baseline: commit `204a1ea`, analysed 2026-11-04.
+improvements. Baseline: commit `204a1ea`, analysed 2026-11-04; Phase 2 product discovery 2026-11-05 (application code unchanged).
 
 > This folder **describes** the product. The plan and approved decisions live in [`docs/WBS.md`](../WBS.md); the
 > technical setup lives in the root [`README.md`](../../README.md). Nothing under `proposals/` is approved or
@@ -17,6 +17,8 @@ improvements. Baseline: commit `204a1ea`, analysed 2026-11-04.
 | Follow a user journey across screens | [workflow-map.md](workflow-map.md) |
 | See what is broken or missing | [audits/functional-gap-analysis.md](audits/functional-gap-analysis.md), [audits/ux-ui-gap-analysis.md](audits/ux-ui-gap-analysis.md) |
 | Know how much is verified | [audits/coverage-report.md](audits/coverage-report.md) |
+| Understand what the product still needs (journeys, capability gaps, benchmark) | [proposals/product-discovery.md](proposals/product-discovery.md) |
+| See how each screen should improve (mobile / tablet / desktop) | [proposals/screen-enhancements.md](proposals/screen-enhancements.md) |
 | Plan the next work | [proposals/feature-backlog.md](proposals/feature-backlog.md), [proposals/implementation-roadmap.md](proposals/implementation-roadmap.md) |
 | Answer open business questions | [proposals/decision-register.md](proposals/decision-register.md) |
 | Edit this spec | [CONVENTIONS.md](CONVENTIONS.md) (IDs, templates, verification tags, rule ownership) |
@@ -45,10 +47,19 @@ Each object folder has `business-rules.md`, `workflows.md` and, where it owns sc
 | Business rules · workflows | 412 · 144 |
 | Functional gaps (A/B) · UX gaps (C) | 68 · 62 |
 | Proposals · open questions | 34 · 56 (+3 owner actions) |
+| **Phase 2:** journeys · capability rows | 35 · 171 (86 Missing, 49 Partial) |
+| **Phase 2:** screens assessed · enhancement ACs | 32 / 32 · 205 |
+| **Phase 2:** new proposals · rule-change proposals · new questions | 32 (`FP-035…066`, 31 active) · 23 `BRC-*` · 35 |
+| Findings after Phase 2 (functional · UX) | 73 · 71 |
 
 Top issues before launch: role limits enforced only in the UI (FP-001), inconsistent suspension (FP-002),
 text loss when leaving the editor (FP-003), missing not-found/error pages (FP-004), client-only 18+ gate (FP-005),
 no account lifecycle (FP-008). Details in the [roadmap](proposals/implementation-roadmap.md).
+
+Phase 2 adds, in the same priority band: the reader's toolbar and progress hidden under the header while reading
+(F-READ-01 → FP-043), new stories that stay invisible to readers after the first publish (F-STM-08 → FP-054), no
+navigation on tablets (FP-019) and missing legal pages/site frame (FP-065, FP-039). Recommended direction:
+[product discovery §9](proposals/product-discovery.md#9-recommended-product-direction).
 
 ## Verification legend
 

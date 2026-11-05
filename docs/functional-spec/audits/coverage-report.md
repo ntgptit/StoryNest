@@ -101,3 +101,50 @@ grep -rhoE "^#+ +WF-[A-Z]+-[0-9]{2}" domains | awk '{print $2}' | sort -u | wc -
 grep -rhoE "SCR-[A-Z]+-[0-9]{2}-AC[0-9]{2}" domains | sort -u | wc -l                  # acceptance criteria
 find ../../apps/web/src/app -name page.tsx | wc -l                                     # route screens
 ```
+
+## 7. Phase 2 update (2026-11-05)
+
+### 7.1 Is the Phase 1 snapshot still true?
+
+Application code at `97ccecd` is identical to the Phase 1 baseline `204a1ea` (the only change in between is the
+spec itself, PR #57), so the Phase 1 counts in §1 (8 domains, 31 objects, 32 screens, 144 workflows, 412 rules) are
+**still accurate** and were not re-derived. Two Phase 1 discrepancies were found and corrected:
+
+| Discrepancy | Correction |
+| --- | --- |
+| Line citations past the end of the file in the trust & safety specs (`report-button.tsx` cited up to `:421` for a 143-line file; `report-card.tsx`, `require-user.ts`, `moderation.api.ts`) | Re-mapped (DEC-021); a scripted check of all 1,924 `file:line` citations in `domains/` and `audits/` now finds none out of range. Ranges are checked for existence, not for exact content |
+| Phase 1 functional summary first stated 69 findings (P2 32 / P3 31) | Corrected before merge to 68 (P2 34 / P3 28); Phase 2 adds 5 → 73 |
+
+### 7.2 Phase 2 totals
+
+| Item | Count |
+| --- | --- |
+| Journeys analysed | 35 (11 reader, 11 author, 8 moderation/operator, 5 account) |
+| Capability rows | 171 (33 Implemented · 49 Partial · 86 Missing · 2 Unverified · 1 Not applicable) |
+| Screens with an enhancement assessment | 32 of 32 (100 %) — 5 P1 · 20 P2 · 7 P3 |
+| Screen-enhancement acceptance criteria | 205 (all `[Proposed]`) |
+| New proposals | 32 IDs (`FP-035…FP-066`), 31 active (FP-052 merged) |
+| Existing proposals amended or re-scoped | FP-001…FP-034 referenced; priorities changed for FP-019, FP-024, FP-031 (proposed) |
+| Business-rule change proposals | 23 `BRC-*` (all awaiting approval) |
+| New open questions | 35 (total open: 91 + 3 owner actions) |
+| New findings | 5 functional (F-READ-01, F-STM-07, F-STM-08, F-MOD-09, F-HIST-03) · 9 UX |
+| External benchmark entries | 35 (`BM-01…BM-35`; 6 confirmed from fetched pages, most from official text in search results, some Unverified) |
+
+### 7.3 Verification performed in Phase 2
+
+| Method | Result |
+| --- | --- |
+| Guest browser run (Playwright, `storynest-dev` data) | 13 public routes at 390 / 768 / 1280 px (39 full-page screenshots + page metrics), TOC and paragraph sheets, scrolled reader at 390 and 1280 px |
+| Runtime-verified new facts | Reader toolbar/progress covered after scroll (F-READ-01); tablet has no navigation; card heights ≈ 451 px (390) / 511 px (1280); 17 of 21 reader controls < 44 px at 390 px (count includes inline links) |
+| Code checks by the consolidator | F-STM-08 default visibility, toolbar/header stacking, focus-ring tokens, `reviewed_by` mapping, Studio chapter count, 18+ hint text, citation ranges |
+
+### 7.4 Unverified in Phase 2 and why
+
+| Area | Reason |
+| --- | --- |
+| All signed-in screens and flows (library, notifications, settings, Studio, editor, history, team, stats, moderation) | No test accounts on the shared dev project (DEC-011); assessed from code, tests and specs |
+| Growth / retention value | No analytics data; marked Hypothesised |
+| Competitor behaviour | Most sources were not fetchable (AO3, Royal Road, Wattpad support, Inkitt help centre blocked fetching); entries use official text from search results or are marked Unverified |
+| Contrast ratios | Calculated from token values, not measured on screen |
+| Dark mode, toasts over the bottom nav, Vietnamese IME in the editor, keyboard overlap on phones | Not observed |
+| Phase 2 `_drafts` | Merged into the final documents and removed; per-review notes for consolidation are summarised in DEC-014…DEC-022 |

@@ -134,3 +134,17 @@ Duplicates reported by more than one domain were merged into one canonical ID (a
 | F-SEO-02 | F-AUTHOR-02 | Same author-page SEO gap |
 | F-CMT-05 | F-SHELL-03 | Same stale-README finding |
 | F-CHM-03 | F-STORY-03 (D) | Same chapter slug redirect idea — in backlog |
+
+## 5. Phase 2 additions (2026-11-05)
+
+New defects and gaps found during [product discovery](../proposals/product-discovery.md). They are not duplicates of
+§3; where a Phase 1 finding is related it is named. Totals after Phase 2: **73** functional findings
+(30 A · 43 B; 8 P1 · 35 P2 · 30 P3).
+
+| ID | Cat | Pri | Object / screen | Finding | Evidence | Verif. | FP |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| F-READ-01 | A | P1 | READ / SCR-READ-01 | Once the reader scrolls, the reader toolbar (Display, Contents) and the progress bar are covered by the sticky site header — both use `sticky top-0` and the header sits above; the mobile bottom nav also covers the last lines of text. The documented `ReaderToolbar`/`ReadingProgress` (WBS 2.4) are therefore unavailable while reading. | `reader-screen.tsx:74`, `packages/ui/src/widgets/app-shell.tsx:24`; scrolled screenshots at 390 and 1280 px (`elementFromPoint` returns a header control) | **Runtime** | FP-043 |
+| F-STM-08 | B | P1 | STM, EDT / SCR-STM-02, SCR-STM-03, SCR-EDT-01 | A new story starts Private + Draft; the first publish moves status to `ongoing` but keeps it private, so the chapter reaches no reader and no follower — and no screen says so. | `packages/features/src/studio/model/story-form.ts:28-29`, `…/20261103000200_publish_chapter_rpc.sql:193-196`, `…/20261103000300_outbox_worker_and_cron.sql:50` | Code | FP-054 |
+| F-MOD-09 | B | P2 | MOD / SCR-MOD-01 | "Open content" on a story a moderator removed leads to not-found: public queries filter `deleted_at`, although RLS lets moderators read it. Moderators cannot re-read what they removed when reversing or handling an appeal. | `packages/features/src/story/api/story.api.ts:33`, `packages/features/src/reader/api/reader.api.ts:31` | Code | FP-024 |
+| F-STM-07 | A | P3 | STM / SCR-STM-01 | Studio "n chapters" counts every chapter visible to the team (drafts, archived, deleted), not published chapters. | `packages/features/src/studio/api/studio.api.ts:11` (`chapters(count)`) | Code | FP-055 |
+| F-HIST-03 | A | P3 | HIST / SCR-HIST-02 | Preview's sticky bar has the same `top-0` collision with the site header as F-READ-01, so "Back to editor" is likely hidden after scrolling. | `packages/features/src/history/screens/preview-screen.tsx:48` | Inferred | FP-058 |
