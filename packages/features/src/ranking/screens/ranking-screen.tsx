@@ -71,6 +71,7 @@ export function RankingScreen({
           getKey={(item) => item.story.id}
           listClassName={GRID}
           renderItem={(item) => <RankedCard item={item} locale={locale} coverUrlFor={coverUrlFor} />}
+          revealAppended
           hasMore={ranking.hasNextPage}
           isLoadingMore={ranking.isFetchingNextPage}
           onLoadMore={() => void ranking.fetchNextPage()}

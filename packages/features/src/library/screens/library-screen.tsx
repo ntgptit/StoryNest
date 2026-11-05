@@ -77,7 +77,7 @@ export function LibraryScreen({
               </TabsContent>
             ))}
             <TabsContent value={LISTS_TAB} className="pt-4">
-              <MyLists locale={locale} />
+              <MyLists locale={locale} coverUrlFor={coverUrlFor} />
             </TabsContent>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useState, type ComponentType } from "react";
 import { formatRelativeTime } from "@storynest/utils";
 import type { Visibility } from "@storynest/validation";
 import { Badge } from "@storynest/ui/components/badge";
+import { CoverStack } from "@storynest/ui/widgets/cover-stack";
 import { Button } from "@storynest/ui/components/button";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
@@ -25,8 +26,18 @@ const VISIBILITY_ICON: Record<Visibility, ComponentType<{ className?: string; "a
   public: Globe,
 };
 
-/** The reader's lists with a button to make a new one; each opens its page. Shown as a tab of the library. */
-export function MyLists({ locale = currentLocale() }: { locale?: string }) {
+/**
+ * The reader's lists with a button to make a new one; each opens its page. Shown as a tab of the library. Each row
+ * starts with a pile of the list's first covers, which fans out a little on hover or focus.
+ */
+export function MyLists({
+  locale = currentLocale(),
+  coverUrlFor,
+}: {
+  locale?: string;
+  /** Resolves a cover storage key to a public URL (the app knows the Supabase project URL). */
+  coverUrlFor?: ((key: string) => string) | undefined;
+}) {
   const lists = useMyLists();
   const create = useCreateList();
   const toast = useAppToast();
@@ -62,9 +73,14 @@ export function MyLists({ locale = currentLocale() }: { locale?: string }) {
               <li key={list.id}>
                 <AppLink
                   href={listHref(list.id)}
-                  className="flex items-center justify-between gap-3 rounded-xl border bg-card p-3 text-card-foreground hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                  className="group flex items-center gap-3 rounded-xl border bg-card p-3 text-card-foreground hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
-                  <span className="min-w-0">
+                  <CoverStack
+                    covers={list.previewCovers.map((key) => ({
+                      url: key !== null && coverUrlFor ? coverUrlFor(key) : null,
+                    }))}
+                  />
+                  <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold">{list.title}</span>
                     <span className="block text-xs text-muted-foreground">
                       {t.storyCount(list.storyCount)} · {t.updated(formatRelativeTime(list.updatedAt, locale))}

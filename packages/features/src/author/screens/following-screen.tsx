@@ -48,6 +48,7 @@ export function FollowingScreen({
           getKey={(story) => story.id}
           listClassName={GRID}
           renderItem={(story) => <StoryTile story={story} locale={locale} coverUrlFor={coverUrlFor} />}
+          revealAppended
           hasMore={feed.hasNextPage}
           isLoadingMore={feed.isFetchingNextPage}
           onLoadMore={() => void feed.fetchNextPage()}

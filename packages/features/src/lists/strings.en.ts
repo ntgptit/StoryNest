@@ -62,8 +62,13 @@ export const en = {
     moveDown: "Move down",
     remove: "Remove from list",
     removed: "Removed from the list.",
+    undo: "Undo",
+    restored: "The story is back in the list.",
     cancel: "Cancel",
     backToLibrary: "Back to library",
+    rename: (name: string) => `Rename list: ${name}`,
+    renameSave: "Save name",
+    renamed: "List renamed.",
   },
   share: {
     access: "Who can open the link",

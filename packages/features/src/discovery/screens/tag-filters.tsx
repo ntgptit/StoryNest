@@ -17,9 +17,12 @@ const ACTIVE = "border-primary bg-primary text-primary-foreground";
 export function TagFilters({
   categorySlug,
   tagSlug,
+  className = "flex",
 }: {
   categorySlug?: string | undefined;
   tagSlug?: string | undefined;
+  /** Display classes of the root (e.g. `hidden sm:flex`); it is a flex column. */
+  className?: string;
 }) {
   const popular = usePopularTags();
   const tags = popular.data ?? [];
@@ -27,7 +30,7 @@ export function TagFilters({
   if (tags.length === 0 && !tagSlug) return null;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={`${className} flex-col gap-2`}>
       {tagSlug ? (
         <p className="flex items-center gap-2 text-sm">
           <span className="font-medium">{discoveryText.tagFilter.label(activeName ?? tagSlug)}</span>

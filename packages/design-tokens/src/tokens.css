@@ -1116,6 +1116,52 @@
   }
 }
 
+/*
+ * Batch 3 · browse3: feeds, library lists and reading lists. Adapted from Lucian UX/UI Prompt 033, 251, 350 and 369
+ * (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their durations and curves: InlineEditTitle,
+ * InfiniteList's appended pages, PadlockIcon and CoverStack in packages/ui. The cover fan (369) glides on --ease-rise.
+ */
+@theme {
+  /* Cards of a page loaded with "load more" rise in, a short stagger apart (never the first page). */
+  --animate-card-rise: card-rise 0.7s var(--ease-soft) backwards;
+  /* Inline title: the underline draws in when editing starts, a gleam sweeps over a saved title, a refused one shakes. */
+  --animate-title-line: title-line 0.45s var(--ease-soft);
+  --animate-title-sweep: title-sweep 0.8s var(--ease-soft) forwards;
+  --animate-title-shake: title-shake 0.4s var(--ease-soft);
+  /* Padlock: the shackle lifts (and drops back) with a little overshoot. */
+  --ease-shackle: cubic-bezier(0.2, 0.9, 0.3, 1);
+  @keyframes card-rise {
+    from {
+      opacity: 0;
+      transform: translateY(26px) scale(0.97);
+    }
+  }
+  @keyframes title-line {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes title-sweep {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes title-shake {
+    25% {
+      transform: translateX(-6px);
+    }
+    50% {
+      transform: translateX(5px);
+    }
+    75% {
+      transform: translateX(-2px);
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

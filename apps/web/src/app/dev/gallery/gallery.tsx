@@ -126,6 +126,9 @@ import { SplitButton } from "@storynest/ui/widgets/split-button";
 import { SplitPane } from "@storynest/ui/widgets/split-pane";
 import { SpotlightTour } from "@storynest/ui/widgets/spotlight-tour";
 import { UnsavedChangesBar } from "@storynest/ui/widgets/unsaved-changes-bar";
+import { CoverStack } from "@storynest/ui/widgets/cover-stack";
+import { InlineEditTitle } from "@storynest/ui/widgets/inline-edit-title";
+import { PadlockIcon } from "@storynest/ui/widgets/padlock-icon";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -2382,6 +2385,83 @@ function Batch3StatsScatterExample() {
   );
 }
 
+function Browse3TitleExample() {
+  const [title, setTitle] = useState("Rainy-day reads");
+  return (
+    <div id="browse3-title" className="flex flex-col gap-1">
+      <InlineEditTitle
+        value={title}
+        onSave={async (next) => {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          if (next.toLowerCase() === "fail") throw new Error("Couldn't save. Try again.");
+          setTitle(next);
+        }}
+        validate={(next) => (next === "" ? "Enter a list name." : next.length > 40 ? "Up to 40 characters." : null)}
+        editLabel={`Rename list: ${title}`}
+        inputLabel="List name"
+        saveLabel="Save name"
+        cancelLabel="Cancel"
+      />
+      <p className="text-xs text-muted-foreground">Press the title. Enter saves, Esc cancels, "fail" fails.</p>
+    </div>
+  );
+}
+
+function Browse3PadlockExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Button id="browse3-padlock" variant="outline" className="w-fit" onClick={() => setOpen((v) => !v)}>
+      <PadlockIcon open={open} className="size-4" />
+      {open ? "Public" : "Private"}
+    </Button>
+  );
+}
+
+function Browse3CoverStackExample() {
+  const lists = [
+    { name: "Rainy-day reads", covers: [null, null, null] },
+    { name: "Short and sweet", covers: [null] },
+    { name: "Empty for now", covers: [] },
+  ];
+  return (
+    <ul id="browse3-stack" className="flex flex-col gap-2">
+      {lists.map((list) => (
+        <li key={list.name}>
+          <a
+            href="#browse3-stack"
+            className="group flex items-center gap-3 rounded-xl border bg-card p-3 text-card-foreground hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <CoverStack covers={list.covers.map((url) => ({ url }))} />
+            <span className="text-sm font-semibold">{list.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Browse3RevealExample() {
+  const [count, setCount] = useState(4);
+  const items = Array.from({ length: count }, (_, i) => ({ id: `story-${i + 1}` }));
+  return (
+    <div id="browse3-reveal">
+      <InfiniteList
+        items={items}
+        getKey={(item) => item.id}
+        listClassName="grid grid-cols-2 gap-3 sm:grid-cols-4"
+        renderItem={(item) => (
+          <div className="flex h-20 items-center justify-center rounded-xl border bg-card text-sm">{item.id}</div>
+        )}
+        hasMore={count < 16}
+        isLoadingMore={false}
+        onLoadMore={() => setCount((n) => Math.min(n + 4, 16))}
+        loadMoreLabel="Load more"
+        revealAppended
+      />
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -2631,6 +2711,13 @@ export function Gallery() {
 
       <Section title="Batch 3 · stats3">
         <Batch3StatsScatterExample />
+      </Section>
+
+      <Section title="Batch 3 · browse3">
+        <Browse3TitleExample />
+        <Browse3PadlockExample />
+        <Browse3CoverStackExample />
+        <Browse3RevealExample />
       </Section>
     </AppShell>
   );

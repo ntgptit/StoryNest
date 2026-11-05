@@ -2,6 +2,7 @@ import type { DataClient } from "../../_shared/client.ts";
 import { AppError, unwrap } from "../../_shared/errors.ts";
 import { STORY_COLUMNS } from "../../discovery/index.ts";
 import {
+  LIST_PREVIEW_COVERS,
   toListItems,
   toReadingList,
   type ListFormValues,
@@ -13,16 +14,21 @@ import {
 
 const LIST_COLUMNS = "id, owner_id, title, description, visibility, updated_at";
 const OWNER = "owner:app_users!reading_lists_owner_id_fkey(username, display_name)";
+// The first stories of each list (their covers make the list's thumbnail): the same relation as the count, aliased.
+const PREVIEW =
+  "preview:reading_list_items(sort_order, story:stories!reading_list_items_story_id_fkey(cover_storage_key, deleted_at))";
 
-/** The reader's own lists, most recently changed first, each with its story count. */
+/** The reader's own lists, most recently changed first, each with its story count and its first few covers. */
 export async function listMyLists(client: DataClient, userId: string): Promise<ReadingList[]> {
   const rows =
     unwrap(
       await client
         .from("reading_lists")
-        .select(`${LIST_COLUMNS}, items:reading_list_items(count)`)
+        .select(`${LIST_COLUMNS}, items:reading_list_items(count), ${PREVIEW}`)
         .eq("owner_id", userId)
         .order("updated_at", { ascending: false })
+        .order("sort_order", { referencedTable: "preview", ascending: true })
+        .limit(LIST_PREVIEW_COVERS, { referencedTable: "preview" })
         .returns<ListRow[]>(),
     ) ?? [];
   return rows.map(toReadingList);

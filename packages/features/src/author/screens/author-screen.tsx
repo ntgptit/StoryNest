@@ -132,6 +132,7 @@ function AuthorPage({
               renderItem={(story) => (
                 <StoryTile story={story} locale={locale} coverUrlFor={coverUrlFor} variant={storyView.view} />
               )}
+              revealAppended
               hasMore={feed.hasNextPage}
               isLoadingMore={feed.isFetchingNextPage}
               onLoadMore={() => void feed.fetchNextPage()}
