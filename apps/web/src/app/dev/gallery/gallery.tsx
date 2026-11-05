@@ -2574,6 +2574,163 @@ function Studio3CrumbsExample() {
   );
 }
 
+function Reader3ToolbarExample() {
+  const [playing, setPlaying] = useState(false);
+  const [read, setRead] = useState(0);
+  return (
+    <div className="flex items-center gap-3" data-slot="reader3-toolbar-demo">
+      <PlayPauseButton
+        playing={playing}
+        progress={read / 8}
+        onToggle={() => {
+          setPlaying((p) => !p);
+          if (!playing) setRead((n) => (n >= 8 ? 1 : n + 1));
+        }}
+        playLabel="Read this chapter aloud"
+        pauseLabel="Pause reading aloud"
+      />
+      <span className="text-sm text-muted-foreground">
+        {playing ? "Reading aloud" : "Paused"} · paragraph {read} of 8
+      </span>
+    </div>
+  );
+}
+
+const READER3_SIZES = ["Small", "Medium", "Large", "Extra large"];
+const READER3_THEMES = [
+  {
+    value: "site",
+    label: "Match app theme",
+    className: "bg-[linear-gradient(135deg,var(--color-paper-light)_50%,var(--color-paper-dark)_50%)]",
+  },
+  { value: "light", label: "Light", className: "bg-paper-light text-ink-light", content: "Aa" },
+  { value: "sepia", label: "Sepia", className: "bg-paper-sepia text-ink-sepia", content: "Aa" },
+  { value: "dark", label: "Dark", className: "bg-paper-dark text-ink-dark", content: "Aa" },
+] as const;
+type Reader3Theme = (typeof READER3_THEMES)[number]["value"];
+
+function Reader3SettingsExample() {
+  const [size, setSize] = useState(1);
+  const [theme, setTheme] = useState<Reader3Theme>("site");
+  return (
+    <div className="flex max-w-sm flex-col gap-6 rounded-xl border p-4" data-slot="reader3-settings-demo">
+      <RollingStepper
+        label="Font size"
+        valueText={READER3_SIZES[size] ?? ""}
+        position={size}
+        canDecrease={size > 0}
+        canIncrease={size < READER3_SIZES.length - 1}
+        onStep={(d) => setSize((n) => n + d)}
+        decreaseLabel="Decrease font size"
+        increaseLabel="Increase font size"
+      />
+      <SwatchPicker<Reader3Theme>
+        label="Background"
+        options={READER3_THEMES}
+        value={theme}
+        onChange={(next, swatch) =>
+          revealFrom(swatch, () => {
+            setTheme(next);
+            // Re-skins the whole gallery like the reader does; "Match app theme" puts it back.
+            if (next === "site") delete document.documentElement.dataset.readerTheme;
+            else document.documentElement.dataset.readerTheme = next;
+          })
+        }
+      />
+    </div>
+  );
+}
+
+function Reader3ContentsExample() {
+  const chapters = Array.from({ length: 240 }, (_, i) => i + 1);
+  const marks = chapters.filter((n) => n % 50 === 1);
+  const [active, setActive] = useState(0);
+  const list = useRef<HTMLOListElement>(null);
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row" data-slot="reader3-contents-demo">
+      <SectionOutline
+        title="In this chapter"
+        items={[
+          { id: "a", label: "The fog comes down" },
+          { id: "b", label: "A map in the drawer" },
+          { id: "c", label: "Lanterns" },
+        ]}
+        currentId="b"
+        onSelect={() => undefined}
+        className="sm:w-56"
+      />
+      <div className="relative h-72 min-w-0 rounded-xl border sm:flex-1">
+        <ol ref={list} className="h-full overflow-y-auto py-2 pr-12 pl-4 text-sm">
+          {chapters.map((n) => (
+            <li key={n} data-index={n - 1} className="py-1.5">
+              Chapter {n}
+            </li>
+          ))}
+        </ol>
+        <ScrubIndex
+          label="Jump to chapter"
+          marks={marks.map(String)}
+          active={active}
+          onSelect={(i) => {
+            setActive(i);
+            const row = list.current?.querySelector<HTMLElement>(`[data-index="${(marks[i] ?? 1) - 1}"]`);
+            if (row && list.current) scrollRowToTop(list.current, row);
+          }}
+          markLabel={(m) => `From chapter ${m}`}
+          className="absolute inset-y-2 right-2"
+        />
+      </div>
+    </div>
+  );
+}
+
+function Reader3FinishExample() {
+  const [play, setPlay] = useState(0);
+  return (
+    <div className="flex max-w-md flex-col gap-3" data-slot="reader3-finish-demo">
+      <FinishCelebration
+        title="You finished the story!"
+        description="The Misty Forest is complete. Thanks for reading all the way to the last chapter."
+        play={play}
+      >
+        <Button variant="outline">Add to list</Button>
+      </FinishCelebration>
+      <Button variant="ghost" className="w-fit" onClick={() => setPlay((n) => n + 1)}>
+        Celebrate again
+      </Button>
+    </div>
+  );
+}
+
+function Reader3RangesExample() {
+  const [open, setOpen] = useState<string | null>("0");
+  const ranges = [0, 50, 100, 150].map((start) => ({
+    start,
+    count: start === 150 ? 37 : 50,
+  }));
+  return (
+    <AccordionList
+      className="max-w-xl"
+      openId={open}
+      onOpenChange={setOpen}
+      items={ranges.map(({ start, count }) => ({
+        id: String(start),
+        title: `Chapters ${start + 1}–${start + count}`,
+        meta: `${count} chapters`,
+        content: (
+          <ol className="divide-y border-t text-sm">
+            {Array.from({ length: 5 }, (_, i) => (
+              <li key={i} className="px-4 py-2.5">
+                Chapter {start + i + 1}
+              </li>
+            ))}
+          </ol>
+        ),
+      }))}
+    />
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -2837,163 +2994,6 @@ export function Gallery() {
         <Studio3SubmitExample />
         <Studio3CrumbsExample />
       </Section>
-function Reader3ToolbarExample() {
-  const [playing, setPlaying] = useState(false);
-  const [read, setRead] = useState(0);
-  return (
-    <div className="flex items-center gap-3" data-slot="reader3-toolbar-demo">
-      <PlayPauseButton
-        playing={playing}
-        progress={read / 8}
-        onToggle={() => {
-          setPlaying((p) => !p);
-          if (!playing) setRead((n) => (n >= 8 ? 1 : n + 1));
-        }}
-        playLabel="Read this chapter aloud"
-        pauseLabel="Pause reading aloud"
-      />
-      <span className="text-sm text-muted-foreground">
-        {playing ? "Reading aloud" : "Paused"} · paragraph {read} of 8
-      </span>
-    </div>
-  );
-}
-
-const READER3_SIZES = ["Small", "Medium", "Large", "Extra large"];
-const READER3_THEMES = [
-  {
-    value: "site",
-    label: "Match app theme",
-    className: "bg-[linear-gradient(135deg,var(--color-paper-light)_50%,var(--color-paper-dark)_50%)]",
-  },
-  { value: "light", label: "Light", className: "bg-paper-light text-ink-light", content: "Aa" },
-  { value: "sepia", label: "Sepia", className: "bg-paper-sepia text-ink-sepia", content: "Aa" },
-  { value: "dark", label: "Dark", className: "bg-paper-dark text-ink-dark", content: "Aa" },
-] as const;
-type Reader3Theme = (typeof READER3_THEMES)[number]["value"];
-
-function Reader3SettingsExample() {
-  const [size, setSize] = useState(1);
-  const [theme, setTheme] = useState<Reader3Theme>("site");
-  return (
-    <div className="flex max-w-sm flex-col gap-6 rounded-xl border p-4" data-slot="reader3-settings-demo">
-      <RollingStepper
-        label="Font size"
-        valueText={READER3_SIZES[size] ?? ""}
-        position={size}
-        canDecrease={size > 0}
-        canIncrease={size < READER3_SIZES.length - 1}
-        onStep={(d) => setSize((n) => n + d)}
-        decreaseLabel="Decrease font size"
-        increaseLabel="Increase font size"
-      />
-      <SwatchPicker<Reader3Theme>
-        label="Background"
-        options={READER3_THEMES}
-        value={theme}
-        onChange={(next, swatch) =>
-          revealFrom(swatch, () => {
-            setTheme(next);
-            // Re-skins the whole gallery like the reader does; "Match app theme" puts it back.
-            if (next === "site") delete document.documentElement.dataset.readerTheme;
-            else document.documentElement.dataset.readerTheme = next;
-          })
-        }
-      />
-    </div>
-  );
-}
-
-function Reader3ContentsExample() {
-  const chapters = Array.from({ length: 240 }, (_, i) => i + 1);
-  const marks = chapters.filter((n) => n % 50 === 1);
-  const [active, setActive] = useState(0);
-  const list = useRef<HTMLOListElement>(null);
-  return (
-    <div className="flex flex-col gap-4 sm:flex-row" data-slot="reader3-contents-demo">
-      <SectionOutline
-        title="In this chapter"
-        items={[
-          { id: "a", label: "The fog comes down" },
-          { id: "b", label: "A map in the drawer" },
-          { id: "c", label: "Lanterns" },
-        ]}
-        currentId="b"
-        onSelect={() => undefined}
-        className="sm:w-56"
-      />
-      <div className="relative h-72 min-w-0 rounded-xl border sm:flex-1">
-        <ol ref={list} className="h-full overflow-y-auto py-2 pr-12 pl-4 text-sm">
-          {chapters.map((n) => (
-            <li key={n} data-index={n - 1} className="py-1.5">
-              Chapter {n}
-            </li>
-          ))}
-        </ol>
-        <ScrubIndex
-          label="Jump to chapter"
-          marks={marks.map(String)}
-          active={active}
-          onSelect={(i) => {
-            setActive(i);
-            const row = list.current?.querySelector<HTMLElement>(`[data-index="${(marks[i] ?? 1) - 1}"]`);
-            if (row && list.current) scrollRowToTop(list.current, row);
-          }}
-          markLabel={(m) => `From chapter ${m}`}
-          className="absolute inset-y-2 right-2"
-        />
-      </div>
-    </div>
-  );
-}
-
-function Reader3FinishExample() {
-  const [play, setPlay] = useState(0);
-  return (
-    <div className="flex max-w-md flex-col gap-3" data-slot="reader3-finish-demo">
-      <FinishCelebration
-        title="You finished the story!"
-        description="The Misty Forest is complete. Thanks for reading all the way to the last chapter."
-        play={play}
-      >
-        <Button variant="outline">Add to list</Button>
-      </FinishCelebration>
-      <Button variant="ghost" className="w-fit" onClick={() => setPlay((n) => n + 1)}>
-        Celebrate again
-      </Button>
-    </div>
-  );
-}
-
-function Reader3RangesExample() {
-  const [open, setOpen] = useState<string | null>("0");
-  const ranges = [0, 50, 100, 150].map((start) => ({
-    start,
-    count: start === 150 ? 37 : 50,
-  }));
-  return (
-    <AccordionList
-      className="max-w-xl"
-      openId={open}
-      onOpenChange={setOpen}
-      items={ranges.map(({ start, count }) => ({
-        id: String(start),
-        title: `Chapters ${start + 1}–${start + count}`,
-        meta: `${count} chapters`,
-        content: (
-          <ol className="divide-y border-t text-sm">
-            {Array.from({ length: 5 }, (_, i) => (
-              <li key={i} className="px-4 py-2.5">
-                Chapter {start + i + 1}
-              </li>
-            ))}
-          </ol>
-        ),
-      }))}
-    />
-  );
-}
-
 
       <Section title="Batch 3 · reader3">
         <Reader3ToolbarExample />
