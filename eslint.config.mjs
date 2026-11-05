@@ -39,6 +39,8 @@ export default tseslint.config(
       "supabase/**",
       // Vendored third-party agent skill (see .claude/skills/lucian-uxui/VENDOR.md).
       ".claude/skills/lucian-uxui/**",
+      // Agent worktrees (other checkouts of this repo).
+      ".claude/worktrees/**",
       "android/**",
       "ios/**",
     ],

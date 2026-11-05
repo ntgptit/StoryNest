@@ -17,14 +17,14 @@ export function BlockView({
   switch (block.type) {
     case "paragraph":
       return (
-        <p id={id} className="scroll-mt-20 whitespace-pre-line">
+        <p id={id} className="scroll-mt-below-reader-bar whitespace-pre-line">
           <RichText text={block.text} marks={block.marks} />
           {trailing}
         </p>
       );
     case "heading":
       return (
-        <h2 id={id} className="scroll-mt-20 pt-4 text-xl font-semibold tracking-tight">
+        <h2 id={id} className="scroll-mt-below-reader-bar pt-4 text-xl font-semibold tracking-tight">
           <RichText text={block.text} marks={block.marks} />
           {trailing}
         </h2>
@@ -32,12 +32,12 @@ export function BlockView({
     case "image": {
       const src = imageUrlFor?.(block.storageKey);
       return src ? (
-        <figure id={id} className="scroll-mt-20">
+        <figure id={id} className="scroll-mt-below-reader-bar">
           <img src={src} alt="" loading="lazy" className="mx-auto h-auto max-w-full rounded-lg" />
         </figure>
       ) : null;
     }
     case "divider":
-      return <hr id={id} className="my-4 scroll-mt-20 border-border" />;
+      return <hr id={id} className="my-4 scroll-mt-below-reader-bar border-border" />;
   }
 }

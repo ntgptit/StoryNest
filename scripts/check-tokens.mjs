@@ -8,7 +8,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(fileURLToPath(import.meta.url), "../..");
-const SKIP_DIRS = new Set(["node_modules", ".next", "dist", "out", "design-tokens"]);
+const SKIP_DIRS = new Set(["node_modules", ".next", "dist", "out", "design-tokens", ".claude"]);
 const SKIP_FILE = /(\.test\.tsx?|\.generated\.\w+|database\.types\.ts)$/;
 const EXT = /\.(tsx?|css)$/;
 

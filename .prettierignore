@@ -12,3 +12,4 @@ docs
 *.sql
 *.sh
 .claude/skills/lucian-uxui
+.claude/worktrees

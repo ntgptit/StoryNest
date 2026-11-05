@@ -122,7 +122,7 @@ export function ReaderScreen({
           <section
             id={COMMENTS_ANCHOR}
             aria-label={commentText.title}
-            className="flex scroll-mt-20 flex-col gap-4 border-t pt-6"
+            className="flex scroll-mt-below-reader-bar flex-col gap-4 border-t pt-6"
           >
             <h2 className="text-lg font-semibold">{commentText.title}</h2>
             <CommentThread chapterId={data.id} />
