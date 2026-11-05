@@ -23,8 +23,8 @@ Proposed; ten recommendations await approval in [product-decisions.md §3](produ
 ## Planned in the WBS (not approved)
 
 On 2026-11-05 the Product Owner asked for the development tasks to be planned:
-[`docs/WBS.md` Phase 9](../../WBS.md#phase-9-hoàn-thiện-sau-product-discovery-lập-2026-11-05--92-ngày) (WP 9.1–9.46,
-~92 days) now holds them. Planning is not approval:
+[`docs/WBS.md` Phase 9](../../WBS.md#phase-9-hoàn-thiện-sau-product-discovery-lập-2026-11-05) (WP 9.1–9.47,
+~94 days, ordered by urgency) now holds them. Planning is not approval:
 
 - WPs marked ⬜ (Ready) may be scheduled; WPs marked ⚠️ start only after their PD/Q is approved in
   [product-decisions.md](product-decisions.md); ⛔ WPs wait for external input.

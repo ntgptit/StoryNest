@@ -256,7 +256,7 @@ Phụ thuộc quyết định 1.1. Chỉ nên bắt đầu khi Phase 2 và 3 đ�
 
 ---
 
-## Phase 9. Hoàn thiện sau Product Discovery (lập 2026-11-05) · ~92 ngày
+## Phase 9. Hoàn thiện sau Product Discovery (lập 2026-11-05)
 
 Nguồn: [đặc tả chức năng](functional-spec/README.md) — [product decisions](functional-spec/proposals/product-decisions.md), [implementation readiness](functional-spec/proposals/implementation-readiness.md), [feature backlog](functional-spec/proposals/feature-backlog.md), [kết quả kiểm chứng runtime](functional-spec/verification/README.md). Mỗi WP ghi FP (đề xuất), finding và ca kiểm chứng `VER-*` liên quan; phạm vi chi tiết và tiêu chí nghiệm thu nằm trong FP, WBS chỉ giữ kế hoạch.
 
@@ -267,86 +267,107 @@ Quy ước riêng cho phase này:
 - Ước lượng thô theo cỡ FP (S ≈ 1, M ≈ 2–3 ngày), đã gồm test, sai số ±30% như phần còn lại của WBS.
 - DoD chung bổ sung: `pnpm gate` xanh; thay đổi RLS/RPC/trigger/quyền hàm phải **kiểm lại trên `storynest-dev`** (bài học F-STM-09: test SQL chạy trên shim local không đủ) và chạy lại các ca `VER-*` liên quan; cập nhật BR/screen spec trong `docs/functional-spec`, chuyển AC `[Proposed]` sang đã làm và đóng finding.
 
-### 9-I1. Lõi an toàn (sửa lỗi đã xác minh, làm trước) · ~15 ngày
+### Thứ tự làm đề xuất (cập nhật 2026-11-05)
 
-| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
-| --- | --- | --- | --- | --- |
-| **9.1** ⬜ | **Sửa F-STM-09**: chủ truyện khôi phục được truyện mình đã xóa (trigger `stories_guard_removal` không phụ thuộc quyền người gọi), vẫn chặn khôi phục truyện bị moderator gỡ | — | 1 | VER-AUT-15 qua trên dev; test SQL chạy với quyền thật của `authenticated`; VER-MOD-05 vẫn bị từ chối |
-| **9.2** ⚠️ | **FP-001** giới hạn vai trò ở database: RPC `set_story_deleted` (owner), `set_chapter_deleted` (owner/co-author), thu hồi quyền ghi `deleted_at` | PD-04 (Q-TEAM-02); 9.1 | 1.5 | VER-TEAM-05/06 bị từ chối 42501; owner vẫn xóa/khôi phục được |
-| **9.3** 🟡 | **FP-003** không mất chữ: lưu trước khi rời trình soạn (Xem trước, Lịch sử, link nội bộ), cảnh báo khi form đang sửa, khôi phục phiên bản giữ bản sao lưu | — | 2.5 | VER-AUT-06 (bản xem trước có chữ mới), VER-AUT-08 (vẫn còn bản sao lưu sau khôi phục) _Cập nhật 2026-11-05: Một phần (PR #60): "Compare and merge" cho bản sao lưu/xung đột. **Chưa xong**: rời trình soạn bằng link nội bộ vẫn không lưu lên server (REG-EDT-02, 3 lần chạy)._ |
-| **9.4** ⬜ | **FP-004** trang not-found/error có shell, dịch, trả đúng HTTP 404; kiểm UUID trong route studio; metadata trang tác giả | — | 1.5 | Truyện/chương/tác giả không tồn tại trả 404; VER-X-06 hiện not-found |
-| **9.5** 🟡 | **F-READ-01 / F-HIST-03** sửa tối thiểu: thanh công cụ trình đọc và thanh "Về trình soạn" không bị header che khi cuộn | — | 0.5 | Ảnh chụp cuộn ở 390/1280 px: điều khiển không bị che _Cập nhật 2026-11-05: F-READ-01 **đã sửa** (PR #60, xác nhận ở 390/1280 px). Còn kiểm lại F-HIST-03 (thanh "Về trình soạn" ở bản xem trước)._ |
-| **9.6** ⬜ | **FP-054** trạng thái "ai đọc được truyện này" ở Studio/sửa truyện, cảnh báo trước khi thay đổi làm ẩn truyện đang đọc, sửa câu "người đọc thấy bản đã đăng" khi truyện còn riêng tư (F-STM-08) | — | 2 | VER-AUT-04: bảng đăng báo đúng; Studio hiện cảnh báo |
-| **9.7** ⚠️ | **FP-002 phần B**: chặn mọi thao tác ghi của tài khoản bị khóa ở server (sửa truyện/chương/nháp, sửa bình luận, theo dõi/lưu) + banner cho người bị khóa | PD-05 | 2 | VER-MOD-08: sửa bình luận và theo dõi bị từ chối; banner hiển thị |
-| **9.8** ⚠️ | **FP-002 phần A**: một điều kiện "được khám phá" chung cho trang chủ, danh mục, thẻ, sitemap (F-HOME-01, F-SEO-01) | PD-06 | 2 | Truyện của tác giả bị khóa không còn ở bất kỳ danh sách nào; test SQL |
-| **9.9** ✅ | **FP-019** điều hướng ở mọi kích thước: bottom nav dưới `lg`, liên kết mục từ `lg`, Xếp hạng/Đang theo dõi dễ tìm | Q-SHELL-01/02, BRC-SHELL-02 | 2 | Tablet 768 px có điều hướng; ảnh chụp 390/768/1280 _Cập nhật 2026-11-05: Đã làm trong PR #60: hàng điều hướng từ `md` + menu toàn màn hình trên điện thoại (xác nhận 768/1280 px). Dùng `md` thay vì `lg` (DEC-026)._ |
+Xếp lại theo mức cấp thiết thay cho nhóm I1…I6 trước đó; **mã WP không đổi** (đặc tả và đề xuất dẫn tới WP bằng số). Cách xếp: (1) có thể mất dữ liệu hoặc cho thao tác ngoài quyền, đã tái hiện; (2) chặn hoặc làm hại lúc ra mắt công khai; (3) WP ⬜ trước WP ⚠️ cùng mức; (4) việc rẻ trước. Việc xếp thứ tự này là lập kế hoạch, không phê duyệt bất kỳ PD/FP/BRC nào.
 
-### 9-I2. Sẵn sàng ra mắt · ~13 ngày (+ WP 6.4, 6.9, 8.3 hiện có)
+| Giai đoạn | Nội dung | Ngày |
+| --- | --- | --- |
+| 9-P0 | Làm ngay | ~9,5 |
+| 9-P1 | Trước ra mắt công khai | ~17,5 |
+| 9-P2 | Giữ chân người đọc và độ tin cậy của Studio | ~29 |
+| 9-P3 | Tăng trưởng và hoàn thiện | ~36 |
 
-| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
-| --- | --- | --- | --- | --- |
-| **9.10** ⚠️ | **FP-005** cổng 18+ phía server: không đưa tiêu đề/mô tả/ảnh bìa/nội dung chương 18+ vào HTML/OG trước khi xác nhận; danh sách của người khác tôn trọng lựa chọn; reset khi đăng xuất | Q-SEO-01, Q-MAT-02, Q-MAT-03 | 1.5 | HTML truyện 18+ khi chưa xác nhận không chứa tiêu đề/nội dung |
-| **9.11** ⬜ ⛔ | **FP-039** khung trang công khai: footer, favicon/icon/manifest, ảnh chia sẻ mặc định; liên kết pháp lý chờ nội dung | Liên kết pháp lý: Q-X-02 (WP 6.9) | 1 | Footer trên mọi trang `(main)`; manifest hợp lệ |
-| **9.12** ⬜ | **FP-009 phần sẵn sàng**: gửi lại email xác nhận, username đăng ký đúng như đã nhập, đổi mật khẩu khi đã đăng nhập (xác thực lại), liên kết email mở trên thiết bị khác | Google OAuth và captcha ở WP 1.1/6.8 (⛔ Q-X-03) | 2.5 | Test cho từng luồng; không gửi email thật trong test tự động |
-| **9.13** ⚠️ | **FP-006** kết quả kiểm duyệt hiển thị cho người liên quan: trạng thái "bị gỡ bởi kiểm duyệt" thay cho nút Khôi phục, thông báo cho tác giả/người báo cáo, khóa bình luận đã bị tác giả ẩn | Q-MOD-04, PD-05; 9.7 | 2.5 | VER-MOD-05: tác giả thấy thông báo đúng, không có nút Khôi phục hỏng |
-| **9.14** ⚠️ | **FP-007** sửa đếm link spam (F-ABU-01) và mở rộng giới hạn tần suất (vote, follow, like…) | Q-ABU-02 (sửa), Q-ABU-01 (mở rộng) | 1 | Bình luận có hai link `https://www.` được chấp nhận; test SQL |
-| **9.15** ⚠️ | **FP-017** danh mục cho production (migration dữ liệu idempotent), chuẩn hóa tên thẻ (bỏ `#` đầu), công cụ đổi tên/gộp thẻ cho moderator | Q-TAX-01, Q-TAX-02 | 1.5 | DB mới có danh mục; thẻ "##" không còn |
-| **9.16** ⚠️ | **FP-035** chào mừng lần đầu + danh sách kích hoạt | BRC-AUTH-01 | 3 | Không chặn người đang đi tới một truyện/chương |
+**Quyết định cần chốt sớm** (mở khóa việc cấp thiết; trạng thái vẫn *Recommended / Pending Approval* cho đến khi chủ dự án duyệt):
 
-### 9-I3. Vòng quay lại của người đọc · ~18,5 ngày
+| Quyết định | Mở khóa | Vì sao sớm |
+| --- | --- | --- |
+| PD-04 (Q-TEAM-02) | 9.2, rồi 9.32 | Lỗi quyền đã tái hiện (VER-TEAM-05/06), nằm ở P0 |
+| PD-05 | 9.7, 9.13 (rồi 9.41) | Tài khoản bị khóa vẫn ghi được (VER-MOD-08) |
+| PD-06 | 9.8 (rồi 9.37) | Truyện của tác giả bị khóa vẫn hiện (F-HOME-01) |
+| Q-SEO-01, Q-MAT-02, Q-MAT-03 | 9.10 | Nội dung 18+ trong HTML (F-MAT-01) |
+| Q-ABU-02 | 9.14 (phần sửa đếm link) | Sửa lỗi nhỏ; spam hai link lọt qua (F-ABU-01) |
+| Q-TAX-01, Q-TAX-02 | 9.15 | Production chưa có danh mục |
 
-| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
-| --- | --- | --- | --- | --- |
-| **9.17** ⚠️ | **FP-012** tiến độ đọc và "Đọc tiếp" nhất quán (một hàm cho trang truyện, thư viện, trang chủ), số chương theo vị trí đã đăng | Q-PROG-01, Q-READ-01 | 1.5 | VER-RDR-10: trang truyện và thư viện trỏ cùng chương; kiểm chứng lại F-PROG-01 bằng chương dài |
-| **9.18** ⚠️ | **FP-043** khung đọc toàn màn hình (route group `(reader)` theo §1.2), thanh tự ẩn, tùy chọn hiện dấu bình luận theo đoạn | PD-01, PD-02; 9.5 | 3 | Không có header/bottom nav trên trang chương; 404 đúng trong khung mới |
-| **9.19** ⚠️ | **FP-044** đọc liền mạch (gồm FP-052): đánh dấu đã đọc, "Đã đọc hết"/"Đọc lại", thẻ cuối chương/cuối truyện | PD-09; 9.17 | 2.5 | AC của FP-044 |
-| **9.20** ⚠️ | **FP-047** "Có gì mới": hàng "Đọc tiếp" ở trang chủ, nhãn chương mới trong thư viện, chấm báo | Q-LIB-04; 9.17 | 2.5 | AC của FP-047 |
-| **9.21** 🟡 | **FP-051** chia sẻ truyện/chương/danh sách | — | 1 | Web Share hoặc sao chép liên kết; không lộ nội dung 18+ _Cập nhật 2026-11-05: UI chia sẻ đã có (PR #60: ShareDialog, CopyLinkButton). Còn kiểm: không lộ nội dung truyện 18+ (F-MAT-01 vẫn mở)._ |
-| **9.22** ⬜ | **FP-048 giai đoạn A**: nhãn và nhóm Lưu/Theo dõi rõ ràng, hoàn tất thao tác sau khi đăng nhập; giữ mô hình dữ liệu (PD-07) | — (giai đoạn B/C hoãn) | 2 | Không đổi schema |
-| **9.23** ⚠️ | **FP-049** hội thoại bình luận hai chiều (trả lời trong trả lời, báo người tham gia luồng) | Q-CMT-04, Q-NOTI-06, BRC-CMT-01, BRC-NOTI-01 | 3 | AC của FP-049 |
-| **9.24** ⬜ | **FP-013** an toàn thông báo: xóa trích đoạn khi bình luận bị ẩn/xóa, liên kết mở đúng câu trả lời; thời hạn lưu chờ Q-NOTI-01 | Q-NOTI-01 (chỉ phần dọn dẹp) | 2 | VER-RDR-08: mở thông báo trả lời hiện đúng câu trả lời |
-| **9.25** ⬜ | **FP-015** thư viện: phân trang, tab trong URL, hoàn tác khi bỏ | — | 1 | 60 truyện đã lưu đều xem được |
+### 9-P0. Làm ngay — mất dữ liệu, sai quyền, lỗi đã xác minh · ~9,5 ngày
 
-### 9-I4. Vòng xuất bản của tác giả · ~17,5 ngày
+Tiêu chí: có thể mất dữ liệu của người dùng hoặc cho thao tác ngoài quyền, đã tái hiện, và sửa nhỏ. WP ⚠️ ở mức này (9.2) chỉ chờ một quyết định: chốt PD-04 trong tuần đầu.
 
-| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
-| --- | --- | --- | --- | --- |
-| **9.26** ⬜ | **FP-053** không gian làm việc của truyện: một header và các tab theo vai trò (Thông tin, Chương, Nhóm, Thống kê) | — | 2.5 | URL không đổi; biên tập viên không gặp ngõ cụt |
-| **9.27** ⬜ | **FP-055** trang Studio dạng bảng điều khiển: hướng dẫn tác giả mới, "viết tiếp", việc cần chú ý, phân trang, số chương đã đăng (F-STM-07) | 9.6 | 2.5 | AC của FP-055 |
-| **9.28** ⬜ | **FP-060** rà soát trước khi đăng (ai sẽ thấy, thay đổi, cảnh báo; xác nhận lần đăng đầu — thay FP-034) | 9.6 | 2.5 | AC của FP-060 |
-| **9.29** 🟡 | **FP-010** hẹn giờ đăng tin cậy (giới hạn số lần thử, báo tác giả khi lỗi, ẩn nút Hẹn giờ trên chương đã đăng) + trạng thái job (liên quan 8.2) | Q-JOB-01, Q-EDT-02, Q-EDT-05 | 2.5 | VER-AUT-09/10; chương hẹn giờ lỗi không lặp vô hạn _Cập nhật 2026-11-05: Một phần (PR #60): hộp thư "Scheduled", dời lịch, hủy lịch; ẩn Hẹn giờ trên chương đã đăng (F-EDT-01 đã sửa). Còn F-EDT-05 (lỗi hẹn giờ không báo tác giả)._ |
-| **9.30** ⚠️ | **FP-058** khung viết tập trung (không bottom nav, thanh hành động cố định), chưa bắt buộc tối ưu toàn bộ trên mobile | PD-03 | 2.5 | Lưu/Đăng luôn nhìn thấy khi soạn |
-| **9.31** ⚠️ | **FP-059** điểm khôi phục bản nháp phía server | Q-HIST-03, BRC-HIST-01 | 3 | AC của FP-059 |
-| **9.32** ⚠️ | **FP-016** vòng đời nhóm: rời truyện, đổi vai trò, mô tả quyền đúng thực tế | Q-TEAM-01, Q-TEAM-03; 9.2 | 1 | VER-TEAM-04/07 theo quyết định |
-| **9.33** ⬜ | **FP-018** Studio vững khi lỗi (xóa báo lỗi, thử lại không báo trùng slug, thông báo truyện đã xóa) | — | 1 | Kiểm chứng lại F-STM-04 trước khi làm |
+| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù | Vì sao ở mức này |
+| --- | --- | --- | --- | --- | --- |
+| **9.1** ⬜ | **Sửa F-STM-09**: chủ truyện khôi phục được truyện mình đã xóa (trigger `stories_guard_removal` không phụ thuộc quyền người gọi), vẫn chặn khôi phục truyện bị moderator gỡ | — | 1 | VER-AUT-15 qua trên dev; test SQL chạy với quyền thật của `authenticated`; VER-MOD-05 vẫn bị từ chối | Chủ truyện không tự khôi phục được truyện đã xóa (VER-AUT-15); sửa 1 ngày, không cần quyết định |
+| **9.47** ⬜ | **Kiểm parity batch 4 (PR #63) trên `storynest-dev`**: 24 migration đã áp lên dev nhưng test SQL của chúng chạy trên PostgreSQL local (một số BR ghi rõ "Verified (local PostgreSQL only)"). Chạy các ca bằng session QA (publishable key) cho mỗi hàm/bảng mới (khóa soạn, nguồn đọc, thông báo theo loại, thông báo chung (announcements), thống kê tác giả mới, ma trận quyền…): quyền `anon`/`authenticated`, RLS, hàm SECURITY DEFINER/INVOKER | — | 2 | Mỗi hàm/bảng mới có một ca kiểm với quyền thật, kết quả ghi vào `verification/README.md`; lỗi tìm thấy mở thành finding (không sửa trong WP này) | 24 migration mới đã ở dev nhưng chỉ chạy thử trên local; bài học F-STM-09 |
+| **9.3** 🟡 | **FP-003** không mất chữ: lưu trước khi rời trình soạn (Xem trước, Lịch sử, link nội bộ), cảnh báo khi form đang sửa, khôi phục phiên bản giữ bản sao lưu | — | 2.5 | VER-AUT-06 (bản xem trước có chữ mới), VER-AUT-08 (vẫn còn bản sao lưu sau khôi phục) _Cập nhật 2026-11-05: Một phần (PR #60): "Compare and merge" cho bản sao lưu/xung đột. **Chưa xong**: rời trình soạn bằng link nội bộ vẫn không lưu lên server (REG-EDT-02, 3 lần chạy)._ | Mất chữ khi rời trình soạn bằng link nội bộ (REG-EDT-02), còn mở sau PR #60 |
+| **9.2** ⚠️ | **FP-001** giới hạn vai trò ở database: RPC `set_story_deleted` (owner), `set_chapter_deleted` (owner/co-author), thu hồi quyền ghi `deleted_at` | PD-04 (Q-TEAM-02); 9.1 | 1.5 | VER-TEAM-05/06 bị từ chối 42501; owner vẫn xóa/khôi phục được _Cập nhật 2026-11-05 (PR #62/#63): chưa đổi: `story_role_rights()` (BR-TEAM-014) chỉ mô tả quyền hiện có và ghi rõ không đổi quyền chuyển chương vào thùng rác (F-CHM-01, F-STM-01 vẫn mở)._ | Biên tập viên xóa được chương, đồng tác giả xóa được truyện (VER-TEAM-05/06); chỉ chờ PD-04 |
+| **9.5** 🟡 | **F-READ-01 / F-HIST-03** sửa tối thiểu: thanh công cụ trình đọc và thanh "Về trình soạn" không bị header che khi cuộn | — | 0.5 | Ảnh chụp cuộn ở 390/1280 px: điều khiển không bị che _Cập nhật 2026-11-05: F-READ-01 **đã sửa** (PR #60, xác nhận ở 390/1280 px). Còn kiểm lại F-HIST-03 (thanh "Về trình soạn" ở bản xem trước)._ | Còn một kiểm tra nhỏ (F-HIST-03) |
+| **9.46** ⬜ | Gói sửa nhỏ trong [feature backlog — Quick fixes](functional-spec/proposals/feature-backlog.md#quick-fixes-confirmed-findings-no-proposal-needed) (nút Báo cáo ẩn với chủ truyện, đánh dấu "(đã sửa)" đúng, câu chữ Studio/18+, test SQL 240 luôn đúng, cập nhật README/WBS §0…) | — | 2 | Mỗi finding được đóng trong audit | Sửa nhỏ đã xác minh, rẻ, làm xen kẽ |
 
-### 9-I5. Khám phá khi kho truyện lớn dần · ~15 ngày
+### 9-P1. Trước ra mắt công khai · ~17,5 ngày
 
-| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
-| --- | --- | --- | --- | --- |
-| **9.34** 🟡 | **FP-037** design system: StoryCard `grid`/`row`/`rail`, kích thước chạm 44 px trên thiết bị cảm ứng, vòng focus đủ tương phản | — | 2.5 | Gallery `/dev/gallery` có đủ biến thể; thẻ ≈ 300 px ở 390 px _Cập nhật 2026-11-05: Một phần (PR #60): StoryCard biến thể danh sách, StoryTile; chưa đủ `grid`/`row`/`rail`, chưa xử lý vòng focus/44 px._ |
-| **9.35** ⚠️ | **FP-045** bố cục responsive theo màn (trang truyện hai cột trên desktop…) | Duyệt thiết kế BRC-HOME-02; 9.34 | 2 | Ảnh chụp 390/768/1280 |
-| **9.36** ⚠️ | **FP-040** thông tin giúp chọn truyện (số chương, độ dài, ngày chương mới) | PD-08, Q-HOME-03 | 2.5 | AC của FP-040 |
-| **9.37** 🟡 | **FP-041** lọc và sắp xếp (tình trạng, độ dài, cập nhật) | PD-08, Q-HOME-03; 9.8 | 2.5 | Dùng chung điều kiện khám phá của 9.8 _Cập nhật 2026-11-05: Một phần (PR #60): bộ lọc thể loại/thẻ trên điện thoại có đếm; chưa lọc theo tình trạng/độ dài/sắp xếp._ |
-| **9.38** ⬜ | **FP-020** một mẫu chung cho tải/lỗi/tải thêm | — | 1 | Lỗi trang 2 hiển thị có nút thử lại |
-| **9.39** ⚠️ | **FP-014** toàn vẹn danh sách đọc (sắp xếp khi có truyện đã xóa, unlisted không liệt kê được qua API) | Q-LIST-01, Q-LIST-02 | 2 | Kiểm chứng lại F-LIST-01 trước khi làm |
-| **9.40** ⬜ | **FP-011 phần chương**: liên kết theo id chương, lịch sử slug và chuyển hướng 308 | — (tên người dùng: Q-PRF-02) | 2.5 | VER-AUT-07: URL cũ chuyển hướng; thông báo cũ mở được |
+Tiêu chí: lộ nội dung/quyền riêng tư, SEO sai, người dùng mới bị kẹt, hoặc bắt buộc có khi ra mắt. Làm WP ⬜ trước, WP ⚠️ ngay khi quyết định được duyệt.
 
-### 9-I6. Cộng đồng an toàn · ~11 ngày
+| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù | Vì sao ở mức này |
+| --- | --- | --- | --- | --- | --- |
+| **9.4** ⬜ | **FP-004** trang not-found/error có shell, dịch, trả đúng HTTP 404; kiểm UUID trong route studio; metadata trang tác giả | — | 1.5 | Truyện/chương/tác giả không tồn tại trả 404; VER-X-06 hiện not-found | Truyện không tồn tại trả HTTP 200 (F-SHELL-01): hại SEO |
+| **9.6** ⬜ | **FP-054** trạng thái "ai đọc được truyện này" ở Studio/sửa truyện, cảnh báo trước khi thay đổi làm ẩn truyện đang đọc, sửa câu "người đọc thấy bản đã đăng" khi truyện còn riêng tư (F-STM-08) | — | 2 | VER-AUT-04: bảng đăng báo đúng; Studio hiện cảnh báo | Tác giả không biết ai đọc được truyện (F-STM-08); nền cho 9.27, 9.28 |
+| **9.10** ⚠️ | **FP-005** cổng 18+ phía server: không đưa tiêu đề/mô tả/ảnh bìa/nội dung chương 18+ vào HTML/OG trước khi xác nhận; danh sách của người khác tôn trọng lựa chọn; reset khi đăng xuất | Q-SEO-01, Q-MAT-02, Q-MAT-03 | 1.5 | HTML truyện 18+ khi chưa xác nhận không chứa tiêu đề/nội dung | Tiêu đề/nội dung 18+ nằm trong HTML trước khi xác nhận (F-MAT-01) |
+| **9.7** ⚠️ | **FP-002 phần B**: chặn mọi thao tác ghi của tài khoản bị khóa ở server (sửa truyện/chương/nháp, sửa bình luận, theo dõi/lưu) + banner cho người bị khóa | PD-05 | 2 | VER-MOD-08: sửa bình luận và theo dõi bị từ chối; banner hiển thị | Tài khoản bị khóa vẫn sửa được bình luận (VER-MOD-08) |
+| **9.8** ⚠️ | **FP-002 phần A**: một điều kiện "được khám phá" chung cho trang chủ, danh mục, thẻ, sitemap (F-HOME-01, F-SEO-01) | PD-06 | 2 | Truyện của tác giả bị khóa không còn ở bất kỳ danh sách nào; test SQL | Truyện của tác giả bị khóa vẫn hiện trong danh sách (F-HOME-01, F-SEO-01) |
+| **9.13** ⚠️ | **FP-006** kết quả kiểm duyệt hiển thị cho người liên quan: trạng thái "bị gỡ bởi kiểm duyệt" thay cho nút Khôi phục, thông báo cho tác giả/người báo cáo, khóa bình luận đã bị tác giả ẩn | Q-MOD-04, PD-05; 9.7 | 2.5 | VER-MOD-05: tác giả thấy thông báo đúng, không có nút Khôi phục hỏng | Kết quả kiểm duyệt không tới người liên quan (F-MOD-02) |
+| **9.12** ⬜ | **FP-009 phần sẵn sàng**: gửi lại email xác nhận, username đăng ký đúng như đã nhập, đổi mật khẩu khi đã đăng nhập (xác thực lại), liên kết email mở trên thiết bị khác | Google OAuth và captcha ở WP 1.1/6.8 (⛔ Q-X-03) | 2.5 | Test cho từng luồng; không gửi email thật trong test tự động | Người dùng mới dễ bị kẹt: không gửi lại email, không đổi mật khẩu |
+| **9.14** ⚠️ | **FP-007** sửa đếm link spam (F-ABU-01) và mở rộng giới hạn tần suất (vote, follow, like…) | Q-ABU-02 (sửa), Q-ABU-01 (mở rộng) | 1 | Bình luận có hai link `https://www.` được chấp nhận; test SQL | Đếm link spam sai: bình luận có hai link vẫn được chấp nhận (F-ABU-01) |
+| **9.15** ⚠️ | **FP-017** danh mục cho production (migration dữ liệu idempotent), chuẩn hóa tên thẻ (bỏ `#` đầu), công cụ đổi tên/gộp thẻ cho moderator | Q-TAX-01, Q-TAX-02 | 1.5 | DB mới có danh mục; thẻ "##" không còn | DB mới không có danh mục; tên thẻ lỗi |
+| **9.11** ⬜ ⛔ | **FP-039** khung trang công khai: footer, favicon/icon/manifest, ảnh chia sẻ mặc định; liên kết pháp lý chờ nội dung | Liên kết pháp lý: Q-X-02 (WP 6.9) | 1 | Footer trên mọi trang `(main)`; manifest hợp lệ | Cần cho ra mắt; liên kết pháp lý bị chặn (Q-X-02) |
 
-| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
-| --- | --- | --- | --- | --- |
-| **9.41** ⚠️ | **FP-063** kháng nghị quyết định kiểm duyệt | Q-MOD-06, BRC-MOD-02; 9.13 | 2.5 | AC của FP-063 |
-| **9.42** ⚠️ | **FP-064** chặn người dùng | Q-MOD-07 | 2.5 | AC của FP-064 |
-| **9.43** ⬜ | **FP-031** phản hồi cho người báo cáo ("Đã báo cáo", danh sách báo cáo của tôi) | — | 2 | AC của FP-031 |
-| **9.44** ⬜ | **FP-024 phần lõi**: lịch sử theo đối tượng, xem nội dung đã gỡ (F-MOD-09), ghi rõ hậu quả hành động, lọc hàng đợi | Q-MOD-03 cho gỡ từng chương | 2 | VER-MOD-06: mở được nội dung đã gỡ |
-| **9.45** ⬜ | **FP-050** hộp thông báo: liên kết tới cài đặt, tắt theo truyện, gom nhóm/lọc | — | 2 | AC của FP-050 |
+### 9-P2. Giữ chân người đọc và độ tin cậy của Studio · ~29 ngày
 
-### 9-Q. Sửa nhỏ · ~2 ngày
+Tiêu chí: lỗi đã xác minh ở mức vừa, hoặc cải thiện vòng quay lại/vòng xuất bản, đã sẵn sàng hoặc ít phụ thuộc.
 
-| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù |
-| --- | --- | --- | --- | --- |
-| **9.46** ⬜ | Gói sửa nhỏ trong [feature backlog — Quick fixes](functional-spec/proposals/feature-backlog.md#quick-fixes-confirmed-findings-no-proposal-needed) (nút Báo cáo ẩn với chủ truyện, đánh dấu "(đã sửa)" đúng, câu chữ Studio/18+, test SQL 240 luôn đúng, cập nhật README/WBS §0…) | — | 2 | Mỗi finding được đóng trong audit |
+| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù | Vì sao ở mức này |
+| --- | --- | --- | --- | --- | --- |
+| **9.17** ⚠️ | **FP-012** tiến độ đọc và "Đọc tiếp" nhất quán (một hàm cho trang truyện, thư viện, trang chủ), số chương theo vị trí đã đăng | Q-PROG-01, Q-READ-01 | 1.5 | VER-RDR-10: trang truyện và thư viện trỏ cùng chương; kiểm chứng lại F-PROG-01 bằng chương dài | Trang truyện và thư viện trỏ khác chương (VER-RDR-10) |
+| **9.24** ⬜ | **FP-013** an toàn thông báo: xóa trích đoạn khi bình luận bị ẩn/xóa, liên kết mở đúng câu trả lời; thời hạn lưu chờ Q-NOTI-01 | Q-NOTI-01 (chỉ phần dọn dẹp) | 2 | VER-RDR-08: mở thông báo trả lời hiện đúng câu trả lời | Thông báo giữ trích đoạn bình luận đã ẩn/xóa; liên kết không mở đúng câu trả lời (FP-013, VER-RDR-08) |
+| **9.40** ⬜ | **FP-011 phần chương**: liên kết theo id chương, lịch sử slug và chuyển hướng 308 | — (tên người dùng: Q-PRF-02) | 2.5 | VER-AUT-07: URL cũ chuyển hướng; thông báo cũ mở được | URL chương đổi tên làm thông báo cũ dẫn tới 404 mềm (F-STORY-03) |
+| **9.25** ⬜ | **FP-015** thư viện: phân trang, tab trong URL, hoàn tác khi bỏ | — | 1 | 60 truyện đã lưu đều xem được | Thư viện không phân trang: 60 truyện đã lưu không xem hết |
+| **9.22** ⬜ | **FP-048 giai đoạn A**: nhãn và nhóm Lưu/Theo dõi rõ ràng, hoàn tất thao tác sau khi đăng nhập; giữ mô hình dữ liệu (PD-07) | — (giai đoạn B/C hoãn) | 2 | Không đổi schema | Lưu/Theo dõi dễ nhầm; không đổi schema |
+| **9.29** 🟡 | **FP-010** hẹn giờ đăng tin cậy (giới hạn số lần thử, báo tác giả khi lỗi, ẩn nút Hẹn giờ trên chương đã đăng) + trạng thái job (liên quan 8.2) | Q-JOB-01, Q-EDT-02, Q-EDT-05 | 2.5 | VER-AUT-09/10; chương hẹn giờ lỗi không lặp vô hạn _Cập nhật 2026-11-05: Một phần (PR #60): hộp thư "Scheduled", dời lịch, hủy lịch; ẩn Hẹn giờ trên chương đã đăng (F-EDT-01 đã sửa). Còn F-EDT-05 (lỗi hẹn giờ không báo tác giả)._ | Hẹn giờ lỗi không báo tác giả (F-EDT-05) |
+| **9.33** ⬜ | **FP-018** Studio vững khi lỗi (xóa báo lỗi, thử lại không báo trùng slug, thông báo truyện đã xóa) | — | 1 | Kiểm chứng lại F-STM-04 trước khi làm | Studio dễ hỏng khi lỗi; cần kiểm lại F-STM-04 |
+| **9.38** ⬜ | **FP-020** một mẫu chung cho tải/lỗi/tải thêm | — | 1 | Lỗi trang 2 hiển thị có nút thử lại | Trạng thái tải/lỗi không thống nhất |
+| **9.43** ⬜ | **FP-031** phản hồi cho người báo cáo ("Đã báo cáo", danh sách báo cáo của tôi) | — | 2 | AC của FP-031 | Người báo cáo không nhận phản hồi |
+| **9.44** ⬜ | **FP-024 phần lõi**: lịch sử theo đối tượng, xem nội dung đã gỡ (F-MOD-09), ghi rõ hậu quả hành động, lọc hàng đợi | Q-MOD-03 cho gỡ từng chương | 2 | VER-MOD-06: mở được nội dung đã gỡ | Moderator chưa xem được nội dung đã gỡ (F-MOD-09) |
+| **9.45** 🟡 | **FP-050** hộp thông báo: liên kết tới cài đặt, tắt theo truyện, gom nhóm/lọc | — | 2 | AC của FP-050 _Cập nhật 2026-11-05 (PR #62/#63): tắt theo loại sự kiện đã có (`notification_preferences`, màn Cài đặt); còn liên kết từ hộp thông báo, tắt theo truyện, gom nhóm/lọc._ | Đã có tắt theo loại; còn phần liên kết/gom nhóm |
+| **9.26** ⬜ | **FP-053** không gian làm việc của truyện: một header và các tab theo vai trò (Thông tin, Chương, Nhóm, Thống kê) | — | 2.5 | URL không đổi; biên tập viên không gặp ngõ cụt | Cải thiện điều hướng tác giả; nền cho 9.27 |
+| **9.27** ⬜ | **FP-055** trang Studio dạng bảng điều khiển: hướng dẫn tác giả mới, "viết tiếp", việc cần chú ý, phân trang, số chương đã đăng (F-STM-07) | 9.6 | 2.5 | AC của FP-055 | Trang Studio: số chương đã đăng sai (F-STM-07), thiếu hướng dẫn |
+| **9.28** ⬜ | **FP-060** rà soát trước khi đăng (ai sẽ thấy, thay đổi, cảnh báo; xác nhận lần đăng đầu — thay FP-034) | 9.6 | 2.5 | AC của FP-060 | Giảm đăng nhầm; phụ thuộc 9.6 |
+| **9.32** 🟡 | **FP-016** vòng đời nhóm: rời truyện, đổi vai trò, mô tả quyền đúng thực tế | Q-TEAM-01, Q-TEAM-03; 9.2 | 1 | VER-TEAM-04/07 theo quyết định _Cập nhật 2026-11-05 (PR #62/#63): ma trận quyền chuẩn từ `story_role_rights()` hiển thị ở màn Nhóm (BR-TEAM-014) nên phần "mô tả quyền đúng thực tế" đã có; còn rời truyện và đổi vai trò (chờ Q-TEAM-01/03)._ | Phụ thuộc 9.2 và quyết định nhóm |
+| **9.21** 🟡 | **FP-051** chia sẻ truyện/chương/danh sách | — | 1 | Web Share hoặc sao chép liên kết; không lộ nội dung 18+ _Cập nhật 2026-11-05: UI chia sẻ đã có (PR #60: ShareDialog, CopyLinkButton). Còn kiểm: không lộ nội dung truyện 18+ (F-MAT-01 vẫn mở)._ | UI chia sẻ đã có; còn kiểm nội dung 18+ (liên quan 9.10) |
+
+### 9-P3. Tăng trưởng và hoàn thiện (sau khi P0/P1 xong, nhiều WP cần quyết định) · ~36 ngày
+
+Tiêu chí: tính năng mới hoặc hoàn thiện giao diện; không có lỗi đã xác minh đang chờ. Thứ tự gợi ý: khám phá/chọn truyện (9.34, 9.36, 9.37, 9.35), rồi trình đọc (9.18–9.20), rồi phần còn lại.
+
+| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù | Vì sao ở mức này |
+| --- | --- | --- | --- | --- | --- |
+| **9.34** 🟡 | **FP-037** design system: StoryCard `grid`/`row`/`rail`, kích thước chạm 44 px trên thiết bị cảm ứng, vòng focus đủ tương phản | — | 2.5 | Gallery `/dev/gallery` có đủ biến thể; thẻ ≈ 300 px ở 390 px _Cập nhật 2026-11-05: Một phần (PR #60): StoryCard biến thể danh sách, StoryTile; chưa đủ `grid`/`row`/`rail`, chưa xử lý vòng focus/44 px._ | Hoàn thiện UI; một phần đã làm |
+| **9.36** ⚠️ | **FP-040** thông tin giúp chọn truyện (số chương, độ dài, ngày chương mới) | PD-08, Q-HOME-03 | 2.5 | AC của FP-040 | Giúp chọn truyện khi kho lớn; cần PD-08 |
+| **9.37** 🟡 | **FP-041** lọc và sắp xếp (tình trạng, độ dài, cập nhật) | PD-08, Q-HOME-03; 9.8 | 2.5 | Dùng chung điều kiện khám phá của 9.8 _Cập nhật 2026-11-05: Một phần (PR #60): bộ lọc thể loại/thẻ trên điện thoại có đếm; chưa lọc theo tình trạng/độ dài/sắp xếp._ _Cập nhật 2026-11-05 (PR #62/#63): lọc theo độ dài (biểu đồ khoảng 2 đầu kéo, `story_length`) đã có ở trang chủ (SCR-HOME-01-C13); còn tình trạng và sắp xếp._ | Giúp chọn truyện khi kho lớn; phụ thuộc 9.8 |
+| **9.35** ⚠️ | **FP-045** bố cục responsive theo màn (trang truyện hai cột trên desktop…) | Duyệt thiết kế BRC-HOME-02; 9.34 | 2 | Ảnh chụp 390/768/1280 | Hoàn thiện UI; phụ thuộc 9.34 |
+| **9.18** ⚠️ | **FP-043** khung đọc toàn màn hình (route group `(reader)` theo §1.2), thanh tự ẩn, tùy chọn hiện dấu bình luận theo đoạn | PD-01, PD-02; 9.5 | 3 | Không có header/bottom nav trên trang chương; 404 đúng trong khung mới | Cải thiện trải nghiệm đọc; cần PD-01/02 |
+| **9.19** ⚠️ | **FP-044** đọc liền mạch (gồm FP-052): đánh dấu đã đọc, "Đã đọc hết"/"Đọc lại", thẻ cuối chương/cuối truyện | PD-09; 9.17 | 2.5 | AC của FP-044 _Cập nhật 2026-11-05 (PR #62/#63): BR-HAB-006 (chương/truyện đã đọc xong, tính ở server) có thể trùng một phần; đọc lại AC của FP-044 trước khi làm._ | Tăng giữ chân; phụ thuộc 9.17 |
+| **9.20** ⚠️ | **FP-047** "Có gì mới": hàng "Đọc tiếp" ở trang chủ, nhãn chương mới trong thư viện, chấm báo | Q-LIB-04; 9.17 | 2.5 | AC của FP-047 | Tăng giữ chân; phụ thuộc 9.17 |
+| **9.23** ⚠️ | **FP-049** hội thoại bình luận hai chiều (trả lời trong trả lời, báo người tham gia luồng) | Q-CMT-04, Q-NOTI-06, BRC-CMT-01, BRC-NOTI-01 | 3 | AC của FP-049 | Tính năng mới, cần nhiều quyết định |
+| **9.30** ⚠️ | **FP-058** khung viết tập trung (không bottom nav, thanh hành động cố định), chưa bắt buộc tối ưu toàn bộ trên mobile | PD-03 | 2.5 | Lưu/Đăng luôn nhìn thấy khi soạn | Cải thiện trải nghiệm viết; cần PD-03 |
+| **9.31** ⚠️ | **FP-059** điểm khôi phục bản nháp phía server | Q-HIST-03, BRC-HIST-01 | 3 | AC của FP-059 _Cập nhật 2026-11-05 (PR #62/#63): lịch sử phiên bản dạng nhánh và khóa soạn có chuyển giao đã có; điểm khôi phục bản nháp phía server (FP-059) chưa có._ | Tính năng mới, cần quyết định |
+| **9.16** ⚠️ | **FP-035** chào mừng lần đầu + danh sách kích hoạt | BRC-AUTH-01 | 3 | Không chặn người đang đi tới một truyện/chương | Tăng trưởng; cần BRC-AUTH-01 |
+| **9.39** ⚠️ | **FP-014** toàn vẹn danh sách đọc (sắp xếp khi có truyện đã xóa, unlisted không liệt kê được qua API) | Q-LIST-01, Q-LIST-02 | 2 | Kiểm chứng lại F-LIST-01 trước khi làm | Toàn vẹn danh sách đọc; cần kiểm lại F-LIST-01 |
+| **9.41** ⚠️ | **FP-063** kháng nghị quyết định kiểm duyệt | Q-MOD-06, BRC-MOD-02; 9.13 | 2.5 | AC của FP-063 | Tính năng cộng đồng mới, phụ thuộc 9.13 |
+| **9.42** ⚠️ | **FP-064** chặn người dùng | Q-MOD-07 | 2.5 | AC của FP-064 | Tính năng cộng đồng mới |
+
+### Đã xong
+
+| WP | Đầu ra | Phụ thuộc | Ngày | DoD đặc thù | Ghi chú |
+| --- | --- | --- | --- | --- | --- |
+| **9.9** ✅ | **FP-019** điều hướng ở mọi kích thước: bottom nav dưới `lg`, liên kết mục từ `lg`, Xếp hạng/Đang theo dõi dễ tìm | Q-SHELL-01/02, BRC-SHELL-02 | 2 | Tablet 768 px có điều hướng; ảnh chụp 390/768/1280 _Cập nhật 2026-11-05: Đã làm trong PR #60: hàng điều hướng từ `md` + menu toàn màn hình trên điện thoại (xác nhận 768/1280 px). Dùng `md` thay vì `lg` (DEC-026)._ | Đã làm |
 
 ### 9-M. WP hiện có được chi tiết hóa bởi đề xuất (không tạo WP mới)
 
@@ -379,7 +400,7 @@ Chưa lên lịch (chờ dữ liệu sử dụng hoặc quyết định, xem roa
 | **M4** | + Chức năng xung quanh | ~140 |
 | **M5** | + Mobile | ~158 |
 | **M6** | + Hardening (Phase 8, rải đều trong các phase trước, cộng dồn ở đây) | ~172 |
-| **M7** | + Phase 9: lõi an toàn (9-I1) → sẵn sàng ra mắt (9-I2) → vòng đọc và vòng xuất bản (9-I3, 9-I4) → khám phá, cộng đồng (9-I5, 9-I6) | ~264 (thêm ~92, chưa gồm thời gian chờ quyết định) |
+| **M7** | + Phase 9 theo mức cấp thiết: P0 mất dữ liệu/sai quyền → P1 trước ra mắt → P2 giữ chân và Studio → P3 tăng trưởng, hoàn thiện | ~266 (thêm ~94, chưa gồm thời gian chờ quyết định) |
 
 Đường găng: `0.0 → 0.3 → 1.1 → 1.2 → (3.1 → 3.2 → 3.4 → 3.5 → 3.6 → 3.7)`; trình đọc 2.x rẽ nhánh sau 0.5. Với 2 người: một người làm Phase 2, một người làm Phase 3 ngay sau M1a, M1 đạt sớm còn khoảng 45–50 ngày lịch.
 
