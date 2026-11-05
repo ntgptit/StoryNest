@@ -235,6 +235,26 @@ export const en = {
     },
     mature: "Mature content (18+)",
     matureHint: "18+ stories are hidden from the home page by default.",
+    seoPreview: {
+      region: "How the story looks in search and when shared",
+      searchTab: "Search result",
+      shareTab: "Link share",
+      untitled: "Story title",
+      noSynopsis: "No synopsis yet.",
+      descriptionLength: (used: number, limit: number) =>
+        used > limit
+          ? `The synopsis is ${used} characters: only the first ${limit} are shown, the rest is cut.`
+          : `Synopsis: ${used}/${limit} characters shown.`,
+      notIndexed: "This story will not show up in search engines: only public stories that are not 18+ do.",
+    },
+    unsaved: {
+      region: "Unsaved changes",
+      count: (count: number) => `${count} unsaved change${count === 1 ? "" : "s"}`,
+      warning: "Save or discard your changes before leaving",
+      discard: "Discard",
+      save: "Save",
+      leave: "You have unsaved changes. Leaving the page will lose them.",
+    },
     submitCreate: "Create story",
     submitSave: "Save changes",
     submitting: "Saving…",

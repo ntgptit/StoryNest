@@ -73,3 +73,33 @@ export function localDateTimeValue(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
+
+export type ReadinessId = "title" | "body" | "notArchived";
+
+export interface ReadinessCheck {
+  id: ReadinessId;
+  done: boolean;
+  /** What is wrong, while not done: the same message the save or the panel already gives. */
+  hint?: string | undefined;
+}
+
+/**
+ * What must hold before this chapter can be published or scheduled, as a checklist. Only rules that already exist:
+ * the draft rules the save applies (checkTitle, checkBody: the server refuses a draft that breaks them, and publishing
+ * saves first) and canPublish's "not archived". The publish buttons stay locked until every item is done.
+ */
+export function publishReadiness(
+  draft: { title: { ok: boolean; message?: string }; body: { ok: boolean; message?: string } },
+  state: ChapterPublishState,
+): ReadinessCheck[] {
+  const archived = state.status === CHAPTER_STATUS.ARCHIVED;
+  return [
+    { id: "title", done: draft.title.ok, hint: draft.title.ok ? undefined : draft.title.message },
+    { id: "body", done: draft.body.ok, hint: draft.body.ok ? undefined : draft.body.message },
+    { id: "notArchived", done: !archived, hint: archived ? editorText.publish.archivedHint : undefined },
+  ];
+}
+
+export function isReady(checks: readonly ReadinessCheck[]): boolean {
+  return checks.every((check) => check.done);
+}

@@ -65,6 +65,14 @@ const vi = {
     banner: "Đây là bản nháp, đúng như độc giả sẽ thấy khi bạn đăng. Chưa ai nhìn thấy nó.",
     empty: "Bản nháp chưa có nội dung.",
     backToEditor: "Về trình soạn",
+    devices: {
+      group: "Khổ màn hình xem trước",
+      phone: "Điện thoại",
+      tablet: "Máy tính bảng",
+      desktop: "Máy tính",
+      handle: "Độ rộng khung xem trước",
+      width: (px: number) => `${px} px`,
+    },
   },
   links: { history: "Lịch sử phiên bản", preview: "Xem trước" },
 } as const;

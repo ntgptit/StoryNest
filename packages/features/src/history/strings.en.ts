@@ -68,6 +68,14 @@ export const en = {
     banner: "This is a draft, exactly as readers will see it when you publish. No one can see it yet.",
     empty: "The draft has no content yet.",
     backToEditor: "Back to editor",
+    devices: {
+      group: "Preview screen size",
+      phone: "Phone",
+      tablet: "Tablet",
+      desktop: "Desktop",
+      handle: "Preview width",
+      width: (px: number) => `${px} px`,
+    },
   },
   links: { history: "Version history", preview: "Preview" },
 };

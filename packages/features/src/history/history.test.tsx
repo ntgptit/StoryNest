@@ -11,6 +11,7 @@ import { ToastProvider } from "../_shared/toast.tsx";
 import { readBackup, writeBackup } from "../editor/model/local-backup.ts";
 import { getVersionBlocks, listChapterVersions } from "./api/history.api.ts";
 import { HistoryScreen, PreviewScreen } from "./index.ts";
+import { PREVIEW_DEVICE_WIDTHS } from "./screens/preview-screen.tsx";
 import {
   DIFF_STATUS,
   bodyToReaderBlocks,
@@ -478,6 +479,25 @@ describe("PreviewScreen", () => {
     expect(screen.getByRole("link", { name: t.preview.backToEditor }).getAttribute("href")).toBe(
       `/studio/story/${STORY_ID}/chapter/${CHAPTER_ID}`,
     );
+  });
+
+  it("frames the draft at phone, tablet or desktop width, with a handle to drag or move with the keys", async () => {
+    renderWith(fakeClient({}), <PreviewScreen storyId={STORY_ID} chapterId={CHAPTER_ID} />);
+    await screen.findByRole("heading", { level: 1 });
+    const devices = screen.getByRole("group", { name: t.preview.devices.group });
+    const names = within(devices)
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+    expect(names).toEqual([t.preview.devices.phone, t.preview.devices.tablet, t.preview.devices.desktop]);
+    expect(within(devices).getByRole("button", { name: t.preview.devices.desktop }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    const handle = screen.getByRole("slider", { name: t.preview.devices.handle });
+    fireEvent.click(within(devices).getByRole("button", { name: t.preview.devices.phone }));
+    expect(handle.getAttribute("aria-valuenow")).toBe(String(PREVIEW_DEVICE_WIDTHS.phone));
+    expect(handle.getAttribute("aria-valuetext")).toBe(t.preview.devices.width(PREVIEW_DEVICE_WIDTHS.phone));
+    // the article sits in the frame, which is a size container
+    expect(document.querySelector('[data-part="frame"] article.reader-text')).toBeTruthy();
   });
 
   it("shows an empty note for a draft nobody has written and not found for another story", async () => {

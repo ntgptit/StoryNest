@@ -24,6 +24,7 @@ import {
   tagsErrorMessage,
   type TagChip,
 } from "./model/tags.ts";
+import { storyMetaDescription } from "../story/index.ts";
 import { StoryFormScreen } from "./index.ts";
 import { studioText } from "./strings.ts";
 
@@ -484,5 +485,77 @@ describe("StoryFormScreen: tags", () => {
     expect(screen.queryByRole("alert")).toBeNull();
     // the story was not rewritten the second time: only the tags were still pending
     expect(f.writes.filter((w) => w.table === "stories" && w.op === "update")).toHaveLength(1);
+  });
+});
+
+describe("StoryFormScreen: visibility, link preview and unsaved changes", () => {
+  const form = studioText.form;
+  const bar = () => screen.queryByRole("region", { name: form.unsaved.region });
+
+  it("chooses the visibility from radio cards that carry the existing hints", async () => {
+    const f = fakeClient({});
+    renderUi(f.client, <StoryFormScreen storyId={STORY_ID} />);
+    const group = await screen.findByRole("radiogroup", { name: form.visibility });
+    expect(within(group).getAllByRole("radio")).toHaveLength(3);
+    const checked = within(group).getByRole("radio", { checked: true });
+    expect(checked.textContent).toContain(form.visibilityHints.public);
+    fireEvent.click(within(group).getByRole("radio", { name: new RegExp(studioText.visibility.unlisted) }));
+    fireEvent.click(screen.getByRole("button", { name: form.submitSave }));
+    await waitFor(() => expect(f.writes.find((w) => w.table === "stories" && w.op === "update")).toBeTruthy());
+    expect(f.writes.find((w) => w.table === "stories" && w.op === "update")?.values).toMatchObject({
+      visibility: "unlisted",
+    });
+  });
+
+  it("previews the search result with the story page's own description cut and address", async () => {
+    const long = `${"Một câu chuyện dài ".repeat(12)}kết thúc`;
+    renderUi(fakeClient({ storyRow: { synopsis: long } }).client, <StoryFormScreen storyId={STORY_ID} />);
+    const preview = await screen.findByRole("region", { name: form.seoPreview.region });
+    expect(preview.querySelector('[data-part="title"]')?.textContent).toBe("Rừng sương mù");
+    expect(preview.querySelector('[data-part="description"]')?.textContent).toBe(storyMetaDescription(long));
+    expect(await within(preview).findByText(`app.test › story › ${STORY_ID} › rung-suong-mu`)).toBeTruthy();
+    expect(within(preview).getByText(form.seoPreview.descriptionLength(long.length, 160))).toBeTruthy();
+    expect(within(preview).queryByText(form.seoPreview.notIndexed)).toBeNull(); // public, not 18+
+
+    fireEvent.change(screen.getByLabelText(form.storyTitle), { target: { value: "Tên khác" } });
+    expect(preview.querySelector('[data-part="title"]')?.textContent).toBe("Tên khác");
+    fireEvent.click(screen.getByRole("radio", { name: new RegExp(studioText.visibility.private) }));
+    expect(await within(preview).findByText(form.seoPreview.notIndexed)).toBeTruthy();
+  });
+
+  it("shows the unsaved bar with the number of changes, and Discard puts everything back", async () => {
+    renderUi(fakeClient({}).client, <StoryFormScreen storyId={STORY_ID} />);
+    const title = (await screen.findByLabelText(form.storyTitle)) as HTMLInputElement;
+    expect(bar()).toBeNull(); // hidden from assistive tech while clean
+    fireEvent.change(title, { target: { value: "Tên mới" } });
+    fireEvent.change(screen.getByLabelText(studioText.tags.label), { target: { value: "Bí ẩn," } });
+    const region = await screen.findByRole("region", { name: form.unsaved.region });
+    expect(within(region).getByRole("status").textContent).toBe(form.unsaved.count(2));
+    fireEvent.click(within(region).getByRole("button", { name: form.unsaved.discard }));
+    await waitFor(() => expect(title.value).toBe("Rừng sương mù"));
+    expect(screen.queryByText("#Bí ẩn")).toBeNull();
+    expect(bar()).toBeNull();
+  });
+
+  it("saves from the bar with the form's own save, and stops a link away while unsaved", async () => {
+    const f = fakeClient({});
+    renderUi(f.client, <StoryFormScreen storyId={STORY_ID} />);
+    fireEvent.change(await screen.findByLabelText(form.storyTitle), { target: { value: "Tên mới" } });
+    const region = await screen.findByRole("region", { name: form.unsaved.region });
+    // a link outside the form (the chapters link above it) is stopped and the bar warns
+    expect(fireEvent.click(screen.getByText(form.chaptersLink))).toBe(false);
+    expect(region.getAttribute("data-state")).toBe("warning");
+    expect(within(region).getByRole("status").textContent).toBe(form.unsaved.warning);
+    // the form's own Cancel is an explicit choice
+    expect(fireEvent.click(screen.getByRole("link", { name: form.cancel }))).toBe(true);
+    fireEvent.click(within(region).getByRole("button", { name: form.unsaved.save }));
+    await waitFor(() => expect(f.writes.filter((w) => w.table === "stories" && w.op === "update")).toHaveLength(1));
+    await waitFor(() => expect(bar()).toBeNull());
+  });
+
+  it("has no unsaved bar when creating a story", async () => {
+    renderUi(fakeClient({}).client, <StoryFormScreen />);
+    fireEvent.change(await screen.findByLabelText(form.storyTitle), { target: { value: "Mới" } });
+    expect(bar()).toBeNull();
   });
 });

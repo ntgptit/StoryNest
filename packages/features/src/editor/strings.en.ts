@@ -2,6 +2,37 @@ export const en = {
   title: "Edit chapter",
   backToChapters: "Back to chapters",
   links: { preview: "Preview", history: "Version history" },
+  livePreview: {
+    toggle: "Side-by-side preview",
+    region: "Live preview of the chapter being edited",
+    divider: "Editor width, adjust with the arrow keys",
+    note: "Shown the way readers will see it, following what you type (even before it is saved).",
+    empty: "The chapter has no content yet.",
+  },
+  tour: {
+    dialog: "Chapter editor tour",
+    next: "Next",
+    back: "Back",
+    done: "Done",
+    skip: "Skip",
+    progress: (step: number, total: number) => `Step ${step} of ${total}`,
+    toolbar: {
+      title: "Formatting toolbar",
+      body: "Bold, italic, headings, pictures and dividers. Hover a button to see its shortcut.",
+    },
+    autosave: {
+      title: "Autosave",
+      body: "The draft saves itself as you type. This line tells you whether it is saved; Save draft saves right away.",
+    },
+    publish: {
+      title: "Publish the chapter",
+      body: "Publish now or schedule it. The checklist tells you why it cannot be published yet.",
+    },
+    find: {
+      title: "Find and replace",
+      body: "Find a word in the chapter and replace it everywhere. Shortcut Ctrl+F (⌘F on a Mac).",
+    },
+  },
   chapterTitle: "Chapter title",
   chapterTitlePlaceholder: "Chapter title",
   bodyLabel: "Chapter content",
@@ -105,6 +136,20 @@ export const en = {
     schedule: "Schedule…",
     unpublish: "Unpublish chapter",
     cancelSchedule: "Cancel schedule",
+    more: "More ways to publish",
+    scheduleDescription: "Publish automatically at the time you pick",
+    readiness: {
+      title: "Before you publish",
+      summary: (done: number, total: number) => `${done} of ${total} met, not ready to publish yet`,
+      ready: "Ready to publish",
+      done: "met",
+      todo: "not met",
+      items: {
+        title: "The chapter has a title of up to 200 characters",
+        body: "The content only holds parts that can be saved",
+        notArchived: "The chapter is not archived",
+      },
+    },
     working: "Working…",
     saveFirst:
       "The draft couldn't be saved, so it wasn't published. Check the chapter title and content and try again.",

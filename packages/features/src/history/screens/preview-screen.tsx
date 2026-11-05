@@ -1,20 +1,35 @@
 "use client";
 
-import { ArrowLeft, FileQuestion } from "lucide-react";
+import { ArrowLeft, FileQuestion, Monitor, Smartphone, Tablet } from "lucide-react";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { ResponsivePreview, type ResponsivePreset } from "@storynest/ui/widgets/responsive-preview";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useChapterDraft } from "../../editor/index.ts";
-import { BlockView, ReaderSettingsSheet } from "../../reader/index.ts";
+import { ReaderSettingsSheet } from "../../reader/index.ts";
+import { ChapterPreviewArticle } from "../../_shared/chapter-preview.tsx";
 import { bodyToReaderBlocks } from "../model/history.ts";
 import { historyText } from "../strings.ts";
 
 const t = historyText;
 
+/** Phone, tablet and "as wide as there is room" (Lucian 257 presets; a phone is the narrowest common one). */
+export const PREVIEW_DEVICE_WIDTHS = { phone: 375, tablet: 768, desktop: null } as const;
+
+function devicePresets(): ResponsivePreset[] {
+  const d = t.preview.devices;
+  return [
+    { id: "phone", label: d.phone, width: PREVIEW_DEVICE_WIDTHS.phone, icon: Smartphone },
+    { id: "tablet", label: d.tablet, width: PREVIEW_DEVICE_WIDTHS.tablet, icon: Tablet },
+    { id: "desktop", label: d.desktop, width: PREVIEW_DEVICE_WIDTHS.desktop, icon: Monitor },
+  ];
+}
+
 /**
  * The saved draft drawn with the reader's own components and the reader's display settings, so what the author sees is
- * what readers will see after publishing. Read-only; nothing is published or changed.
+ * what readers will see after publishing. Read-only; nothing is published or changed. The article sits in a frame the
+ * author can switch to phone / tablet / desktop width or drag to any width, to check line length and pictures.
  */
 export function PreviewScreen({
   storyId,
@@ -43,6 +58,7 @@ export function PreviewScreen({
   }
 
   const blocks = bodyToReaderBlocks(draft.data.body);
+  const d = t.preview.devices;
   return (
     <div className="flex flex-col">
       <div className="sticky top-0 z-10 -mx-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -63,18 +79,21 @@ export function PreviewScreen({
       >
         {t.preview.banner}
       </p>
-      <article className="reader-text mx-auto flex w-full max-w-[var(--reader-measure)] flex-col gap-6 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{draft.data.title}</h1>
-        {blocks.length === 0 ? (
-          <p className="text-muted-foreground">{t.preview.empty}</p>
-        ) : (
-          <div className="flex flex-col gap-[1em]">
-            {blocks.map((block) => (
-              <BlockView key={block.id} block={block} imageUrlFor={imageUrlFor} />
-            ))}
-          </div>
-        )}
-      </article>
+      <ResponsivePreview
+        className="mt-4"
+        presets={devicePresets()}
+        labels={{ presets: d.group, handle: d.handle, width: d.width }}
+        defaultPreset="desktop"
+      >
+        <ChapterPreviewArticle
+          title={draft.data.title}
+          blocks={blocks}
+          emptyText={t.preview.empty}
+          imageUrlFor={imageUrlFor}
+          contained
+          className="px-4"
+        />
+      </ResponsivePreview>
     </div>
   );
 }

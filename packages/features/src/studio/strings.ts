@@ -229,6 +229,26 @@ const vi = {
     },
     mature: "Nội dung dành cho người lớn (18+)",
     matureHint: "Truyện 18+ bị ẩn khỏi trang chủ mặc định.",
+    seoPreview: {
+      region: "Truyện hiện thế nào khi tìm kiếm và chia sẻ",
+      searchTab: "Kết quả tìm kiếm",
+      shareTab: "Khi chia sẻ liên kết",
+      untitled: "Tên truyện",
+      noSynopsis: "Chưa có giới thiệu.",
+      descriptionLength: (used: number, limit: number) =>
+        used > limit
+          ? `Giới thiệu dài ${used} ký tự: chỉ ${limit} ký tự đầu được hiện, phần sau bị cắt.`
+          : `Giới thiệu: ${used}/${limit} ký tự được hiện.`,
+      notIndexed: "Truyện này sẽ không hiện trên công cụ tìm kiếm: chỉ truyện công khai, không 18+ mới được hiện.",
+    },
+    unsaved: {
+      region: "Thay đổi chưa lưu",
+      count: (count: number) => `${count} thay đổi chưa lưu`,
+      warning: "Hãy lưu hoặc bỏ thay đổi trước khi rời trang",
+      discard: "Bỏ thay đổi",
+      save: "Lưu",
+      leave: "Có thay đổi chưa lưu. Rời trang sẽ mất chúng.",
+    },
     submitCreate: "Tạo truyện",
     submitSave: "Lưu thay đổi",
     submitting: "Đang lưu…",

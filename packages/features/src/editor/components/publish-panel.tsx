@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { CalendarClock } from "lucide-react";
+import { useId, useState } from "react";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
 import {
@@ -15,13 +16,17 @@ import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
 import { CHAPTER_STATUS } from "@storynest/validation";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
+import { ReadinessChecklist } from "@storynest/ui/widgets/readiness-checklist";
+import { SplitButton } from "@storynest/ui/widgets/split-button";
 import { useChapterPublishState, usePublishFlow } from "../hooks/use-publishing.ts";
 import {
   canPublish,
   canUnpublishChapter,
   formatLocalDateTime,
+  isReady,
   localZone,
   minLocalDateTime,
+  publishReadiness,
   scheduleInstant,
 } from "../model/publishing.ts";
 import { editorText } from "../strings.ts";
@@ -33,18 +38,24 @@ const t = editorText.publish;
  * unsaved text is saved first (`ensureSaved` resolves to the revision to publish, or null when that failed), and the
  * revision is sent along, so a draft someone else changed meanwhile is refused instead of published over.
  * The buttons are locked from the first click until the answer is back, so a double click cannot publish twice.
+ * Publish and Schedule… are one split button (Lucian 010); the readiness checklist above it (Lucian 014) lists the
+ * existing rules (publishReadiness) and keeps the split button locked, and says why, until they all hold.
  */
 export function PublishPanel({
   chapterId,
   locale,
   ensureSaved,
+  draft,
 }: {
   chapterId: string;
   locale: string;
   ensureSaved: () => Promise<number | null>;
+  /** The draft rules on what is on screen now (checkTitle / checkBody), for the readiness checklist. */
+  draft: Parameters<typeof publishReadiness>[0];
 }) {
   const state = useChapterPublishState(chapterId);
   const flow = usePublishFlow(chapterId, ensureSaved);
+  const checklistId = useId();
   const [scheduling, setScheduling] = useState(false);
   const [confirmUnpublish, setConfirmUnpublish] = useState(false);
   const [scheduleValue, setScheduleValue] = useState("");
@@ -74,6 +85,9 @@ export function PublishPanel({
         ? t.state.draft
         : t.state[current.status];
   const allowed = canPublish(current);
+  const checks = publishReadiness(draft, current);
+  const ready = isReady(checks);
+  const doneCount = checks.filter((check) => check.done).length;
 
   return (
     <section aria-label={t.title} className="flex flex-col gap-3 rounded-lg border p-4">
@@ -81,9 +95,6 @@ export function PublishPanel({
         <h2 className="text-base font-semibold">{t.title}</h2>
         <Badge variant="outline">{stateText}</Badge>
       </div>
-      {!allowed && current.status === CHAPTER_STATUS.ARCHIVED ? (
-        <p className="text-sm text-muted-foreground">{t.archivedHint}</p>
-      ) : null}
       {error ? (
         <p
           role="alert"
@@ -92,16 +103,40 @@ export function PublishPanel({
           {error}
         </p>
       ) : null}
+      {current.role === null ? null : (
+        <ReadinessChecklist
+          id={checklistId}
+          title={t.readiness.title}
+          summary={ready ? t.readiness.ready : t.readiness.summary(doneCount, checks.length)}
+          stateLabels={{ done: t.readiness.done, todo: t.readiness.todo }}
+          items={checks.map((check) => ({
+            id: check.id,
+            label: t.readiness.items[check.id],
+            done: check.done,
+            hint: check.hint,
+          }))}
+        />
+      )}
       <div className="flex flex-wrap gap-2">
         {allowed ? (
-          <>
-            <Button type="button" onClick={() => void publish()} disabled={busy}>
-              {busy ? t.working : current.status === CHAPTER_STATUS.PUBLISHED ? t.republish : t.publish}
-            </Button>
-            <Button type="button" variant="outline" disabled={busy} onClick={() => setScheduling(true)}>
-              {t.schedule}
-            </Button>
-          </>
+          <SplitButton
+            label={current.status === CHAPTER_STATUS.PUBLISHED ? t.republish : t.publish}
+            busy={busy}
+            busyLabel={t.working}
+            disabled={!ready}
+            describedBy={checklistId}
+            onClick={() => void publish()}
+            menuLabel={t.more}
+            options={[
+              {
+                id: "schedule",
+                label: t.schedule,
+                description: t.scheduleDescription,
+                icon: <CalendarClock />,
+                onSelect: () => setScheduling(true),
+              },
+            ]}
+          />
         ) : null}
         {canUnpublishChapter(current) ? (
           <Button

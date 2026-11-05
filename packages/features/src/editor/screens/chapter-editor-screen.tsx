@@ -3,8 +3,8 @@
 import type { Editor } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { FileQuestion } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Columns2, FileQuestion } from "lucide-react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { formatCount, formatRelativeTime } from "@storynest/utils";
 import { Button } from "@storynest/ui/components/button";
 import { Input } from "@storynest/ui/components/input";
@@ -14,6 +14,8 @@ import { AutosaveIcon, type AutosaveIconState } from "@storynest/ui/widgets/auto
 import { DropZone } from "@storynest/ui/widgets/drop-zone";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { SplitPane, useMinWidth } from "@storynest/ui/widgets/split-pane";
+import { SpotlightTour, type TourStep } from "@storynest/ui/widgets/spotlight-tour";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
@@ -29,11 +31,27 @@ import { createAutosaver, type Autosaver, type AutosaveStatus, type SaveOutcome 
 import { NODE, STORAGE_KEY_ATTRIBUTE, bodyToDoc, type EditorNode } from "../model/body-converter.ts";
 import { imageErrorMessage } from "../model/image-messages.ts";
 import { pastedImage } from "../model/pasted-image.ts";
-import { checkDraft, isDraftConflict, wordCountOf } from "../model/draft-form.ts";
+import { checkBody, checkDraft, checkTitle, isDraftConflict, wordCountOf } from "../model/draft-form.ts";
 import { editorExtensions } from "../model/extensions.ts";
 import { clearBackup, differsFromServer, readBackup, writeBackup, type DraftBackup } from "../model/local-backup.ts";
+import {
+  SPLIT_DEFAULT,
+  SPLIT_MAX,
+  SPLIT_MIN,
+  isTourDone,
+  markTourDone,
+  readSplitPrefs,
+  writeSplitPrefs,
+  type SplitPrefs,
+} from "../model/workspace-prefs.ts";
 import { editorText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
+import { ChapterPreviewArticle } from "../../_shared/chapter-preview.tsx";
+import { bodyToReaderBlocks } from "../../_shared/block-diff.ts";
+import type { ChapterBody } from "@storynest/validation";
+
+/** From this window width up the editor can show the live preview beside it (Tailwind's lg). */
+const SPLIT_MIN_WINDOW = 1024;
 
 /** How each autosave status looks in the footer cloud icon. */
 const AUTOSAVE_ICON: Record<AutosaveStatus, AutosaveIconState> = {
@@ -54,12 +72,15 @@ export function ChapterEditorScreen({
   chapterId,
   onEditor,
   locale = currentLocale(),
+  firstRunTour = false,
 }: {
   storyId: string;
   chapterId: string;
   /** Hands the editor instance to the host (tests, shortcuts); not needed to use the screen. */
   onEditor?: ((editor: Editor | null) => void) | undefined;
   locale?: string;
+  /** Offer the short guided tour on this device's first visit (the app turns it on; off in embeds and tests). */
+  firstRunTour?: boolean;
 }) {
   const draft = useChapterDraft(chapterId);
   // Bumped to throw the editor away and start again from the saved draft (after a conflict).
@@ -92,6 +113,7 @@ export function ChapterEditorScreen({
       storyId={storyId}
       locale={locale}
       onEditor={onEditor}
+      firstRunTour={firstRunTour}
       startMerge={mergeOnOpen}
       onReload={async (options) => {
         await draft.refetch();
@@ -109,6 +131,7 @@ function DraftEditor({
   onEditor,
   onReload,
   startMerge = false,
+  firstRunTour,
 }: {
   draft: ChapterDraft;
   storyId: string;
@@ -117,11 +140,16 @@ function DraftEditor({
   /** `merge`: open the merge view on the fresh draft (when this device kept a copy that differs). */
   onReload: (options?: { merge?: boolean }) => Promise<void>;
   startMerge?: boolean;
+  firstRunTour: boolean;
 }) {
   const toast = useAppToast();
   const save = useSaveChapterDraft(draft.chapterId);
   const [title, setTitle] = useState(draft.title);
-  const [words, setWords] = useState(() => wordCountOf(bodyToDoc(draft.body)));
+  // The document on screen, after every change: word count, the publish checklist and the live preview follow it.
+  const [doc, setDoc] = useState<EditorNode>(() => bodyToDoc(draft.body));
+  const words = useMemo(() => wordCountOf(doc), [doc]);
+  const settledDoc = useDeferredValue(doc);
+  const bodyCheck = useMemo(() => checkBody(settledDoc), [settledDoc]);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [status, setStatus] = useState<AutosaveStatus>("idle");
   const revision = useRef(draft.revision);
@@ -260,7 +288,7 @@ function DraftEditor({
     },
     onUpdate: ({ editor: updated }) => {
       touched();
-      setWords(wordCountOf(updated.getJSON() as EditorNode));
+      setDoc(updated.getJSON() as EditorNode);
     },
     onDestroy: () => {
       editorRef.current = null;
@@ -343,25 +371,75 @@ function DraftEditor({
   const conflict = status === "conflict";
   const statusText = t.status[status];
 
-  return (
-    <div className="flex max-w-3xl flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <AppLink
-          href={`/studio/story/${storyId}/chapters`}
-          className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
-        >
-          {t.backToChapters}
-        </AppLink>
-        <div className="flex gap-1.5">
-          <Button asChild size="sm" variant="outline">
-            <AppLink href={`/studio/story/${storyId}/chapter/${draft.chapterId}/preview`}>{t.links.preview}</AppLink>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <AppLink href={`/studio/story/${storyId}/chapter/${draft.chapterId}/history`}>{t.links.history}</AppLink>
-          </Button>
-        </div>
-      </div>
+  // Side-by-side live preview (wide windows only), remembered on this device.
+  const wide = useMinWidth(SPLIT_MIN_WINDOW);
+  const [workspace, setWorkspace] = useState<SplitPrefs>({ on: false, split: SPLIT_DEFAULT });
+  useEffect(() => setWorkspace(readSplitPrefs()), []);
+  const updateWorkspace = (next: SplitPrefs) => {
+    setWorkspace(next);
+    writeSplitPrefs(next);
+  };
+  const splitView = wide && workspace.on;
+  // The last body that converts cleanly: the preview keeps showing it while a part that cannot be saved is on screen.
+  const lastGoodBody = useRef<ChapterBody>(draft.body);
+  if (bodyCheck.ok) lastGoodBody.current = bodyCheck.body;
+  const previewBlocks = useMemo(
+    () => (splitView ? bodyToReaderBlocks(bodyCheck.ok ? bodyCheck.body : lastGoodBody.current) : []),
+    [splitView, bodyCheck],
+  );
 
+  // First-run tour: once per device, after the editor is ready; finishing or skipping both end it for good.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [touring, setTouring] = useState(false);
+  useEffect(() => {
+    if (firstRunTour && editor && !isTourDone()) setTouring(true);
+  }, [firstRunTour, editor]);
+  const find = (selector: string) => () => rootRef.current?.querySelector(selector) ?? null;
+  const tourSteps: TourStep[] = [
+    { id: "toolbar", target: find('[role="toolbar"]'), title: t.tour.toolbar.title, body: t.tour.toolbar.body },
+    {
+      id: "autosave",
+      target: find('[data-tour="autosave"]'),
+      title: t.tour.autosave.title,
+      body: t.tour.autosave.body,
+    },
+    { id: "publish", target: find('[data-tour="publish"]'), title: t.tour.publish.title, body: t.tour.publish.body },
+    { id: "find", target: find('[data-tool="find"]'), title: t.tour.find.title, body: t.tour.find.body },
+  ];
+
+  const header = (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <AppLink
+        href={`/studio/story/${storyId}/chapters`}
+        className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
+      >
+        {t.backToChapters}
+      </AppLink>
+      <div className="flex gap-1.5">
+        {wide ? (
+          <Button
+            type="button"
+            size="sm"
+            variant={workspace.on ? "secondary" : "outline"}
+            aria-pressed={workspace.on}
+            onClick={() => updateWorkspace({ ...workspace, on: !workspace.on })}
+          >
+            <Columns2 aria-hidden className="size-4" />
+            {t.livePreview.toggle}
+          </Button>
+        ) : null}
+        <Button asChild size="sm" variant="outline">
+          <AppLink href={`/studio/story/${storyId}/chapter/${draft.chapterId}/preview`}>{t.links.preview}</AppLink>
+        </Button>
+        <Button asChild size="sm" variant="outline">
+          <AppLink href={`/studio/story/${storyId}/chapter/${draft.chapterId}/history`}>{t.links.history}</AppLink>
+        </Button>
+      </div>
+    </div>
+  );
+
+  const column = (
+    <div className="flex min-w-0 flex-col gap-4">
       {backup && merging ? (
         <DraftMergeView mine={backup} server={draft} onApply={applyMergedVersion} onCancel={() => setMerging(false)} />
       ) : backup ? (
@@ -452,10 +530,21 @@ function DraftEditor({
         />
       </DropZone>
 
-      <PublishPanel chapterId={draft.chapterId} locale={locale} ensureSaved={ensureSaved} />
+      <div data-tour="publish">
+        <PublishPanel
+          chapterId={draft.chapterId}
+          locale={locale}
+          ensureSaved={ensureSaved}
+          draft={{ title: checkTitle(title), body: bodyCheck }}
+        />
+      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground" aria-live="polite">
+        <p
+          data-tour="autosave"
+          className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground"
+          aria-live="polite"
+        >
           {t.words(formatCount(words, locale))}
           {statusText !== "" || unsaved ? (
             // Spaces keep the announced text "N words · status"; in the flex row they collapse and the gap spaces it.
@@ -470,6 +559,66 @@ function DraftEditor({
           {status === "saving" ? t.saving : t.save}
         </Button>
       </div>
+    </div>
+  );
+
+  const tour = touring ? (
+    <SpotlightTour
+      steps={tourSteps}
+      labels={{
+        dialog: t.tour.dialog,
+        next: t.tour.next,
+        back: t.tour.back,
+        done: t.tour.done,
+        skip: t.tour.skip,
+        progress: t.tour.progress,
+      }}
+      onEnd={() => {
+        markTourDone();
+        setTouring(false);
+      }}
+    />
+  ) : null;
+
+  if (!splitView) {
+    return (
+      <div ref={rootRef} className="flex max-w-3xl flex-col gap-4">
+        {header}
+        {column}
+        {tour}
+      </div>
+    );
+  }
+
+  return (
+    <div ref={rootRef} className="flex flex-col gap-4">
+      {header}
+      <SplitPane
+        value={workspace.split}
+        defaultValue={SPLIT_DEFAULT}
+        min={SPLIT_MIN}
+        max={SPLIT_MAX}
+        onValueChange={(split) => updateWorkspace({ ...workspace, split })}
+        separatorLabel={t.livePreview.divider}
+        start={column}
+        end={
+          <section
+            aria-label={t.livePreview.region}
+            className="@container sticky top-below-header flex max-h-[calc(100dvh-var(--app-header-offset,0px)-2rem)] flex-col overflow-y-auto rounded-lg border bg-background"
+          >
+            <p className="border-b px-4 py-2 text-xs text-muted-foreground">{t.livePreview.note}</p>
+            <ChapterPreviewArticle
+              title={title.trim()}
+              blocks={previewBlocks}
+              emptyText={t.livePreview.empty}
+              imageUrlFor={(key) => imageUrl(key) ?? ""}
+              contained
+              className="px-4"
+            />
+          </section>
+        }
+      />
+      {tour}
     </div>
   );
 }

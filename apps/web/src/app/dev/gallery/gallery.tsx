@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookOpen, Eye, Globe, Heart, Home, Library, Link2, Lock, MessageSquare, Search, User } from "lucide-react";
+import { Bold, CalendarClock, Italic, Minus, Monitor, Smartphone, Tablet, TextSearch } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -114,6 +115,16 @@ import { ImageLightbox } from "@storynest/ui/widgets/image-lightbox";
 import { ReadingTimeLeft } from "@storynest/ui/widgets/reading-time-left";
 import { SelectionToolbar, useBlockSelection } from "@storynest/ui/widgets/selection-toolbar";
 import { SpoilerText } from "@storynest/ui/widgets/spoiler-text";
+import { Label } from "@storynest/ui/components/label";
+import { RadioCards } from "@storynest/ui/widgets/radio-cards";
+import { ReadinessChecklist } from "@storynest/ui/widgets/readiness-checklist";
+import { ResponsivePreview } from "@storynest/ui/widgets/responsive-preview";
+import { SearchResultPreview } from "@storynest/ui/widgets/search-result-preview";
+import { ShortcutTooltip, ToolbarTooltips } from "@storynest/ui/widgets/shortcut-tooltip";
+import { SplitButton } from "@storynest/ui/widgets/split-button";
+import { SplitPane } from "@storynest/ui/widgets/split-pane";
+import { SpotlightTour } from "@storynest/ui/widgets/spotlight-tour";
+import { UnsavedChangesBar } from "@storynest/ui/widgets/unsaved-changes-bar";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -2054,6 +2065,266 @@ function BrowseShelfExample() {
   );
 }
 
+// ---- Batch 2 · authoring: story form and chapter editor ------------------------------------------------------------
+
+function AuthoringPublishExample() {
+  const toast = useAppToast();
+  const [title, setTitle] = useState("Chapter one");
+  const [busy, setBusy] = useState(false);
+  const titleOk = title.trim() !== "" && title.trim().length <= 200;
+  const items = [
+    { id: "title", label: "The chapter has a title of up to 200 characters", done: titleOk, hint: "Enter a title." },
+    { id: "body", label: "The content only holds parts that can be saved", done: true },
+    { id: "notArchived", label: "The chapter is not archived", done: true },
+  ];
+  const done = items.filter((item) => item.done).length;
+  return (
+    <div className="flex max-w-md flex-col gap-3 rounded-lg border p-4">
+      <Label htmlFor="authoring-title">Chapter title (empty it)</Label>
+      <Input id="authoring-title" value={title} onChange={(event) => setTitle(event.target.value)} />
+      <ReadinessChecklist
+        id="authoring-checklist"
+        title="Before you publish"
+        summary={done === items.length ? "Ready to publish" : `${done} of ${items.length} met`}
+        stateLabels={{ done: "met", todo: "not met" }}
+        items={items}
+      />
+      <SplitButton
+        label="Publish"
+        busyLabel="Working…"
+        busy={busy}
+        disabled={!titleOk}
+        describedBy="authoring-checklist"
+        menuLabel="More ways to publish"
+        onClick={() => {
+          setBusy(true);
+          setTimeout(() => {
+            setBusy(false);
+            toast.success("Published");
+          }, 1600);
+        }}
+        options={[
+          {
+            id: "schedule",
+            label: "Schedule…",
+            description: "Publish automatically at the time you pick",
+            icon: <CalendarClock />,
+            onSelect: () => toast.info("Schedule dialog"),
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
+function AuthoringVisibilityExample() {
+  const [value, setValue] = useState<"private" | "unlisted" | "public">("private");
+  return (
+    <RadioCards
+      aria-label="Visibility"
+      className="max-w-md"
+      value={value}
+      onValueChange={setValue}
+      options={[
+        { value: "private", label: "Private", description: "Only you and collaborators can see it.", icon: Lock },
+        { value: "unlisted", label: "Link only", description: "Anyone with the link, not in search.", icon: Link2 },
+        { value: "public", label: "Public", description: "Everyone can see and find it.", icon: Globe },
+      ]}
+    />
+  );
+}
+
+function AuthoringSearchPreviewExample() {
+  const [title, setTitle] = useState("The Misty Forest");
+  const [synopsis, setSynopsis] = useState(
+    "A girl follows a lantern into the fog that never lifts from the valley, and finds a village that remembers her.",
+  );
+  const clean = synopsis.replace(/\s+/g, " ").trim();
+  const cut = clean.length > 160 ? `${clean.slice(0, 159)}…` : clean;
+  return (
+    <div className="flex max-w-md flex-col gap-3">
+      <Input aria-label="Title" value={title} onChange={(event) => setTitle(event.target.value)} />
+      <Textarea aria-label="Synopsis" rows={3} value={synopsis} onChange={(event) => setSynopsis(event.target.value)} />
+      <SearchResultPreview
+        siteName="StoryNest"
+        url="https://storynest.app/story/42/the-misty-forest"
+        title={title}
+        description={cut}
+        sourceLength={clean.length}
+        limit={160}
+        imageUrl={demoCoverUrl(1)}
+        labels={{
+          region: "Search and share preview",
+          searchTab: "Search result",
+          shareTab: "Link share",
+          descriptionLength: (used, limit) => `Synopsis: ${used}/${limit} characters shown.`,
+        }}
+      />
+    </div>
+  );
+}
+
+function AuthoringUnsavedExample() {
+  const [saved, setSaved] = useState("Night owl");
+  const [name, setName] = useState(saved);
+  const [warning, setWarning] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const dirty = name !== saved;
+  return (
+    <div className="flex max-w-md flex-col gap-3">
+      <Label htmlFor="authoring-name">Display name (change it, then try the fake link)</Label>
+      <Input id="authoring-name" value={name} onChange={(event) => setName(event.target.value)} />
+      <Button type="button" variant="link" className="w-fit px-0" onClick={() => dirty && setWarning((n) => n + 1)}>
+        Go to another page
+      </Button>
+      <UnsavedChangesBar
+        dirty={dirty}
+        message="1 unsaved change"
+        warning={warning}
+        warningText="Save or discard your changes before leaving"
+        saveLabel="Save"
+        savingLabel="Saving…"
+        discardLabel="Discard"
+        label="Unsaved changes"
+        saving={saving}
+        onSave={() => {
+          setSaving(true);
+          setTimeout(() => {
+            setSaved(name);
+            setSaving(false);
+          }, 700);
+        }}
+        onDiscard={() => setName(saved)}
+      />
+    </div>
+  );
+}
+
+function AuthoringSplitExample() {
+  const [split, setSplit] = useState(55);
+  return (
+    <SplitPane
+      className="max-w-3xl"
+      value={split}
+      defaultValue={55}
+      min={35}
+      max={70}
+      onValueChange={setSplit}
+      separatorLabel="Editor width, adjust with the arrow keys"
+      start={
+        <div className="min-h-48 rounded-lg border bg-card p-4 text-sm">
+          <p className="font-medium">Editor ({split}%)</p>
+          <p className="text-muted-foreground">Drag the handle, or focus it and use ←/→, Home/End, Esc.</p>
+        </div>
+      }
+      end={
+        <div className="reader-text min-h-48 rounded-lg border bg-background p-4">
+          <h3 className="text-xl font-semibold">Chapter one</h3>
+          <p>As the sun sets, the alleys change hue.</p>
+        </div>
+      }
+    />
+  );
+}
+
+function AuthoringToolbarExample() {
+  const tools = [
+    { id: "bold", label: "Bold", icon: Bold, shortcut: ["Mod", "B"] },
+    { id: "italic", label: "Italic", icon: Italic, shortcut: ["Mod", "I"] },
+    { id: "find", label: "Find and replace", icon: TextSearch, shortcut: ["Mod", "F"] },
+    { id: "divider", label: "Divider", icon: Minus },
+  ];
+  return (
+    <ToolbarTooltips>
+      <div role="toolbar" aria-label="Formatting" className="flex w-fit gap-1 rounded-lg border bg-card p-1">
+        {tools.map(({ id, label, icon: Icon, shortcut }) => (
+          <ShortcutTooltip key={id} label={label} shortcut={shortcut}>
+            <Button type="button" size="icon" variant="ghost" aria-label={label} data-tool={id}>
+              <Icon aria-hidden className="size-4" />
+            </Button>
+          </ShortcutTooltip>
+        ))}
+      </div>
+    </ToolbarTooltips>
+  );
+}
+
+function AuthoringTourExample() {
+  const [open, setOpen] = useState(false);
+  const [ended, setEnded] = useState<string | null>(null);
+  const area = useRef<HTMLDivElement>(null);
+  const find = (selector: string) => () => area.current?.querySelector(selector) ?? null;
+  return (
+    <div ref={area} className="flex max-w-md flex-col gap-3 rounded-lg border p-4">
+      <div data-demo="toolbar" className="flex gap-1 rounded-md border bg-card p-1">
+        <Button type="button" size="icon" variant="ghost" aria-label="Bold">
+          <Bold aria-hidden className="size-4" />
+        </Button>
+        <Button type="button" size="icon" variant="ghost" aria-label="Find" data-demo="find">
+          <TextSearch aria-hidden className="size-4" />
+        </Button>
+      </div>
+      <p data-demo="autosave" className="text-sm text-muted-foreground">
+        120 words · Saved
+      </p>
+      <div className="flex items-center gap-2">
+        <Button type="button" onClick={() => setOpen(true)}>
+          Take the tour
+        </Button>
+        {ended ? <span className="text-sm text-muted-foreground">Ended: {ended}</span> : null}
+      </div>
+      {open ? (
+        <SpotlightTour
+          steps={[
+            {
+              id: "toolbar",
+              target: find('[data-demo="toolbar"]'),
+              title: "Formatting toolbar",
+              body: "Bold, italic…",
+            },
+            { id: "autosave", target: find('[data-demo="autosave"]'), title: "Autosave", body: "Saved as you type." },
+            { id: "find", target: find('[data-demo="find"]'), title: "Find and replace", body: "Ctrl+F." },
+          ]}
+          labels={{
+            dialog: "Chapter editor tour",
+            next: "Next",
+            back: "Back",
+            done: "Done",
+            skip: "Skip",
+            progress: (step, total) => `Step ${step} of ${total}`,
+          }}
+          onEnd={(how) => {
+            setEnded(how);
+            setOpen(false);
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function AuthoringResponsiveExample() {
+  return (
+    <ResponsivePreview
+      presets={[
+        { id: "phone", label: "Phone", width: 375, icon: Smartphone },
+        { id: "tablet", label: "Tablet", width: 768, icon: Tablet },
+        { id: "desktop", label: "Desktop", width: null, icon: Monitor },
+      ]}
+      labels={{ presets: "Preview screen size", handle: "Preview width", width: (px) => `${px} px` }}
+      defaultPreset="phone"
+    >
+      <article className="reader-text mx-auto flex max-w-[var(--reader-measure)] flex-col gap-4 px-4 py-6">
+        <h3 className="text-2xl font-semibold @min-[40rem]:text-3xl">Chapter one</h3>
+        <p>
+          As the sun sets, the alleys change hue. The lantern-maker closes his shutters one by one, and the fog comes
+          down from the hills to listen.
+        </p>
+      </article>
+    </ResponsivePreview>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -2288,6 +2559,17 @@ export function Gallery() {
 
       <Section title="Batch 2 · reader">
         <ReaderToolsExample />
+      </Section>
+
+      <Section title="Batch 2 · authoring">
+        <AuthoringPublishExample />
+        <AuthoringVisibilityExample />
+        <AuthoringSearchPreviewExample />
+        <AuthoringUnsavedExample />
+        <AuthoringToolbarExample />
+        <AuthoringTourExample />
+        <AuthoringSplitExample />
+        <AuthoringResponsiveExample />
       </Section>
     </AppShell>
   );

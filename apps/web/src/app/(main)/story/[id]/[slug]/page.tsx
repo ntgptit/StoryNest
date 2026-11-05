@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
-import { authorHref, isIndexable } from "@storynest/features";
-import { excerpt } from "@storynest/utils";
+import { authorHref, isIndexable, storyMetaDescription } from "@storynest/features";
 
 import { getCoverUrlResolver } from "@/lib/covers";
 import { bookJsonLd } from "@/lib/seo/json-ld";
@@ -21,7 +20,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!story) return { title: appText.pageTitle.storyFallback, robots: { index: false } };
 
   const coverUrl = story.coverStorageKey ? getCoverUrlResolver()?.(story.coverStorageKey) : undefined;
-  const description = excerpt(story.synopsis, 160);
+  const description = storyMetaDescription(story.synopsis);
   return {
     title: story.title,
     description,

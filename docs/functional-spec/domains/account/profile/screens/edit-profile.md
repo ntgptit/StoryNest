@@ -29,6 +29,7 @@
 | SCR-PRF-02-C10 | Bio textarea + hint | "Bio" (5 rows) / "Up to 1000 characters." (no live counter) |
 | SCR-PRF-02-C11 | Save button | "Save changes" / "Saving…", disabled until dirty |
 | SCR-PRF-02-C12 | Cancel link → `/me` | "Cancel" |
+| SCR-PRF-02-C12b | Unsaved changes bar (Lucian 250) | While the form is dirty: "N unsaved changes", "Discard" (reset) / "Save" (same submit as C11). Closing the tab asks first; an in-app link outside the form is stopped and the bar warns "Save or discard your changes before leaving" (Cancel is not stopped). Avatar changes save instantly and do not count |
 | SCR-PRF-02-C13 | Guard texts | Skeleton while loading; "You need to sign in to edit your profile." + "Sign in" (`/login?next=%2Fme%2Fedit`); "No profile found for this account." |
 | SCR-PRF-02-C14 | Avatar drop zone (Lucian 032) | A picture dragged onto the avatar row highlights it ("Drop the picture here", marching dashed frame) and, dropped, goes through the same checks and crop dialog as a picked one. Hint gains "You can also drag a picture here." on fine pointers |
 

@@ -15,6 +15,8 @@ import {
 import { Input } from "@storynest/ui/components/input";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { Textarea } from "@storynest/ui/components/textarea";
+import { UnsavedChangesBar, useLeaveGuard } from "@storynest/ui/widgets/unsaved-changes-bar";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth, type Profile } from "../../_shared/auth.tsx";
 import { translateErrors } from "../../_shared/form-resolver.ts";
@@ -86,6 +88,18 @@ function EditProfileForm({
 
   const bannerError = update.error && !isUsernameTaken(update.error) ? profileErrorMessage(update.error) : null;
 
+  // Unsaved changes: a Save / Discard bar, and leaving the page asks first (Lucian 250). The form's own Cancel link
+  // is an explicit choice and is not stopped.
+  const formRef = useRef<HTMLFormElement>(null);
+  const dirty = form.formState.isDirty;
+  const [leaveWarning, setLeaveWarning] = useState(0);
+  useLeaveGuard({
+    dirty,
+    message: t.unsaved.leave,
+    onBlocked: () => setLeaveWarning((count) => count + 1),
+    allowInside: formRef,
+  });
+
   return (
     <div className="flex max-w-xl flex-col gap-6">
       <div className="flex flex-col gap-1.5">
@@ -94,7 +108,7 @@ function EditProfileForm({
       </div>
       <AvatarEditor profile={profile} />
       <Form {...form}>
-        <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={update.isPending}>
+        <form ref={formRef} onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={update.isPending}>
           {bannerError ? (
             <p
               role="alert"
@@ -154,6 +168,19 @@ function EditProfileForm({
           </div>
         </form>
       </Form>
+      <UnsavedChangesBar
+        dirty={dirty}
+        message={t.unsaved.count(Object.keys(form.formState.dirtyFields).length)}
+        warning={leaveWarning}
+        warningText={t.unsaved.warning}
+        saveLabel={t.unsaved.save}
+        savingLabel={t.submitting}
+        discardLabel={t.unsaved.discard}
+        label={t.unsaved.region}
+        saving={update.isPending}
+        onSave={() => void submit()}
+        onDiscard={() => form.reset()}
+      />
     </div>
   );
 }

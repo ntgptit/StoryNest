@@ -15,10 +15,23 @@ import {
   canUnpublish,
   canUnpublishChapter,
   formatLocalDateTime,
+  isReady,
   minLocalDateTime,
   publishErrorMessage,
+  publishReadiness,
   scheduleInstant,
 } from "./model/publishing.ts";
+import { checkBody, checkTitle } from "./model/draft-form.ts";
+import {
+  SPLIT_DEFAULT,
+  SPLIT_MAX,
+  SPLIT_PREFS_KEY,
+  TOUR_DONE_KEY,
+  isTourDone,
+  markTourDone,
+  readSplitPrefs,
+  writeSplitPrefs,
+} from "./model/workspace-prefs.ts";
 import { ChapterEditorScreen } from "./index.ts";
 import { editorText } from "./strings.ts";
 
@@ -111,6 +124,8 @@ interface World {
   scheduledFor: string | null;
   role: string | null;
   revision: number;
+  /** Every draft save is refused as changed elsewhere (no row matched the revision). */
+  saveFails?: boolean;
   /** While set, publish_chapter waits for it (a slow server). */
   gate?: Promise<void>;
   rpc: (name: string, args: Record<string, unknown>, world: World) => Result;
@@ -156,6 +171,7 @@ function fakeClient(init: Partial<World> = {}) {
           : { data: { story_id: STORY_ID, status: world.status, scheduled_for: world.scheduledFor }, error: null },
       );
     builder.then = (resolve: (value: unknown) => unknown) => {
+      if (updating && world.saveFails) return resolve({ data: [], error: null });
       if (updating) {
         log.push("save");
         world.revision += 1;
@@ -189,7 +205,7 @@ const adapter: PlatformAdapter = {
 };
 const toasts = { show: vi.fn() };
 
-function setup(t1: ReturnType<typeof fakeClient>) {
+function setup(t1: ReturnType<typeof fakeClient>, options: { firstRunTour?: boolean } = {}) {
   const editor: { current: Editor | null } = { current: null };
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -197,7 +213,12 @@ function setup(t1: ReturnType<typeof fakeClient>) {
         <AuthProvider>
           <PlatformProvider adapter={adapter}>
             <ToastProvider port={toasts}>
-              <ChapterEditorScreen storyId={STORY_ID} chapterId={CHAPTER_ID} onEditor={(e) => (editor.current = e)} />
+              <ChapterEditorScreen
+                storyId={STORY_ID}
+                chapterId={CHAPTER_ID}
+                onEditor={(e) => (editor.current = e)}
+                firstRunTour={options.firstRunTour}
+              />
             </ToastProvider>
           </PlatformProvider>
         </AuthProvider>
@@ -208,6 +229,11 @@ function setup(t1: ReturnType<typeof fakeClient>) {
 }
 const panel = () => screen.findByRole("region", { name: t.title });
 const button = (name: string | RegExp) => screen.findByRole("button", { name });
+/** Schedule… lives in the split button's menu (its name also carries the description line). */
+async function openSchedule() {
+  fireEvent.keyDown(await button(t.more), { key: "Enter" });
+  fireEvent.click(await screen.findByRole("menuitem", { name: (name) => name.startsWith(t.schedule) }));
+}
 
 describe("publishing api", () => {
   it("reads the state and the caller's role from the database's own story_role", async () => {
@@ -320,11 +346,39 @@ describe("PublishPanel", () => {
     );
   });
 
-  it("does not publish text that could not be saved (blank title) and says why", async () => {
+  it("a blank title locks publishing and the checklist says why, until it is fixed", async () => {
     const t1 = fakeClient();
     const editor = setup(t1);
     await waitFor(() => expect(editor.current).not.toBeNull());
+    const region = await panel();
+    expect(within(region).getByText(t.readiness.ready)).toBeTruthy();
     fireEvent.change(await screen.findByLabelText(editorText.chapterTitle), { target: { value: "  " } });
+    const publish = (await button(t.publish)) as HTMLButtonElement;
+    expect(publish.disabled).toBe(true);
+    expect((screen.getByRole("button", { name: t.more }) as HTMLButtonElement).disabled).toBe(true);
+    const titleItem = region.querySelector('[data-item="title"]')!;
+    expect(titleItem.hasAttribute("data-done")).toBe(false);
+    expect(within(titleItem as HTMLElement).getByText(editorText.validation.titleRequired)).toBeTruthy();
+    expect(within(region).getByText(t.readiness.summary(2, 3))).toBeTruthy();
+    // the button points at the checklist that explains it
+    expect(document.getElementById(publish.getAttribute("aria-describedby")!)?.textContent).toContain(
+      t.readiness.items.title,
+    );
+    fireEvent.click(publish);
+    expect(t1.rpcCalls.filter((c) => c.name === "publish_chapter")).toEqual([]);
+
+    fireEvent.change(screen.getByLabelText(editorText.chapterTitle), { target: { value: "Chương 1" } });
+    await waitFor(() =>
+      expect((screen.getByRole("button", { name: t.publish }) as HTMLButtonElement).disabled).toBe(false),
+    );
+    expect(region.querySelector('[data-item="title"]')!.hasAttribute("data-done")).toBe(true);
+  });
+
+  it("does not publish when the draft could not be saved first, and says why", async () => {
+    const t1 = fakeClient({ saveFails: true });
+    const editor = setup(t1);
+    await waitFor(() => expect(editor.current).not.toBeNull());
+    fireEvent.change(await screen.findByLabelText(editorText.chapterTitle), { target: { value: "Tên mới" } });
     fireEvent.click(await button(t.publish));
     expect(await screen.findByText(t.saveFirst)).toBeTruthy();
     expect(t1.rpcCalls.filter((c) => c.name === "publish_chapter")).toEqual([]);
@@ -359,7 +413,7 @@ describe("PublishPanel", () => {
   it("schedules at the picked local time as a UTC instant, with the saved revision", async () => {
     const t1 = fakeClient();
     setup(t1);
-    fireEvent.click(await button(t.schedule));
+    await openSchedule();
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText(new RegExp(t.scheduleDialog.zone("").trim()))).toBeTruthy();
     const future = new Date(Date.now() + 2 * 24 * 3600_000);
@@ -381,7 +435,7 @@ describe("PublishPanel", () => {
   it("refuses a time in the past or no time at all, before asking the server", async () => {
     const t1 = fakeClient();
     setup(t1);
-    fireEvent.click(await button(t.schedule));
+    await openSchedule();
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("button", { name: t.scheduleDialog.submit }));
     expect(await within(dialog).findByText(t.scheduleDialog.required)).toBeTruthy();
@@ -389,5 +443,119 @@ describe("PublishPanel", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: t.scheduleDialog.submit }));
     expect(await within(dialog).findByText(t.scheduleDialog.past)).toBeTruthy();
     expect(t1.rpcCalls.filter((c) => c.name === "schedule_chapter")).toEqual([]);
+  });
+});
+
+describe("publish readiness (the existing draft rules as a checklist)", () => {
+  const doc = (content: unknown[]) => ({ type: "doc", content }) as Parameters<typeof checkBody>[0];
+  const paragraph = { type: "paragraph", attrs: { blockId: bid(1) }, content: [{ type: "text", text: "Một" }] };
+
+  it("splits the draft rules: a title of 1 to 200 characters, a body the schema accepts", () => {
+    expect(checkTitle("  Chương  ")).toEqual({ ok: true, title: "Chương" });
+    expect(checkTitle("   ")).toEqual({ ok: false, message: editorText.validation.titleRequired });
+    expect(checkTitle("x".repeat(201))).toEqual({ ok: false, message: editorText.validation.titleTooLong });
+    expect(checkBody(doc([paragraph])).ok).toBe(true);
+    expect(checkBody(doc([]))).toEqual({ ok: false, message: editorText.validation.unsupported }); // no block at all
+    expect(checkBody(doc([{ type: "codeBlock" }]))).toEqual({ ok: false, message: editorText.validation.unsupported });
+  });
+
+  it("lists title, body and not archived, with the existing messages as hints", () => {
+    const draft = { title: checkTitle(""), body: checkBody(doc([paragraph])) };
+    const checks = publishReadiness(draft, { status: "draft", scheduledFor: null, role: "owner" });
+    expect(checks).toEqual([
+      { id: "title", done: false, hint: editorText.validation.titleRequired },
+      { id: "body", done: true, hint: undefined },
+      { id: "notArchived", done: true, hint: undefined },
+    ]);
+    expect(isReady(checks)).toBe(false);
+    const archived = publishReadiness(
+      { title: checkTitle("A"), body: checkBody(doc([paragraph])) },
+      { status: "archived", scheduledFor: null, role: "owner" },
+    );
+    expect(archived[2]).toEqual({ id: "notArchived", done: false, hint: t.archivedHint });
+    expect(
+      isReady(
+        publishReadiness(
+          { title: checkTitle("A"), body: checkBody(doc([paragraph])) },
+          { status: "published", scheduledFor: null, role: "editor" },
+        ),
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("editor workspace preferences", () => {
+  it("remembers the side-by-side preview and its width, and survives bad or missing storage", () => {
+    expect(readSplitPrefs()).toEqual({ on: false, split: SPLIT_DEFAULT });
+    writeSplitPrefs({ on: true, split: 99 });
+    expect(readSplitPrefs()).toEqual({ on: true, split: SPLIT_MAX });
+    window.localStorage.setItem(SPLIT_PREFS_KEY, "{not json");
+    expect(readSplitPrefs()).toEqual({ on: false, split: SPLIT_DEFAULT });
+    window.localStorage.setItem(SPLIT_PREFS_KEY, JSON.stringify({ on: "yes", split: "wide" }));
+    expect(readSplitPrefs()).toEqual({ on: false, split: SPLIT_DEFAULT });
+  });
+
+  it("remembers that the tour was seen; unreadable storage counts as seen", () => {
+    expect(isTourDone()).toBe(false);
+    markTourDone();
+    expect(window.localStorage.getItem(TOUR_DONE_KEY)).toBe("1");
+    expect(isTourDone()).toBe(true);
+    const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    window.localStorage.removeItem(TOUR_DONE_KEY);
+    expect(isTourDone()).toBe(true);
+    spy.mockRestore();
+  });
+});
+
+describe("chapter editor: first-run tour and toolbar tooltips", () => {
+  const tour = editorText.tour;
+
+  it("offers the tour once when the host asks for it, and never again after Skip", async () => {
+    setup(fakeClient(), { firstRunTour: true });
+    const dialog = await screen.findByRole("dialog", { name: tour.dialog });
+    expect(within(dialog).getByText(tour.toolbar.title)).toBeTruthy();
+    expect(within(dialog).getByText(tour.progress(1, 4))).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: tour.next }));
+    expect(within(dialog).getByText(tour.autosave.title)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: tour.skip }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: tour.dialog })).toBeNull());
+    expect(isTourDone()).toBe(true);
+    cleanup();
+
+    setup(fakeClient(), { firstRunTour: true });
+    await screen.findByRole("toolbar");
+    await screen.findByRole("region", { name: t.title });
+    expect(screen.queryByRole("dialog", { name: tour.dialog })).toBeNull();
+  });
+
+  it("walks through toolbar, autosave, publish and find, and Done ends it for good", async () => {
+    setup(fakeClient(), { firstRunTour: true });
+    const dialog = await screen.findByRole("dialog", { name: tour.dialog });
+    for (const step of [tour.autosave, tour.publish, tour.find]) {
+      fireEvent.keyDown(dialog, { key: "ArrowRight" });
+      expect(within(dialog).getByText(step.title)).toBeTruthy();
+    }
+    fireEvent.click(within(dialog).getByRole("button", { name: tour.done }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: tour.dialog })).toBeNull());
+    expect(isTourDone()).toBe(true);
+  });
+
+  it("is off unless the host turns it on", async () => {
+    setup(fakeClient());
+    await screen.findByRole("toolbar");
+    expect(screen.queryByRole("dialog", { name: tour.dialog })).toBeNull();
+  });
+
+  it("gives every toolbar button a tooltip trigger and keeps its own name", async () => {
+    setup(fakeClient());
+    const toolbar = await screen.findByRole("toolbar", { name: editorText.toolbar.label });
+    const bold = within(toolbar).getByRole("button", { name: editorText.toolbar.bold });
+    expect(bold.getAttribute("data-slot")).toBe("tooltip-trigger");
+    expect(bold.getAttribute("data-tool")).toBe("bold");
+    expect(within(toolbar).getByRole("button", { name: editorText.toolbar.find }).getAttribute("data-tool")).toBe(
+      "find",
+    );
   });
 });
