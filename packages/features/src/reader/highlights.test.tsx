@@ -78,6 +78,7 @@ describe("mention notifications", () => {
       id: "n1",
       type: "comment_mentioned",
       storyId: "s1",
+      chapterId: null,
       read: false,
       createdAt: "2026-11-06T00:00:00Z",
       actorName: "Mai",

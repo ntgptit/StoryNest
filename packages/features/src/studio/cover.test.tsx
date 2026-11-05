@@ -270,3 +270,42 @@ describe("CoverEditor", () => {
     expect((await screen.findByRole("alert")).textContent).toBe(t.errors.forbidden);
   });
 });
+
+describe("cover BlurHash (batch 4 authoring4, Lucian 258)", () => {
+  function recordingClient() {
+    const saved: Record<string, unknown>[] = [];
+    const bucket = {
+      upload: vi.fn(async () => ({ data: null, error: null })),
+      remove: vi.fn(async () => ({ data: [], error: null })),
+    };
+    const client = {
+      from: vi.fn(() => ({
+        update: (values: Record<string, unknown>) => {
+          saved.push(values);
+          return { eq: () => ({ select: async () => ({ data: [{ id: STORY }], error: null }) }) };
+        },
+      })),
+      storage: { from: vi.fn(() => bucket) },
+    } as unknown as DataClient;
+    return { client, saved };
+  }
+
+  it("saves the placeholder with the new cover key in the same update", async () => {
+    const { client, saved } = recordingClient();
+    await uploadCover(
+      client,
+      { id: STORY, coverStorageKey: null },
+      { ...prepared, placeholder: "LEHV6nWB2yk8pyo0adR*.7kCMdnj" },
+    );
+    expect(saved[0]).toMatchObject({ cover_blurhash: "LEHV6nWB2yk8pyo0adR*.7kCMdnj" });
+    expect(typeof saved[0]?.cover_storage_key).toBe("string");
+  });
+
+  it("drops a malformed placeholder instead of failing the upload, and clears it with the cover", async () => {
+    const { client, saved } = recordingClient();
+    await uploadCover(client, { id: STORY, coverStorageKey: null }, { ...prepared, placeholder: "not-a-hash" });
+    expect(saved[0]).toMatchObject({ cover_blurhash: null });
+    await removeCover(client, { id: STORY, coverStorageKey: OLD_KEY });
+    expect(saved[1]).toEqual({ cover_storage_key: null, cover_blurhash: null });
+  });
+});

@@ -6,6 +6,14 @@ const vi = {
   startReading: "Bắt đầu đọc",
   noChaptersYet: "Truyện chưa có chương nào được đăng.",
   chaptersTitle: "Danh sách chương",
+  updateDays: (days: string) => `Ra chương vào ${days}`,
+  nextChapter: {
+    headline: "Chương mới sau",
+    due: "Chương mới sắp lên, chờ chút nhé",
+    format: (d: number, h: number, m: number, s: number) =>
+      d > 0 ? `${d} ngày ${h} giờ ${m} phút` : h > 0 ? `${h} giờ ${m} phút ${s} giây` : `${m} phút ${s} giây`,
+    when: (time: string) => `Lên lúc ${time}`,
+  },
   chapterCount: (count: number) => `${count} chương`,
   chapterLabel: (number: number) => `Chương ${number}`,
   chapterRange: (first: number, last: number) => `Chương ${first}–${last}`,

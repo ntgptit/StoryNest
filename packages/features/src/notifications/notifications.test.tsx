@@ -618,3 +618,30 @@ describe("NotificationsScreen", () => {
     expect(await screen.findByText(t.empty.title)).toBeTruthy();
   });
 });
+
+describe("review sign-off notifications (batch 4 authoring4, Lucian 180)", () => {
+  const CHAPTER = "c0000000-0000-4000-8000-000000000001";
+  const review = (type: string) =>
+    describeNotification(
+      toNotification(
+        row(1, {
+          event_type: type,
+          chapter_id: CHAPTER,
+          payload: { story_title: "Rừng sương mù", chapter_title: "Mở đầu", revision: 4, note: "" },
+        }),
+      ),
+    );
+
+  it("words each review event and links to the chapter editor", () => {
+    const href = `/studio/story/${STORY}/chapter/${CHAPTER}`;
+    expect(review("chapter_review_requested")).toEqual({
+      text: t.text.reviewRequested("Tác Giả", "Mở đầu", "Rừng sương mù"),
+      href,
+    });
+    expect(review("chapter_review_approved")).toEqual({ text: t.text.reviewApproved("Tác Giả", "Mở đầu"), href });
+    expect(review("chapter_review_changes_requested")).toEqual({
+      text: t.text.reviewChangesRequested("Tác Giả", "Mở đầu"),
+      href,
+    });
+  });
+});

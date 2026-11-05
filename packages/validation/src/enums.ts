@@ -42,6 +42,7 @@ export const NOTIFICATION_PREFERENCE_TYPES = [
 export const COMMENT_REACTIONS = ["thumbs_up", "laugh", "wow", "sad", "fire", "clap"] as const;
 /** Pen styles of a personal highlight (chapter_highlights.style). */
 export const HIGHLIGHT_STYLES = ["underline", "circle", "box", "strike"] as const;
+export const REVIEW_STATUSES = ["pending", "approved", "changes_requested"] as const;
 
 export const accountStatusSchema = z.enum(ACCOUNT_STATUSES);
 export const storyStatusSchema = z.enum(STORY_STATUSES);
@@ -60,6 +61,7 @@ export const announcementKindSchema = z.enum(ANNOUNCEMENT_KINDS);
 export const notificationPreferenceTypeSchema = z.enum(NOTIFICATION_PREFERENCE_TYPES);
 export const commentReactionSchema = z.enum(COMMENT_REACTIONS);
 export const highlightStyleSchema = z.enum(HIGHLIGHT_STYLES);
+export const reviewStatusSchema = z.enum(REVIEW_STATUSES);
 
 // Named constants for the values code compares or filters on, so no query or condition spells a literal like
 // "published". `satisfies` makes the compiler reject a value that is not in the enum; validation.test.ts checks
@@ -162,6 +164,13 @@ export const HIGHLIGHT_STYLE = {
 export type CommentReaction = z.infer<typeof commentReactionSchema>;
 export type HighlightStyle = z.infer<typeof highlightStyleSchema>;
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
+export type ReviewStatus = z.infer<typeof reviewStatusSchema>;
+/** State of a chapter review sign-off (chapter_reviews.status). */
+export const REVIEW_STATUS = {
+  PENDING: "pending",
+  APPROVED: "approved",
+  CHANGES_REQUESTED: "changes_requested",
+} as const satisfies Record<string, ReviewStatus>;
 export type CommentStatus = z.infer<typeof commentStatusSchema>;
 export type InvitationStatus = z.infer<typeof invitationStatusSchema>;
 export type CollaboratorRole = z.infer<typeof collaboratorRoleSchema>;

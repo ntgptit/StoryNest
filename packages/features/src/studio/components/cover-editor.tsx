@@ -28,7 +28,11 @@ const t = studioText.form.cover;
 /** Width of a stored cover. 2:3 like StoryCover; 600 px is sharp at the biggest place a cover is shown. */
 export const COVER_MAX_WIDTH = 600;
 export const COVER_ASPECT = 2 / 3;
-const renderCover: ImageRenderer = createBrowserRenderer({ aspect: COVER_ASPECT, maxWidth: COVER_MAX_WIDTH });
+const renderCover: ImageRenderer = createBrowserRenderer({
+  aspect: COVER_ASPECT,
+  maxWidth: COVER_MAX_WIDTH,
+  placeholder: true,
+});
 
 function coverErrorMessage(error: Error): string {
   if (error instanceof ImageError) return t.errors[error.problem];
@@ -51,7 +55,7 @@ export function CoverEditor({
   title,
   render = renderCover,
 }: {
-  story: { id: string; coverStorageKey: string | null };
+  story: { id: string; coverStorageKey: string | null; coverBlurhash?: string | null };
   title: string;
   render?: ImageRenderer;
 }) {
@@ -80,8 +84,8 @@ export function CoverEditor({
       <p className="text-sm leading-none font-medium">{t.label}</p>
       <DropZone label={t.drop} disabled={busy} onFiles={(files) => pick(files[0])} className="self-start pr-2">
         <div className="flex items-end gap-4" aria-busy={busy}>
-          <UploadVeil busy={upload.isPending} done={uploaded} className="w-24 rounded-lg">
-            <StoryCover title={title} coverUrl={url} />
+          <UploadVeil busy={upload.isPending} done={uploaded} className="w-24 shrink-0 rounded-lg">
+            <StoryCover title={title} coverUrl={url} placeholder={story.coverBlurhash} />
           </UploadVeil>
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>

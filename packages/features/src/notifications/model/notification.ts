@@ -10,6 +10,9 @@ export const NOTIFICATION_TYPE = {
   COLLABORATION_INVITED: "collaboration_invited",
   COLLABORATION_ACCEPTED: "collaboration_accepted",
   COLLABORATION_DECLINED: "collaboration_declined",
+  CHAPTER_REVIEW_REQUESTED: "chapter_review_requested",
+  CHAPTER_REVIEW_APPROVED: "chapter_review_approved",
+  CHAPTER_REVIEW_CHANGES_REQUESTED: "chapter_review_changes_requested",
 } as const;
 
 export interface NotificationRow {
@@ -27,6 +30,7 @@ export interface AppNotification {
   id: string;
   type: string;
   storyId: string | null;
+  chapterId: string | null;
   read: boolean;
   /** The server's timestamp text: it is also the paging cursor, so it keeps its microseconds. */
   createdAt: string;
@@ -44,6 +48,7 @@ export function toNotification(row: NotificationRow): AppNotification {
     id: row.id,
     type: row.event_type,
     storyId: row.story_id,
+    chapterId: row.chapter_id,
     read: row.read_at !== null,
     createdAt: row.created_at,
     actorName: name,
@@ -116,6 +121,18 @@ export function describeNotification(n: AppNotification): NotificationView {
         text: t.collaborationDeclined(actor, storyTitle),
         href: n.storyId ? `/studio/story/${n.storyId}/team` : null,
       };
+    case NOTIFICATION_TYPE.CHAPTER_REVIEW_REQUESTED:
+    case NOTIFICATION_TYPE.CHAPTER_REVIEW_APPROVED:
+    case NOTIFICATION_TYPE.CHAPTER_REVIEW_CHANGES_REQUESTED: {
+      // The sign-off lives in the chapter editor (Lucian 180); the link opens it.
+      const chapterTitle = text(n.payload, "chapter_title") ?? "";
+      const href = n.storyId && n.chapterId ? `/studio/story/${n.storyId}/chapter/${n.chapterId}` : null;
+      if (n.type === NOTIFICATION_TYPE.CHAPTER_REVIEW_REQUESTED)
+        return { text: t.reviewRequested(actor, chapterTitle, storyTitle), href };
+      if (n.type === NOTIFICATION_TYPE.CHAPTER_REVIEW_APPROVED)
+        return { text: t.reviewApproved(actor, chapterTitle), href };
+      return { text: t.reviewChangesRequested(actor, chapterTitle), href };
+    }
     default:
       return { text: notificationText.generic, href: null };
   }

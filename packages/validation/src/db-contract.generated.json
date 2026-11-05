@@ -34,6 +34,11 @@
             "author",
             "moderator"
         ],
+        "chapter_reviews.status": [
+            "approved",
+            "changes_requested",
+            "pending"
+        ],
         "content_reports.status": [
             "dismissed",
             "pending",
@@ -146,6 +151,7 @@
         "categories.slug": 80,
         "chapters.status": 16,
         "comments.status": 16,
+        "story_parts.title": 120,
         "tags.display_name": 100,
         "announcements.body": 280,
         "announcements.kind": 12,
@@ -157,6 +163,7 @@
         "stories.language_code": 12,
         "announcements.link_url": 500,
         "app_users.display_name": 100,
+        "chapter_reviews.status": 20,
         "chapter_versions.title": 200,
         "content_reports.reason": 40,
         "content_reports.status": 20,
@@ -166,6 +173,8 @@
         "reading_lists.visibility": 12,
         "story_invitations.status": 12,
         "user_settings.language_code": 12,
+        "chapter_reviews.request_note": 500,
+        "chapter_reviews.decision_note": 500,
         "chapter_version_blocks.block_type": 16,
         "notification_preferences.event_type": 40,
         "story_invitations.collaborator_role": 16,

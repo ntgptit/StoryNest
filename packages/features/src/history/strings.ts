@@ -9,6 +9,14 @@ const vi = {
   backToEditor: "Về trình soạn",
   versionLabel: (n: number) => `Phiên bản ${n}`,
   listLabel: "Các phiên bản",
+  graph: {
+    label: "Sơ đồ nhánh phiên bản",
+    hint: "Mỗi chấm là một lần đăng, nối với phiên bản nó được viết tiếp. Khôi phục một bản cũ rồi đăng sẽ tách thành nhánh mới.",
+    node: (n: number, live: boolean, from: number | null) =>
+      `Phiên bản ${n}${live ? ", đang hiển thị" : ""}${from === null ? "" : `, viết tiếp từ phiên bản ${from}`}`,
+    branches: (count: number) => (count === 0 ? "Một nhánh" : `${count + 1} nhánh`),
+    from: (n: number) => `Viết tiếp từ phiên bản ${n}`,
+  },
   live: "Đang hiển thị với độc giả",
   by: (name: string) => `bởi ${name}`,
   words: (count: string) => `${count} từ`,

@@ -10,3 +10,4 @@ export * from "./reading-habits.ts";
 export * from "./story.ts";
 export * from "./chapter.ts";
 export * from "./announcement.ts";
+export * from "./authoring.ts";

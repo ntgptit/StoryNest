@@ -165,3 +165,6 @@ F-CHM-01, F-STM-04, F-CHM-03, U-CHM-01, U-CHM-02, U-CHM-03, U-STM-05.
 
 ## G. Open questions
 Q-TEAM-02.
+
+## Batch 4 · authoring4
+Parts tree (batch 4, Lucian 102): below the chapter list a "Parts" section shows the story as a tree (TreeFolder per part run, empty parts after), a part picker per chapter, add / rename / delete part. BR-CHM-016. Rollback: see the top of `20261106040000_story_parts.sql`.

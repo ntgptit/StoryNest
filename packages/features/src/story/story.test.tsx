@@ -587,3 +587,51 @@ describe("StoryScreen: long stories", () => {
     expect(screen.queryByRole("button", { name: new RegExp(storyText.chapterRange(1, 50)) })).toBeNull();
   });
 });
+
+describe("StoryScreen: parts, update days and next chapter (batch 4 authoring4)", () => {
+  const P1 = { id: "9a000000-0000-4000-8000-000000000001", title: "Tập một" };
+
+  it("reads the part embed and the schedule columns", () => {
+    expect(toChapterListItem(chapterRow(1, { part: [P1] })).part).toEqual(P1);
+    expect(toChapterListItem(chapterRow(1)).part).toBeNull();
+    const detail = toStoryDetail(storyRow({ update_days: 9, cover_blurhash: "00TI:j" }));
+    expect(detail.updateDays).toBe(9);
+    expect(detail.coverBlurhash).toBe("00TI:j");
+    expect(toStoryDetail(storyRow()).updateDays).toBe(0);
+  });
+
+  it("groups chapters under their part, shows the schedule and counts down to the next chapter", async () => {
+    const stories = table(() => ({ data: storyRow({ update_days: 9 }), error: null }));
+    const chapterTable = table(() => ({
+      data: [chapterRow(1), chapterRow(2, { part: P1 }), chapterRow(3, { part: P1 })],
+      error: null,
+    }));
+    const from = vi.fn((name: string) => (name === "stories" ? stories.builder : chapterTable.builder));
+    const next = new Date(Date.now() + 3 * 3600_000).toISOString();
+    const rpc = vi.fn((name: string) => {
+      const promise = Promise.resolve(
+        name === "next_chapter_at" ? { data: next, error: null } : { data: [], error: null },
+      );
+      return Object.assign(promise, { returns: () => promise });
+    });
+    renderScreen(withAuth({ from, rpc }, null));
+    const folder = await screen.findByRole("button", { name: /Tập một/ });
+    expect(folder.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("link", { name: /Tựa chương 2/ })).toBeTruthy();
+    expect(screen.getByText(storyText.updateDays("Thứ Hai và Thứ Năm"))).toBeTruthy();
+    expect(await screen.findByText(storyText.nextChapter.headline)).toBeTruthy();
+    expect(rpc).toHaveBeenCalledWith("next_chapter_at", { p_story_id: STORY_ID });
+    expect(String(args(chapterTable.calls, "select")[0]?.[0])).toContain("part:story_parts!fk_chapter_part(id, title)");
+  });
+
+  it("shows no countdown when nothing is scheduled, or the answer is not a time", async () => {
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: [chapterRow(1)], error: null }),
+    );
+    renderScreen(client);
+    expect(await screen.findByRole("link", { name: /Tựa chương 1/ })).toBeTruthy();
+    expect(screen.queryByText(storyText.nextChapter.headline)).toBeNull();
+    expect(screen.queryByText(/Ra chương vào/)).toBeNull();
+  });
+});

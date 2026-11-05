@@ -133,3 +133,6 @@ F-HIST-01, F-HIST-02, U-HIST-01, F-EDT-02 (details: [functional gap analysis](..
 ## G. Open questions
 
 Q-HIST-01 (should restore snapshot the replaced draft?), Q-HIST-02 (should moderators get read-only history?).
+
+## Batch 4 · authoring4
+Branch graph (batch 4, Lucian 177): a graph above the version list (dots select a version; live filled, side branches below), "Continued from version n" badge; restore goes through `restore_chapter_version` (BR-HIST-012). Rollback: top of `20261106040300_branching_version_history.sql`.

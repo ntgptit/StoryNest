@@ -341,3 +341,27 @@
 | Related screens | SCR-STM-03 |
 | Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:74-80,207-211`; `supabase/migrations/20261104002400_story_image_buckets.sql:38-40`; `supabase/migrations/20261104001400_tags.sql:48-51` |
 | Status | Verified (gap) |
+
+### BR-STM-028 — Weekly update schedule (batch 4, Lucian 109)
+| Field | Value |
+| --- | --- |
+| Description | `stories.update_days` is a bit mask of ISO weekdays (bit 0 = Monday, 0..127, CHECK `chk_story_update_days`) |
+| Preconditions | Written by owner / co-author (existing `stories_update`, new column grant); set at creation by the owner |
+| Conditions | Edited in the story form with a day painter (press or drag, Esc clears); day names come from `Intl` in the reader's language |
+| Expected behavior | The story page shows "Updates on Monday and Thursday". Nothing is published or scheduled from it |
+| Exceptions | Editors cannot change it (0 rows); out of range → 23514 |
+| Related screens | SCR-STM-02, SCR-STM-03, SCR-STORY-01 |
+| Evidence | `supabase/migrations/20261106040100_story_update_days.sql`; `supabase/tests/505_story_update_days.test.sql`; `packages/features/src/_shared/update-days.ts`; `packages/ui/src/widgets/weekday-painter.tsx` |
+| Status | Verified (SQL test, unit test) |
+
+### BR-STM-029 — Cover BlurHash placeholder (batch 4, Lucian 258)
+| Field | Value |
+| --- | --- |
+| Description | `stories.cover_blurhash` holds a BlurHash of the cover, computed in the browser at upload (4x3 components from a 24x36 copy) and written in the same update as `cover_storage_key` |
+| Preconditions | Owner / co-author (existing cover update path, new column grant) |
+| Conditions | CHECK `chk_story_cover_blurhash`: base-83 only, 6..100 chars, exactly 4 + 2·nx·ny long. A cover change without a new hash, or removing the cover, clears it (trigger `stories_cover_blurhash`). A malformed client hash is dropped, not sent |
+| Expected behavior | Covers with a hash show the blurred preview, then the picture fades and settles in; a cover already cached on mount shows at once (no animation on first render) |
+| Exceptions | Browsers that cannot read canvas pixels upload without a hash (plain cover) |
+| Related screens | SCR-STM-03, SCR-STORY-01 |
+| Evidence | `supabase/migrations/20261106040500_cover_blurhash.sql`; `supabase/tests/525_cover_blurhash.test.sql`; `packages/utils/src/blurhash.ts`; `packages/ui/src/widgets/blur-up-image.tsx`; `packages/features/src/studio/cover.test.tsx` |
+| Status | Verified (SQL test, unit test, gallery in a real browser) |

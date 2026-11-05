@@ -13,7 +13,7 @@ import {
 import { cn } from "@storynest/ui/lib/utils";
 import { ScrubIndex, scrollRowToTop } from "@storynest/ui/widgets/scrub-index";
 import { SectionOutline, type OutlineItem } from "@storynest/ui/widgets/section-outline";
-import { useRef, useState, type ReactNode, type UIEvent } from "react";
+import { Fragment, useRef, useState, type ReactNode, type UIEvent } from "react";
 import { AppLink } from "../../_shared/platform.tsx";
 import { chapterHref, chapterRanges, isLongStory, type ChapterListItem, type StoryDetail } from "../../story/index.ts";
 import { blockAnchor } from "../model/chapter.ts";
@@ -141,22 +141,32 @@ export function TocSheet({
             <ol ref={list} className="flex flex-col gap-1">
               {chapters.map((chapter, index) => {
                 const current = currentSlug !== undefined && chapter.slug === currentSlug;
+                // Parts (Lucian 102): a part's name heads each run of its chapters; the order stays the reading order.
+                const part = chapter.part ?? null;
+                const partStarts = part !== null && part.id !== (chapters[index - 1]?.part?.id ?? null);
                 return (
-                  <li key={chapter.id} data-index={index} className="scroll-mt-2">
-                    <AppLink
-                      href={chapterHref(story, chapter)}
-                      aria-current={current ? currentKind : undefined}
-                      className={cn(
-                        "block rounded-md px-3 py-2 text-sm hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
-                        current && "bg-accent font-medium",
-                      )}
-                    >
-                      <span className="block text-xs text-muted-foreground">
-                        {readerText.chapterLabel(chapter.number)}
-                      </span>
-                      {chapter.title}
-                    </AppLink>
-                  </li>
+                  <Fragment key={chapter.id}>
+                    {partStarts ? (
+                      <li className="px-3 pt-3 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                        {part.title}
+                      </li>
+                    ) : null}
+                    <li data-index={index} className={cn("scroll-mt-2", part !== null && "ml-2 border-l pl-1")}>
+                      <AppLink
+                        href={chapterHref(story, chapter)}
+                        aria-current={current ? currentKind : undefined}
+                        className={cn(
+                          "block rounded-md px-3 py-2 text-sm hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none",
+                          current && "bg-accent font-medium",
+                        )}
+                      >
+                        <span className="block text-xs text-muted-foreground">
+                          {readerText.chapterLabel(chapter.number)}
+                        </span>
+                        {chapter.title}
+                      </AppLink>
+                    </li>
+                  </Fragment>
                 );
               })}
             </ol>

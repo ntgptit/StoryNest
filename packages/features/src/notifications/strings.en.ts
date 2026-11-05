@@ -43,6 +43,10 @@ export const en = {
       `${actor} accepted your invitation to co-author "${storyTitle}"`,
     collaborationDeclined: (actor: string, storyTitle: string) =>
       `${actor} declined your invitation to co-author "${storyTitle}"`,
+    reviewRequested: (actor: string, chapterTitle: string, storyTitle: string) =>
+      `${actor} asked you to review "${chapterTitle}" in "${storyTitle}"`,
+    reviewApproved: (actor: string, chapterTitle: string) => `${actor} approved "${chapterTitle}"`,
+    reviewChangesRequested: (actor: string, chapterTitle: string) => `${actor} sent "${chapterTitle}" back for changes`,
   },
   errors: {
     network: "No connection. Check your network and try again.",

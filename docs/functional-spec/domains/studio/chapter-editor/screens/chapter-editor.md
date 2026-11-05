@@ -267,3 +267,6 @@ U-EDT-03, U-EDT-04, U-EDT-05 (details: [functional gap analysis](../../../../aud
 
 Q-EDT-01 (empty chapters publishable?), Q-EDT-02 (scheduled snapshot content and attribution), Q-EDT-03 (may editors
 cancel a schedule?), Q-EDT-04 (same-browser multi-tab backup), Q-EDT-05 (schedule the next version of a live chapter?).
+
+## Batch 4 · authoring4
+Team tools (batch 4, `teamTools` prop, on in the app): "Who is editing" panel at the top of the column (advisory lock, Lucian 196, BR-EDT-030) and the draft sign-off sheet under the publish panel (Lucian 180, BR-EDT-029). Rollback: top of `20261106040400_chapter_reviews.sql` and `20261106040600_chapter_edit_locks.sql`.

@@ -5,6 +5,7 @@ export const studioKeys = {
   deleted: (userId: string) => ["studio", "deleted", userId] as const,
   story: (storyId: string) => ["studio", "story", storyId] as const,
   chapters: (storyId: string) => ["studio", "chapters", storyId] as const,
+  parts: (storyId: string) => ["studio", "parts", storyId] as const,
   collaborators: (storyId: string) => ["studio", "collaborators", storyId] as const,
   storyInvitations: (storyId: string) => ["studio", "story-invitations", storyId] as const,
   myInvitations: (userId: string) => ["studio", "my-invitations", userId] as const,

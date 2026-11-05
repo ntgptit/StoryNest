@@ -31,7 +31,10 @@ import { RadioCards } from "@storynest/ui/widgets/radio-cards";
 import { SearchResultPreview } from "@storynest/ui/widgets/search-result-preview";
 import { SubmitButton } from "@storynest/ui/widgets/submit-button";
 import { UnsavedChangesBar, useLeaveGuard } from "@storynest/ui/widgets/unsaved-changes-bar";
+import { WeekdayPainter } from "@storynest/ui/widgets/weekday-painter";
 import { usePublicUrl } from "../../_shared/avatar.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
+import { flagsToMask, maskToFlags, updateDaysText, weekdayNames } from "../../_shared/update-days.ts";
 import { toAppError } from "../../_shared/errors.ts";
 import { translateErrors } from "../../_shared/form-resolver.ts";
 import { AppLink, useNavigation, usePlatform } from "../../_shared/platform.tsx";
@@ -233,7 +236,10 @@ function StoryFields({
         <FormErrorSummary title={t.errorSummary} />
 
         {edit ? (
-          <CoverEditor story={{ id: storyId, coverStorageKey: edit.coverStorageKey }} title={form.watch("title")} />
+          <CoverEditor
+            story={{ id: storyId, coverStorageKey: edit.coverStorageKey, coverBlurhash: edit.coverBlurhash }}
+            title={form.watch("title")}
+          />
         ) : (
           <p className="text-sm text-muted-foreground">{t.cover.saveFirst}</p>
         )}
@@ -406,6 +412,30 @@ function StoryFields({
               <FormMessage />
             </FormItem>
           )}
+        />
+
+        <FormField
+          control={form.control}
+          name="updateDays"
+          render={({ field }) => {
+            const locale = currentLocale();
+            const mask = field.value ?? 0;
+            const days = updateDaysText(mask, locale, "short");
+            return (
+              <FormItem>
+                <p className="text-sm leading-none font-medium">{t.updateDays.label}</p>
+                <FormDescription>{t.updateDays.hint}</FormDescription>
+                <WeekdayPainter
+                  value={maskToFlags(mask)}
+                  onChange={(flags) => field.onChange(flagsToMask(flags))}
+                  dayLabels={weekdayNames(locale, "short")}
+                  dayNames={weekdayNames(locale, "long")}
+                  summary={days === "" ? t.updateDays.none : t.updateDays.summary(days)}
+                  label={t.updateDays.label}
+                />
+              </FormItem>
+            );
+          }}
         />
 
         <FormField

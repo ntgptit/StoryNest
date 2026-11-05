@@ -1636,6 +1636,54 @@
   }
 }
 
+/*
+ * Batch 4 "authoring4" (Lucian 177, 180, 196, 258, 265). Version graph: a new node springs in from nothing and the
+ * current one wears a fading ring (decorative: motion-safe only). Sign-off seal: stamped down from a larger, more
+ * tilted copy. Next-chapter headline: the new line rises in from below. Edit control: the "editing" marker glides to
+ * the new holder. Blur-up: the sharp cover settles from 1.15x while the blur lifts (ease-soft, 1 s / 0.8 s).
+ */
+@theme {
+  --ease-handoff: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-node-in: node-in 0.45s var(--ease-pop);
+  --animate-node-ring: node-ring 1.6s ease-out infinite;
+  --animate-seal-stamp: seal-stamp 0.45s var(--ease-soft);
+  --animate-headline-in: headline-in 0.45s var(--ease-rise);
+  @keyframes node-in {
+    from {
+      scale: 0;
+    }
+  }
+  @keyframes node-ring {
+    0% {
+      opacity: 0.6;
+      transform: scale(0.7);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.35);
+    }
+  }
+  /* Individual rotate/scale properties, so it ends exactly on the seal's static -rotate-12. */
+  @keyframes seal-stamp {
+    from {
+      opacity: 0.2;
+      rotate: -25deg;
+      scale: 1.35;
+    }
+    to {
+      opacity: 1;
+      rotate: -12deg;
+      scale: 1;
+    }
+  }
+  @keyframes headline-in {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

@@ -237,3 +237,6 @@ F-STORY-01 (report shown to author), F-STORY-02 (unbounded chapter list), F-STOR
 
 - Q-STORY-01 — Should stories of suspended authors stay readable? (BR-STORY-016)
 - Q-READ-01 — Should "Chapter N" be the position among published chapters or `sort_order`? (BR-STORY-011)
+
+## Batch 4 · authoring4
+Batch 4 authoring4: cover blur-up from `cover_blurhash` (BR-STM-029); "Updates on …" line under the counters (BR-STM-028); next chapter countdown above the chapter list (BR-STORY-018); chapters grouped into part folders (BR-CHM-016). The reader contents sheet heads part runs with the part name. Rollback: top of `20261106040200_next_chapter_countdown.sql`.

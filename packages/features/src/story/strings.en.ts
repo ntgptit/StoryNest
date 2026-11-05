@@ -3,6 +3,14 @@ export const en = {
   startReading: "Start reading",
   noChaptersYet: "This story has no published chapters yet.",
   chaptersTitle: "Chapters",
+  updateDays: (days: string) => `Updates on ${days}`,
+  nextChapter: {
+    headline: "Next chapter in",
+    due: "A new chapter is on its way",
+    format: (d: number, h: number, m: number, s: number) =>
+      d > 0 ? `${d} d ${h} h ${m} min` : h > 0 ? `${h} h ${m} min ${s} s` : `${m} min ${s} s`,
+    when: (time: string) => `Goes live ${time}`,
+  },
   chapterCount: (count: number) => `${count} chapter${count === 1 ? "" : "s"}`,
   chapterLabel: (number: number) => `Chapter ${number}`,
   chapterRange: (first: number, last: number) => `Chapters ${first}–${last}`,

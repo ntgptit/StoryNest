@@ -1,4 +1,5 @@
 /** Browser-side preparation of a picked picture: check it, crop it to a fixed shape, shrink it, re-encode it. */
+import { encodeBlurhash } from "@storynest/utils";
 
 export const IMAGE_ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 /** Picked files may be big photos: they are cropped and shrunk before upload, so this is only a sanity bound. */
@@ -9,7 +10,12 @@ export interface ImageSpec {
   aspect: number | null;
   /** Width of the result; smaller pictures are never enlarged. */
   maxWidth: number;
+  /** Also compute a BlurHash of the result (covers: the blur-up placeholder, Lucian 258). */
+  placeholder?: boolean;
 }
+
+/** BlurHash of the prepared picture: 4 x 3 components (28 characters) from a 24 x 36 thumbnail. */
+const PLACEHOLDER = { width: 24, height: 36, x: 4, y: 3 } as const;
 
 export type ImageProblem = "type" | "tooLarge" | "unreadable";
 
@@ -27,6 +33,8 @@ export interface PreparedImage {
   blob: Blob;
   contentType: "image/webp" | "image/jpeg";
   extension: "webp" | "jpg";
+  /** BlurHash of the picture, when the spec asked for one and the browser could read the pixels back. */
+  placeholder?: string;
 }
 
 /**
@@ -117,16 +125,38 @@ export function createBrowserRenderer(spec: ImageSpec): ImageRenderer {
       if (context === null) throw new Error("No 2D canvas");
       context.drawImage(bitmap, sx, sy, sw, sh, 0, 0, width, height);
       const encode = (type: string) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.85));
+      const placeholder = spec.placeholder ? blurhashOf(canvas) : undefined;
+      const extra = placeholder === undefined ? {} : { placeholder };
       const webp = await encode("image/webp");
       if (webp !== null && webp.type === "image/webp")
-        return { blob: webp, contentType: "image/webp", extension: "webp" };
+        return { blob: webp, contentType: "image/webp", extension: "webp", ...extra };
       const jpeg = await encode("image/jpeg"); // browsers that cannot encode WebP fall back to JPEG
       if (jpeg === null) throw new Error("Could not encode the image");
-      return { blob: jpeg, contentType: "image/jpeg", extension: "jpg" };
+      return { blob: jpeg, contentType: "image/jpeg", extension: "jpg", ...extra };
     } finally {
       bitmap.close();
     }
   };
+}
+
+/**
+ * A BlurHash of what is on the canvas, from a small copy (fast, and all a blurred preview needs). undefined when the
+ * pixels cannot be read back (no 2D context, or a canvas the browser considers tainted): the cover then simply has
+ * no placeholder.
+ */
+function blurhashOf(source: HTMLCanvasElement): string | undefined {
+  try {
+    const small = document.createElement("canvas");
+    small.width = PLACEHOLDER.width;
+    small.height = PLACEHOLDER.height;
+    const context = small.getContext("2d");
+    if (context === null) return undefined;
+    context.drawImage(source, 0, 0, PLACEHOLDER.width, PLACEHOLDER.height);
+    const { data } = context.getImageData(0, 0, PLACEHOLDER.width, PLACEHOLDER.height);
+    return encodeBlurhash(data, PLACEHOLDER.width, PLACEHOLDER.height, PLACEHOLDER.x, PLACEHOLDER.y);
+  } catch {
+    return undefined;
+  }
 }
 
 /** What is wrong with a picked file before it is even decoded (type, size), or null. */

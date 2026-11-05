@@ -42,6 +42,10 @@ const vi = {
       `${actor} đã chấp nhận lời mời cộng tác truyện "${storyTitle}"`,
     collaborationDeclined: (actor: string, storyTitle: string) =>
       `${actor} đã từ chối lời mời cộng tác truyện "${storyTitle}"`,
+    reviewRequested: (actor: string, chapterTitle: string, storyTitle: string) =>
+      `${actor} gửi duyệt chương "${chapterTitle}" của "${storyTitle}"`,
+    reviewApproved: (actor: string, chapterTitle: string) => `${actor} đã thông qua chương "${chapterTitle}"`,
+    reviewChangesRequested: (actor: string, chapterTitle: string) => `${actor} trả lại chương "${chapterTitle}" để sửa`,
   },
   errors: {
     network: "Không có kết nối. Kiểm tra mạng và thử lại.",

@@ -26,6 +26,8 @@ import { DraftMergeView } from "../components/draft-merge-view.tsx";
 import { EditorToolbar } from "../components/editor-toolbar.tsx";
 import { FindReplacePanel } from "../components/find-replace-panel.tsx";
 import { PublishPanel } from "../components/publish-panel.tsx";
+import { EditLockPanel } from "../components/edit-lock-panel.tsx";
+import { ReviewPanel } from "../components/review-panel.tsx";
 import { useChapterDraft, useSaveChapterDraft } from "../hooks/use-chapter-draft.ts";
 import { useUploadChapterImage } from "../hooks/use-chapter-image.ts";
 import { createAutosaver, type Autosaver, type AutosaveStatus, type SaveOutcome } from "../model/autosaver.ts";
@@ -74,6 +76,7 @@ export function ChapterEditorScreen({
   onEditor,
   locale = currentLocale(),
   firstRunTour = false,
+  teamTools = false,
 }: {
   storyId: string;
   chapterId: string;
@@ -82,6 +85,11 @@ export function ChapterEditorScreen({
   locale?: string;
   /** Offer the short guided tour on this device's first visit (the app turns it on; off in embeds and tests). */
   firstRunTour?: boolean;
+  /**
+   * Show the team tools: who is editing (advisory edit lock with hand-over, Lucian 196) and the draft sign-off
+   * (Lucian 180). The app turns them on; embeds and tests leave them off.
+   */
+  teamTools?: boolean;
 }) {
   const draft = useChapterDraft(chapterId);
   // Bumped to throw the editor away and start again from the saved draft (after a conflict).
@@ -115,6 +123,7 @@ export function ChapterEditorScreen({
       locale={locale}
       onEditor={onEditor}
       firstRunTour={firstRunTour}
+      teamTools={teamTools}
       startMerge={mergeOnOpen}
       onReload={async (options) => {
         await draft.refetch();
@@ -133,6 +142,7 @@ function DraftEditor({
   onReload,
   startMerge = false,
   firstRunTour,
+  teamTools,
 }: {
   draft: ChapterDraft;
   storyId: string;
@@ -142,6 +152,7 @@ function DraftEditor({
   onReload: (options?: { merge?: boolean }) => Promise<void>;
   startMerge?: boolean;
   firstRunTour: boolean;
+  teamTools: boolean;
 }) {
   const toast = useAppToast();
   const save = useSaveChapterDraft(draft.chapterId);
@@ -441,6 +452,7 @@ function DraftEditor({
 
   const column = (
     <div className="flex min-w-0 flex-col gap-4">
+      {teamTools ? <EditLockPanel chapterId={draft.chapterId} /> : null}
       {backup && merging ? (
         <DraftMergeView mine={backup} server={draft} onApply={applyMergedVersion} onCancel={() => setMerging(false)} />
       ) : backup ? (
@@ -542,6 +554,10 @@ function DraftEditor({
           draft={{ title: checkTitle(title), body: bodyCheck }}
         />
       </div>
+
+      {teamTools ? (
+        <ReviewPanel chapterId={draft.chapterId} ensureSaved={ensureSaved} currentRevision={revision.current} />
+      ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p

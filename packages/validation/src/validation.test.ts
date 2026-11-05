@@ -2,6 +2,15 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_STATUSES,
+  REVIEW_STATUSES,
+  REVIEW_STATUS,
+  isBlurhashFormat,
+  blurhashSchema,
+  listToUpdateDays,
+  updateDaysToList,
+  updateDaysSchema,
+  storyPartCreateSchema,
+  requestChapterReviewArgsSchema,
   ACHIEVEMENT_CODE,
   ACHIEVEMENT_CODES,
   ACHIEVEMENT_THRESHOLDS,
@@ -98,6 +107,7 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["moderation_actions.action", MODERATION_ACTIONS],
     ["moderation_actions.target_kind", MODERATION_TARGET_KINDS],
     ["content_reports.status", REPORT_STATUSES],
+    ["chapter_reviews.status", REVIEW_STATUSES],
     ["user_achievements.code", ACHIEVEMENT_CODES],
     ["announcements.kind", ANNOUNCEMENT_KINDS],
     ["announcements.locale", STORY_LANGUAGES],
@@ -126,6 +136,7 @@ describe("named enum constants", () => {
     ["REPORT_REASON", REPORT_REASON, REPORT_REASONS],
     ["MODERATION_ACTION", MODERATION_ACTION, MODERATION_ACTIONS],
     ["MODERATION_TARGET_KIND", MODERATION_TARGET_KIND, MODERATION_TARGET_KINDS],
+    ["REVIEW_STATUS", REVIEW_STATUS, REVIEW_STATUSES],
     ["ACHIEVEMENT_CODE", ACHIEVEMENT_CODE, ACHIEVEMENT_CODES],
     ["ANNOUNCEMENT_KIND", ANNOUNCEMENT_KIND, ANNOUNCEMENT_KINDS],
     ["COMMENT_REACTION", COMMENT_REACTION, COMMENT_REACTIONS],
@@ -146,6 +157,9 @@ describe("length limits match the varchar columns", () => {
     ["chapter_versions.title", DB_LIMITS.chapterTitle],
     ["reading_lists.title", DB_LIMITS.readingListTitle],
     ["content_reports.reason", DB_LIMITS.reportReason],
+    ["story_parts.title", DB_LIMITS.storyPartTitle],
+    ["chapter_reviews.request_note", DB_LIMITS.reviewNote],
+    ["chapter_reviews.decision_note", DB_LIMITS.reviewNote],
     ["announcements.title", DB_LIMITS.announcementTitle],
     ["announcements.body", DB_LIMITS.announcementBody],
     ["announcements.link_url", DB_LIMITS.announcementLink],
@@ -536,5 +550,44 @@ describe("announcement form", () => {
     for (const link of ["/", "/ranking", "/story/abc?x=1", "https://example.com/contest"]) {
       expect(isAllowedAnnouncementLink(link), link).toBe(true);
     }
+  });
+});
+
+describe("authoring4 inputs", () => {
+  it("update days round-trip through the bit mask (Monday = bit 0)", () => {
+    expect(listToUpdateDays(["mon", "thu"])).toBe(9);
+    expect(updateDaysToList(9)).toEqual(["mon", "thu"]);
+    expect(updateDaysToList(127)).toHaveLength(7);
+    expect(updateDaysSchema.safeParse(128).success).toBe(false);
+    expect(updateDaysSchema.safeParse(-1).success).toBe(false);
+  });
+
+  it("checks a BlurHash like chk_story_cover_blurhash", () => {
+    expect(isBlurhashFormat("LEHV6nWB2yk8pyo0adR*.7kCMdnj")).toBe(true);
+    expect(isBlurhashFormat("00TI:j")).toBe(true);
+    expect(isBlurhashFormat("LEHV6nWB2yk8pyo0adR*.7kCMdn")).toBe(false);
+    expect(isBlurhashFormat('LEHV6nWB2yk8pyo0adR*.7kCMd"j')).toBe(false);
+    expect(isBlurhashFormat("~" + "0".repeat(43))).toBe(false);
+    expect(isBlurhashFormat("00000")).toBe(false);
+    expect(blurhashSchema.safeParse("nope").success).toBe(false);
+  });
+
+  it("story payloads accept the schedule and the hash", () => {
+    const parsed = storyCreateSchema.parse({ title: "T", slug: "t", update_days: 9, cover_blurhash: "00TI:j" });
+    expect(parsed.update_days).toBe(9);
+    expect(storyCreateSchema.safeParse({ title: "T", slug: "t", cover_blurhash: "bad" }).success).toBe(false);
+  });
+
+  it("parts and review notes follow the column lengths", () => {
+    const story = "31000000-0000-4000-8000-000000000001";
+    expect(storyPartCreateSchema.safeParse({ story_id: story, title: "  Book one " }).success).toBe(true);
+    expect(storyPartCreateSchema.safeParse({ story_id: story, title: "   " }).success).toBe(false);
+    expect(storyPartCreateSchema.safeParse({ story_id: story, title: "a".repeat(121) }).success).toBe(false);
+    expect(
+      requestChapterReviewArgsSchema.safeParse({ p_chapter_id: story, p_expected_revision: 1, p_note: "n".repeat(501) })
+        .success,
+    ).toBe(false);
+    expect(REVIEW_STATUS.CHANGES_REQUESTED).toBe("changes_requested");
+    expect(REVIEW_STATUSES).toContain("approved");
   });
 });

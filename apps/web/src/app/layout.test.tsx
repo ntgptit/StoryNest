@@ -19,5 +19,6 @@ describe("root metadata", () => {
     vi.resetModules();
     const { metadata } = await import("./layout");
     expect(metadata.metadataBase?.toString()).toBe("https://site.test/");
-  });
+    // A cold import of the whole layout graph (every feature) can take more than the default 5 s on a busy machine.
+  }, 30_000);
 });

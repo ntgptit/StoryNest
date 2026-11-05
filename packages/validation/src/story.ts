@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { storyStatusSchema, visibilitySchema } from "./enums.ts";
 import { APP_LIMITS, DB_LIMITS } from "./limits.ts";
+import { updateDaysSchema } from "./authoring.ts";
 
 export const STORY_ERROR = {
   titleRequired: "title_required",
@@ -39,6 +40,8 @@ export const storyFormSchema = z.strictObject({
   status: storyStatusSchema,
   visibility: visibilitySchema,
   isMature: z.boolean(),
+  /** Weekly update schedule (bit mask, Monday = bit 0). Left out = unchanged on update. */
+  updateDays: updateDaysSchema.optional(),
 });
 
 export type StoryFormInput = z.input<typeof storyFormSchema>;

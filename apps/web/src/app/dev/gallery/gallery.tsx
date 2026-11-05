@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookOpen, Eye, Globe, Heart, Home, Library, Link2, Lock, MessageSquare, Search, User } from "lucide-react";
 import { Bold, CalendarClock, Italic, Minus, Monitor, Smartphone, Tablet, TextSearch } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AppLink, useAppToast, useNavigation } from "@storynest/features";
@@ -174,6 +174,13 @@ import { HandDrawnMarks, PEN_STYLES, type PenStyle } from "@storynest/ui/widgets
 import { MentionTextarea, type MentionCandidate } from "@storynest/ui/widgets/mention-textarea";
 import { ReactionBar } from "@storynest/ui/widgets/reaction-bar";
 import { StarRating } from "@storynest/ui/widgets/star-rating";
+import { encodeBlurhash } from "@storynest/utils";
+import { ApprovalLine } from "@storynest/ui/widgets/approval-line";
+import { BranchGraph } from "@storynest/ui/widgets/branch-graph";
+import { ControlHandoff } from "@storynest/ui/widgets/control-handoff";
+import { NextChapterCountdown } from "@storynest/ui/widgets/next-chapter-countdown";
+import { TreeFolder } from "@storynest/ui/widgets/part-tree";
+import { WeekdayPainter } from "@storynest/ui/widgets/weekday-painter";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -3869,6 +3876,284 @@ function Community4RatingExample() {
   );
 }
 
+const authoring4Parts = [
+  { id: "p1", title: "Book one: The fog", chapters: ["Arrival", "The lighthouse", "Low tide"] },
+  { id: "p2", title: "Book two: The island", chapters: ["Ferry", "Salt"] },
+];
+
+function Authoring4PartsExample() {
+  const [picked, setPicked] = useState("The lighthouse");
+  return (
+    <ul id="authoring4-parts" className="flex max-w-sm flex-col rounded-xl border p-2">
+      <li className="px-3 py-2 text-sm">Prologue (no part)</li>
+      {authoring4Parts.map((part) => (
+        <li key={part.id}>
+          <TreeFolder label={part.title} meta={`${part.chapters.length} chapters`} defaultOpen={part.id === "p1"}>
+            <ul>
+              {part.chapters.map((title) => (
+                <li key={title}>
+                  <button
+                    type="button"
+                    aria-pressed={picked === title}
+                    onClick={() => setPicked(title)}
+                    className="flex min-h-11 w-full items-center rounded-md px-3 text-left text-sm aria-pressed:bg-accent aria-pressed:font-medium"
+                  >
+                    {title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </TreeFolder>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const authoring4Days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const authoring4DayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function Authoring4ScheduleExample() {
+  const [days, setDays] = useState([true, false, false, true, false, false, false]);
+  const chosen = authoring4Days.filter((_, i) => days[i]);
+  return (
+    <div id="authoring4-schedule">
+      <WeekdayPainter
+        value={days}
+        onChange={setDays}
+        dayLabels={authoring4Days}
+        dayNames={authoring4DayNames}
+        summary={chosen.length === 0 ? "No schedule set" : `Updates on ${chosen.join(", ")}`}
+        label="Update schedule"
+      />
+    </div>
+  );
+}
+
+function Authoring4CountdownExample() {
+  // Times are set after mount: the server render and the first client render must match.
+  const [times, setTimes] = useState<{ start: string; target: string } | null>(null);
+  useEffect(() => {
+    const now = Date.now();
+    setTimes({
+      start: new Date(now - 20 * 3600_000).toISOString(),
+      target: new Date(now + 4 * 3600_000).toISOString(),
+    });
+  }, []);
+  return (
+    <div id="authoring4-countdown" className="flex flex-col gap-3">
+      {times ? (
+        <NextChapterCountdown
+          key={times.target}
+          target={times.target}
+          start={times.start}
+          headline="Next chapter in"
+          dueLabel="A new chapter is on its way"
+          format={(l) =>
+            l.days > 0 ? `${l.days} d ${l.hours} h ${l.minutes} min` : `${l.hours} h ${l.minutes} min ${l.seconds} s`
+          }
+          whenLabel="Goes live Thursday 20:00"
+        />
+      ) : null}
+      <Button
+        type="button"
+        variant="outline"
+        className="w-fit"
+        onClick={() => {
+          const now = Date.now();
+          setTimes({ start: new Date(now - 60_000).toISOString(), target: new Date(now + 5_000).toISOString() });
+        }}
+      >
+        Due in 5 seconds
+      </Button>
+    </div>
+  );
+}
+
+function Authoring4BranchExample() {
+  const [nodes, setNodes] = useState<{ id: string; parentId: string | null }[]>([
+    { id: "1", parentId: null },
+    { id: "2", parentId: "1" },
+    { id: "3", parentId: "2" },
+  ]);
+  const [base, setBase] = useState("3");
+  const [live, setLive] = useState("3");
+  const [selected, setSelected] = useState("3");
+  return (
+    <div id="authoring4-branch" className="flex max-w-xl flex-col gap-3">
+      <BranchGraph
+        label="Version branch graph"
+        nodes={nodes.map((n) => ({
+          id: n.id,
+          parentId: n.parentId,
+          label: n.id,
+          name: `Version ${n.id}${n.id === live ? ", live" : ""}`,
+        }))}
+        mainId={live}
+        liveId={live}
+        selectedId={selected}
+        onSelect={setSelected}
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" onClick={() => setBase(selected)}>
+          Restore version {selected}
+        </Button>
+        <Button
+          type="button"
+          onClick={() => {
+            const id = String(nodes.length + 1);
+            setNodes([...nodes, { id, parentId: base }]);
+            setBase(id);
+            setLive(id);
+            setSelected(id);
+          }}
+        >
+          Publish (from version {base})
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function Authoring4ApprovalExample() {
+  const [stage, setStage] = useState<"asked" | "approved" | "sent-back">("asked");
+  return (
+    <div id="authoring4-approval">
+      <ApprovalLine
+        title="Chapter 12 · The lighthouse"
+        steps={[
+          { key: "draft", label: "Drafted", name: "Binh", state: "done" },
+          {
+            key: "review",
+            label: "Review",
+            name: stage === "asked" ? "" : "An",
+            state: stage === "asked" ? "empty" : stage === "approved" ? "done" : "rejected",
+          },
+          {
+            key: "approved",
+            label: "Approved",
+            name: stage === "approved" ? "An" : "",
+            state: stage === "approved" ? "done" : "empty",
+          },
+        ]}
+        status={
+          stage === "asked"
+            ? "Binh asked for a review of save 14."
+            : stage === "approved"
+              ? "An approved save 14."
+              : "An sent save 14 back for changes."
+        }
+      >
+        {stage === "asked" ? (
+          <>
+            <Button type="button" size="sm" onClick={() => setStage("approved")}>
+              Approve
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setStage("sent-back")}>
+              Send back
+            </Button>
+          </>
+        ) : (
+          <Button type="button" size="sm" variant="ghost" onClick={() => setStage("asked")}>
+            Ask again
+          </Button>
+        )}
+      </ApprovalLine>
+    </div>
+  );
+}
+
+// A tiny local picture so the demo needs no network; the hash was computed from it with encodeBlurhash.
+const authoring4CoverSvg = encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(251,146,60)"/><stop offset="1" stop-color="rgb(76,29,149)"/></linearGradient></defs><rect width="200" height="300" fill="url(#g)"/><circle cx="130" cy="110" r="34" fill="rgb(254,243,199)"/><path d="M0 220 L60 170 L110 200 L160 150 L200 180 V300 H0Z" fill="rgb(46,16,101)"/></svg>', // token-check-ignore: colours of a sample picture, not UI colours
+);
+const authoring4CoverUrl = `data:image/svg+xml,${authoring4CoverSvg}`;
+
+function Authoring4BlurExample() {
+  const [hash, setHash] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(null);
+  const [round, setRound] = useState(0);
+  useEffect(() => {
+    // Compute the placeholder in the browser, as the cover upload does.
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 24;
+      canvas.height = 36;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+      context.drawImage(image, 0, 0, 24, 36);
+      setHash(encodeBlurhash(context.getImageData(0, 0, 24, 36).data, 24, 36, 4, 3));
+    };
+    image.src = authoring4CoverUrl;
+  }, []);
+  return (
+    <div id="authoring4-blur" className="flex flex-wrap items-end gap-4">
+      <div className="w-32">
+        {hash ? (
+          <StoryCover key={round} title="Fog" coverUrl={src ?? "data:,"} placeholder={hash} />
+        ) : (
+          <StoryCover title="Fog" />
+        )}
+      </div>
+      <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+        <span className="font-mono">{hash ?? "computing…"}</span>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={!hash}
+          onClick={() => {
+            setSrc(null);
+            setRound((r) => r + 1);
+            window.setTimeout(() => setSrc(authoring4CoverUrl), 1500);
+          }}
+        >
+          Load slowly
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function Authoring4HandoffExample() {
+  const names = ["You", "Binh", "An"];
+  const [holder, setHolder] = useState(0);
+  const [asked, setAsked] = useState<number | null>(1);
+  return (
+    <div id="authoring4-handoff" className="max-w-sm">
+      <ControlHandoff
+        label="Who is editing"
+        editingLabel="editing"
+        askedLabel="asked to edit"
+        people={names.map((name, i) => ({ id: name, name, editing: i === holder, asked: i === asked }))}
+        status={asked === null ? `${names[holder]} has the edit control.` : `${names[asked]} asked to edit.`}
+      >
+        {asked !== null ? (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                setHolder(asked);
+                setAsked(null);
+              }}
+            >
+              Hand over to {names[asked]}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setAsked(null)}>
+              Keep editing
+            </Button>
+          </>
+        ) : (
+          <Button type="button" size="sm" variant="outline" onClick={() => setAsked((holder + 1) % names.length)}>
+            Someone asks
+          </Button>
+        )}
+      </ControlHandoff>
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -4184,6 +4469,16 @@ export function Gallery() {
         <Community4MentionsExample />
         <Community4MarksExample />
         <Community4RatingExample />
+      </Section>
+
+      <Section title="Batch 4 · authoring4">
+        <Authoring4PartsExample />
+        <Authoring4ScheduleExample />
+        <Authoring4CountdownExample />
+        <Authoring4BranchExample />
+        <Authoring4ApprovalExample />
+        <Authoring4BlurExample />
+        <Authoring4HandoffExample />
       </Section>
     </AppShell>
   );
