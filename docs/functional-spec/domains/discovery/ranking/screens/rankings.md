@@ -70,7 +70,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-STORY-01 |
-| Evidence | `ranking-screen.tsx:112-117` |
+| Evidence | `ranking-screen.tsx:103` |
 
 | Field | SCR-RANK-01-A05 — Retry |
 | --- | --- |

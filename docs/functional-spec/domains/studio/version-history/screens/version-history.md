@@ -14,7 +14,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/history/page.tsx` → `history-view.tsx` (passes `getImageUrlResolver()`) |
 | Screen component | `packages/features/src/history/screens/history-screen.tsx` (`HistoryScreen` → `HistoryContent` → `VersionViewer` / `DiffView`) |
 | Roles | owner, co_author, editor (`BR-TEAM-*`) |
-| Entry points | Editor "Version history" button (`packages/features/src/editor/screens/chapter-editor-screen.tsx:303-305`); no link from the chapter manager |
+| Entry points | Editor "Version history" button (`packages/features/src/editor/screens/chapter-editor-screen.tsx:434-436`); no link from the chapter manager |
 | Workflows | WF-HIST-01, WF-HIST-02, WF-HIST-03 |
 
 ## B. Components

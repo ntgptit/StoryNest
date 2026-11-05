@@ -21,15 +21,15 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-EDT-01-C01 | Back link | "Back to chapters" → `/studio/story/{id}/chapters` | `chapter-editor-screen.tsx:293-298` |
-| SCR-EDT-01-C02 | Preview / Version history buttons | Outline links to `…/preview` and `…/history` | `chapter-editor-screen.tsx:299-306` |
+| SCR-EDT-01-C01 | Back link | "Back to chapters" → `/studio/story/{id}/chapters` | `chapter-editor-screen.tsx:412-417` |
+| SCR-EDT-01-C02 | Preview / Version history buttons | Outline links to `…/preview` and `…/history` | `chapter-editor-screen.tsx:431-436` |
 | SCR-EDT-01-C03 | Backup banner | `role="status"`; title, time, optional older-base warning; Restore / Compare and merge / Discard | `chapter-editor-screen.tsx` (backup block) |
 | SCR-EDT-01-C04 | Conflict alert | `role="alert"`; "The draft was edited elsewhere" + "Load latest version" / "Load latest and merge" | `chapter-editor-screen.tsx` (conflict block) |
 | SCR-EDT-01-C05 | Chapter title field | Label "Chapter title", placeholder "Chapter title", `maxLength=400`, inline error `role="alert"` | `chapter-editor-screen.tsx:492-510` |
 | SCR-EDT-01-C06 | Formatting toolbar | `role="toolbar"` "Formatting": Heading, Bold, Italic, Underline, Strikethrough (toggle, `aria-pressed`), Divider, Insert picture (+hidden file input "Choose a picture to insert"), Find and replace (`aria-expanded`), Undo, Redo (disabled when unavailable). Icon buttons 36 px. Skeleton until editor ready | `editor-toolbar.tsx`, `packages/ui/src/components/button.tsx:25` |
 | SCR-EDT-01-C13 | Find and replace panel (Lucian #128) | `role="search"` "Find and replace in the chapter", under the toolbar while open: Find → Replace with, "Replace all"; count "3/12" (+ polite live text "Match 3 of 12" / "No matches" / "N replaced"), Previous / Next match, "Match case" toggle (`aria-pressed`), Replace, Close. Matches are ProseMirror decorations (`find-match`, current `find-match-current`); replaced text flashes once (`animate-replace-flash`) | `components/find-replace-panel.tsx`, `model/find-replace.ts`, `packages/ui/src/widgets/find-replace-bar.tsx` |
 | SCR-EDT-01-C14 | Merge view (Lucian #149) | Replaces the backup banner while open: "Merge your version with the server's", "Take all mine" / "Take all from the server", "N differences left to decide" (polite), one `role="group"` per differing block (and the title) with "Mine" / "On the server" buttons (`aria-pressed`; a missing side reads "(Not in this version)"; "formatting only" note), "Use the merged version" (disabled until all decided), "Not now" | `components/draft-merge-view.tsx`, `model/draft-merge.ts`, `packages/ui/src/widgets/merge-choice.tsx` |
-| SCR-EDT-01-C07 | Body editor | Tiptap `EditorContent`, `role="textbox"`, `aria-multiline`, `aria-label="Chapter content"`, reader typography (`reader-text`), min 50vh; image blocks as framed pictures | `chapter-editor-screen.tsx:208-225,374-377` |
+| SCR-EDT-01-C07 | Body editor | Tiptap `EditorContent`, `role="textbox"`, `aria-multiline`, `aria-label="Chapter content"`, reader typography (`reader-text`), min 50vh; image blocks as framed pictures | `chapter-editor-screen.tsx:263-297,527-530` |
 | SCR-EDT-01-C08 | Publish panel | `<section aria-label="Publish chapter">`: H2, state badge, error alert, readiness checklist (C15), split button (Lucian 010) "Publish" / "Publish new version" with an arrow "More ways to publish" opening a menu with "Schedule…" (same usePublishFlow, saves first, locked while running, progress bar inside while busy), Unpublish / Cancel schedule | `publish-panel.tsx`, `packages/ui/src/widgets/split-button.tsx` |
 | SCR-EDT-01-C15 | Readiness checklist (Lucian 014) | "Before you publish", ring n/3, one row per existing rule (`publishReadiness`): title present and ≤ 200 chars (checkTitle), content only holds savable parts (checkBody = chapterBodySchema), chapter not archived (canPublish); a failing row shows the existing message as hint. The split button is disabled and `aria-describedby` the checklist until all hold; shown only to the story team | `publish-panel.tsx`, `model/publishing.ts`, `packages/ui/src/widgets/readiness-checklist.tsx` |
 | SCR-EDT-01-C16 | Toolbar tooltips (Lucian 076) | Each toolbar icon button has a tooltip with its name and shortcut (Ctrl/⌘+B, I, U, Shift+S, Alt+2, F, Z, Shift+Z); one provider: 450 ms first delay, instant within 300 ms when moving along; Esc closes; never on touch | `editor-toolbar.tsx`, `packages/ui/src/widgets/shortcut-tooltip.tsx` |
@@ -37,7 +37,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | SCR-EDT-01-C18 | First-run tour (Lucian 197) | Once per device (localStorage `storynest.editor.tour-done`, set on Done or Skip): dim layer with a hole over toolbar → autosave status → publish panel → find button; "Step n of 4", Back / Next / Done, Skip; modal dialog, focus on Next, Esc skips, ←/→ step; hole glides (jumps under reduced motion). Turned on by the web route only (`firstRunTour`) | `chapter-editor-screen.tsx`, `packages/ui/src/widgets/spotlight-tour.tsx` |
 | SCR-EDT-01-C09 | Schedule dialog | Title "Schedule publication", `datetime-local` "Publish time" (min now+1 min), "Your time zone: {zone}", inline error, Cancel / Schedule | `publish-panel.tsx:154-191` |
 | SCR-EDT-01-C10 | Unpublish confirm dialog | "Unpublish this chapter?", destructive "Unpublish chapter", Cancel | `publish-panel.tsx:193-205` |
-| SCR-EDT-01-C11 | Footer status | `aria-live="polite"`: "{n} words · {status}" | `chapter-editor-screen.tsx:381-385` |
+| SCR-EDT-01-C11 | Footer status | `aria-live="polite"`: "{n} words · {status}" | `chapter-editor-screen.tsx:542-557` |
 | SCR-EDT-01-C12 | Save button | "Save draft" / "Saving…" | `chapter-editor-screen.tsx:558-560` |
 | SCR-EDT-01-C13 | Drop and paste a picture (Lucian 032) | A file dragged over the text highlights it ("Drop the picture to insert it"); dropped, it is inserted where it lands; a pasted picture (screenshot, copied image, no text) is inserted at the cursor. Same upload, checks and error toasts as "Insert picture" (A05). A paste with text is left to the editor | `chapter-editor-screen.tsx` (`handleDrop`, `handlePaste`), `model/pasted-image.ts` |
 
@@ -118,7 +118,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | Backup already schema-checked on read |
 | Error behavior | Restore disabled until editor ready |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:265-273,316-330` |
+| Evidence | `chapter-editor-screen.tsx:339-353,452-470` |
 
 | Field | SCR-EDT-01-A07b Compare and merge (backup) |
 | --- | --- |
@@ -140,7 +140,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | — |
 | Error behavior | Refetch error → load error state |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:76-79,342` |
+| Evidence | `chapter-editor-screen.tsx:118-122,482` |
 
 | Field | SCR-EDT-01-A08b Load latest and merge (conflict) |
 | --- | --- |
@@ -173,7 +173,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | Save-first; server `BR-EDT-019` |
 | Error behavior | Inline `role="alert"` (`BR-EDT-025`) |
 | Navigation | — |
-| Evidence | `publish-panel.tsx:90-95,139-142` |
+| Evidence | `publish-panel.tsx:69,122-139` |
 
 | Field | SCR-EDT-01-A10 Schedule |
 | --- | --- |
@@ -184,7 +184,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | "Please choose a publish time." / "Choose a time in the future." |
 | Error behavior | Inline in dialog (picker) or panel alert (server) |
 | Navigation | — |
-| Evidence | `publish-panel.tsx:97-111,144-146,162-199` |
+| Evidence | `publish-panel.tsx:71-79,130-138,154-191` |
 
 | Field | SCR-EDT-01-A11 Unpublish / Cancel schedule |
 | --- | --- |

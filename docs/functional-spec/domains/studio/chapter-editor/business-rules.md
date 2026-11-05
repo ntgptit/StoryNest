@@ -261,9 +261,9 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Preconditions | Publish or schedule button pressed. |
 | Conditions | `ensureSaved()`: if unsaved edits exist → save now; returns the revision only if nothing is left unsaved, else null. Server: `p_expected_revision ≠ chapter_drafts.revision` → PT409. |
 | Expected behavior | null → inline alert "The draft couldn't be saved, so it wasn't published. Check the chapter title and content and try again." and no RPC call. Stale revision (someone saved meanwhile) → PT409 → "The draft or chapter status was changed elsewhere. Reload the page and try again." |
-| Exceptions | The save-first message is the same whether the cause is invalid content, conflict or offline (U-EDT-01). |
+| Exceptions | The save-first message is the same whether the cause is conflict or offline (U-EDT-01). Invalid content (e.g. a blank title) no longer reaches it: the readiness checklist keeps Publish locked until the draft rules hold (changed by PR #60). |
 | Related screens | SCR-EDT-01 |
-| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:275-280,379`, `packages/features/src/editor/components/publish-panel.tsx:64-88`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:140-143,263-266`, tests `publishing.test.tsx:277,323`, `supabase/tests/20_publish.test.sql:70` |
+| Evidence | `packages/features/src/editor/screens/chapter-editor-screen.tsx:359-364,534-539`, `packages/features/src/editor/components/publish-panel.tsx:57-79`, `packages/features/src/editor/hooks/use-publishing.ts:82-107`, `supabase/migrations/20261103000200_publish_chapter_rpc.sql:140-143,263-266`, tests `publishing.test.tsx:303,349,377`, `supabase/tests/20_publish.test.sql:70` |
 | Status | Verified |
 
 ### BR-EDT-019 — Server-side publish validation
@@ -287,7 +287,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-ED
 | Expected behavior | Insert `chapter_versions` (title trimmed, word count, `created_by` = actor) → missing `chapter_blocks` rows → `chapter_version_blocks` in reading order → set `published_at` (immutable from then on, `BR-HIST-002`). Chapter: `status='published'`, `published_version_id` = new version, `first_published_at` kept or set, `scheduled_for` cleared. Story: `first_published_at` set once; `status` `draft` → `ongoing` (visibility unchanged). `chapter_stats`/`story_stats` rows ensured. First publish of the chapter only: outbox event `chapter.published` (dedupe key per chapter) → follower notification `BR-NOTI-*`; republish/unpublish+republish is silent. Returns the version id. UI toast "Chapter published." / "New version published." |
 | Exceptions | Republishing an unchanged draft still creates a new identical version (F-EDT-06). |
 | Related screens | SCR-EDT-01, SCR-HIST-01 |
-| Evidence | `supabase/migrations/20261103000200_publish_chapter_rpc.sql:161-212`, `packages/features/src/editor/components/publish-panel.tsx:90-95`, tests `supabase/tests/20_publish.test.sql:24-56,84-106,169` |
+| Evidence | `supabase/migrations/20261103000200_publish_chapter_rpc.sql:161-212`, `packages/features/src/editor/components/publish-panel.tsx:69`, tests `supabase/tests/20_publish.test.sql:24-56,84-106,169` |
 | Status | Verified (SQL test) |
 
 ### BR-EDT-021 — Scheduling and timezone handling

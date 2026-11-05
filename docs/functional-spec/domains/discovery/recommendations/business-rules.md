@@ -70,10 +70,10 @@
 | Description | "You might also like" at the end of the story page for everyone; "Recommended for you" above the home feed only for a member on the unfiltered home |
 | Preconditions | — |
 | Conditions | Nothing renders while loading, on error, or when the list is empty |
-| Expected behavior | Titled section (`h2`) with a 2/3/4-column grid of home cards, each followed by its reason sentence |
+| Expected behavior | Titled section (`h2`) with a swipeable/draggable row of home cards (`CardCarousel`, previous/next arrows) instead of a 2/3/4-column grid (changed by PR #60), each followed by its reason sentence |
 | Exceptions | — |
 | Related screens | SCR-HOME-01, SCR-STORY-01 |
-| Evidence | `recommendations/components/recommendation-list.tsx:13-92`, `apps/web/src/app/(main)/discover-home.tsx:11-15`, `story/screens/story-screen.tsx:239-240`, `recommendations/recommendations.test.tsx:219,235` |
+| Evidence | `recommendations/components/recommendation-list.tsx:10-79`, `apps/web/src/app/(main)/discover-home.tsx:11-15`, `story/screens/story-screen.tsx:239-240`, `recommendations/recommendations.test.tsx:219,235` |
 | Status | Verified |
 
 ### BR-REC-006 — Sizes and limits

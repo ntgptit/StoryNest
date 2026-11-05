@@ -179,12 +179,12 @@ outlines; dark `--input` (16 % white, 3.85:1) already passes. Do not lighten `--
 y≈413 and ends at ≈864, i.e. below the 844 px fold and behind the bottom nav, so the first screen shows no complete card
 (`m-home.png`). Badges wrap to two lines on long category names ("Lãng mạn học đường"), making rows uneven between
 rows (`t-home.png` row 2). Ranking puts the rank badge over the cover corner and the period stats **under** the card
-(`ranking-screen.tsx:105-121`, `d-ranking.png`); recommendations put the reason under the card
-(`recommendation-list.tsx:38-47`) and on the story page show a single full-height card (`d-story.png`); Library renders a
-full card plus buttons below it (`library-screen.tsx:137-170`); the author page repeats the author's name on every card
-(`m-author.png`). The grid class string is copy-pasted in 8 files (`ranking-screen.tsx:20`, `discover-screen.tsx:19`,
-`library-screen.tsx:27`, `search-screen.tsx:34`, `list-screen.tsx:27`, `recommendation-list.tsx:11`,
-`following-screen.tsx:17`, `author-screen.tsx:21`). Placeholder covers are a single 36 px letter on `bg-secondary`
+(`ranking-screen.tsx:86-108`, `d-ranking.png`); recommendations put the reason under the card
+(`recommendation-list.tsx:27-37`); the lists are now a swipeable `CardCarousel` row, so the single full-height card seen on the story page (`d-story.png`) is gone (changed by PR #60); Library renders a
+full card plus buttons below it (`library-screen.tsx:194-224`); the author page repeats the author's name on every card
+(`m-author.png`). The grid class string was copy-pasted in 8 files; PR #60 moved it into one shared `STORY_GRID`
+(`discovery/components/story-tile.tsx:13`, used by `ranking-screen.tsx:12`, `discover-screen.tsx:10`, `library-screen.tsx:18`,
+`search-screen.tsx:17`, `following-screen.tsx:9`, `author-screen.tsx:12`); `list-screen.tsx:27` still has its own copy (changed by PR #60). Placeholder covers are a single 36 px letter on `bg-secondary`
 (`story-cover.tsx:34`). Verified (Code + Runtime).
 
 Recommendation — StoryCard variants (FP-037):
