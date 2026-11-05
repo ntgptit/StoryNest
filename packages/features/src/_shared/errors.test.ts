@@ -41,6 +41,13 @@ describe("toAppError: other sources", () => {
     const error = toAppError(parsed.error);
     expect(error.kind).toBe("invalid");
     expect(Array.isArray(error.details)).toBe(true);
+    expect(error.details).toEqual(parsed.error.issues);
+  });
+
+  it("recognises a Zod error by its shape only when it is a real Error", () => {
+    // A plain object that merely looks like one (e.g. a JSON error body) is not treated as form validation.
+    const lookalike = { name: "ZodError", issues: [{ path: ["title"] }] };
+    expect(toAppError(lookalike).details).not.toEqual(lookalike.issues);
   });
 
   it("maps fetch failures (TypeError) to network", () => {

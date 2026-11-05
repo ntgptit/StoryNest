@@ -1,0 +1,47 @@
+{
+  "$comment": "Client bundle budget, checked by scripts/check-bundle.mjs after a production build (docs/PERFORMANCE.md, section 5). firstLoadKb = Next's firstLoadUncompressedJsBytes per route, in KB (raw, not gzip). Limits = measured size on 2026-11-04 after PR A + 5% (the rule: a PR may not grow a route by more than 5% without a reason). New routes fall back to `default`. Raise a limit only with a reason in the PR.",
+  "ignoreRoutes": ["^/dev/"],
+  "firstLoadKb": {
+    "default": 1130,
+    "routes": {
+      "/": 1070,
+      "/_not-found": 930,
+      "/author/[username]": 1100,
+      "/following": 1070,
+      "/forgot-password": 1120,
+      "/library": 1120,
+      "/lists/[id]": 1110,
+      "/login": 1120,
+      "/me": 1050,
+      "/me/edit": 1220,
+      "/moderation": 1070,
+      "/notifications": 1060,
+      "/ranking": 1070,
+      "/register": 1120,
+      "/reset-password": 1120,
+      "/search": 1070,
+      "/settings": 1220,
+      "/story/[id]/[slug]": 1130,
+      "/story/[id]/[slug]/[chapterSlug]": 1250,
+      "/studio": 1220,
+      "/studio/new": 1300,
+      "/studio/story/[id]": 1300,
+      "/studio/story/[id]/chapter/[chapterId]": 1630,
+      "/studio/story/[id]/chapter/[chapterId]/history": 1220,
+      "/studio/story/[id]/chapter/[chapterId]/preview": 1190,
+      "/studio/story/[id]/chapters": 1270,
+      "/studio/story/[id]/stats": 1070,
+      "/studio/story/[id]/team": 1240
+    }
+  },
+  "routeScopedPackages": [
+    {
+      "package": "@tiptap/",
+      "allowedRoutes": ["^/studio/story/\\[id\\]/chapter/\\[chapterId\\]"]
+    },
+    {
+      "package": "prosemirror-",
+      "allowedRoutes": ["^/studio/story/\\[id\\]/chapter/\\[chapterId\\]"]
+    }
+  ]
+}

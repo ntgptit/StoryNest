@@ -18,6 +18,24 @@ describe("supabase env", () => {
     expect(isSupabaseConfigured()).toBe(false);
   });
 
+  it("accepts exactly the URLs the former z.url() schema accepted", () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_x");
+    for (const url of ["http://127.0.0.1:54321", "http:/x"]) {
+      vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", url);
+      expect(isSupabaseConfigured()).toBe(true);
+    }
+    for (const url of ["abc.supabase.co", "https://", "//x.y", "https://a b.com"]) {
+      vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", url);
+      expect(isSupabaseConfigured()).toBe(false);
+    }
+  });
+
+  it("rejects an empty publishable key", () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://abc.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    expect(isSupabaseConfigured()).toBe(false);
+  });
+
   it("returns the parsed configuration", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://abc.supabase.co");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_x");
