@@ -4,7 +4,7 @@
 | Field | Value |
 | --- | --- |
 | User goal | Learn who wrote a story and what else they wrote |
-| Trigger | Author name link on the story page (`story/screens/story-screen.tsx:77`), author row in SCR-SRCH-01, moderation report card, or a typed `/author/<username>` |
+| Trigger | Author name link on the story page (`story/screens/story-screen.tsx:109`), author row in SCR-SRCH-01, moderation report card, or a typed `/author/<username>` |
 | Preconditions | — |
 | Main flow | 1. Skeleton until the session is known. 2. `author_profile` → header (avatar, name, @username, followers, stories, bio), Follow and Report buttons. 3. Story grid loads (BR-AUTHOR-004), infinite paging. 4. Card → story page. |
 | Alternative flows | 2a. Own page → no Follow button. 2b. Unknown/suspended/deleted → "Author not found". |
@@ -13,7 +13,7 @@
 | Postconditions | — |
 | Affected objects | OBJ-AUTHOR, OBJ-HOME, OBJ-MOD |
 | Related screens | SCR-AUTHOR-01 |
-| Status | Verified (`author/author.test.tsx:256-333`) |
+| Status | Verified (`author/author.test.tsx:257-334`) |
 
 ### WF-AUTHOR-02 — Follow / unfollow an author
 | Field | Value |
@@ -28,7 +28,7 @@
 | Postconditions | `user_follows` edge inserted/deleted; new stories of the author appear in `/following`, "Recommended for you" may gain `followed_author` items |
 | Affected objects | OBJ-AUTHOR, OBJ-REC, OBJ-AUTH |
 | Related screens | SCR-AUTHOR-01 → (login) → SCR-AUTHOR-01; SCR-AUTHOR-02 |
-| Status | Verified (`author/author.test.tsx:334-389`, `docs/WBS.md:209` browser check) |
+| Status | Verified (`author/author.test.tsx:335-397`, `docs/WBS.md:209` browser check) |
 
 ### WF-AUTHOR-03 — Read the followed-authors feed
 | Field | Value |
@@ -43,4 +43,4 @@
 | Postconditions | — |
 | Affected objects | OBJ-AUTHOR |
 | Related screens | SCR-AUTHOR-02 |
-| Status | Verified (`author/author.test.tsx:412-474`) |
+| Status | Verified (`author/author.test.tsx:460-522`) |

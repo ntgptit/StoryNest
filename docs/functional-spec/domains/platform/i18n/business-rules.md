@@ -63,7 +63,7 @@ No own screen: controls live in SCR-SHELL-01 (header) and SCR-SET-01.
 | Expected behavior | No hydration mismatch; an English reader briefly sees Vietnamese on every full page load; the HTML that crawlers and no-JS clients get is always `lang="vi"` |
 | Exceptions | — |
 | Related screens | All |
-| Evidence | `apps/web/src/app/layout.tsx:34`, `packages/features/src/_shared/language.tsx:13-36`, `docs/WBS.md:124` (documented limitation) |
+| Evidence | `apps/web/src/app/layout.tsx:35`, `packages/features/src/_shared/language.tsx:13-36`, `docs/WBS.md:124` (documented limitation) |
 | Status | Verified — U-I18N-01 |
 
 ### BR-I18N-005 — Switching re-mounts the page
@@ -75,7 +75,7 @@ No own screen: controls live in SCR-SHELL-01 (header) and SCR-SET-01.
 | Expected behavior | Auth state, query cache and LanguageSync (mounted above the provider) are kept; **component state of the current page (form input, dialogs, scroll) is lost** |
 | Exceptions | — |
 | Related screens | All |
-| Evidence | `packages/features/src/_shared/language.tsx:18-35`, `apps/web/src/app/providers.tsx:36-39`, `docs/WBS.md:124` |
+| Evidence | `packages/features/src/_shared/language.tsx:18-35`, `apps/web/src/app/providers.tsx:39-41`, `docs/WBS.md:124` |
 | Status | Verified — U-I18N-02 |
 
 ### BR-I18N-006 — Header language switcher
@@ -87,7 +87,7 @@ No own screen: controls live in SCR-SHELL-01 (header) and SCR-SET-01.
 | Expected behavior | BR-I18N-003 + BR-I18N-005; members also get BR-SET-004 |
 | Exceptions | Not present on the `(auth)` layout or the dev gallery (U-AUTH-01) |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/language-switcher.tsx:7-23`, `packages/features/src/shell/strings.en.ts:15-19`, `apps/web/src/app/(auth)/layout.tsx:5-13` |
+| Evidence | `packages/features/src/shell/components/language-switcher.tsx:8-24`, `packages/features/src/shell/strings.en.ts:15-19`, `apps/web/src/app/(auth)/layout.tsx:5-13` |
 | Status | Verified |
 
 ### BR-I18N-007 — Server-written texts stay Vietnamese
@@ -123,5 +123,5 @@ No own screen: controls live in SCR-SHELL-01 (header) and SCR-SET-01.
 | Expected behavior | — |
 | Exceptions | English literals without diacritics and attribute values set via expressions are not detected (e.g. `"Back"`/`"Retry"` fallbacks in `packages/ui`) — F-I18N-01 |
 | Related screens | — |
-| Evidence | `scripts/check-hardcode.mjs:1-90`, `package.json:9,20`, `packages/ui/src/widgets/page-header.tsx:30`, `packages/ui/src/widgets/error-state.tsx:37` |
+| Evidence | `scripts/check-hardcode.mjs:1-90`, `package.json:9,20`, `packages/ui/src/widgets/page-header.tsx:33`, `packages/ui/src/widgets/error-state.tsx:88` |
 | Status | Verified |

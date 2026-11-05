@@ -45,7 +45,7 @@
 | Expected behavior | Guests: no progress query, no write, no restore, "Start reading" only. The RPC is granted only to `authenticated` and raises 42501 without `auth.uid()`. |
 | Exceptions | Guests still count as reads (BR-PROG-010). Guest progress is not kept locally (proposal F-PROG-04). |
 | Related screens | SCR-READ-01, SCR-STORY-01 |
-| Evidence | `packages/features/src/progress/hooks/use-progress.ts:10-32`, `packages/features/src/progress/hooks/use-reading-tracker.ts:58`, `supabase/migrations/20261104000000_save_reading_progress.sql:32-34,69-70`, `packages/features/src/progress/progress.test.tsx:238` |
+| Evidence | `packages/features/src/progress/hooks/use-progress.ts:10-32`, `packages/features/src/progress/hooks/use-reading-tracker.ts:63`, `supabase/migrations/20261104000000_save_reading_progress.sql:32-34,69-70`, `packages/features/src/progress/progress.test.tsx:238` |
 | Status | Verified |
 
 ### BR-PROG-002 — Position model
@@ -57,7 +57,7 @@
 | Expected behavior | Measured on open and on every animation frame after a scroll. |
 | Exceptions | Because the percent is measured over the whole page (comments, vote, nav included), it does not equal "share of chapter text read" (F-PROG-01). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/progress/hooks/use-reading-tracker.ts:19-28,76-88`, `packages/features/src/progress/model/progress.ts:24-45,61-76`, `packages/ui/src/widgets/reading-progress.tsx:7-12` |
+| Evidence | `packages/features/src/progress/hooks/use-reading-tracker.ts:19-28,84-96`, `packages/features/src/progress/model/progress.ts:24-45,61-76`, `packages/ui/src/widgets/reading-progress.tsx:7-12` |
 | Status | Verified |
 
 ### BR-PROG-003 — Server validates every save
@@ -93,7 +93,7 @@
 | Expected behavior | The pointer is the **most recently opened** chapter, not the furthest one. Re-opening an earlier chapter moves it back (Q-PROG-01). Library "Reading" sorts by `last_read_at` (`BR-LIB-007`). |
 | Exceptions | — |
 | Related screens | SCR-READ-01, SCR-STORY-01, SCR-LIB-01 |
-| Evidence | `supabase/migrations/20261104000000_save_reading_progress.sql:63-66`, `packages/features/src/progress/hooks/use-reading-tracker.ts:88`, `supabase/tests/60_progress.test.sql:91`, `packages/features/src/library/api/library.api.ts:19-34` |
+| Evidence | `supabase/migrations/20261104000000_save_reading_progress.sql:63-66`, `packages/features/src/progress/hooks/use-reading-tracker.ts:96`, `supabase/tests/60_progress.test.sql:91`, `packages/features/src/library/api/library.api.ts:19-34` |
 | Status | Verified |
 
 ### BR-PROG-006 — Write throttling and flush
@@ -105,7 +105,7 @@
 | Expected behavior | Pending position flushed immediately. A failed write keeps the last-saved marker unchanged, so the next push retries. Failures never interrupt reading. |
 | Exceptions | — |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/progress/model/progress-writer.ts:12-68`, `packages/features/src/progress/model/progress.ts:4-5`, `packages/features/src/progress/hooks/use-reading-tracker.ts:58,65-100`, `packages/features/src/progress/progress.test.tsx:84-129,302` |
+| Evidence | `packages/features/src/progress/model/progress-writer.ts:12-68`, `packages/features/src/progress/model/progress.ts:4-5`, `packages/features/src/progress/hooks/use-reading-tracker.ts:63,70-108`, `packages/features/src/progress/progress.test.tsx:84-129,302` |
 | Status | Verified |
 
 ### BR-PROG-007 — Restore on open
@@ -117,7 +117,7 @@
 | Expected behavior | Scroll to the saved block (`scrollIntoView start`). If the block no longer exists (republished), fall back to percent × scrollable height. |
 | Exceptions | A deep-link hash wins (BR-READ-007). A completed chapter opens at the top. Layout shifts from late-loading images may offset the restore (WBS 2.5 "not verified"). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/progress/model/progress.ts:31-35`, `packages/features/src/progress/hooks/use-reading-tracker.ts:30-39,65-70`, `packages/features/src/progress/hooks/use-progress.ts:10-21`, `packages/features/src/progress/progress.test.tsx:257,267` |
+| Evidence | `packages/features/src/progress/model/progress.ts:31-35`, `packages/features/src/progress/hooks/use-reading-tracker.ts:32-41,70-74`, `packages/features/src/progress/hooks/use-progress.ts:10-21`, `packages/features/src/progress/progress.test.tsx:257,267` |
 | Status | Verified |
 
 ### BR-PROG-008 — Continue reading target
@@ -129,7 +129,7 @@
 | Expected behavior | Target found → CTA "Continue reading · Chapter N" (vi "Đọc tiếp · Chương N"). None → "Start reading" (BR-STORY-012). |
 | Exceptions | The library computes its "Continue with chapter N" differently: always the current chapter (F-PROG-02). The cache key is not user-scoped (F-PROG-03). |
 | Related screens | SCR-STORY-01, SCR-LIB-01 |
-| Evidence | `packages/features/src/progress/model/progress.ts:47-59`, `packages/features/src/progress/api/progress.api.ts:39-53`, `packages/features/src/story/screens/story-screen.tsx:61-66,107`, `packages/features/src/progress/strings.en.ts:2`, `packages/features/src/story/story.test.tsx:352-369` |
+| Evidence | `packages/features/src/progress/model/progress.ts:47-59`, `packages/features/src/progress/api/progress.api.ts:40-54`, `packages/features/src/story/screens/story-screen.tsx:70-75,129`, `packages/features/src/progress/strings.en.ts:2`, `packages/features/src/story/story.test.tsx:361-378` |
 | Status | Verified |
 
 ### BR-PROG-009 — Progress privacy and deletion

@@ -12,7 +12,7 @@
 | Route file | `apps/web/src/app/(main)/moderation/page.tsx` (server guard), `apps/web/src/app/(main)/moderation/moderation-view.tsx` |
 | Screen component | `packages/features/src/moderation/screens/moderation-screen.tsx`; card `packages/features/src/moderation/components/report-card.tsx` |
 | Roles | Moderator only (BR-MOD-001, BR-MOD-020). Guest → login; member → 404 |
-| Entry points | Avatar menu item "Moderation" (moderators only) — `packages/features/src/shell/components/user-menu.tsx:69-73`. No other link |
+| Entry points | Avatar menu item "Moderation" (moderators only) — `packages/features/src/shell/components/user-menu.tsx:71-75`. No other link |
 | Workflows | WF-MOD-02, WF-MOD-03, WF-MOD-04, WF-MOD-05 |
 | Rules | BR-MOD-010…020 |
 
@@ -20,9 +20,9 @@
 
 | ID | Component | Content / behaviour | Evidence |
 | --- | --- | --- | --- |
-| SCR-MOD-01-C01 | Page header | Title "Moderation"; description "The report queue. Every action is logged along with its reason." (`moderationText.console.title/description`) | `moderation-screen.tsx:51`, `strings.en.ts:40-41` |
-| SCR-MOD-01-C02 | Queue tabs | "Pending" (open = pending + reviewing, oldest first) / "Resolved" (resolved + dismissed, newest first) (`console.tabs.open/closed`) | `moderation-screen.tsx:52-60`, `api/moderation.api.ts:33-47` |
-| SCR-MOD-01-C03 | Report list | `InfiniteList` of cards, gap 3, "Load more" button + auto load; 20 per page | `moderation-screen.tsx:74-83`, `model/report.ts:34` |
+| SCR-MOD-01-C01 | Page header | Title "Moderation"; description "The report queue. Every action is logged along with its reason." (`moderationText.console.title/description`) | `moderation-screen.tsx:84`, `strings.en.ts:40-41` |
+| SCR-MOD-01-C02 | Queue tabs | "Pending" (open = pending + reviewing, oldest first) / "Resolved" (resolved + dismissed, newest first) (`console.tabs.open/closed`) | `moderation-screen.tsx:91-97`, `api/moderation.api.ts:33-47` |
+| SCR-MOD-01-C03 | Report list | `InfiniteList` of cards, gap 3, "Load more" button + auto load; 20 per page | `moderation-screen.tsx:111-122`, `model/report.ts:34` |
 | SCR-MOD-01-C04 | Card header badges | Kind ("Story/Chapter/Comment/Account"), status ("Pending/Under review/Resolved/Dismissed"), reason label; "N pending reports about this item" when N > 1 | `report-card.tsx:156-165`, `strings.en.ts:54,58,68-73` |
 | SCR-MOD-01-C05 | Target preview | Title / comment excerpt (≤ 300 chars, line breaks kept); "Status: <state>" ("Visible/Hidden/Removed/Deleted/Active/Suspended/Deactivated"); "Open content" link when a target URL exists | `report-card.tsx:167-180`, `model/report.ts:121-127` |
 | SCR-MOD-01-C06 | Report details | Reporter's description (if any); "Reported by <name>" | `report-card.tsx:182-185` |
@@ -30,7 +30,7 @@
 | SCR-MOD-01-C08 | Report action buttons | "Under review" (pending only), "Mark as resolved", "Dismiss report" (ghost) — open reports only | `report-card.tsx:206-242` |
 | SCR-MOD-01-C09 | Reason dialog | Title = action label; label "Reason (required, will be logged)"; placeholder "Example: violates the harassment policy"; inline length error; `role="alert"` request error; "Cancel" / "Confirm" ("Working…") | `report-card.tsx:245-275`, `strings.en.ts:85-93` |
 | SCR-MOD-01-C11 | Detail side panel (Lucian #273) | The report title is a button (a click on the card outside its controls too) that opens a right-hand panel (full width on phones) with the report's content, when it was reported and the same actions and reason dialog as the card; the card stays highlighted (`aria-current`). Arrows or J / K step to the next / previous loaded report ("i of n"), Esc or the close button closes. J/K are ignored while typing or in the reason dialog. A report that leaves the queue after an action is replaced by the one that took its place | `moderation-screen.tsx`, `components/report-card.tsx` (`variant="panel"`), `packages/ui/src/widgets/detail-panel.tsx` |
-| SCR-MOD-01-C10 | Status views | Skeleton (`aria-busy`), error state, empty text, client-only sign-in prompt / "no access" empty state | `moderation-screen.tsx:24-40,62-73` |
+| SCR-MOD-01-C10 | Status views | Skeleton (`aria-busy`), error state, empty text, client-only sign-in prompt / "no access" empty state | `moderation-screen.tsx:25-41,68-79` |
 | SCR-MOD-01-C12 | Announcements (batch 4 · platform4) | Below the queue: "New announcement" form (Where, Language, Title, Text, Link, Starts, Ends, "Create announcement") and the list with state badges, "End now" (showing only) and "Delete" with confirmation (BR-MOD-022, BR-SHELL-015, BR-HOME-013) | `announcements/components/announcement-manager.tsx` |
 
 ## C. User actions & system responses
@@ -44,7 +44,7 @@
 | Validation | Server `requireUser` + `isModerator`; DB `is_moderator()` |
 | Error behavior | Load failure → "Couldn't load the queue" / "Check your connection and try again." / "Try again" |
 | Navigation | — |
-| Evidence | `apps/web/src/app/(main)/moderation/page.tsx:12-20`, `apps/web/src/lib/auth/route-guard.ts:44`, `moderation-screen.tsx:21-47`, `hooks/use-moderation.ts:36-55` |
+| Evidence | `apps/web/src/app/(main)/moderation/page.tsx:12-20`, `apps/web/src/lib/auth/route-guard.ts:44`, `moderation-screen.tsx:22-51`, `hooks/use-moderation.ts:36-55` |
 
 | Field | SCR-MOD-01-A02 — Switch tab |
 | --- | --- |
@@ -55,7 +55,7 @@
 | Validation | Only `open`/`closed` reachable |
 | Error behavior | As A01 |
 | Navigation | None (tab not deep-linkable) |
-| Evidence | `moderation-screen.tsx:45-60`, `moderation.test.tsx:368` |
+| Evidence | `moderation-screen.tsx:81-97`, `moderation.test.tsx:390` |
 
 | Field | SCR-MOD-01-A03 — Load more |
 | --- | --- |
@@ -66,7 +66,7 @@
 | Validation | — |
 | Error behavior | A failed next page puts the infinite query in `error`; the screen checks `isError` before rendering items, so the whole list is replaced by the error state (Inferred from TanStack Query v5 semantics; not tested) |
 | Navigation | — |
-| Evidence | `model/report.ts:107-115`, `moderation-screen.tsx:74-83`, `moderation.test.tsx:396` |
+| Evidence | `model/report.ts:107-115`, `moderation-screen.tsx:111-122`, `moderation.test.tsx:418` |
 
 | Field | SCR-MOD-01-A04 — Open the reported content |
 | --- | --- |
@@ -77,7 +77,7 @@
 | Validation | — |
 | Error behavior | No link when a slug/username is missing |
 | Navigation | Leaves the console (no "back to queue" affordance besides browser back) |
-| Evidence | `model/report.ts:121-127`, `report-card.tsx:84-91` |
+| Evidence | `model/report.ts:121-127`, `report-card.tsx:135-142` |
 
 | Field | SCR-MOD-01-A05 — Start a content action |
 | --- | --- |
@@ -88,7 +88,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | Modal |
-| Evidence | `report-card.tsx:101-118` |
+| Evidence | `report-card.tsx:155-172` |
 
 | Field | SCR-MOD-01-A06 — Start a report action |
 | --- | --- |
@@ -99,7 +99,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | Modal |
-| Evidence | `report-card.tsx:119-155`, `moderation.test.tsx:465,493` |
+| Evidence | `report-card.tsx:173-209`, `moderation.test.tsx:487,515` |
 
 | Field | SCR-MOD-01-A07 — Write the reason |
 | --- | --- |
@@ -110,7 +110,7 @@
 | Validation | `checkReason` (BR-MOD-015); `maxLength=1000` |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `report-card.tsx:41,165-172,183`, `model/report.ts:153-159` |
+| Evidence | `report-card.tsx:60,219-226,237`, `model/report.ts:153-159` |
 
 | Field | SCR-MOD-01-A08 — Confirm |
 | --- | --- |
@@ -121,7 +121,7 @@
 | Validation | Server re-validates everything |
 | Error behavior | Message inside dialog (`role="alert"`), dialog stays open: forbidden "You don't have permission to do this.", notFound "This item no longer exists.", conflict "The status has changed or the action doesn't apply. Please reload.", invalid "This action can't be applied to the selected item.", network "No connection. Check your network and try again.", other "Something went wrong. Please try again." Queue refetches even on error (`onSettled`) |
 | Navigation | — |
-| Evidence | `report-card.tsx:50-65,173-177`, `model/report.ts:185-202`, `hooks/use-moderation.ts:57-99`, `moderation.test.tsx:418,504` |
+| Evidence | `report-card.tsx:69-84,227-231`, `model/report.ts:185-202`, `hooks/use-moderation.ts:57-99`, `moderation.test.tsx:440,526` |
 
 | Field | SCR-MOD-01-A09 — Cancel the dialog |
 | --- | --- |
@@ -132,7 +132,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `report-card.tsx:43-48,158,180`, `moderation.test.tsx:522` |
+| Evidence | `report-card.tsx:62-67,212,234`, `moderation.test.tsx:544` |
 
 | Field | SCR-MOD-01-A10 — Retry after a load error |
 | --- | --- |
@@ -143,21 +143,21 @@
 | Validation | — |
 | Error behavior | Error state again on failure |
 | Navigation | — |
-| Evidence | `moderation-screen.tsx:64-70`, `moderation.test.tsx:389` |
+| Evidence | `moderation-screen.tsx:95-101`, `moderation.test.tsx:411` |
 
 ## D. UI states
 
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
-| Initial | Implemented | "Pending" tab selected (`moderation-screen.tsx:45`) |
-| Loading | Implemented | Auth loading → skeleton h-64; queue pending → skeleton h-40 (`moderation-screen.tsx:24,62-63`) |
-| Empty | Implemented | "No reports are pending." / "No reports have been handled yet." plain text (`moderation-screen.tsx:71-72`) |
+| Initial | Implemented | "Pending" tab selected (`moderation-screen.tsx:55`) |
+| Loading | Implemented | Auth loading → skeleton h-64; queue pending → skeleton h-40 (`moderation-screen.tsx:26,99-100`) |
+| Empty | Implemented | "No reports are pending." / "No reports have been handled yet." plain text (`moderation-screen.tsx:108-109`) |
 | Populated | Implemented | Cards (C04–C08) |
-| Validation error | Implemented | Reason length inline message (`report-card.tsx:172`) |
+| Validation error | Implemented | Reason length inline message (`report-card.tsx:226`) |
 | Request error | Implemented | Load: ErrorState + retry. Action: in-dialog alert (A08) |
 | Success | Implemented | Toast "Done." + refetch |
-| Disabled | Implemented | All action buttons disabled while a mutation of this card runs; Confirm disabled for invalid reason (`report-card.tsx:40,113,183`) |
-| Unauthorized | Implemented | Server 404 for non-moderators, login redirect for guests; client fallbacks for other hosts (`page.tsx:18-20`, `moderation-screen.tsx:25-40`) |
+| Disabled | Implemented | All action buttons disabled while a mutation of this card runs; Confirm disabled for invalid reason (`report-card.tsx:59,167,237`) |
+| Unauthorized | Implemented | Server 404 for non-moderators, login redirect for guests; client fallbacks for other hosts (`page.tsx:18-20`, `moderation-screen.tsx:27-42`) |
 | Offline | Implemented (generic) | Load error text mentions the connection; action error "No connection…" |
 | Unsaved changes | Not applicable / Recommended | Closing the dialog discards a typed reason without warning (acceptable: short text) |
 | Stale item (acted on by another moderator) | Implemented (partial) | Conflict message + refetch; no live update of the queue (no realtime) |

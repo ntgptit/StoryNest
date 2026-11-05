@@ -18,7 +18,7 @@
 | Postconditions | None |
 | Affected objects | OBJ-STAT |
 | Related screens | SCR-STM-01 → SCR-STAT-01 → SCR-STM-01 |
-| Status | Verified — `story-stats-screen.tsx:30-198` |
+| Status | Verified — `story-stats-screen.tsx:66-242` |
 
 ### WF-STAT-02 — Change the time range
 | Field | Value |
@@ -33,4 +33,4 @@
 | Postconditions | Range not remembered between visits |
 | Affected objects | OBJ-STAT |
 | Related screens | SCR-STAT-01 |
-| Status | Verified — `story-stats-screen.tsx:50-52,92-106`, `analytics.test.tsx:252` |
+| Status | Verified — `story-stats-screen.tsx:56-58,108-122`, `analytics.test.tsx:577` |

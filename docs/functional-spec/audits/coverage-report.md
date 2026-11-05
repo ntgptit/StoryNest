@@ -169,3 +169,15 @@ project, RLS/trigger/privilege changes must be re-checked on `storynest-dev` (qu
 Still unverified at runtime: sign-up submission, password reset and email change (would send email), Google OAuth
 (not implemented), suspended author on the public home feed and sitemap (would need a public QA story), the 95 %
 completion rule on a long chapter (F-PROG-01, QA chapters too short), offline behaviour, dark mode.
+
+## 9. Regression after PR #60 (2026-11-05)
+
+Application code changed for the first time since the Phase 1 baseline: PR #60 (338 files, UI/features/docs, no SQL). The
+counts in §1 and §7 still describe the specification (rules, workflows, screens), not the code; PR #60 added rules
+(BR-READ-019, BR-SET-010, BR-STAT-011…014) and screen actions that the Phase 1/2 counts do not include. Re-derive the
+counts before the next release.
+
+Checks on `main`: typecheck, lint, check:hardcode, check:tokens, format:check, db:types:check pass; unit tests 1,524 pass
+(`pnpm db:verify` and the web build were not run: no SQL changed). Browser regression: 22 `REG-*` checks, results in
+[verification](../verification/README.md#regression-after-pr-60). Phase 1/2 line citations were not re-checked against the
+files PR #60 changed; expect some drift in `packages/features/src/{editor,reader,studio,story,shell}`.

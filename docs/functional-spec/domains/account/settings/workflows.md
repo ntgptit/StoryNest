@@ -33,7 +33,7 @@ Rules: [business-rules.md](business-rules.md). Screen: [SCR-SET-01](screens/sett
 | Status | Verified (runtime check in `docs/WBS.md:221`) |
 
 ## WF-SET-03 — Show or hide 18+ stories from Settings
-Owned by OBJ-MAT (BR-MAT-*). On SCR-SET-01: turning the switch on opens a confirmation dialog ("Show adult stories?" / "I am 18 or older, show 18+ stories" / "Keep hidden"); turning it off applies at once (`packages/features/src/settings/screens/settings-screen.tsx:152-172`). Status: Verified.
+Owned by OBJ-MAT (BR-MAT-*). On SCR-SET-01: turning the switch on opens a confirmation dialog ("Show adult stories?" / "I am 18 or older, show 18+ stories" / "Keep hidden"); turning it off applies at once (`packages/features/src/settings/screens/settings-screen.tsx:276-296`). Status: Verified.
 
 ## WF-SET-04 — Language follows the account to a new device
 | Field | Value |

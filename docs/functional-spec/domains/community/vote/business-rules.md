@@ -125,7 +125,7 @@
 | Expected behavior | Success → the state becomes (requested voted, **server count**), and the server count replaces the guess. Error → previous state restored + toast by kind: forbidden "You can't vote for this chapter.", network "No connection. Check your network and try again.", other "Couldn't vote. Please try again." No success toast. |
 | Exceptions | The story page's Votes stat is not updated optimistically (it refreshes when its cache goes stale). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/hooks/use-chapter-vote.ts:11-50`, `packages/features/src/reader/model/vote.ts:10-19`, `packages/features/src/reader/components/vote-button.tsx:23-29,37`, `packages/features/src/reader/strings.en.ts:22-32`, `packages/features/src/reader/vote.test.tsx:23-36,158-194` |
+| Evidence | `packages/features/src/reader/hooks/use-chapter-vote.ts:11-50`, `packages/features/src/reader/model/vote.ts:10-19`, `packages/features/src/reader/components/vote-button.tsx:24-30,40`, `packages/features/src/reader/strings.en.ts:70-80`, `packages/features/src/reader/vote.test.tsx:23-36,158-194` |
 | Status | Verified (WBS 4.1 runtime, 1.5 s latency) |
 
 ### BR-VOTE-009 — Guests
@@ -137,7 +137,7 @@
 | Expected behavior | Click → `/login?next=<current chapter path>`, with no request made. After sign-in the reader returns to the chapter and must press again. `aria-pressed` is omitted for guests. |
 | Exceptions | — |
 | Related screens | SCR-READ-01, SCR-AUTH-01 Sign in (D-ACCOUNT) |
-| Evidence | `packages/features/src/reader/components/vote-button.tsx:15-27,36,41`, `packages/features/src/reader/vote.test.tsx:148` |
+| Evidence | `packages/features/src/reader/components/vote-button.tsx:16-28,39,44`, `packages/features/src/reader/vote.test.tsx:148` |
 | Status | Verified |
 
 ### BR-VOTE-010 — Per-account state and render gating
@@ -149,7 +149,7 @@
 | Expected behavior | The button renders only once both the session and the count are known (no flicker between guest and member). |
 | Exceptions | When the vote query fails, the button never renders and there is no retry (U-STORY-01). |
 | Related screens | SCR-READ-01 |
-| Evidence | `packages/features/src/reader/keys.ts:5-6`, `packages/features/src/reader/hooks/use-chapter-vote.ts:23-28`, `packages/features/src/reader/components/vote-button.tsx:20`, `packages/features/src/reader/vote.test.tsx:196` |
+| Evidence | `packages/features/src/reader/keys.ts:5-6`, `packages/features/src/reader/hooks/use-chapter-vote.ts:23-28`, `packages/features/src/reader/components/vote-button.tsx:21`, `packages/features/src/reader/vote.test.tsx:196` |
 | Status | Verified |
 
 ### BR-VOTE-011 — Votes feed rankings and analytics

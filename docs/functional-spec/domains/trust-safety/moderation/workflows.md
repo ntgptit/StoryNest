@@ -28,7 +28,7 @@
 | Postconditions | Report `reviewing` (still in Pending) or closed (in Resolved) |
 | Affected objects | OBJ-MOD |
 | Related screens | SCR-MOD-01 |
-| Status | Verified (`moderation/components/report-card.tsx:32-191`, `moderation/hooks/use-moderation.ts:57-99`, `moderation/moderation.test.tsx:343-535`) |
+| Status | Verified (`moderation/components/report-card.tsx:52-220`, `moderation/hooks/use-moderation.ts:57-99`, `moderation/moderation.test.tsx:365-557`) |
 
 ### WF-MOD-03 — Act on the reported content
 | Field | Value |
@@ -73,7 +73,7 @@
 | Postconditions | — |
 | Affected objects | OBJ-MOD, OBJ-AUTH |
 | Related screens | SCR-MOD-01 |
-| Status | Verified (`apps/web/src/app/(main)/moderation/page.tsx:12-20`, `page.test.tsx:24-38`, `moderation/moderation.test.tsx:329-341`) |
+| Status | Verified (`apps/web/src/app/(main)/moderation/page.tsx:12-20`, `page.test.tsx:24-38`, `moderation/moderation.test.tsx:351-363`) |
 
 ### WF-MOD-06 — Affected party after an action (cross-screen)
 | Field | Value |
@@ -88,4 +88,4 @@
 | Postconditions | — |
 | Affected objects | OBJ-MOD, OBJ-CMT, OBJ-STM, OBJ-NOTI |
 | Related screens | Comment thread (OBJ-CMT), Studio list (OBJ-STM) |
-| Status | Verified (code) — `packages/features/src/comments/components/comment-item.tsx:89-93`, `packages/features/src/studio/screens/studio-screen.tsx:154-200`, `packages/features/src/studio/model/story-form.ts:107-110`, `packages/features/src/studio/strings.en.ts:157-163,238` |
+| Status | Verified (code) — `packages/features/src/comments/components/comment-item.tsx:110-114`, `packages/features/src/studio/screens/studio-screen.tsx:154-200`, `packages/features/src/studio/model/story-form.ts:109-112`, `packages/features/src/studio/strings.en.ts:267-273,395` |

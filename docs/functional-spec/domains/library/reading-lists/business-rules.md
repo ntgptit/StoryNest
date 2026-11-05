@@ -57,7 +57,7 @@ Rule summary
 | Expected behavior | Non-owners (signed in or guest) see no controls on the list page. |
 | Exceptions | — |
 | Related screens | SCR-LIST-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:303-327`, `supabase/migrations/20261104000900_reading_lists.sql:62-65`, `:96-99`, `supabase/tests/150_reading_lists.test.sql:49`, `:66-67`, `:89`, `packages/features/src/lists/screens/list-screen.tsx:70`, `packages/features/src/lists/lists.test.tsx:460`, `:546` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:303-327`, `supabase/migrations/20261104000900_reading_lists.sql:62-65`, `:96-99`, `supabase/tests/150_reading_lists.test.sql:49`, `:66-67`, `:89`, `packages/features/src/lists/screens/list-screen.tsx:81`, `packages/features/src/lists/lists.test.tsx:508`, `:546` |
 | Status | Verified (SQL test) |
 
 ### BR-LIST-003 — List name and description
@@ -69,7 +69,7 @@ Rule summary
 | Expected behavior | Errors under the field: "Please enter a list name." / "The list name can be up to 120 characters." / "The description can be up to 1,000 characters."; hint "Up to 1,000 characters." |
 | Exceptions | The add-to-list sheet's quick "Create and add" silently ignores a name over 120 characters (U-LIST-02). |
 | Related screens | SCR-LIST-01 (form dialog), Add-to-list sheet |
-| Evidence | `packages/features/src/lists/model/list.ts:94-103`, `packages/validation/src/limits.ts:10`, `:20`, `supabase/migrations/20261103000000_init_schema.sql:239`, `:245`, `packages/features/src/lists/components/list-form-dialog.tsx:52-57`, `:79-101`, `packages/features/src/lists/strings.en.ts:27`, `:35-39` |
+| Evidence | `packages/features/src/lists/model/list.ts:121-130`, `packages/validation/src/limits.ts:10`, `:20`, `supabase/migrations/20261103000000_init_schema.sql:239`, `:245`, `packages/features/src/lists/components/list-form-dialog.tsx:53-58`, `:79-101`, `packages/features/src/lists/strings.en.ts:27`, `:35-39` |
 | Status | Verified |
 
 ### BR-LIST-004 — Limits: 100 lists, 500 stories per list
@@ -81,7 +81,7 @@ Rule summary
 | Expected behavior | UI shows the conflict message (BR-LIST-013). |
 | Exceptions | — |
 | Related screens | SCR-LIST-01, Add-to-list sheet, My lists |
-| Evidence | `supabase/migrations/20261104000900_reading_lists.sql:25-49`, `supabase/tests/150_reading_lists.test.sql` (limits section), `packages/features/src/lists/strings.en.ts:83` |
+| Evidence | `supabase/migrations/20261104000900_reading_lists.sql:25-49`, `supabase/tests/150_reading_lists.test.sql` (limits section), `packages/features/src/lists/strings.en.ts:97` |
 | Status | Verified (SQL test) |
 
 ### BR-LIST-005 — Idempotent creation
@@ -93,7 +93,7 @@ Rule summary
 | Expected behavior | Retrying after a lost answer never creates two lists. Toast "List created." |
 | Exceptions | — |
 | Related screens | My lists, Add-to-list sheet |
-| Evidence | `packages/features/src/lists/api/lists.api.ts:74-88`, `packages/features/src/lists/components/list-form-dialog.tsx:47`, `packages/features/src/lists/components/add-to-list-button.tsx:68`, `:118-123`, `packages/features/src/lists/lists.test.tsx:247`, `:356` |
+| Evidence | `packages/features/src/lists/api/lists.api.ts:80-94`, `packages/features/src/lists/components/list-form-dialog.tsx:48`, `packages/features/src/lists/components/add-to-list-button.tsx:74`, `:118-123`, `packages/features/src/lists/lists.test.tsx:277`, `:356` |
 | Status | Verified |
 
 ### BR-LIST-006 — Adding a story
@@ -105,7 +105,7 @@ Rule summary
 | Expected behavior | Sheet toast `Added to "<name>".` |
 | Exceptions | — |
 | Related screens | Add-to-list sheet |
-| Evidence | `supabase/migrations/20261104000900_reading_lists.sql:51-80`, `supabase/migrations/20261103000100_auth_and_rls.sql:316-319`, `supabase/tests/150_reading_lists.test.sql:49`, `packages/features/src/lists/api/lists.api.ts:107-109` |
+| Evidence | `supabase/migrations/20261104000900_reading_lists.sql:51-80`, `supabase/migrations/20261103000100_auth_and_rls.sql:316-319`, `supabase/tests/150_reading_lists.test.sql:49`, `packages/features/src/lists/api/lists.api.ts:113-115` |
 | Status | Verified (SQL test) |
 
 ### BR-LIST-007 — Removing a story
@@ -117,7 +117,7 @@ Rule summary
 | Expected behavior | List page toast "Removed from the list."; sheet toast `Removed from "<name>".`; all list queries refresh. |
 | Exceptions | Others' deletes affect 0 rows. |
 | Related screens | SCR-LIST-01, Add-to-list sheet |
-| Evidence | `packages/features/src/lists/api/lists.api.ts:111-113`, `packages/features/src/lists/screens/list-screen.tsx:164-180`, `supabase/migrations/20261103000100_auth_and_rls.sql:325-327`, `supabase/tests/150_reading_lists.test.sql:67`, `packages/features/src/lists/lists.test.tsx:555` |
+| Evidence | `packages/features/src/lists/api/lists.api.ts:117-119`, `packages/features/src/lists/screens/list-screen.tsx:209-225`, `supabase/migrations/20261103000100_auth_and_rls.sql:325-327`, `supabase/tests/150_reading_lists.test.sql:67`, `packages/features/src/lists/lists.test.tsx:613` |
 | Status | Verified (SQL test) |
 
 ### BR-LIST-008 — Order and reordering
@@ -129,7 +129,7 @@ Rule summary
 | Expected behavior | New order shown at once; on refusal the old order is restored and the error toast shown; list reloads either way. Up disabled on first, down on last, all disabled while a move is pending. Buttons named "Move up: <title>" / "Move down: <title>". |
 | Exceptions | If the list holds a soft-deleted story the owner can still read (e.g. their own), the client omits it but the server counts it → every reorder is refused (F-LIST-01). |
 | Related screens | SCR-LIST-01 |
-| Evidence | `supabase/migrations/20261104000900_reading_lists.sql:82-112`, `packages/features/src/lists/model/list.ts:73-82`, `packages/features/src/lists/hooks/use-lists.ts:151-181`, `packages/features/src/lists/screens/list-screen.tsx:79-83`, `:144-163`, `supabase/tests/150_reading_lists.test.sql:77-89`, `packages/features/src/lists/lists.test.tsx:504-545` |
+| Evidence | `supabase/migrations/20261104000900_reading_lists.sql:82-112`, `packages/features/src/lists/model/list.ts:100-109`, `packages/features/src/lists/hooks/use-lists.ts:151-181`, `packages/features/src/lists/screens/list-screen.tsx:154-158`, `:144-163`, `supabase/tests/150_reading_lists.test.sql:77-89`, `packages/features/src/lists/lists.test.tsx:562-603` |
 | Status | Verified (SQL test) |
 
 ### BR-LIST-009 — Which stories a list shows
@@ -141,7 +141,7 @@ Rule summary
 | Expected behavior | A story that became private/removed disappears silently — for the owner too (no placeholder, unlike the Library — F-LIST-02); the data is kept and the story reappears at its old position if it becomes readable again. Count on the page = shown stories. |
 | Exceptions | Hidden items still count toward the 500 limit and towards the "N stories" count in My lists when the owner can read them (own deleted stories). |
 | Related screens | SCR-LIST-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:311-313`, `packages/features/src/lists/model/list.ts:63-71`, `packages/features/src/lists/screens/list-screen.tsx:118`, `supabase/tests/150_reading_lists.test.sql:69-75`, `packages/features/src/lists/lists.test.tsx:88` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:311-313`, `packages/features/src/lists/model/list.ts:90-98`, `packages/features/src/lists/screens/list-screen.tsx:215`, `supabase/tests/150_reading_lists.test.sql:69-75`, `packages/features/src/lists/lists.test.tsx:111` |
 | Status | Verified (SQL test) |
 
 ### BR-LIST-010 — My lists overview
@@ -153,7 +153,7 @@ Rule summary
 | Expected behavior | Empty: "You don't have any lists yet" / "Group stories on the same theme into a list to read or share."; error with "Try again". |
 | Exceptions | Adding/reordering touch `updated_at`, removing a story does not. |
 | Related screens | SCR-LIB-01 (Lists tab), SCR-LIST-01 |
-| Evidence | `packages/features/src/lists/api/lists.api.ts:18-29`, `packages/features/src/lists/components/my-lists.tsx:16-100`, `packages/features/src/lists/strings.en.ts:4-15`, `packages/features/src/lists/lists.test.tsx:340-390` |
+| Evidence | `packages/features/src/lists/api/lists.api.ts:18-29`, `packages/features/src/lists/components/my-lists.tsx:16-100`, `packages/features/src/lists/strings.en.ts:4-15`, `packages/features/src/lists/lists.test.tsx:342-392` |
 | Status | Verified |
 
 ### BR-LIST-011 — Add-to-list sheet
@@ -165,7 +165,7 @@ Rule summary
 | Expected behavior | Toasts `Added to "<name>".` / `Removed from "<name>".`; empty: "You don't have any lists yet. Create your first one below."; load error: "Couldn't load your lists" + "Try again". |
 | Exceptions | Name > 120 chars in quick create → nothing happens (no message, U-LIST-02). |
 | Related screens | Story page (OBJ-STORY) |
-| Evidence | `packages/features/src/lists/components/add-to-list-button.tsx:22-165`, `packages/features/src/lists/api/lists.api.ts:53-68`, `packages/features/src/lists/hooks/use-lists.ts:52-62`, `packages/features/src/story/components/story-actions.tsx:58`, `packages/features/src/lists/lists.test.tsx:393-458` |
+| Evidence | `packages/features/src/lists/components/add-to-list-button.tsx:22-165`, `packages/features/src/lists/api/lists.api.ts:59-74`, `packages/features/src/lists/hooks/use-lists.ts:52-62`, `packages/features/src/story/components/story-actions.tsx:66`, `packages/features/src/lists/lists.test.tsx:441-506` |
 | Status | Verified |
 
 ### BR-LIST-012 — Deleting a list
@@ -177,7 +177,7 @@ Rule summary
 | Expected behavior | Dialog "Delete this list?" / "The list will be gone. The stories in it are not affected."; success → toast "List deleted." and navigation to `/library` (opens on the Reading tab). Failure → error toast, dialog stays. |
 | Exceptions | No undo. |
 | Related screens | SCR-LIST-01 |
-| Evidence | `packages/features/src/lists/api/lists.api.ts:101-104`, `packages/features/src/lists/screens/list-screen.tsx:207-225`, `supabase/migrations/20261103000000_init_schema.sql:250`, `packages/features/src/lists/lists.test.tsx:585` |
+| Evidence | `packages/features/src/lists/api/lists.api.ts:107-110`, `packages/features/src/lists/screens/list-screen.tsx:299-317`, `supabase/migrations/20261103000000_init_schema.sql:250`, `packages/features/src/lists/lists.test.tsx:745` |
 | Status | Verified |
 
 ### BR-LIST-013 — Error messages
@@ -189,7 +189,7 @@ Rule summary
 | Expected behavior | — |
 | Exceptions | One message covers both "changed elsewhere" and "limit reached" (U-LIST-03). |
 | Related screens | SCR-LIST-01, My lists, Add-to-list sheet |
-| Evidence | `packages/features/src/lists/model/list.ts:105-118`, `packages/features/src/lists/strings.en.ts:80-86`, `packages/features/src/lists/components/list-form-dialog.tsx:122-126` |
+| Evidence | `packages/features/src/lists/model/list.ts:132-145`, `packages/features/src/lists/strings.en.ts:94-100`, `packages/features/src/lists/components/list-form-dialog.tsx:125-129` |
 | Status | Verified |
 
 ### BR-LIST-014 — List page access and presentation
@@ -201,5 +201,5 @@ Rule summary
 | Expected behavior | — |
 | Exceptions | No share/copy-link action (U-LIST-01). |
 | Related screens | SCR-LIST-01 |
-| Evidence | `apps/web/src/app/(main)/lists/[id]/page.tsx:7-14`, `packages/features/src/lists/api/lists.api.ts:32-50`, `packages/features/src/lists/screens/list-screen.tsx:65-67`, `:109-123`, `packages/features/src/lists/lists.test.tsx:484` |
+| Evidence | `apps/web/src/app/(main)/lists/[id]/page.tsx:7-14`, `packages/features/src/lists/api/lists.api.ts:38-56`, `packages/features/src/lists/screens/list-screen.tsx:96-98`, `:109-123`, `packages/features/src/lists/lists.test.tsx:537` |
 | Status | Verified |

@@ -19,7 +19,7 @@ OBJ-CMT), `docs/WBS.md:221` (WP 6.3, account copy of the 18+ choice), `docs/WBS.
 
 | Actor | How identified | Trust & Safety capabilities | Evidence |
 | --- | --- | --- | --- |
-| Guest | No session | Sees no 18+ story by default; can turn 18+ on for the device after confirming age; "Report" sends them to `/login?next=<path>`; `/moderation` redirects to login | `adult-content/model/store.ts:14,53-55`, `moderation/components/report-button.tsx:86-88`, `apps/web/src/lib/auth/route-guard.ts:44` |
+| Guest | No session | Sees no 18+ story by default; can turn 18+ on for the device after confirming age; "Report" sends them to `/login?next=<path>`; `/moderation` redirects to login | `adult-content/model/store.ts:14,53-55`, `moderation/components/report-button.tsx:89-91`, `apps/web/src/lib/auth/route-guard.ts:44` |
 | Member (reader / author) | Signed in, `app_users.account_status = 'active'` | Report anything they can see that is not their own (20 per 24 h); 18+ choice saved to the account; comments limited to 10 / 10 min and 200 / day, spam filter | `supabase/migrations/20261104002000_moderation.sql:130-175`, `20261104002200_abuse_limits.sql:32-37` |
 | Story owner / co-author | `story_role` owner/co_author | Hides/unhides comments on their own story — **owned by OBJ-CMT** (`domains/community/comments/`, WP 6.2); cannot bring back a story a moderator removed | `20261104001800_comment_moderation_by_author.sql:1-22`, `20261104002000_moderation.sql:102-116` |
 | Moderator | JWT `app_metadata.role = 'moderator'` (set only by service role) | `/moderation` console, all moderation RPCs, reads the audit table; exempt from comment/report rate limits and the spam filter | `20261103000100_auth_and_rls.sql:10,69-72`, `apps/web/src/lib/auth/require-user.ts:22`, `20261104002200_abuse_limits.sql:16,49,96` |
@@ -47,9 +47,9 @@ own story, `set_comment_hidden`, `comment_hides`, "hidden by author" notices) is
 | Account status | OBJ-AUTH, OBJ-PRF | Suspension flips `app_users.account_status`; profile (`app_users_read`) and author page hide the account | `20261103000100_auth_and_rls.sql:182-184`, `20261104001600_author_follows.sql:50` |
 | Discovery lists | OBJ-HOME, OBJ-SRCH, OBJ-RANK, OBJ-REC, OBJ-AUTHOR | Every list passes `useShowMature()` (BR-MAT-005); most RPCs also drop suspended owners (see discovery overview matrix, F-HOME-01) | `domains/discovery/overview.md` |
 | Library, reading lists | OBJ-LIB, OBJ-LIST | 18+ stories the user saved stay visible by decision (BR-MAT-007); others' public lists are not filtered (F-MAT-02) | `docs/WBS.md:211` |
-| Settings page | OBJ-SET | `/settings` hosts an "Adult content (18+)" switch that uses the same store (BR-MAT-003) | `packages/features/src/settings/screens/settings-screen.tsx:152-171` |
-| Header & menu | OBJ-SHELL | Header hosts the 18+ toggle; user menu shows "Moderation" to moderators only | `shell/components/site-header.tsx:18`, `shell/components/user-menu.tsx:69-73` |
-| SEO | OBJ-SEO | 18+ stories are `noindex`, no JSON-LD, not in sitemap; but metadata/OG still carry the title (F-MAT-01) | `story/model/story-detail.ts:24-26`, `apps/web/src/lib/seo/sitemap-data.ts:29,55` |
+| Settings page | OBJ-SET | `/settings` hosts an "Adult content (18+)" switch that uses the same store (BR-MAT-003) | `packages/features/src/settings/screens/settings-screen.tsx:276-295` |
+| Header & menu | OBJ-SHELL | Header hosts the 18+ toggle; user menu shows "Moderation" to moderators only | `shell/components/site-header.tsx:22`, `shell/components/user-menu.tsx:71-75` |
+| SEO | OBJ-SEO | 18+ stories are `noindex`, no JSON-LD, not in sitemap; but metadata/OG still carry the title (F-MAT-01) | `story/model/story-detail.ts:38-40`, `apps/web/src/lib/seo/sitemap-data.ts:29,55` |
 | Error contract | OBJ-SHELL (`_shared/errors.ts`) | 42501/PT404/PT409/22023/PT429 → `forbidden/notFound/conflict/invalid/rateLimited`; spam HINT passes through `details` | `packages/validation/src/rpc.ts:27-39`, `packages/features/src/_shared/errors.ts:86-96` |
 | Sign-up limits / captcha | OBJ-AUTH | Not implemented; delegated to Supabase Auth project settings (BR-ABU-008) | `20261104002200_abuse_limits.sql:20-22` |
 | Notifications | OBJ-NOTI | No moderation notification type exists (reported party / reporter are never told) | `docs/WBS.md:219` ("Chưa làm") |

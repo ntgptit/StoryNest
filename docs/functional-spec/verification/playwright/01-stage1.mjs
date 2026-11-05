@@ -7,9 +7,12 @@ try {
   record("VER-AUT-01", p.url().endsWith("/studio") ? "PASS" : "FAIL", `signed in as qa_author, at ${p.url().replace(B, "")}`);
   // AUT-02 create story A with defaults
   await p.goto(B + "/studio/new", { waitUntil: "networkidle" });
-  const visDefault = await p.getByRole("combobox", { name: "Hiển thị" }).innerText().catch(() => "?");
+  // Visibility is a radio-card group since PR #60 (the checked card is the default); status is still a select.
+  const visDefault = await p.locator('[aria-label="Hiển thị"] [aria-checked="true"]').first().innerText().catch(() => "?");
   const statusDefault = await p.getByRole("combobox", { name: "Tình trạng" }).innerText().catch(() => "?");
   await p.getByLabel("Tên truyện").fill("[QA] Câu chuyện kiểm thử A");
+  // The story link is unique per author and earlier runs keep their story (cleanup cannot delete published versions): a run suffix keeps this one distinct.
+  if (process.env.QA_SLUG_SUFFIX) await p.getByLabel("Đường dẫn").fill(`qa-cau-chuyen-kiem-thu-a-${process.env.QA_SLUG_SUFFIX}`);
   await p.getByLabel("Giới thiệu").fill("Dữ liệu kiểm thử tự động (QA). Không phải nội dung thật.");
   await shot(p, "aut-02-new-story-form");
   await p.getByRole("button", { name: "Tạo truyện" }).click();

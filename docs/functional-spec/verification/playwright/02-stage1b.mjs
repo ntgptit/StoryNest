@@ -10,8 +10,12 @@ try {
   await p.getByLabel("Tên chương").fill("Chương thử một");
   await p.getByRole("button", { name: "Lưu nháp" }).click();
   await p.waitForTimeout(2500);
-  await p.getByRole("button", { name: "Đăng chương", exact: true }).click();
-  await p.getByText("Đã đăng chương.").waitFor({ timeout: 20000 });
+  // 01-stage1 already publishes chapter 1 when it runs to the end; this step only publishes when that has not happened yet.
+  const publishNow = p.getByRole("button", { name: "Đăng chương", exact: true });
+  if (await publishNow.isVisible().catch(() => false)) {
+    await publishNow.click();
+    await p.getByText("Đã đăng chương.").waitFor({ timeout: 20000 });
+  }
   const panel = await p.locator("main").innerText();
   await shot(p, "aut-04-published");
   await p.goto(`${B}/studio`, { waitUntil: "networkidle" });
@@ -26,8 +30,8 @@ try {
   record("VER-AUT-04", notFound ? "CONFIRMED" : "CHECK", `published chapter 1; publish panel says "${hint}"; reader sees not-found=${notFound} (HTTP ${resp.status()}) because the story is still private; Studio row: ${(studio.match(/\[QA\][^\n]*\n[^\n]*\n[^\n]*/)||[""])[0].replace(/\n/g," | ")}`);
   // AUT-05 set unlisted
   await p.goto(`${B}/studio/story/${storyA}`, { waitUntil: "networkidle" });
-  await p.getByRole("combobox", { name: "Hiển thị" }).click();
-  await p.getByRole("option", { name: "Chỉ người có liên kết" }).click();
+  // PR #60 turned the visibility select into radio cards.
+  await p.getByRole("radiogroup", { name: "Hiển thị" }).getByRole("radio", { name: /Chỉ người có liên kết/ }).check();
   await p.getByRole("button", { name: "Lưu thay đổi" }).click();
   await p.getByText("Đã lưu thay đổi.").waitFor({ timeout: 15000 });
   const resp2 = await r.goto(`${B}/story/${storyA}/x`, { waitUntil: "networkidle" });

@@ -41,7 +41,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Expected behavior | No draft (no role, unknown id, other story) → "Chapter not found" / "The chapter doesn't exist or you don't have access to it." Anonymous → login redirect. |
 | Exceptions | A moderator can read every version via the API but sees "Chapter not found" here (no draft access). Load failure of draft or versions → "Couldn't load the history" + "Try again" (preview uses the same error text). |
 | Related screens | SCR-HIST-01, SCR-HIST-02 |
-| Evidence | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/history/page.tsx:13`, `…/preview/page.tsx:13`, `supabase/migrations/20261103000100_auth_and_rls.sql:254-258`, `packages/features/src/history/screens/history-screen.tsx:48-67`, `packages/features/src/history/screens/preview-screen.tsx:28-43`, `packages/features/src/history/strings.en.ts:45-50`, test `history.test.tsx:379,411` |
+| Evidence | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/history/page.tsx:13`, `…/preview/page.tsx:13`, `supabase/migrations/20261103000100_auth_and_rls.sql:254-258`, `packages/features/src/history/screens/history-screen.tsx:53-72`, `packages/features/src/history/screens/preview-screen.tsx:43-58`, `packages/features/src/history/strings.en.ts:60-65`, test `history.test.tsx:389,511` |
 | Status | Verified |
 
 ### BR-HIST-002 — Published versions are immutable
@@ -65,7 +65,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Expected behavior | Each entry is a toggle button (`aria-pressed`) labelled "Version {n}", with badge "Currently visible to readers" on the live one, "(untitled)" for an empty title, "{n} words · Published … · by {name}". The newest is selected by default. No versions → empty state "This chapter hasn't been published yet" / "Each time you publish, a version is created that you can review here." |
 | Exceptions | After unpublish no version is live (no badge). |
 | Related screens | SCR-HIST-01 |
-| Evidence | `packages/features/src/history/api/history.api.ts:6-22`, `packages/features/src/history/model/history.ts:28-45`, `packages/features/src/history/screens/history-screen.tsx:99,112-138`, `packages/features/src/history/strings.en.ts:6-17`, tests `history.test.tsx:102,212,284` |
+| Evidence | `packages/features/src/history/api/history.api.ts:6-22`, `packages/features/src/history/model/history.ts:27-44`, `packages/features/src/history/screens/history-screen.tsx:103,116-142`, `packages/features/src/history/strings.en.ts:6-17`, tests `history.test.tsx:104,222,294` |
 | Status | Verified |
 
 ### BR-HIST-004 — Read-only version view with the reader's rendering
@@ -77,7 +77,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Expected behavior | "Content" mode: H2 version title + blocks; "This version has no content." when empty. No inputs, no editing. Loading → skeleton; error → retry. |
 | Exceptions | Images without a resolvable URL are not rendered (reader behaviour, `BR-READ-*`). |
 | Related screens | SCR-HIST-01 |
-| Evidence | `packages/features/src/history/api/history.api.ts:24-36`, `packages/features/src/reader/model/chapter.ts:77-79`, `packages/features/src/history/screens/history-screen.tsx:175,184-194,260-269`, `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/history/history-view.tsx:8`, `apps/web/src/lib/covers.ts:18-22`, tests `history.test.tsx:221,284,299` |
+| Evidence | `packages/features/src/history/api/history.api.ts:25-37`, `packages/features/src/reader/model/chapter.ts:78-80`, `packages/features/src/history/screens/history-screen.tsx:179,188-198,269-278`, `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/history/history-view.tsx:8`, `apps/web/src/lib/covers.ts:18-22`, tests `history.test.tsx:231,294,309` |
 | Status | Verified |
 
 ### BR-HIST-005 — Block-level comparison
@@ -89,7 +89,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Expected behavior | Caption "Compared with {base}, version {n} has the following changes."; summary "{a} paragraph(s) added, {r} removed, {c} changed" (`aria-live`); each non-same block has a badge Added / Removed / Changed; removed blocks struck through; changed text blocks show the previous text struck through with sr-only "Before:". Identical → "The two versions are identical." |
 | Exceptions | The draft used as base is the one loaded when the screen opened (not refetched); unsaved editor text is not part of it (F-EDT-02). Counters say "paragraphs" for images/dividers too (U-HIST-01). |
 | Related screens | SCR-HIST-01 |
-| Evidence | `packages/features/src/history/model/history.ts:90-154`, `packages/features/src/history/screens/history-screen.tsx:176-198,234-259,293-338`, `packages/features/src/history/strings.en.ts:21-33`, tests `history.test.tsx:68,85,96,307,320` |
+| Evidence | `packages/features/src/history/model/history.ts:99-163`, `packages/features/src/history/screens/history-screen.tsx:176-198,234-259,293-338`, `packages/features/src/history/strings.en.ts:29-41`, tests `history.test.tsx:70,87,98,318,331` |
 | Status | Verified |
 
 ### BR-HIST-006 — Restore a version into the draft
@@ -101,7 +101,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Expected behavior | Toast and inline status "Restored to draft." with link "Open editor". `chapter_drafts.revision` +1; version count and live version unchanged (WBS 3.9 browser check). Double submit prevented by the dialog's pending lock. |
 | Exceptions | Conflict (save landed between re-read and write) → "The draft was just edited elsewhere. Reopen the editor and restore again." Draft missing → "Chapter not found." The previous draft content is overwritten with no undo, and an unsaved local backup is discarded (F-HIST-01). An editor tab open elsewhere will hit a conflict on its next save (`BR-EDT-013`). |
 | Related screens | SCR-HIST-01, SCR-EDT-01 |
-| Evidence | `packages/features/src/history/hooks/use-history.ts:32-62`, `packages/features/src/history/model/history.ts:64-86`, `packages/features/src/history/screens/history-screen.tsx:180-182,217-232,271-288`, `packages/ui/src/widgets/confirm-dialog.tsx:38-66`, `packages/features/src/history/strings.en.ts:34-44,51-58`, tests `history.test.tsx:64,329,350,361` |
+| Evidence | `packages/features/src/history/hooks/use-history.ts:32-62`, `packages/features/src/history/model/history.ts:73-95`, `packages/features/src/history/screens/history-screen.tsx:184-186,221-236,280-297`, `packages/ui/src/widgets/confirm-dialog.tsx:38-66`, `packages/features/src/history/strings.en.ts:49-59,66-73`, tests `history.test.tsx:66,331,352,363` |
 | Status | Verified |
 
 ### BR-HIST-007 — Draft preview as readers will see it
@@ -113,7 +113,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Expected behavior | Sticky bar: "Back to editor" + reader settings. Note (`role="note"`): "This is a draft, exactly as readers will see it when you publish. No one can see it yet." H1 = draft title, then blocks; never-written draft → "The draft has no content yet." |
 | Exceptions | Differences from the reader page (`BR-READ-*`): no "Chapter {n}" label, no story title link, no TOC, no end-of-chapter marker/vote/comments/report, no adult gate, no paragraph comment buttons. Unsaved editor text is not shown (F-EDT-02, U-HIST-02). |
 | Related screens | SCR-HIST-02 |
-| Evidence | `packages/features/src/history/screens/preview-screen.tsx:15-80`, `packages/features/src/history/model/history.ts:50-62`, `packages/features/src/reader/screens/reader-screen.tsx:71-121`, `packages/features/src/history/strings.en.ts:59-64`, tests `history.test.tsx:392,411` |
+| Evidence | `packages/features/src/history/screens/preview-screen.tsx:15-80`, `packages/features/src/history/model/history.ts:59-71`, `packages/features/src/reader/screens/reader-screen.tsx:71-121`, `packages/features/src/history/strings.en.ts:67-72`, tests `history.test.tsx:473,511` |
 | Status | Verified |
 
 ### BR-HIST-008 — Caching of version content
@@ -125,7 +125,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Expected behavior | Switching back to a viewed version or comparing against it needs no request. |
 | Exceptions | — |
 | Related screens | SCR-HIST-01 |
-| Evidence | `packages/features/src/history/queries.ts:15-22`, `packages/features/src/history/hooks/use-history.ts:13-30`, `packages/features/src/editor/hooks/use-chapter-draft.ts:12-23` |
+| Evidence | `packages/features/src/history/queries.ts:15-22`, `packages/features/src/history/hooks/use-history.ts:14-31`, `packages/features/src/editor/hooks/use-chapter-draft.ts:12-23` |
 | Status | Verified |
 
 ### BR-HIST-009 — History error messages
@@ -137,7 +137,7 @@ Domain: `D-STUDIO` · Folder: `domains/studio/version-history` · Screens:
 | Expected behavior | Dialog stays open after a failure; no success message. |
 | Exceptions | `restore.nothingToRestore` ("This version has no content to restore.") exists in strings but is unused; an empty version shows the generic invalid message. |
 | Related screens | SCR-HIST-01 |
-| Evidence | `packages/features/src/history/model/history.ts:156-172`, `packages/features/src/history/screens/history-screen.tsx:283-286`, `packages/features/src/history/strings.en.ts:43,51-58`, test `history.test.tsx:127,350` |
+| Evidence | `packages/features/src/history/model/history.ts:98-114`, `packages/features/src/history/screens/history-screen.tsx:329-332`, `packages/features/src/history/strings.en.ts:58,66-73`, test `history.test.tsx:129,360` |
 | Status | Verified |
 
 ### BR-HIST-012 — Branching version history (batch 4, Lucian 177)

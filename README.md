@@ -40,7 +40,7 @@ supabase/functions    Edge functions
 - Màn hình nghiệp vụ chỉ dùng shared components và design tokens; không tự định nghĩa màu, spacing, radius.
 - Mobile-first: bottom navigation, touch target, safe area. Web: responsive, độ rộng văn bản tối ưu cho đọc.
 - Motion: easing/animation là token trong `packages/design-tokens` (`ease-spring`, `animate-ribbon-*`...), không viết `cubic-bezier()`/`@keyframes` rời rạc. `prefers-reduced-motion` được clamp toàn cục; hiệu ứng trang trí đặt sau `motion-safe:`.
-- Lucian UX/UI Prompt (thử nghiệm, DEC-013): skill `.claude/skills/lucian-uxui` chỉ dùng làm tham khảo tương tác; port thành widget trong `packages/ui` theo mục "StoryNest project rules" trong `SKILL.md`.
+- Lucian UX/UI Prompt (thử nghiệm, DEC-025): skill `.claude/skills/lucian-uxui` chỉ dùng làm tham khảo tương tác; port thành widget trong `packages/ui` theo mục "StoryNest project rules" trong `SKILL.md`.
 - Next.js SSR không export tĩnh nguyên trạng sang Capacitor: mobile dùng static shell + client navigation, phần cần server gọi Supabase/API từ xa.
 
 ## Database

@@ -48,7 +48,7 @@
 | Expected behavior | A story made private/deleted/suspended disappears immediately; only its numbers lag |
 | Exceptions | — |
 | Related screens | SCR-RANK-01 |
-| Evidence | `20261104001500_rankings.sql:13-16,98-107`, `ranking/hooks/use-ranking.ts:13-31`, `ranking/keys.ts:5` |
+| Evidence | `20261104001500_rankings.sql:13-16,98-107`, `ranking/hooks/use-ranking.ts:19-37`, `ranking/keys.ts:5` |
 | Status | Verified (SQL test) |
 
 ### BR-RANK-004 — Order and position
@@ -72,7 +72,7 @@
 | Expected behavior | At most 204 ranked stories reachable; end shows "You've reached the end of the ranking." |
 | Exceptions | — |
 | Related screens | SCR-RANK-01 |
-| Evidence | `20261104001500_rankings.sql:88-96`, `ranking/model/ranking.ts:7-29`, `ranking/api/ranking.api.ts:27-62`, `ranking/ranking.test.tsx:97,180` |
+| Evidence | `20261104001500_rankings.sql:88-96`, `ranking/model/ranking.ts:7-29`, `ranking/api/ranking.api.ts:28-63`, `ranking/ranking.test.tsx:97,180` |
 | Status | Verified |
 
 ### BR-RANK-006 — Period in the URL
@@ -84,7 +84,7 @@
 | Expected behavior | Each period has its own link and cache |
 | Exceptions | — |
 | Related screens | SCR-RANK-01 |
-| Evidence | `apps/web/src/app/(main)/ranking/page.tsx:11-14`, `ranking/model/ranking.ts:3-18`, `ranking/screens/ranking-screen.tsx:45`, `ranking/ranking.test.tsx:80,90,285` |
+| Evidence | `apps/web/src/app/(main)/ranking/page.tsx:11-14`, `ranking/model/ranking.ts:3-18`, `ranking/screens/ranking-screen.tsx:40`, `ranking/ranking.test.tsx:80,90,285` |
 | Status | Verified |
 
 ### BR-RANK-007 — Freshness note
@@ -96,7 +96,7 @@
 | Expected behavior | Note hidden when no row or on failure |
 | Exceptions | — |
 | Related screens | SCR-RANK-01 |
-| Evidence | `20261104001500_rankings.sql:113-119`, `ranking/hooks/use-ranking.ts:33-41`, `ranking/screens/ranking-screen.tsx:54-58`, `ranking/ranking.test.tsx:299,308` |
+| Evidence | `20261104001500_rankings.sql:113-119`, `ranking/hooks/use-ranking.ts:39-47`, `ranking/screens/ranking-screen.tsx:49-53`, `ranking/ranking.test.tsx:299,308` |
 | Status | Verified |
 
 ### BR-RANK-008 — Ranked card
@@ -108,7 +108,7 @@
 | Expected behavior | Two sets of numbers per card (period vs total) |
 | Exceptions | Badge `aria-label` "Rank N" sits on a generic `span` and overlaps the card's "18+" badge position → U-RANK-02 |
 | Related screens | SCR-RANK-01 |
-| Evidence | `ranking/screens/ranking-screen.tsx:93-123`, `ranking/strings.en.ts:8-9`, `packages/ui/src/widgets/story-card.tsx:60-66` |
+| Evidence | `ranking/screens/ranking-screen.tsx:88-116`, `ranking/strings.en.ts:8-9`, `packages/ui/src/widgets/story-card.tsx:125-137` |
 | Status | Verified |
 
 ### BR-RANK-009 — Daily ranking snapshots and the last week

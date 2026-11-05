@@ -77,7 +77,7 @@ Rule summary
 | Expected behavior | Empty → "Please enter some text." (`commentText.validation.empty`); too long → "The comment is too long (10,000 characters max)." (`validation.tooLong`); nothing is sent. A character counter `used/max` appears once the text reaches 80% of the limit. Stored text is trimmed. |
 | Exceptions | Server returns `22023` if a client bypasses the check. |
 | Related screens | SCR-CMT-01 |
-| Evidence | `packages/features/src/comments/model/comment.ts:116-126`, `packages/features/src/comments/components/comment-composer.tsx:14`, `:44-51`, `:80-88`, `packages/validation/src/limits.ts:12`, `supabase/migrations/20261104000700_comments.sql:211-213`, `:260-262`, `supabase/migrations/20261103000000_init_schema.sql:207`, `packages/features/src/comments/strings.en.ts:59` |
+| Evidence | `packages/features/src/comments/model/comment.ts:161-171`, `packages/features/src/comments/components/comment-composer.tsx:17`, `:44-51`, `:80-88`, `packages/validation/src/limits.ts:12`, `supabase/migrations/20261104000700_comments.sql:211-213`, `:260-262`, `supabase/migrations/20261103000000_init_schema.sql:207`, `packages/features/src/comments/strings.en.ts:79` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-004 — Chapter scope vs paragraph scope
@@ -89,7 +89,7 @@ Rule summary
 | Expected behavior | Unknown block or a block of another chapter → `22023` "unknown paragraph". Chapter-level thread sits at the end of the chapter (`#comments`); paragraph thread opens in a bottom sheet. |
 | Exceptions | Block ids are never recycled (FK `ON DELETE RESTRICT`), so anchors stay valid across versions. |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:155-160`, `:222-225`, `supabase/migrations/20261103000000_init_schema.sql:116`, `:203-204`, `packages/features/src/reader/components/reader-blocks.tsx:42-59`, `supabase/tests/130_comments.test.sql:66-67`, `:89-90` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:155-160`, `:222-225`, `supabase/migrations/20261103000000_init_schema.sql:116`, `:203-204`, `packages/features/src/reader/components/reader-blocks.tsx:103-122`, `supabase/tests/130_comments.test.sql:66-67`, `:89-90` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-005 — One level of replies; reply inherits the parent's paragraph
@@ -101,7 +101,7 @@ Rule summary
 | Expected behavior | Reply to a reply → `22023`; parent of another chapter / unknown → `PT404`; parent deleted or hidden → `PT409`. UI: "Reply" only on visible top-level comments for signed-in users; replies never show a Reply button; after a successful reply the composer closes and the replies expand. |
 | Exceptions | — |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:35-62`, `:215-221`, `supabase/tests/130_comments.test.sql:95-105`, `:137-139`, `packages/features/src/comments/components/comment-item.tsx:170-181`, `:189-202`, `packages/features/src/comments/comments.test.tsx:441`, `:464` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:35-62`, `:215-221`, `supabase/tests/130_comments.test.sql:95-105`, `:137-139`, `packages/features/src/comments/components/comment-item.tsx:174-185`, `:189-202`, `packages/features/src/comments/comments.test.tsx:450`, `:464` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-006 — Duplicate-post protection
@@ -113,7 +113,7 @@ Rule summary
 | Expected behavior | Retrying after a lost response or double-submitting never creates two comments. Failed send keeps the text and the id. |
 | Exceptions | A retry is also not counted against the rate limit (BR-CMT-017). |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:227-247`, `packages/features/src/comments/components/comment-composer.tsx:41`, `:55-58`, `supabase/tests/130_comments.test.sql:70-76`, `packages/features/src/comments/comments.test.tsx:309`, `:339` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:227-247`, `packages/features/src/comments/components/comment-composer.tsx:50`, `:55-58`, `supabase/tests/130_comments.test.sql:70-76`, `packages/features/src/comments/comments.test.tsx:315`, `:339` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-007 — Ordering and pagination
@@ -125,7 +125,7 @@ Rule summary
 | Expected behavior | "Load more comments" / "Load more replies" buttons appear while more exist and show "Loading…" while fetching; no row duplicated or skipped across pages, including ties. |
 | Exceptions | No UI to change the sort order (the `newestFirst` prop exists, not exposed). |
 | Related screens | SCR-CMT-01 |
-| Evidence | `packages/features/src/comments/components/comment-thread.tsx:24`, `:88-99`, `packages/features/src/comments/model/comment.ts:83-104`, `packages/features/src/comments/api/comments.api.ts:15-29`, `supabase/migrations/20261104000700_comments.sql:148`, `:153-185`, `supabase/tests/130_comments.test.sql:196-213` |
+| Evidence | `packages/features/src/comments/components/comment-thread.tsx:24`, `:88-99`, `packages/features/src/comments/model/comment.ts:113-134`, `packages/features/src/comments/api/comments.api.ts:18-32`, `supabase/migrations/20261104000700_comments.sql:148`, `:153-185`, `supabase/tests/130_comments.test.sql:196-213` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-008 — Placeholder for a removed parent
@@ -137,7 +137,7 @@ Rule summary
 | Expected behavior | UI draws "This comment was deleted." (`item.deletedPlaceholder`) in italics, with no actions; the replies toggle remains. Deleted replies simply disappear. |
 | Exceptions | A comment hidden by a moderator is shown to other readers with the same "deleted" wording (the reason is not revealed). |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:159`, `supabase/migrations/20261104001800_comment_moderation_by_author.sql:95-106`, `packages/features/src/comments/components/comment-item.tsx:101-102`, `supabase/tests/130_comments.test.sql:133-145` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:159`, `supabase/migrations/20261104001800_comment_moderation_by_author.sql:95-106`, `packages/features/src/comments/components/comment-item.tsx:122-123`, `supabase/tests/130_comments.test.sql:133-145` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-009 — Edit own comment and the "edited" mark
@@ -149,7 +149,7 @@ Rule summary
 | Expected behavior | Edit opens the composer in place with the current text, "Save"/"Saving…"; success → toast "Edit saved." and the thread reloads. Others' or hidden/deleted comments → `PT404`. |
 | Exceptions | Known defect: a hide→unhide by the story author, or saving unchanged text, also produces "(edited)" (see F-CMT-01). No `is_active_account` check on edit (see F-CMT-02). |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:250-268`, `supabase/migrations/20261104001800_comment_moderation_by_author.sql:108`, `supabase/migrations/20261103000000_init_schema.sql:374-378`, `:385`, `packages/features/src/comments/components/comment-item.tsx:63`, `:108`, `:138-151`, `supabase/tests/130_comments.test.sql:113-121`, `:156` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:250-268`, `supabase/migrations/20261104001800_comment_moderation_by_author.sql:108`, `supabase/migrations/20261103000000_init_schema.sql:374-378`, `:385`, `packages/features/src/comments/components/comment-item.tsx:77`, `:108`, `:138-151`, `supabase/tests/130_comments.test.sql:113-121`, `:156` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-010 — Soft delete own comment
@@ -161,7 +161,7 @@ Rule summary
 | Expected behavior | UI asks first: "Delete this comment?" / "The comment will disappear from the page. Its replies will be kept."; success → toast "Comment deleted."; failure → error toast and the dialog stays. Replies remain; parent becomes a placeholder (BR-CMT-008). Counter drops (BR-CMT-016). |
 | Exceptions | No undo/restore for the author. |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:270-292`, `packages/features/src/comments/components/comment-item.tsx:117-124`, `:220-237`, `packages/features/src/comments/strings.en.ts:49-50`, `supabase/tests/130_comments.test.sql:125-131`, `:155` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:270-292`, `packages/features/src/comments/components/comment-item.tsx:119-126`, `:220-237`, `packages/features/src/comments/strings.en.ts:57-58`, `supabase/tests/130_comments.test.sql:125-131`, `:155` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-011 — Likes
@@ -173,7 +173,7 @@ Rule summary
 | Expected behavior | UI toggles at once in every cached list showing that comment (not the margin counts), then takes the server count; refusal restores the previous state and shows an error toast. Button is disabled while pending; `aria-pressed` reflects state; label "Like"/"Unlike". Guests: label "Sign in to like" → login (BR-CMT-019). |
 | Exceptions | Liking one's own comment is allowed. Placeholders have no like button. |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:294-319`, `packages/features/src/comments/hooks/use-comments.ts:128-177`, `packages/features/src/comments/model/comment.ts:106-110`, `packages/features/src/comments/components/comment-item.tsx:69-78`, `:157-169`, `supabase/tests/130_comments.test.sql:163-181`, `packages/features/src/comments/comments.test.tsx:386-432` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:294-319`, `packages/features/src/comments/hooks/use-comments.ts:140-189`, `packages/features/src/comments/model/comment.ts:136-140`, `packages/features/src/comments/components/comment-item.tsx:84-93`, `:157-169`, `supabase/tests/130_comments.test.sql:163-181`, `packages/features/src/comments/comments.test.tsx:395-441` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-012 — Per-paragraph comment counts
@@ -185,7 +185,7 @@ Rule summary
 | Expected behavior | The trailing button shows the count beside the icon when > 0; its accessible name is "Comment on this paragraph (N)" / "Comment on this paragraph". Counts refresh after any comment write in the chapter. |
 | Exceptions | The SQL assertion that hidden comments are excluded from others' counts is vacuous (see F-CMT-04). |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104000700_comments.sql:187-194`, `packages/features/src/comments/api/comments.api.ts:44-52`, `packages/features/src/reader/components/reader-blocks.tsx:35`, `:50-59`, `packages/features/src/comments/strings.en.ts:55`, `supabase/tests/130_comments.test.sql:91`, `:108` |
+| Evidence | `supabase/migrations/20261104000700_comments.sql:187-194`, `packages/features/src/comments/api/comments.api.ts:47-55`, `packages/features/src/reader/components/reader-blocks.tsx:69`, `:50-59`, `packages/features/src/comments/strings.en.ts:73`, `supabase/tests/130_comments.test.sql:91`, `:108` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-013 — Visibility of a hidden comment
@@ -209,7 +209,7 @@ Rule summary
 | Expected behavior | Comment menu (⋯ "Comment options") shows "Hide comment" on visible comments and "Unhide comment" only on author-hidden ones; toast "Comment hidden." / "Comment unhidden."; refusal → error toast; lists reload. Counter −1 on hide, +1 on unhide. |
 | Exceptions | The commenter is not notified of the hide (WBS 6.2 "Chưa làm"; F-NOTI-04). A manager may hide their own comment through this menu (UI offers it since `canHide` does not exclude own). |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104001800_comment_moderation_by_author.sql:25-66`, `:118-162`, `packages/features/src/comments/hooks/use-comments.ts:179-205`, `packages/features/src/comments/components/comment-item.tsx:54-66`, `:80-87`, `:125-126`, `supabase/tests/240_comment_moderation_by_author.test.sql:67-113`, `docs/WBS.md:220` |
+| Evidence | `supabase/migrations/20261104001800_comment_moderation_by_author.sql:25-66`, `:118-162`, `packages/features/src/comments/hooks/use-comments.ts:241-267`, `packages/features/src/comments/components/comment-item.tsx:68-80`, `:80-87`, `:125-126`, `supabase/tests/240_comment_moderation_by_author.test.sql:67-113`, `docs/WBS.md:220` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-015 — Hidden-state notices per viewer
@@ -221,7 +221,7 @@ Rule summary
 | Expected behavior | Rendered as `role="note"` box above the text; no Reply/Report on hidden comments. |
 | Exceptions | Moderators viewing via the reader get the commenter-style text. |
 | Related screens | SCR-CMT-01 |
-| Evidence | `packages/features/src/comments/components/comment-item.tsx:89-93`, `:132-136`, `packages/features/src/comments/strings.en.ts:40-43`, `packages/features/src/comments/comments.test.tsx:634-672` |
+| Evidence | `packages/features/src/comments/components/comment-item.tsx:110-114`, `:132-136`, `packages/features/src/comments/strings.en.ts:48-51`, `packages/features/src/comments/comments.test.tsx:660-698` |
 | Status | Verified |
 
 ### BR-CMT-016 — Comment counters
@@ -245,7 +245,7 @@ Rule summary
 | Expected behavior | Composer keeps the text and shows inline: spam → "The comment was rejected because it looks like spam (too many links or repeated characters)."; rate limit → "You're commenting too fast. Wait a moment and try again." |
 | Exceptions | The 30-second duplicate check (BR-CMT-006) runs before the insert, so a resubmitted duplicate is neither counted nor spam-checked. |
 | Related screens | SCR-CMT-01 |
-| Evidence | `supabase/migrations/20261104002200_abuse_limits.sql:1-18`, `:76-117`, `packages/features/src/comments/model/comment.ts:128-149`, `packages/features/src/_shared/errors.ts:90`, `packages/validation/src/rpc.ts:32`, `packages/features/src/comments/strings.en.ts:65-66`, `docs/WBS.md:226` |
+| Evidence | `supabase/migrations/20261104002200_abuse_limits.sql:1-18`, `:76-117`, `packages/features/src/comments/model/comment.ts:173-194`, `packages/features/src/_shared/errors.ts:90`, `packages/validation/src/rpc.ts:32`, `packages/features/src/comments/strings.en.ts:85-86`, `docs/WBS.md:226` |
 | Status | Verified (SQL test) |
 
 ### BR-CMT-018 — Reporting a comment
@@ -257,7 +257,7 @@ Rule summary
 | Expected behavior | `ReportButton kind="comment"` (label "Report") opens the report flow (OBJ-MOD). |
 | Exceptions | Not shown on hidden comments or placeholders. |
 | Related screens | SCR-CMT-01 |
-| Evidence | `packages/features/src/comments/components/comment-item.tsx:182-184`, `supabase/migrations/20261104002200_abuse_limits.sql:149-155`, `packages/features/src/comments/comments.test.tsx:536` |
+| Evidence | `packages/features/src/comments/components/comment-item.tsx:186-188`, `supabase/migrations/20261104002200_abuse_limits.sql:149-155`, `packages/features/src/comments/comments.test.tsx:562` |
 | Status | Verified |
 
 ### BR-CMT-019 — Guest interaction
@@ -269,7 +269,7 @@ Rule summary
 | Expected behavior | After sign-in the user returns to the chapter path (hash/scroll position is not kept, see U-CMT-02). While the session is loading neither composer nor sign-in link is shown, and list queries wait. |
 | Exceptions | — |
 | Related screens | SCR-CMT-01 |
-| Evidence | `packages/features/src/comments/components/comment-thread.tsx:38`, `:43-61`, `packages/features/src/comments/components/comment-item.tsx:67-73`, `:170`, `packages/features/src/comments/hooks/use-comments.ts:30-33`, `:183-187`, `packages/features/src/comments/comments.test.tsx:241`, `:432` |
+| Evidence | `packages/features/src/comments/components/comment-thread.tsx:38`, `:43-61`, `packages/features/src/comments/components/comment-item.tsx:82-88`, `:170`, `packages/features/src/comments/hooks/use-comments.ts:42-45`, `:183-187`, `packages/features/src/comments/comments.test.tsx:247`, `:432` |
 | Status | Verified |
 
 ### BR-CMT-020 — Error contract and messages
@@ -281,7 +281,7 @@ Rule summary
 | Expected behavior | Composer errors render inline (`role="alert"`); like/hide/delete errors render as toasts. List load failure → ErrorState "Couldn't load comments" with "Try again"; reply list failure → small red "Couldn't load comments" line (no retry). |
 | Exceptions | — |
 | Related screens | SCR-CMT-01 |
-| Evidence | `packages/features/src/comments/model/comment.ts:131-149`, `packages/features/src/comments/strings.en.ts:60-69`, `packages/features/src/comments/components/comment-thread.tsx:63-69`, `packages/features/src/comments/components/comment-item.tsx:242-245`, `supabase/migrations/20261104000700_comments.sql:26-28` |
+| Evidence | `packages/features/src/comments/model/comment.ts:176-194`, `packages/features/src/comments/strings.en.ts:80-89`, `packages/features/src/comments/components/comment-thread.tsx:63-69`, `packages/features/src/comments/components/comment-item.tsx:314-317`, `supabase/migrations/20261104000700_comments.sql:26-28` |
 | Status | Verified |
 
 ### BR-CMT-021 — Reply event emission

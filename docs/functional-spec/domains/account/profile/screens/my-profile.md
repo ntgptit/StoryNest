@@ -42,7 +42,7 @@ Not present: avatar, link to the public author page, link to Settings / sign-out
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/me/edit` |
-| Evidence | `me-view.tsx:19-27`, `me-view.test.tsx:45` |
+| Evidence | `me-view.tsx:31-39`, `me-view.test.tsx:45` |
 
 ## D. UI states
 | State | Status | Evidence / note |

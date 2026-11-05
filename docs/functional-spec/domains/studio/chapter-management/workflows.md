@@ -22,7 +22,7 @@
 | Postconditions | Invisible to readers until published (OBJ-EDT) |
 | Affected objects | OBJ-CHM, OBJ-EDT (draft) |
 | Related screens | SCR-CHM-01 |
-| Status | Verified — `chapter-manager-screen.tsx:288-372` |
+| Status | Verified — `chapter-manager-screen.tsx:360-444` |
 
 ### WF-CHM-02 — Reorder chapters
 | Field | Value |
@@ -37,7 +37,7 @@
 | Postconditions | Reader TOC follows the new order (OBJ-STORY) |
 | Affected objects | OBJ-CHM |
 | Related screens | SCR-CHM-01 |
-| Status | Verified — `use-chapter-management.ts:57-86`, `chapter-management.test.tsx:301-368` |
+| Status | Verified — `use-chapter-management.ts:57-86`, `chapter-management.test.tsx:349-416` |
 
 ### WF-CHM-03 — Change a chapter's URL slug
 | Field | Value |
@@ -97,4 +97,4 @@
 | Postconditions | — |
 | Affected objects | OBJ-CHM → OBJ-EDT |
 | Related screens | SCR-CHM-01 → SCR-EDT-01 |
-| Status | Verified — `chapter-manager-screen.tsx:197-199` |
+| Status | Verified — `components/chapter-row.tsx:180-182` |

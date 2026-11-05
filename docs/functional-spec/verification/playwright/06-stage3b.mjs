@@ -5,7 +5,7 @@ const MENU = process.argv[2];
 try {
   const r = await (await ctxFor(b, "reader", { width: 390, height: 844 })).newPage();
   await r.goto(B + ch1Url, { waitUntil: "networkidle" });
-  const art = r.getByRole("article").filter({ hasText: "[QA] Bình luận chương từ người đọc." }).first();
+  const art = r.getByRole("article").filter({ hasText: /\[QA\] Bình luận chương từ người đọc/ }).first();
   await art.scrollIntoViewIfNeeded();
   if (await art.getByRole("button", { name: "Thích", exact: true }).count()) { await art.getByRole("button", { name: "Thích", exact: true }).click(); await sleep(1000); }
   await art.getByRole("button", { name: MENU }).click();

@@ -53,7 +53,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | Only non-empty values are put in `options.data`; the profile is created by BR-AUTH-004 |
 | Exceptions | Invalid username → "Username can only contain letters, numbers and underscores (3-30 characters)." |
 | Related screens | SCR-AUTH-02 |
-| Evidence | `packages/validation/src/auth.ts:48-56`, `packages/validation/src/inputs.ts:13-17`, `packages/features/src/auth/api/auth.api.ts:15-35`, `packages/features/src/auth/auth-screens.test.tsx:191-200` |
+| Evidence | `packages/validation/src/auth.ts:48-56`, `packages/validation/src/inputs.ts:14-18`, `packages/features/src/auth/api/auth.api.ts:15-35`, `packages/features/src/auth/auth-screens.test.tsx:191-200` |
 | Status | Verified |
 
 ### BR-AUTH-004 — Profile row is created automatically on sign-up
@@ -77,7 +77,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | Needs confirmation → "Check your email" card showing the address; otherwise `onSignedUp` → `replace(next)` + `refresh()` |
 | Exceptions | Sign-in before confirming → "Your email isn't confirmed yet. Open the link in your sign-up email." (`email_not_confirmed`). No "resend" action exists (F-AUTH-03): the app has no resend-confirmation call, so the "Check your email" card (envelope animation, Lucian 064) only adds a spam-folder hint and "Use a different email", which returns to the filled form |
 | Related screens | SCR-AUTH-02, SCR-AUTH-01 |
-| Evidence | `packages/features/src/auth/api/auth.api.ts:34`, `packages/features/src/auth/screens/sign-up-screen.tsx:45-60`, `apps/web/src/app/(auth)/auth-pages.tsx:32-44` |
+| Evidence | `packages/features/src/auth/api/auth.api.ts:34`, `packages/features/src/auth/screens/sign-up-screen.tsx:47-70`, `apps/web/src/app/(auth)/auth-pages.tsx:32-44` |
 | Status | Verified (code); whether confirmation is enabled in each Supabase project: Unknown (no `supabase/config.toml` in repo) |
 
 ### BR-AUTH-006 — Email links land on `/auth/callback` (PKCE)
@@ -173,7 +173,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | Banner `role="alert"` above the form; form stays usable |
 | Exceptions | Unknown schema codes show the generic text, never raw English from the server |
 | Related screens | SCR-AUTH-01..04 |
-| Evidence | `packages/features/src/auth/model/messages.ts:16-51`, `packages/features/src/_shared/errors.ts:101-117`, `packages/features/src/auth/components/auth-card.tsx:27-38`, `packages/features/src/auth/auth-screens.test.tsx:97-124` |
+| Evidence | `packages/features/src/auth/model/messages.ts:16-51`, `packages/features/src/_shared/errors.ts:101-117`, `packages/features/src/auth/components/auth-card.tsx:31-42`, `packages/features/src/auth/auth-screens.test.tsx:97-124` |
 | Status | Verified |
 
 ### BR-AUTH-014 — No account enumeration on password reset
@@ -185,7 +185,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | "Instructions sent" / "If this email has an account, you'll get a password reset link within a few minutes." Link target: `/auth/callback?next=%2Freset-password` |
 | Exceptions | Rate limit / network errors are shown (BR-AUTH-013). Resend (2026-11-05, Lucian 064): the "Instructions sent" card offers "Resend email", locked for 60 s (`RESEND_COOLDOWN_SECONDS`, Supabase's default gap between two emails) behind a filling ring; it sends the same `resetPasswordForEmail` request again, then locks again. "Use a different email" returns to the form |
 | Related screens | SCR-AUTH-03 |
-| Evidence | `packages/features/src/auth/screens/forgot-password-screen.tsx:24-40`, `packages/features/src/auth/strings.en.ts:31-41`, `packages/features/src/auth/hooks/use-auth-actions.ts:40-52`, `packages/features/src/auth/auth-screens.test.tsx:222-252` |
+| Evidence | `packages/features/src/auth/screens/forgot-password-screen.tsx:24-89`, `packages/features/src/auth/strings.en.ts:40-49`, `packages/features/src/auth/hooks/use-auth-actions.ts:40-52`, `packages/features/src/auth/auth-screens.test.tsx:222-252` |
 | Status | Verified |
 
 ### BR-AUTH-015 — Setting a new password needs a session
@@ -197,7 +197,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | Success → toast "Password changed." → `replace('/')` + `refresh()`. The user stays signed in |
 | Exceptions | Current password is never asked for (F-AUTH-05); whether Supabase "secure password change" (reauthentication) is on: Unknown |
 | Related screens | SCR-AUTH-04 |
-| Evidence | `packages/features/src/auth/api/auth.api.ts:46-50`, `packages/features/src/auth/screens/reset-password-screen.tsx:21-50`, `apps/web/src/app/(auth)/auth-pages.tsx:50-59`, `apps/web/src/lib/auth/route-guard.ts:14` |
+| Evidence | `packages/features/src/auth/api/auth.api.ts:46-50`, `packages/features/src/auth/screens/reset-password-screen.tsx:22-51`, `apps/web/src/app/(auth)/auth-pages.tsx:50-59`, `apps/web/src/lib/auth/route-guard.ts:14` |
 | Status | Verified |
 
 ### BR-AUTH-016 — Client session mirror
@@ -221,7 +221,7 @@ Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-
 | Expected behavior | `replace('/')` then `refresh()` so server components stop rendering member data. Other tabs update via the auth broadcast |
 | Exceptions | Failure → toast "Could not sign out. Please try again." |
 | Related screens | SCR-SHELL-01 |
-| Evidence | `packages/features/src/shell/components/user-menu.tsx:40-48,77`, `packages/features/src/_shared/auth.tsx:87-91`, `node_modules/.pnpm/**/auth-js/dist/main/GoTrueClient.js` (`signOut(options = { scope: 'global' })`) |
+| Evidence | `packages/features/src/shell/components/user-menu.tsx:42-50,80`, `packages/features/src/_shared/auth.tsx:87-91`, `node_modules/.pnpm/**/auth-js/dist/main/GoTrueClient.js` (`signOut(options = { scope: 'global' })`) |
 | Status | Verified (scope from library source; see Q-AUTH-01) |
 
 ### BR-AUTH-018 — Auth mutations never auto-retry

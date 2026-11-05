@@ -22,10 +22,10 @@ containing "report"); the screen is the "Report" button and "Report content" dia
 
 | Host screen | Route | Kind | Owner hidden? | Placement | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| Story page (SCR-STORY-*) | `/story/[id]/[slug]` | `story` | **No** (`ownerId` not passed) | Under the story actions in the header, inside the 18+ gate | `packages/features/src/story/screens/story-screen.tsx:111-114` |
-| Chapter reader (SCR-READ-*) | `/story/[id]/[slug]/[chapterSlug]` | `chapter` | **No** | Centered after "— End of chapter —" and the vote button, before comments | `packages/features/src/reader/screens/reader-screen.tsx:113-116` |
-| Comment item (OBJ-CMT thread inside the reader) | same as reader | `comment` | Yes (`!own`) and only for `visible` comments; top-level comments and replies; visible label "Report" | Comment action row | `packages/features/src/comments/components/comment-item.tsx:182-184` |
-| Author page (SCR-AUTHOR-01) | `/author/[username]` | `user` | Yes (`ownerId = profile.userId`) | Under "Follow" in the profile header | `packages/features/src/author/screens/author-screen.tsx:87-90` |
+| Story page (SCR-STORY-*) | `/story/[id]/[slug]` | `story` | **No** (`ownerId` not passed) | Under the story actions in the header, beside the Share button (hidden for private stories; added by PR #60), inside the 18+ gate | `packages/features/src/story/screens/story-screen.tsx:123-130` |
+| Chapter reader (SCR-READ-*) | `/story/[id]/[slug]/[chapterSlug]` | `chapter` | **No** | Centered after "— End of chapter —" and the vote button, before comments | `packages/features/src/reader/screens/reader-screen.tsx:178-181` |
+| Comment item (OBJ-CMT thread inside the reader) | same as reader | `comment` | Yes (`!own`) and only for `visible` comments; top-level comments and replies; visible label "Report" | Comment action row | `packages/features/src/comments/components/comment-item.tsx:186-188` |
+| Author page (SCR-AUTHOR-01) | `/author/[username]` | `user` | Yes (`ownerId = profile.userId`) | Under "Follow" and "Share" in the profile header (Share added by PR #60) | `packages/features/src/author/screens/author-screen.tsx:110-118` |
 
 Not mounted on: story cards in lists, reading list pages (`/lists/[id]`, OBJ-LIST), the member's own profile `/me`,
 Studio, notifications. A reading list itself cannot be reported (not a target kind, BR-MOD-002).
@@ -34,12 +34,12 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 
 | ID | Component | Content / behaviour | Evidence |
 | --- | --- | --- | --- |
-| SCR-MOD-02-C01 | Report button | Ghost/outline small button, Flag icon (`aria-hidden`), visible text "Report" (or caller's `label`), accessible name "Report story/chapter/comment/user" (`report.button` + `report.kinds.*`). Not rendered while auth is loading | `report-button.tsx:54-92` |
-| SCR-MOD-02-C02 | Dialog header | Title "Report content: <kind>"; description "Tell us why this content isn't appropriate. A moderator will review it." | `report-button.tsx:95-98`, `strings.en.ts:4-5` |
+| SCR-MOD-02-C01 | Report button | Ghost/outline small button, Flag icon (`aria-hidden`), visible text "Report" (or caller's `label`), accessible name "Report story/chapter/comment/user" (`report.button` + `report.kinds.*`). Not rendered while auth is loading | `report-button.tsx:57-95` |
+| SCR-MOD-02-C02 | Dialog header | Title "Report content: <kind>"; description "Tell us why this content isn't appropriate. A moderator will review it." | `report-button.tsx:98-101`, `strings.en.ts:4-5` |
 | SCR-MOD-02-C03 | Reason pills (Lucian 295) | Label "Reason"; the 7 reasons (BR-MOD-003) as a radio group of pills that wrap on narrow screens, none chosen at first (still required); a pill slides to the chosen one; Tab enters the group, arrow keys move and choose | `report-button.tsx`, `ui/widgets/choice-pills.tsx` |
 | SCR-MOD-02-C04 | Details textarea | Label "Details (optional)"; placeholder "Briefly describe what you saw…" until a reason is chosen, then an example for that reason (e.g. copyright: "e.g. Copied from the novel … published at …") and a hint line under the box ("Name the original work and where it was first published."), both from `report.reasonHelp`; still optional, `maxLength=2000`. A ring in the corner fills towards 2000 and turns red from 90%; the count is read out as "N of 2000 characters" (`aria-describedby`) | `report-button.tsx`, `ui/widgets/character-ring.tsx` |
-| SCR-MOD-02-C05 | Error message | `role="alert"`, text by error kind | `report-button.tsx:125-129`, `model/report.ts:164-183` |
-| SCR-MOD-02-C06 | Footer | "Cancel" (outline), "Submit report" / "Sending…" (disabled until a reason is chosen and while sending) | `report-button.tsx:131-138` |
+| SCR-MOD-02-C05 | Error message | `role="alert"`, text by error kind | `report-button.tsx:141-145`, `model/report.ts:164-183` |
+| SCR-MOD-02-C06 | Footer | "Cancel" (outline), "Submit report" / "Sending…" (disabled until a reason is chosen and while sending) | `report-button.tsx:147-154` |
 
 ## C. User actions & system responses
 
@@ -52,7 +52,7 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | — |
 | Error behavior | — |
 | Navigation | Login; after sign-in, back to the same path (query string and `#comments` anchor are not preserved); dialog does not reopen |
-| Evidence | `report-button.tsx:86-88`, `moderation.test.tsx:264` |
+| Evidence | `report-button.tsx:89-91`, `moderation.test.tsx:268` |
 
 | Field | SCR-MOD-02-A02 — Click "Report" as a member |
 | --- | --- |
@@ -63,7 +63,7 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | — |
 | Error behavior | — |
 | Navigation | Modal (focus handled by the shared Radix dialog) |
-| Evidence | `report-button.tsx:86-93` |
+| Evidence | `report-button.tsx:89-96` |
 
 | Field | SCR-MOD-02-A03 — Choose a reason |
 | --- | --- |
@@ -96,7 +96,7 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | Server BR-MOD-003…008 |
 | Error behavior | Dialog stays open with inputs kept; message: forbidden/unauthenticated "You can't submit a report right now.", notFound "This content no longer exists or you can't view it.", conflict "This content can't be reported.", invalid "You can't report your own content, or the information isn't valid.", rateLimited "You've sent too many reports today. Please try again later.", network "No connection. Check your network and try again.", other "Something went wrong. Please try again." |
 | Navigation | — |
-| Evidence | `report-button.tsx:66-77`, `api/moderation.api.ts:16-31`, `strings.en.ts:13,29-37`, `moderation.test.tsx:278,301` |
+| Evidence | `report-button.tsx:69-80`, `api/moderation.api.ts:16-31`, `strings.en.ts:13,29-37`, `moderation.test.tsx:282,305` |
 
 | Field | SCR-MOD-02-A06 — Cancel / close |
 | --- | --- |
@@ -107,13 +107,13 @@ Studio, notifications. A reading list itself cannot be reported (not a target ki
 | Validation | — |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `report-button.tsx:59-64,93`, `moderation.test.tsx:311` |
+| Evidence | `report-button.tsx:62-67,96`, `moderation.test.tsx:333` |
 
 ## D. UI states
 
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
-| Initial | Implemented | Closed; button only. Hidden while auth loads (`report-button.tsx:54`) |
+| Initial | Implemented | Closed; button only. Hidden while auth loads (`report-button.tsx:57`) |
 | Loading | Implemented | "Sending…" + disabled submit |
 | Empty | Not applicable | — |
 | Populated | Implemented | Form with reason/details |

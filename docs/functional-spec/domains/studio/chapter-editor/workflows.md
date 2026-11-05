@@ -31,7 +31,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | No data changed. |
 | Affected objects | `chapter_drafts`, `chapters` (read), `story_role` RPC. |
 | Related screens | SCR-EDT-01, chapter manager (`OBJ-CHM`) |
-| Status | Verified (`editor-screen.test.tsx:187-305`) |
+| Status | Verified (`editor-screen.test.tsx:187-306`) |
 
 ### WF-EDT-02 — Write and autosave the draft
 | Field | Value |
@@ -46,7 +46,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | `chapter_drafts.revision` +1 per save, `updated_by` = author. |
 | Affected objects | `chapter_drafts`, `localStorage`. |
 | Related screens | SCR-EDT-01 |
-| Status | Verified (`autosaver.test.ts`, `editor-screen.test.tsx:311-361`) |
+| Status | Verified (`autosaver.test.ts`, `editor-screen.test.tsx:312-362`) |
 
 ### WF-EDT-03 — Save the draft manually
 | Field | Value |
@@ -76,7 +76,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | Either the other device's version or the restored text is the saved draft. |
 | Affected objects | `chapter_drafts`, `localStorage` |
 | Related screens | SCR-EDT-01 |
-| Status | Verified (`editor-screen.test.tsx:246,461`; WBS 3.5 browser check with two tabs) |
+| Status | Verified (`editor-screen.test.tsx:247,462`; WBS 3.5 browser check with two tabs) |
 
 ### WF-EDT-05 — Recover unsaved text from this device
 | Field | Value |
@@ -91,7 +91,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | Backup cleared once the restored text is saved. |
 | Affected objects | `localStorage`, `chapter_drafts` |
 | Related screens | SCR-EDT-01 |
-| Status | Verified (`editor-screen.test.tsx:410-461`); real offline tab-close not verified (WBS 3.6) |
+| Status | Verified (`editor-screen.test.tsx:411-462`); real offline tab-close not verified (WBS 3.6) |
 
 ### WF-EDT-06 — Insert a picture
 | Field | Value |
@@ -121,7 +121,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | New immutable `chapter_versions` row (`BR-HIST-002`); chapter `published`. |
 | Affected objects | `chapter_drafts`, `chapters`, `chapter_blocks`, `chapter_versions`, `chapter_version_blocks`, `stories`, `chapter_stats`, `story_stats`, `outbox_events` |
 | Related screens | SCR-EDT-01, SCR-HIST-01 (new version listed), reader (`BR-READ-*`) |
-| Status | Verified (`publishing.test.tsx:266-333`, `20_publish.test.sql`) |
+| Status | Verified (`publishing.test.tsx:290-355`, `20_publish.test.sql`) |
 
 ### WF-EDT-08 — Schedule a publication and auto-publish
 | Field | Value |
@@ -136,7 +136,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | `chapters.status='scheduled'`, `scheduled_for` set → later `published`. |
 | Affected objects | `chapters`, then as WF-EDT-07 |
 | Related screens | SCR-EDT-01 |
-| Status | Verified (`publishing.test.tsx:359,381`, `20_publish.test.sql:172-202`; WBS 3.7 dev check) |
+| Status | Verified (`publishing.test.tsx:451,473`, `20_publish.test.sql:172-202`; WBS 3.7 dev check) |
 
 ### WF-EDT-09 — Unpublish or cancel a schedule
 | Field | Value |
@@ -151,7 +151,7 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | `status='draft'`, `published_version_id=NULL`, `scheduled_for=NULL`; republish later is silent (no re-notification). |
 | Affected objects | `chapters` |
 | Related screens | SCR-EDT-01 |
-| Status | Verified (`publishing.test.tsx:340,353`, `20_publish.test.sql:142-170`) |
+| Status | Verified (`publishing.test.tsx:432,445`, `20_publish.test.sql:142-170`) |
 
 ### WF-EDT-10 — Leave the editor
 | Field | Value |
@@ -166,4 +166,4 @@ Rules: [business-rules.md](business-rules.md) · Screen: [SCR-EDT-01](screens/ch
 | Postconditions | Possibly a local backup. |
 | Affected objects | `localStorage`, `chapter_drafts` |
 | Related screens | SCR-EDT-01, SCR-HIST-01, SCR-HIST-02, chapter manager (`OBJ-CHM`) |
-| Status | Verified (`editor-screen.test.tsx:382,399`) |
+| Status | Verified (`editor-screen.test.tsx:383,400`) |

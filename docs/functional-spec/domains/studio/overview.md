@@ -16,7 +16,7 @@ audience statistics. Documented scope: `docs/WBS.md` Phase 3 (WP 3.1–3.9) and 
 | Owner | `stories.owner_id = auth.uid()` | `story_role = 'owner'` |
 | Co-author | Accepted invitation as `co_author` | `story_role = 'co_author'` |
 | Editor | Accepted invitation as `editor` | `story_role = 'editor'` |
-| Moderator | JWT `app_metadata.role = 'moderator'` | Can *read* any story through RLS but the Studio refuses to open stories they do not work on (`packages/features/src/studio/api/story-write.api.ts:80-82`); moderation is D-TRUST |
+| Moderator | JWT `app_metadata.role = 'moderator'` | Can *read* any story through RLS but the Studio refuses to open stories they do not work on (`packages/features/src/studio/api/story-write.api.ts:83-85`); moderation is D-TRUST |
 
 What each role may do across the Studio is defined once, in the role-permission matrix
 [BR-TEAM-010](collaboration/business-rules.md#br-team-010--studio-role-permission-matrix).
@@ -53,12 +53,12 @@ Header user menu "Studio" / bottom nav "Write"  ──►  /studio (SCR-STM-01)
 Notification "collaboration_invited" ──► /studio ; "collaboration_accepted/declined" ──► /studio/story/[id]/team
 ```
 
-Evidence: `packages/features/src/shell/components/main-shell.tsx:16`, `packages/features/src/shell/components/user-menu.tsx:64`,
+Evidence: `packages/features/src/shell/components/main-shell.tsx:18`, `packages/features/src/shell/components/user-menu.tsx:66`,
 `packages/features/src/studio/screens/studio-screen.tsx:61-97,120,127,150`,
-`packages/features/src/studio/screens/story-form-screen.tsx:93-98`,
-`packages/features/src/studio/screens/chapter-manager-screen.tsx:123-128,197-199`,
-`packages/features/src/analytics/screens/story-stats-screen.tsx:69-75`,
-`packages/features/src/notifications/model/notification.ts:102-112`.
+`packages/features/src/studio/screens/story-form-screen.tsx:107-112`,
+`packages/features/src/studio/screens/chapter-manager-screen.tsx:231-236`, `packages/features/src/studio/components/chapter-row.tsx:180-182`,
+`packages/features/src/analytics/screens/story-stats-screen.tsx:98-104`,
+`packages/features/src/notifications/model/notification.ts:112-122`.
 
 All studio routes are `robots: { index: false }` and server-render only a client view (no server prefetch: studio
 data is private and per-user, `packages/features/src/studio/keys.ts:1`).

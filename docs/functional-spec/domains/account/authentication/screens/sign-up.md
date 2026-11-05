@@ -45,7 +45,7 @@ No password confirmation field, no terms/privacy consent (WBS 6.9 legal pages â¬
 | Validation | BR-AUTH-001, BR-AUTH-002, BR-AUTH-003 |
 | Error behavior | Banner: "This email is already registered.", weak password, rate limit, network, generic |
 | Navigation | C09 card, or `next` |
-| Evidence | `sign-up-screen.tsx:38-60,74`, `auth.api.ts:19-35`, `auth-screens.test.tsx:160-220` |
+| Evidence | `sign-up-screen.tsx:38-58,86`, `auth.api.ts:19-35`, `auth-screens.test.tsx:160-220` |
 
 | Field | SCR-AUTH-02-A02 Go to sign-in |
 | --- | --- |
@@ -56,7 +56,7 @@ No password confirmation field, no terms/privacy consent (WBS 6.9 legal pages â¬
 | Validation | `withNext` |
 | Error behavior | â€” |
 | Navigation | SCR-AUTH-01 |
-| Evidence | `sign-up-screen.tsx:53,66-69` |
+| Evidence | `sign-up-screen.tsx:73,93-96` |
 
 | Field | SCR-AUTH-02-A03 Toggle password visibility |
 | --- | --- |
@@ -67,7 +67,7 @@ No password confirmation field, no terms/privacy consent (WBS 6.9 legal pages â¬
 | Validation | â€” |
 | Error behavior | â€” |
 | Navigation | â€” |
-| Evidence | `sign-up-screen.tsx:102-107` |
+| Evidence | `sign-up-screen.tsx:142-147` |
 
 ## D. UI states
 | State | Status | Evidence / note |

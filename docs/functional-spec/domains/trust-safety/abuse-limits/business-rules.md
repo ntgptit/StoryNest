@@ -11,7 +11,7 @@
 | Actors / roles | Member (limited), Moderator (exempt), system/no-user writes (exempt), Administrator (edits thresholds via SQL) |
 | Related entities | Table `abuse_limits(code, max_value, window_seconds, note)`; functions `enforce_rate_limit(action)`, `comment_looks_like_spam(text)`, trigger function `guard_comment_abuse`, trigger `comments_guard_abuse` on `comments`; `submit_report` (OBJ-MOD) |
 | Dependencies | OBJ-CMT (comment write paths and composer), OBJ-MOD (reports), OBJ-AUTH (sign-up — delegated to Supabase Auth), `_shared/errors.ts`, `packages/validation/src/rpc.ts` |
-| Code | `supabase/migrations/20261104002200_abuse_limits.sql`, `supabase/tests/280_abuse_limits.test.sql`, `packages/features/src/comments/model/comment.ts:128-150`, `packages/features/src/moderation/model/report.ts:164-183` |
+| Code | `supabase/migrations/20261104002200_abuse_limits.sql`, `supabase/tests/280_abuse_limits.test.sql`, `packages/features/src/comments/model/comment.ts:173-195`, `packages/features/src/moderation/model/report.ts:164-183` |
 | WBS status | WP 6.8 🟡 partial — done: comment and report rate limits, comment spam filter, configurable thresholds. Not done: sign-up limit, captcha, IP limits, banned-word list, cross-account duplicate detection, limits on other actions (`docs/WBS.md:226`) |
 
 ## 2. Rules
@@ -61,7 +61,7 @@
 | Expected behavior | 21st new report → PT429, HINT `report_rate_day` → "You've sent too many reports today. Please try again later." |
 | Exceptions | Re-reporting an open target returns the existing report and consumes nothing (BR-MOD-007) |
 | Related screens | SCR-MOD-02 |
-| Evidence | `supabase/migrations/20261104002200_abuse_limits.sql:14,119-184`, `supabase/tests/280_abuse_limits.test.sql:186-196`, `moderation/strings.en.ts:34` |
+| Evidence | `supabase/migrations/20261104002200_abuse_limits.sql:14,119-184`, `supabase/tests/280_abuse_limits.test.sql:186-196`, `moderation/strings.en.ts:64` |
 | Status | Verified (SQL test) |
 
 ### BR-ABU-005 — Exemptions
@@ -85,7 +85,7 @@
 | Expected behavior | Comment composer (text kept, inline error): spam → "The comment was rejected because it looks like spam (too many links or repeated characters)."; any limit → "You're commenting too fast. Wait a moment and try again." Report dialog: "You've sent too many reports today. Please try again later." |
 | Exceptions | The limit HINT (`comment_rate_burst` vs `comment_rate_day`) is not used: a user at the daily ceiling is told to "wait a moment" (U-ABU-01). The moderation console has no `rateLimited` text (moderators are exempt). `enforce_rate_limit` and `comment_looks_like_spam` are callable by any signed-in user (they act on the caller only) |
 | Related screens | Comment composer (OBJ-CMT), SCR-MOD-02 |
-| Evidence | `packages/validation/src/rpc.ts:2,27-39`, `packages/features/src/_shared/errors.ts:86-96`, `comments/model/comment.ts:128-150`, `comments/strings.en.ts:65-66`, `comments/components/comment-composer.tsx:52-61`, `comments/comments.test.tsx:322-335`, `moderation/model/report.ts:176-177`, `supabase/migrations/20261104002200_abuse_limits.sql:73-74,89-90` |
+| Evidence | `packages/validation/src/rpc.ts:2,27-39`, `packages/features/src/_shared/errors.ts:86-96`, `comments/model/comment.ts:173-195`, `comments/strings.en.ts:85-86`, `comments/components/comment-composer.tsx:53-62`, `comments/comments.test.tsx:331-344`, `moderation/model/report.ts:176-177`, `supabase/migrations/20261104002200_abuse_limits.sql:73-74,89-90` |
 | Status | Verified |
 
 ### BR-ABU-007 — Edits are checked for spam only
@@ -109,7 +109,7 @@
 | Expected behavior | Today: only Supabase Auth's hosted default limits apply; no `supabase/config.toml` in the repo records them; no captcha widget or token. A Supabase Auth 429 (`over_request_rate_limit`, `over_email_send_rate_limit`, `over_sms_send_rate_limit`) is shown as "You're going too fast. Try again in a few minutes." (OBJ-AUTH) |
 | Exceptions | — |
 | Related screens | SCR-AUTH-* (register, owned by OBJ-AUTH) |
-| Evidence | `supabase/migrations/20261104002200_abuse_limits.sql:20-22`, `docs/WBS.md:226` ("chưa làm giới hạn đăng ký và captcha"), `packages/features/src/auth/model/messages.ts:30-32,44-45`, `auth/strings.en.ts:74`; repo search for `captcha`/`turnstile` finds only the migration comment |
+| Evidence | `supabase/migrations/20261104002200_abuse_limits.sql:20-22`, `docs/WBS.md:226` ("chưa làm giới hạn đăng ký và captcha"), `packages/features/src/auth/model/messages.ts:30-32,44-45`, `auth/strings.en.ts:113`; repo search for `captcha`/`turnstile` finds only the migration comment |
 | Status | Documented (not done) / Verified absent |
 
 ### BR-ABU-009 — Actions without an abuse limit

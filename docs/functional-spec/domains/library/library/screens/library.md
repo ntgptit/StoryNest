@@ -12,7 +12,7 @@
 | Route files | `apps/web/src/app/(main)/library/page.tsx` (`requireUser("/library")`, title "Thư viện", `noindex`), `apps/web/src/app/(main)/library/library-view.tsx` (passes `coverUrlFor`) |
 | Screen component | `packages/features/src/library/screens/library-screen.tsx` (Lists tab: `packages/features/src/lists/components/my-lists.tsx`, OBJ-LIST) |
 | Roles | Signed-in reader. Guest → `/login?next=%2Flibrary` |
-| Navigation entry | Bottom nav "Library" (mobile, `packages/features/src/shell/components/main-shell.tsx:15`), user menu "Library" (`packages/features/src/shell/components/user-menu.tsx:61`), "Back to library" on a list page |
+| Navigation entry | Bottom nav "Library" (mobile, `packages/features/src/shell/components/main-shell.tsx:17`), user menu "Library" (`packages/features/src/shell/components/user-menu.tsx:63`), "Back to library" on a list page |
 | Workflows | WF-LIB-03, WF-LIB-04, WF-LIB-05, WF-LIB-06; WF-LIST-01 (Lists tab) |
 | Rules | BR-LIB-006 … BR-LIB-012; BR-LIST-010 |
 
@@ -20,14 +20,14 @@
 
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-LIB-01-C01 | Page header | "Library" / "Stories you're reading, have saved and are following." | `library-screen.tsx:46` |
-| SCR-LIB-01-C02 | Tabs | `TabsList` "Library sections": Reading, Saved, Following, Lists; default Reading; state not in URL | `library-screen.tsx:43-64` |
-| SCR-LIB-01-C03 | Story grid | `ul` "<Tab> stories", 2/3/4 columns, `StoryCard` per entry | `library-screen.tsx:103-111`, `:139-145` |
-| SCR-LIB-01-C04 | Entry actions | "Continue with chapter N" (Reading, primary), "Open story" (Saved/Following, outline), remove button (ghost), time line | `library-screen.tsx:155-181` |
-| SCR-LIB-01-C05 | Unavailable placeholder | Dashed `role="note"` card "Story no longer available" | `library-screen.tsx:146-153` |
-| SCR-LIB-01-C06 | Skeleton | 4 cover-shaped skeletons `aria-busy` | `library-screen.tsx:90-97` |
-| SCR-LIB-01-C07 | Empty state | Per tab icon/title/description | `library-screen.tsx:99-102`, `strings.en.ts:7-17` |
-| SCR-LIB-01-C08 | Error state | "Couldn't load your library" + "Try again" | `library-screen.tsx:80-88` |
+| SCR-LIB-01-C01 | Page header | "Library" / "Stories you're reading, have saved and are following." | `library-screen.tsx:59` |
+| SCR-LIB-01-C02 | Tabs | `TabsList` "Library sections": Reading, Saved, Following, Lists; default Reading; state not in URL | `library-screen.tsx:55-84` |
+| SCR-LIB-01-C03 | Story grid | `ul` "<Tab> stories", 2/3/4 columns, `StoryCard` per entry | `library-screen.tsx:134-149`, `:197` |
+| SCR-LIB-01-C04 | Entry actions | "Continue with chapter N" (Reading, primary), "Open story" (Saved/Following, outline), remove button (ghost), time line | `library-screen.tsx:208-223` |
+| SCR-LIB-01-C05 | Unavailable placeholder | Dashed `role="note"` card "Story no longer available" | `library-screen.tsx:199-206` |
+| SCR-LIB-01-C06 | Skeleton | 4 cover-shaped skeletons `aria-busy` | `library-screen.tsx:120-127` |
+| SCR-LIB-01-C07 | Empty state | Per tab icon/title/description | `library-screen.tsx:131-133`, `strings.en.ts:7-17` |
+| SCR-LIB-01-C08 | Error state | "Couldn't load your library" + "Try again" | `library-screen.tsx:109-117` |
 | SCR-LIB-01-C09 | My lists (Lists tab) | See [SCR-LIST-01 §B](../../reading-lists/screens/reading-list.md#b-components) component C08 | `my-lists.tsx` |
 | SCR-LIB-01-C10 | Reading streak chip (header action, batch 4 habits4) | Flame + "N days · read/goal today", link to `/me` named "N-day streak, read of goal chapters today. See your reading habits"; hidden until the habits load and on an error (BR-HAB-002, BR-HAB-003) | `packages/features/src/reading-habits/screens/reading-streak-chip.tsx` |
 
@@ -42,7 +42,7 @@
 | Validation | — |
 | Error behavior | Per-tab ErrorState |
 | Navigation | None (URL unchanged) |
-| Evidence | `library-screen.tsx:47`, `use-library.ts:13-25` |
+| Evidence | `library-screen.tsx:61`, `use-library.ts:13-25` |
 
 | Field | SCR-LIB-01-A02 Continue reading |
 | --- | --- |
@@ -53,7 +53,7 @@
 | Validation | — |
 | Error behavior | Reader not-found if it became unreadable meanwhile |
 | Navigation | `/story/{id}/{slug}/{chapterSlug}` |
-| Evidence | `library-screen.tsx:156-160`, `model/library.ts:56` |
+| Evidence | `library-screen.tsx:209-213`, `model/library.ts:56` |
 
 | Field | SCR-LIB-01-A03 Open story |
 | --- | --- |
@@ -64,7 +64,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/story/{id}/{slug}` |
-| Evidence | `library-screen.tsx:161-165` |
+| Evidence | `library-screen.tsx:214-218` |
 
 | Field | SCR-LIB-01-A04 Remove from tab |
 | --- | --- |
@@ -75,7 +75,7 @@
 | Validation | — |
 | Error behavior | Error toast; entry remains |
 | Navigation | None |
-| Evidence | `library-screen.tsx:166-179`, `use-library.ts:28-50` |
+| Evidence | `library-screen.tsx:167-180`, `use-library.ts:57-79` |
 
 | Field | SCR-LIB-01-A05 Retry |
 | --- | --- |
@@ -86,7 +86,7 @@
 | Validation | — |
 | Error behavior | — |
 | Navigation | None |
-| Evidence | `library-screen.tsx:86` |
+| Evidence | `library-screen.tsx:115` |
 
 | Field | SCR-LIB-01-A06 Create / open a reading list (Lists tab) |
 | --- | --- |

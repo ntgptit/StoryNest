@@ -91,7 +91,7 @@ Rule summary
 | Expected behavior | Toasts: "Followed. You'll be notified when there are new chapters." / "Unfollowed." / "Saved to your library." / "Removed from your library."; errors: forbidden "You can't follow or save this story.", network, generic. |
 | Exceptions | The button group's accessible name is "Sign in to follow or save stories" for everyone (U-LIB-03). |
 | Related screens | Story page (OBJ-STORY) |
-| Evidence | `packages/features/src/story/components/story-actions.tsx:15-60`, `packages/features/src/story/hooks/use-story-library.ts:17-97`, `packages/features/src/story/model/library.ts:22-36`, `packages/features/src/story/api/library.api.ts:6-26`, `packages/features/src/story/strings.en.ts:14-29` |
+| Evidence | `packages/features/src/story/components/story-actions.tsx:15-60`, `packages/features/src/story/hooks/use-story-library.ts:17-97`, `packages/features/src/story/model/library.ts:22-36`, `packages/features/src/story/api/library.api.ts:6-26`, `packages/features/src/story/strings.en.ts:26-41` |
 | Status | Verified |
 
 ### BR-LIB-006 — Library access and privacy
@@ -115,7 +115,7 @@ Rule summary
 | Expected behavior | One tap opens the chapter (the reader restores the paragraph, OBJ-PROG). |
 | Exceptions | Current chapter not readable any more (unpublished) → no continue button (card link to the story remains). Story gone → placeholder (BR-LIB-010). |
 | Related screens | SCR-LIB-01 |
-| Evidence | `packages/features/src/library/api/library.api.ts:19-34`, `packages/features/src/library/model/library.ts:49-58`, `packages/features/src/library/screens/library-screen.tsx:156-160`, `packages/features/src/library/strings.en.ts:23`, `:25` |
+| Evidence | `packages/features/src/library/api/library.api.ts:19-34`, `packages/features/src/library/model/library.ts:49-58`, `packages/features/src/library/screens/library-screen.tsx:209-213`, `packages/features/src/library/strings.en.ts:23`, `:25` |
 | Status | Verified |
 
 ### BR-LIB-008 — Saved and Following tabs
@@ -127,7 +127,7 @@ Rule summary
 | Expected behavior | — |
 | Exceptions | Following tab covers story follows only; author follows live on `/following` (OBJ-AUTHOR). |
 | Related screens | SCR-LIB-01 |
-| Evidence | `packages/features/src/library/api/library.api.ts:36-62`, `packages/features/src/library/screens/library-screen.tsx:161-165`, `packages/features/src/library/strings.en.ts:24-27` |
+| Evidence | `packages/features/src/library/api/library.api.ts:36-62`, `packages/features/src/library/screens/library-screen.tsx:214-218`, `packages/features/src/library/strings.en.ts:24-27` |
 | Status | Verified |
 
 ### BR-LIB-009 — Tab size limit (no paging)
@@ -151,7 +151,7 @@ Rule summary
 | Expected behavior | Dashed card "Story no longer available" / "The story was deleted, made private, or you no longer have permission to view it." with only the remove button. No title is shown. |
 | Exceptions | — |
 | Related screens | SCR-LIB-01 |
-| Evidence | `packages/features/src/library/model/library.ts:40-62`, `packages/features/src/library/screens/library-screen.tsx:139-154`, `packages/features/src/library/strings.en.ts:30-33`, `packages/features/src/library/library.test.tsx:70`, `:289` |
+| Evidence | `packages/features/src/library/model/library.ts:40-62`, `packages/features/src/library/screens/library-screen.tsx:140-155`, `packages/features/src/library/strings.en.ts:32-35`, `packages/features/src/library/library.test.tsx:71`, `:289` |
 | Status | Verified |
 
 ### BR-LIB-011 — Removing a story from a tab
@@ -163,7 +163,7 @@ Rule summary
 | Expected behavior | Toasts "Removed from your reading list." / "Unsaved." / "Unfollowed."; all library and story caches refresh (story page buttons and counts follow). Error toast "No connection…" / "That didn't work. Please try again." |
 | Exceptions | Reading the story again recreates the Reading entry (OBJ-PROG). |
 | Related screens | SCR-LIB-01 |
-| Evidence | `packages/features/src/library/hooks/use-library.ts:28-50`, `packages/features/src/library/api/library.api.ts:64-67`, `packages/features/src/library/screens/library-screen.tsx:166-179`, `packages/features/src/library/strings.en.ts:28-29`, `packages/features/src/library/library.test.tsx:315-340` |
+| Evidence | `packages/features/src/library/hooks/use-library.ts:57-79`, `packages/features/src/library/api/library.api.ts:64-67`, `packages/features/src/library/screens/library-screen.tsx:167-180`, `packages/features/src/library/strings.en.ts:28-29`, `packages/features/src/library/library.test.tsx:320-345` |
 | Status | Verified |
 
 ### BR-LIB-012 — Tab loading and freshness
@@ -175,5 +175,5 @@ Rule summary
 | Expected behavior | — |
 | Exceptions | Reload, back navigation and links to `/library` always land on "Reading" (U-LIB-01). |
 | Related screens | SCR-LIB-01 |
-| Evidence | `packages/features/src/library/hooks/use-library.ts:13-25`, `packages/features/src/library/screens/library-screen.tsx:43-64`, `packages/features/src/library/library.test.tsx:214`, `:276`, `:307` |
+| Evidence | `packages/features/src/library/hooks/use-library.ts:13-25`, `packages/features/src/library/screens/library-screen.tsx:43-64`, `packages/features/src/library/library.test.tsx:215`, `:276`, `:307` |
 | Status | Verified |

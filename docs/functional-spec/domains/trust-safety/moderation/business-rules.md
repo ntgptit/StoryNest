@@ -48,7 +48,7 @@
 | Expected behavior | Client: Submit disabled until a reason is chosen; textarea `maxLength=2000`; empty details not sent. Server: unknown/NULL reason or details > 2000 → 22023 |
 | Exceptions | `reason = other` does not require details. The Zod `reportCreateSchema` (table-shaped, reason free text ≤ 40) is not used by this flow (F-MOD-08) |
 | Related screens | SCR-MOD-02 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:124,133-137`, `packages/validation/src/enums.ts:14`, `moderation/components/report-button.tsx:107-123,135`, `moderation/model/report.ts:161-162`, `moderation/strings.en.ts:20-28`, `packages/validation/src/inputs.ts:83-95` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:124,133-137`, `packages/validation/src/enums.ts:14`, `moderation/components/report-button.tsx:107-123,135`, `moderation/model/report.ts:161-162`, `moderation/strings.en.ts:50-58`, `packages/validation/src/inputs.ts:88-100` |
 | Status | Verified |
 
 ### BR-MOD-004 — Who may report
@@ -60,7 +60,7 @@
 | Expected behavior | Guest: button navigates to `/login?next=<current pathname>` (query string/hash not kept). Suspended/deactivated: RPC 42501 → "You can't submit a report right now." `anon` has no EXECUTE privilege |
 | Exceptions | Moderators may report and are not rate-limited (BR-ABU-004) |
 | Related screens | SCR-MOD-02 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:130-132,188-189`, `moderation/components/report-button.tsx:54-56,86-88`, `moderation/model/report.ts:164-169`, `supabase/tests/260_moderation.test.sql:65,241` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:130-132,188-189`, `moderation/components/report-button.tsx:57-59,89-91`, `moderation/model/report.ts:164-169`, `supabase/tests/260_moderation.test.sql:65,241` |
 | Status | Verified |
 
 ### BR-MOD-005 — The target must be something the reporter can see
@@ -72,7 +72,7 @@
 | Expected behavior | Otherwise PT404 → "This content no longer exists or you can't view it." |
 | Exceptions | Unlisted stories are reportable (readable by link). A hidden or deleted comment cannot be reported |
 | Related screens | SCR-MOD-02 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:139-159`, `supabase/tests/260_moderation.test.sql:187`, `moderation/strings.en.ts:31` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:139-159`, `supabase/tests/260_moderation.test.sql:187`, `moderation/strings.en.ts:61` |
 | Status | Verified |
 
 ### BR-MOD-006 — No self-reporting
@@ -84,7 +84,7 @@
 | Expected behavior | Server: 22023 → "You can't report your own content, or the information isn't valid." Client hides the button for the owner **only** where it knows the owner: own comments (`!own`) and own author page (`ownerId`) |
 | Exceptions | Story page and chapter reader do not pass `ownerId`, so the owner sees "Report" on their own story/chapter and only learns on submit (F-MOD-01). Co-authors/editors are not "owners" and may report the story |
 | Related screens | SCR-MOD-02 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:163-165`, `moderation/components/report-button.tsx:40-41,56`, `packages/features/src/story/screens/story-screen.tsx:113`, `packages/features/src/reader/screens/reader-screen.tsx:115`, `packages/features/src/comments/components/comment-item.tsx:182-184`, `packages/features/src/author/screens/author-screen.tsx:89`, `packages/features/src/author/author.test.tsx:398` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:163-165`, `moderation/components/report-button.tsx:43-44,59`, `packages/features/src/story/screens/story-screen.tsx:159`, `packages/features/src/reader/screens/reader-screen.tsx:180`, `packages/features/src/comments/components/comment-item.tsx:186-188`, `packages/features/src/author/screens/author-screen.tsx:117`, `packages/features/src/author/author.test.tsx:406` |
 | Status | Verified |
 
 ### BR-MOD-007 — Duplicate reports are idempotent
@@ -96,7 +96,7 @@
 | Expected behavior | Re-submitting returns the existing report id; nothing is overwritten (first reason/details kept); the client shows the same success toast "Report sent. Thank you." Another reporter gets their own report on the same target; the queue card shows "N pending reports about this item" |
 | Exceptions | Once the report is closed, the same reporter can report the target again (counts against BR-ABU-004). The duplicate check runs before the rate limit, so a duplicate never consumes quota |
 | Related screens | SCR-MOD-02, SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:53-56,167-172`, `20261104002200_abuse_limits.sql:167-173`, `supabase/tests/260_moderation.test.sql:94-106`, `moderation/strings.en.ts:13,54` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:53-56,167-172`, `20261104002200_abuse_limits.sql:167-173`, `supabase/tests/260_moderation.test.sql:94-106`, `moderation/strings.en.ts:43,93` |
 | Status | Verified |
 
 ### BR-MOD-008 — Report rate limit
@@ -108,7 +108,7 @@
 | Expected behavior | PT429 → "You've sent too many reports today. Please try again later." shown inside the dialog |
 | Exceptions | Moderators exempt |
 | Related screens | SCR-MOD-02 |
-| Evidence | `supabase/migrations/20261104002200_abuse_limits.sql:173`, `moderation/model/report.ts:176-177`, `moderation/strings.en.ts:34` |
+| Evidence | `supabase/migrations/20261104002200_abuse_limits.sql:173`, `moderation/model/report.ts:176-177`, `moderation/strings.en.ts:64` |
 | Status | Verified |
 
 ### BR-MOD-009 — Clients write nothing directly
@@ -132,7 +132,7 @@
 | Expected behavior | Sets `status`, `reviewed_by = moderator`, `reviewed_at = now()`, writes audit `review_report` / `resolve_report` / `dismiss_report`. Console shows "Under review" only for `pending`; "Mark as resolved" and "Dismiss report" for any open report; none for closed reports |
 | Exceptions | Closed is terminal — there is no reopen. Dismissing never touches the content. Reports are also closed automatically by content actions (BR-MOD-017) |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:436-468`, `moderation/components/report-card.tsx:119-155`, `supabase/tests/260_moderation.test.sql:255-272`, `moderation/moderation.test.tsx:465,493` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:436-468`, `moderation/components/report-card.tsx:173-209`, `supabase/tests/260_moderation.test.sql:255-272`, `moderation/moderation.test.tsx:487,515` |
 | Status | Verified |
 
 ### BR-MOD-011 — Hide / unhide a comment (moderator)
@@ -144,7 +144,7 @@
 | Expected behavior | Hidden comment disappears for other readers (placeholder), stays visible to its author with "A moderator hid this comment. Only you can see it."; story managers see "A moderator hid this comment. You can't unhide it." (OBJ-CMT). `comment_hides.source = 'moderator'` is recorded by the OBJ-CMT trigger, so the story author cannot unhide it |
 | Exceptions | **Author-hidden comment** (OBJ-CMT): the queue shows state "Hidden" and offers only "Unhide comment", which overrides the author's choice; `hide_comment` on it changes nothing (status already `hidden`), so it is never converted into a moderator hide and the author can still unhide it later (F-MOD-04) |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:362-377`, `20261104001800_comment_moderation_by_author.sql:10-14,36-45`, `moderation/model/report.ts:133-136`, `packages/features/src/comments/strings.en.ts:40-43`, `supabase/tests/260_moderation.test.sql:172-197` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:362-377`, `20261104001800_comment_moderation_by_author.sql:10-14,36-45`, `moderation/model/report.ts:133-136`, `packages/features/src/comments/strings.en.ts:48-51`, `supabase/tests/260_moderation.test.sql:172-197` |
 | Status | Verified |
 
 ### BR-MOD-012 — Remove / restore a story
@@ -168,7 +168,7 @@
 | Expected behavior | Button labels read "Remove story" / "Restore story"; removing the story closes the chapter's reports too |
 | Exceptions | Chapter deleted by its author while the story is visible → state `removed` → "Restore story" offered → PT409 (F-MOD-03). Q-MOD-03 asks whether a chapter-level action is wanted |
 | Related screens | SCR-MOD-01 |
-| Evidence | `moderation/model/report.ts:129-151`, `supabase/migrations/20261104002000_moderation.sql:246-255,327-335`, `moderation/moderation.test.tsx:446` |
+| Evidence | `moderation/model/report.ts:129-151`, `supabase/migrations/20261104002000_moderation.sql:246-255,327-335`, `moderation/moderation.test.tsx:468` |
 | Status | Verified |
 
 ### BR-MOD-014 — Suspend / reinstate an account
@@ -180,7 +180,7 @@
 | Expected behavior | Sets `account_status` to `suspended` / `active`. A `deactivated` account is never touched |
 | Exceptions | A suspension made outside the console (service role) cannot be reinstated from the console. The 22023 for "moderator cannot be suspended" maps to the generic "This action can't be applied to the selected item." |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:399-421`, `supabase/tests/260_moderation.test.sql:226-246`, `moderation/strings.en.ts:99` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:399-421`, `supabase/tests/260_moderation.test.sql:226-246`, `moderation/strings.en.ts:138` |
 | Status | Verified |
 
 ### BR-MOD-015 — Every moderator action needs a written reason
@@ -192,7 +192,7 @@
 | Expected behavior | Reason is stored trimmed in the audit row |
 | Exceptions | Dismissing and "Under review" need a reason too |
 | Related screens | SCR-MOD-01 |
-| Evidence | `moderation/model/report.ts:31-32,153-159`, `moderation/components/report-card.tsx:41,165-172,183`, `supabase/migrations/20261104002000_moderation.sql:43,354-357,447`, `moderation/strings.en.ts:86-92` |
+| Evidence | `moderation/model/report.ts:31-32,153-159`, `moderation/components/report-card.tsx:60,219-226,237`, `supabase/migrations/20261104002000_moderation.sql:43,354-357,447`, `moderation/strings.en.ts:125-131` |
 | Status | Verified |
 
 ### BR-MOD-016 — Effects of a suspension
@@ -204,7 +204,7 @@
 | Expected behavior | Can sign in (Supabase Auth is untouched) and read. Every write gated by `is_active_account()` is refused (42501): report, comment, follow, create story, list/library writes. Profile hidden from others (`app_users_read`), author page "not found", excluded from search/ranking/recommendations/following feed/popular tags |
 | Exceptions | Still visible: their stories in home/category/tag lists with "Anonymous author" (F-HOME-01), on the story page by link, in the sitemap; their visible comments. No notice is shown to the suspended user (F-MOD-06). Scope of suspension is not specified anywhere (Q-MOD-01) |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:74-80,182-184,198-202,268-271`, `20261104001300_search.sql:80-81`, `20261104001500_rankings.sql:107`, `20261104001600_author_follows.sql:50,109`, `20261104001700_recommendations.sql:36,101`, `packages/features/src/discovery/api/discovery.api.ts:63-71`, `apps/web/src/lib/seo/sitemap-data.ts:22-29`, `packages/features/src/_shared/auth.tsx:13,21` |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:74-80,182-184,198-202,268-271`, `20261104001300_search.sql:80-81`, `20261104001500_rankings.sql:107`, `20261104001600_author_follows.sql:50,109`, `20261104001700_recommendations.sql:36,101`, `packages/features/src/discovery/api/discovery.api.ts:72-79`, `apps/web/src/lib/seo/sitemap-data.ts:22-29`, `packages/features/src/_shared/auth.tsx:13,21` |
 | Status | Inferred (assembled from RLS/RPC filters; no end-to-end test of a suspended author's content) |
 
 ### BR-MOD-017 — Content actions close the reports on the target
@@ -240,7 +240,7 @@
 | Expected behavior | Card fields: kind, status, reason, details, reporter display name, target title (story title; chapter published title or slug; first 300 chars of comment; account display name), target state, link to the target (story / chapter / author page), count of open reports on the same target (shown when > 1) |
 | Exceptions | Rows missing id/date/target/state, or with unknown kind/status, are dropped silently. Not shown although returned: report date, comment author `username`, `reviewed_by/reviewed_at` (U-MOD-01) |
 | Related screens | SCR-MOD-01 |
-| Evidence | `supabase/migrations/20261104002000_moderation.sql:191-323`, `moderation/api/moderation.api.ts:33-47`, `moderation/model/report.ts:34-127`, `moderation/components/report-card.tsx:68-99`, `supabase/tests/260_moderation.test.sql:133-154` |
+| Evidence | `supabase/migrations/20261104002000_moderation.sql:191-323`, `moderation/api/moderation.api.ts:33-47`, `moderation/model/report.ts:34-127`, `moderation/components/report-card.tsx:109-148`, `supabase/tests/260_moderation.test.sql:133-154` |
 | Status | Verified |
 
 ### BR-MOD-020 — Console access
@@ -252,7 +252,7 @@
 | Expected behavior | Non-moderator gets the standard 404; page is `robots: noindex` and disallowed in `robots.txt` |
 | Exceptions | `ModerationScreen` also has client fallbacks (sign-in prompt, "You don't have access to this page") used by non-Next hosts; on web they are unreachable |
 | Related screens | SCR-MOD-01 |
-| Evidence | `apps/web/src/lib/auth/route-guard.ts:37-45`, `apps/web/src/app/(main)/moderation/page.tsx:12-20`, `apps/web/src/app/(main)/moderation/page.test.tsx:24-38`, `packages/features/src/shell/components/user-menu.tsx:69-73`, `moderation/screens/moderation-screen.tsx:21-42` |
+| Evidence | `apps/web/src/lib/auth/route-guard.ts:37-45`, `apps/web/src/app/(main)/moderation/page.tsx:12-20`, `apps/web/src/app/(main)/moderation/page.test.tsx:24-38`, `packages/features/src/shell/components/user-menu.tsx:71-75`, `moderation/screens/moderation-screen.tsx:22-43` |
 | Status | Verified |
 
 ### BR-MOD-021 — What the affected parties see
@@ -264,7 +264,7 @@
 | Expected behavior | Reporter: success toast only; RLS lets them read their own `content_reports` rows but no UI lists them. Commenter: hidden-comment notice in the thread (BR-MOD-011). Story owner: story disappears for readers; Studio lists it under "Deleted stories" like a self-deleted story. Suspended account: no notice (BR-MOD-016). Reported user: nothing |
 | Exceptions | No moderation notifications exist (WBS lists them as not done) |
 | Related screens | SCR-MOD-02 |
-| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:355-356`, `moderation/components/report-button.tsx:71-73`, `packages/features/src/studio/screens/studio-screen.tsx:154-200`, `docs/WBS.md:219` ("Chưa làm: … thông báo cho người bị gỡ/khóa hoặc người báo cáo") |
+| Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:355-356`, `moderation/components/report-button.tsx:74-76`, `packages/features/src/studio/screens/studio-screen.tsx:154-200`, `docs/WBS.md:219` ("Chưa làm: … thông báo cho người bị gỡ/khóa hoặc người báo cáo") |
 | Status | Verified (code) / Documented (not done) |
 
 ### BR-MOD-022 — Announcements are written by moderators only

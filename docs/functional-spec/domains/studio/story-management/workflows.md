@@ -38,7 +38,7 @@
 | Postconditions | Story exists as private draft by default; Studio, story and discovery caches invalidated |
 | Affected objects | OBJ-STM, OBJ-TAX (tags) |
 | Related screens | SCR-STM-02 → SCR-STM-03 |
-| Status | Verified — `packages/features/src/studio/screens/story-form-screen.tsx:62-71,162-172`, `packages/features/src/studio/story-tags.test.tsx:365,390` |
+| Status | Verified — `packages/features/src/studio/screens/story-form-screen.tsx:76-85,179-189`, `packages/features/src/studio/story-tags.test.tsx:384,409` |
 
 ### WF-STM-03 — Edit story settings and tags
 | Field | Value |
@@ -53,7 +53,7 @@
 | Postconditions | `updated_at` touched (trigger `stories_touch`); caches invalidated |
 | Affected objects | OBJ-STM, OBJ-TAX |
 | Related screens | SCR-STM-03 |
-| Status | Verified — `packages/features/src/studio/screens/story-form-screen.tsx:73-107,162-187`, `packages/features/src/studio/story-tags.test.tsx:409-460` |
+| Status | Verified — `packages/features/src/studio/screens/story-form-screen.tsx:82-116,172-197`, `packages/features/src/studio/story-tags.test.tsx:410-461` |
 
 ### WF-STM-04 — Add, change or remove the cover
 | Field | Value |
@@ -68,7 +68,7 @@
 | Postconditions | Cover shown on Studio row, story page, story cards |
 | Affected objects | OBJ-STM |
 | Related screens | SCR-STM-03; on SCR-STM-02 only the hint "Save the story first…" |
-| Status | Verified — `packages/features/src/studio/components/cover-editor.tsx:37-106`, `packages/features/src/studio/cover.test.tsx:148-192` |
+| Status | Verified — `packages/features/src/studio/components/cover-editor.tsx:44-134`, `packages/features/src/studio/cover.test.tsx:223-265` |
 
 ### WF-STM-05 — Soft-delete a story
 | Field | Value |
@@ -83,7 +83,7 @@
 | Postconditions | Can be restored (WF-STM-06); slug stays reserved |
 | Affected objects | OBJ-STM; indirectly chapters, invitations, discovery |
 | Related screens | SCR-STM-03 → SCR-STM-01 |
-| Status | Verified — `packages/features/src/studio/screens/story-form-screen.tsx:424-450`, `packages/features/src/studio/story-editing.test.tsx:415` |
+| Status | Verified — `packages/features/src/studio/screens/story-form-screen.tsx:489-515`, `packages/features/src/studio/story-editing.test.tsx:419` |
 
 ### WF-STM-06 — Restore a deleted story
 | Field | Value |
@@ -98,7 +98,7 @@
 | Postconditions | Caches invalidated |
 | Affected objects | OBJ-STM, OBJ-MOD |
 | Related screens | SCR-STM-01, SCR-STM-03 |
-| Status | Verified — `packages/features/src/studio/screens/studio-screen.tsx:155-209`, `packages/features/src/studio/screens/story-form-screen.tsx:405-422` |
+| Status | Verified — `packages/features/src/studio/screens/studio-screen.tsx:155-209`, `packages/features/src/studio/screens/story-form-screen.tsx:470-487` |
 
 ### WF-STM-07 — Change a story's URL slug
 | Field | Value |
@@ -113,4 +113,4 @@
 | Postconditions | Canonical URL updated (OBJ-SEO) |
 | Affected objects | OBJ-STM, OBJ-STORY, OBJ-SEO |
 | Related screens | SCR-STM-03 → public story page |
-| Status | Verified — `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:50`. The form gives no hint about this (finding U-STM-02) |
+| Status | Verified — `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:49`. The form gives no hint about this (finding U-STM-02) |

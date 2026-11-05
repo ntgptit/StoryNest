@@ -14,31 +14,31 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/page.tsx` → `chapter-editor-view.tsx` |
 | Screen component | `packages/features/src/editor/screens/chapter-editor-screen.tsx` (`ChapterEditorScreen` → `DraftEditor`), with `components/editor-toolbar.tsx`, `components/find-replace-panel.tsx`, `components/draft-merge-view.tsx`, `components/publish-panel.tsx` |
 | Roles | owner, co_author, editor (`BR-TEAM-*`); unpublish / cancel schedule: owner, co_author only |
-| Entry points | Chapter manager "Write" link (`packages/features/src/studio/screens/chapter-manager-screen.tsx:198`), "Back to editor" on SCR-HIST-01/02, "Open editor" after restore |
+| Entry points | Chapter manager "Write" link (`packages/features/src/studio/components/chapter-row.tsx:181`), "Back to editor" on SCR-HIST-01/02, "Open editor" after restore |
 | Workflows | WF-EDT-01 … WF-EDT-10, WF-HIST-03 (target) |
 
 ## B. Components
 
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
-| SCR-EDT-01-C01 | Back link | "Back to chapters" → `/studio/story/{id}/chapters` | `chapter-editor-screen.tsx:293-298` |
-| SCR-EDT-01-C02 | Preview / Version history buttons | Outline links to `…/preview` and `…/history` | `chapter-editor-screen.tsx:299-306` |
+| SCR-EDT-01-C01 | Back link | "Back to chapters" → `/studio/story/{id}/chapters` | `chapter-editor-screen.tsx:305-310` |
+| SCR-EDT-01-C02 | Preview / Version history buttons | Outline links to `…/preview` and `…/history` | `chapter-editor-screen.tsx:311-318` |
 | SCR-EDT-01-C03 | Backup banner | Inline alert (Lucian 072, info tone) `role="status"`; title, time, optional older-base warning; Restore / Compare and merge / Discard. The conflict banner uses the same widget in the danger tone (`role="alert"`) and cannot be dismissed | `chapter-editor-screen.tsx` (backup block), `packages/ui/src/widgets/inline-alert.tsx` |
 | SCR-EDT-01-C04 | Conflict alert | `role="alert"`; "The draft was edited elsewhere" + "Load latest version" / "Load latest and merge" | `chapter-editor-screen.tsx` (conflict block) |
-| SCR-EDT-01-C05 | Chapter title field | Label "Chapter title", placeholder "Chapter title", `maxLength=400`, inline error `role="alert"` | `chapter-editor-screen.tsx:348-366` |
+| SCR-EDT-01-C05 | Chapter title field | Label "Chapter title", placeholder "Chapter title", `maxLength=400`, inline error `role="alert"` | `chapter-editor-screen.tsx:508-526` |
 | SCR-EDT-01-C06 | Formatting toolbar | `role="toolbar"` "Formatting": Heading, Bold, Italic, Underline, Strikethrough (toggle, `aria-pressed`), Divider, Insert picture (+hidden file input "Choose a picture to insert"), Find and replace (`aria-expanded`), Undo, Redo (disabled when unavailable). Icon buttons 36 px. Skeleton until editor ready | `editor-toolbar.tsx`, `packages/ui/src/components/button.tsx:25` |
 | SCR-EDT-01-C13 | Find and replace panel (Lucian #128) | `role="search"` "Find and replace in the chapter", under the toolbar while open: Find → Replace with, "Replace all"; count "3/12" (+ polite live text "Match 3 of 12" / "No matches" / "N replaced"), Previous / Next match, "Match case" toggle (`aria-pressed`), Replace, Close. Matches are ProseMirror decorations (`find-match`, current `find-match-current`); replaced text flashes once (`animate-replace-flash`) | `components/find-replace-panel.tsx`, `model/find-replace.ts`, `packages/ui/src/widgets/find-replace-bar.tsx` |
 | SCR-EDT-01-C14 | Merge view (Lucian #149) | Replaces the backup banner while open: "Merge your version with the server's", "Take all mine" / "Take all from the server", "N differences left to decide" (polite), one `role="group"` per differing block (and the title) with "Mine" / "On the server" buttons (`aria-pressed`; a missing side reads "(Not in this version)"; "formatting only" note), "Use the merged version" (disabled until all decided), "Not now" | `components/draft-merge-view.tsx`, `model/draft-merge.ts`, `packages/ui/src/widgets/merge-choice.tsx` |
-| SCR-EDT-01-C07 | Body editor | Tiptap `EditorContent`, `role="textbox"`, `aria-multiline`, `aria-label="Chapter content"`, reader typography (`reader-text`), min 50vh; image blocks as framed pictures | `chapter-editor-screen.tsx:208-225,374-377` |
+| SCR-EDT-01-C07 | Body editor | Tiptap `EditorContent`, `role="textbox"`, `aria-multiline`, `aria-label="Chapter content"`, reader typography (`reader-text`), min 50vh; image blocks as framed pictures | `chapter-editor-screen.tsx:220-237,386-389` |
 | SCR-EDT-01-C08 | Publish panel | `<section aria-label="Publish chapter">`: H2, state badge (a scheduled chapter adds "Goes live in 3 hours", refreshed every 30 s, "Going live any moment" under a minute; Lucian 100 as text), error alert (Lucian 072: × "Dismiss the error" folds it away and moves focus to the H2), readiness checklist (C15), split button (Lucian 010) "Publish" / "Publish new version" with an arrow "More ways to publish" opening a menu with "Schedule…" (same usePublishFlow, saves first, locked while running, progress bar inside while busy; the label names the running step: "Saving draft…", then "Publishing…" / "Scheduling…", Lucian 081), Unpublish / Cancel schedule | `publish-panel.tsx`, `packages/ui/src/widgets/split-button.tsx` |
 | SCR-EDT-01-C15 | Readiness checklist (Lucian 014) | "Before you publish", ring n/3, one row per existing rule (`publishReadiness`): title present and ≤ 200 chars (checkTitle), content only holds savable parts (checkBody = chapterBodySchema), chapter not archived (canPublish); a failing row shows the existing message as hint. The split button is disabled and `aria-describedby` the checklist until all hold; shown only to the story team | `publish-panel.tsx`, `model/publishing.ts`, `packages/ui/src/widgets/readiness-checklist.tsx` |
 | SCR-EDT-01-C16 | Toolbar tooltips (Lucian 076) | Each toolbar icon button has a tooltip with its name and shortcut (Ctrl/⌘+B, I, U, Shift+S, Alt+2, F, Z, Shift+Z); one provider: 450 ms first delay, instant within 300 ms when moving along; Esc closes; never on touch | `editor-toolbar.tsx`, `packages/ui/src/widgets/shortcut-tooltip.tsx` |
 | SCR-EDT-01-C17 | Side-by-side live preview (Lucian 101) | From 1024 px wide: toggle "Side-by-side preview" (`aria-pressed`, off by default) puts the editor and a live preview of what is typed (the preview screen's article) side by side, with a divider `role="separator"` (drag, ←/→ 3 %, Home/End 35–70 %, Esc back to 55 %). On/off and width remembered in localStorage `storynest.editor.split` | `chapter-editor-screen.tsx`, `model/workspace-prefs.ts`, `packages/ui/src/widgets/split-pane.tsx` |
 | SCR-EDT-01-C18 | First-run tour (Lucian 197) | Once per device (localStorage `storynest.editor.tour-done`, set on Done or Skip): dim layer with a hole over toolbar → autosave status → publish panel → find button; "Step n of 4", Back / Next / Done, Skip; modal dialog, focus on Next, Esc skips, ←/→ step; hole glides (jumps under reduced motion). Turned on by the web route only (`firstRunTour`) | `chapter-editor-screen.tsx`, `packages/ui/src/widgets/spotlight-tour.tsx` |
-| SCR-EDT-01-C09 | Schedule dialog | Title "Schedule publication", `datetime-local` "Publish time" (min now+1 min), "Your time zone: {zone}", inline error, Cancel / Schedule | `publish-panel.tsx:162-199` |
-| SCR-EDT-01-C10 | Unpublish confirm dialog | "Unpublish this chapter?", destructive "Unpublish chapter", Cancel | `publish-panel.tsx:201-213` |
-| SCR-EDT-01-C11 | Footer status | `aria-live="polite"`: "{n} words · {status}" | `chapter-editor-screen.tsx:381-385` |
-| SCR-EDT-01-C12 | Save button | "Save draft" / "Saving…" | `chapter-editor-screen.tsx:386-388` |
+| SCR-EDT-01-C09 | Schedule dialog | Title "Schedule publication", `datetime-local` "Publish time" (min now+1 min), "Your time zone: {zone}", inline error, Cancel / Schedule | `publish-panel.tsx:154-191` |
+| SCR-EDT-01-C10 | Unpublish confirm dialog | "Unpublish this chapter?", destructive "Unpublish chapter", Cancel | `publish-panel.tsx:224-236` |
+| SCR-EDT-01-C11 | Footer status | `aria-live="polite"`: "{n} words · {status}" | `chapter-editor-screen.tsx:562-577` |
+| SCR-EDT-01-C12 | Save button | "Save draft" / "Saving…" | `chapter-editor-screen.tsx:578-580` |
 | SCR-EDT-01-C13 | Drop and paste a picture (Lucian 032) | A file dragged over the text highlights it ("Drop the picture to insert it"); dropped, it is inserted where it lands; a pasted picture (screenshot, copied image, no text) is inserted at the cursor. Same upload, checks and error toasts as "Insert picture" (A05). A paste with text is left to the editor | `chapter-editor-screen.tsx` (`handleDrop`, `handlePaste`), `model/pasted-image.ts` |
 
 ## C. User actions & system responses
@@ -52,7 +52,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | Draft body via `chapterBodySchema`; `storyId` must match |
 | Error behavior | Not found / Can't open the draft / Couldn't load the draft + Try again |
 | Navigation | Anonymous → `/login?next=…` |
-| Evidence | `page.tsx:11-14`, `chapter-editor-screen.tsx:47-67` |
+| Evidence | `page.tsx:11-14`, `chapter-editor-screen.tsx:85-107` |
 
 | Field | SCR-EDT-01-A02 Edit title |
 | --- | --- |
@@ -63,7 +63,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | Trimmed 1–200 chars at save time ("Please enter a chapter title." / "The chapter title can be up to 200 characters.") |
 | Error behavior | Inline alert under the field; status "Not saved: check the chapter title and content" |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:355-365`, `model/draft-form.ts:12-15` |
+| Evidence | `chapter-editor-screen.tsx:515-525`, `model/draft-form.ts:12-15` |
 
 | Field | SCR-EDT-01-A03 Type / edit body |
 | --- | --- |
@@ -74,7 +74,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | `BR-EDT-006` |
 | Error behavior | Unsupported content → "Part of the content can't be saved. Remove it and try again." |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:217-220` |
+| Evidence | `chapter-editor-screen.tsx:301-304` |
 
 | Field | SCR-EDT-01-A04 Format (toolbar / shortcut) |
 | --- | --- |
@@ -85,7 +85,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | Only body-representable formats exist |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `editor-toolbar.tsx:33-103` |
+| Evidence | `editor-toolbar.tsx:55-173` |
 
 | Field | SCR-EDT-01-A05 Insert picture |
 | --- | --- |
@@ -96,7 +96,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | JPEG/PNG/WebP, ≤ 10 MB input; bucket ≤ 5 MiB |
 | Error behavior | Toast per cause |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:227-236`, `editor-toolbar.tsx:68-77,104-118` |
+| Evidence | `chapter-editor-screen.tsx:311-320`, `editor-toolbar.tsx:68-77,104-118` |
 
 | Field | SCR-EDT-01-A06 Save draft |
 | --- | --- |
@@ -107,7 +107,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | `BR-EDT-006` |
 | Error behavior | Status text; no toast |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:282-285` |
+| Evidence | `chapter-editor-screen.tsx:378-381` |
 
 | Field | SCR-EDT-01-A07 Restore / discard local backup |
 | --- | --- |
@@ -118,7 +118,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | Backup already schema-checked on read |
 | Error behavior | Restore disabled until editor ready |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:265-273,316-330` |
+| Evidence | `chapter-editor-screen.tsx:339-353,452-470` |
 
 | Field | SCR-EDT-01-A07b Compare and merge (backup) |
 | --- | --- |
@@ -140,7 +140,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | — |
 | Error behavior | Refetch error → load error state |
 | Navigation | — |
-| Evidence | `chapter-editor-screen.tsx:76-79,342` |
+| Evidence | `chapter-editor-screen.tsx:118-122,482` |
 
 | Field | SCR-EDT-01-A08b Load latest and merge (conflict) |
 | --- | --- |
@@ -173,7 +173,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | Save-first; server `BR-EDT-019` |
 | Error behavior | Inline `role="alert"` (`BR-EDT-025`) |
 | Navigation | — |
-| Evidence | `publish-panel.tsx:90-95,139-142` |
+| Evidence | `publish-panel.tsx:69,122-139` |
 
 | Field | SCR-EDT-01-A10 Schedule |
 | --- | --- |
@@ -184,7 +184,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | "Please choose a publish time." / "Choose a time in the future." |
 | Error behavior | Inline in dialog (picker) or panel alert (server) |
 | Navigation | — |
-| Evidence | `publish-panel.tsx:97-111,144-146,162-199` |
+| Evidence | `publish-panel.tsx:71-79,130-138,154-191` |
 
 | Field | SCR-EDT-01-A11 Unpublish / Cancel schedule |
 | --- | --- |
@@ -195,7 +195,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | — |
 | Error behavior | Panel alert; dialog stays open |
 | Navigation | — |
-| Evidence | `publish-panel.tsx:149-158,201-213` |
+| Evidence | `publish-panel.tsx:172-181,224-236` |
 
 | Field | SCR-EDT-01-A12 Navigate away |
 | --- | --- |
@@ -206,13 +206,13 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Validation | — |
 | Error behavior | — |
 | Navigation | Chapters list / Preview / History / elsewhere |
-| Evidence | `chapter-editor-screen.tsx:238-263` |
+| Evidence | `chapter-editor-screen.tsx:324-349` |
 
 ## D. UI states
 
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
-| Initial | Implemented | Skeleton `aria-busy` while the draft loads (`chapter-editor-screen.tsx:51`); toolbar skeleton until Tiptap mounts (`:368-372`) |
+| Initial | Implemented | Skeleton `aria-busy` while the draft loads (`chapter-editor-screen.tsx:54`); toolbar skeleton until Tiptap mounts (`:368-372`) |
 | Loading | Implemented (partial) | Draft: skeleton. Save: "Saving…" button + status. Upload: "Uploading picture…". Publish: "Saving draft…" → "Publishing…" / "Scheduling…" ("Working…" for unpublish). **Missing**: publish panel renders nothing while its state loads (`publish-panel.tsx:59`) |
 | Empty | Implemented | Never-written draft → one empty paragraph, "0 words" (`body-converter.ts:161`) |
 | Populated | Implemented | Title, formatted body, word count |

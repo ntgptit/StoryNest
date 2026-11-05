@@ -11,7 +11,7 @@
 | Actors / roles | Guest (similar only), Member (similar + personal) |
 | Related entities | RPCs `similar_stories` (SECURITY DEFINER), `recommend_for_me` (SECURITY INVOKER); sources `story_tags`, `categories`, `chapter_read_events`, `user_follows`, `story_saves`, `story_follows`, `user_story_progress` |
 | Dependencies | BR-TAX-*, BR-PROG-*, BR-LIB-*, BR-AUTHOR-*, BR-STORY-*, BR-MAT-*, BR-MOD-* |
-| Own screen | **None.** Rendered by `SimilarStories` at the end of the story page (`packages/features/src/story/screens/story-screen.tsx:186`, inside `AdultGate`) and by `ForYouStories` above the home feed (`apps/web/src/app/(main)/discover-home.tsx:13`) |
+| Own screen | **None.** Rendered by `SimilarStories` at the end of the story page (`packages/features/src/story/screens/story-screen.tsx:243`, inside `AdultGate`) and by `ForYouStories` above the home feed (`apps/web/src/app/(main)/discover-home.tsx:24`) |
 | Code | `supabase/migrations/20261104001700_recommendations.sql`, `packages/features/src/recommendations/**` |
 
 ## 2. Rules
@@ -70,10 +70,10 @@
 | Description | "You might also like" at the end of the story page for everyone; "Recommended for you" above the home feed only for a member on the unfiltered home |
 | Preconditions | — |
 | Conditions | Nothing renders while loading, on error, or when the list is empty |
-| Expected behavior | Titled section (`h2`) with a 2/3/4-column grid of home cards, each followed by its reason sentence |
+| Expected behavior | Titled section (`h2`) with a swipeable/draggable row of home cards (`CardCarousel`, previous/next arrows) instead of a 2/3/4-column grid (changed by PR #60), each followed by its reason sentence |
 | Exceptions | — |
 | Related screens | SCR-HOME-01, SCR-STORY-01 |
-| Evidence | `recommendations/components/recommendation-list.tsx:13-92`, `apps/web/src/app/(main)/discover-home.tsx:9-13`, `story/screens/story-screen.tsx:186-188`, `recommendations/recommendations.test.tsx:219,235` |
+| Evidence | `recommendations/components/recommendation-list.tsx:10-79`, `apps/web/src/app/(main)/discover-home.tsx:11-15`, `story/screens/story-screen.tsx:272-273`, `recommendations/recommendations.test.tsx:219,235` |
 | Status | Verified |
 
 ### BR-REC-006 — Sizes and limits
@@ -97,7 +97,7 @@
 | Expected behavior | Unknown reason code or missing detail → card shown **without** a sentence (never a wrong one) |
 | Exceptions | — |
 | Related screens | SCR-HOME-01, SCR-STORY-01 |
-| Evidence | `recommendations/model/recommendation.ts:42-63`, `recommendations/strings.en.ts:5-11`, `recommendations/recommendations.test.tsx:67,81` |
+| Evidence | `recommendations/model/recommendation.ts:42-63`, `recommendations/strings.en.ts:7-13`, `recommendations/recommendations.test.tsx:67,81` |
 | Status | Verified |
 
 ### BR-REC-008 — Not yet supported

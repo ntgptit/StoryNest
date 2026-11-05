@@ -18,16 +18,16 @@
 ## B. Components
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
-| SCR-STM-03-C01 | Header "Edit story" / "Change how your story is displayed." | `story-form-screen.tsx:92`, `strings.en.ts:168-169` |
-| SCR-STM-03-C02 | Link "Manage chapters" → `/studio/story/{id}/chapters` (all roles) | `story-form-screen.tsx:93-98` |
-| SCR-STM-03-C03 | Notice "This story is deleted." (when deleted) | `story-form-screen.tsx:99` |
-| SCR-STM-03-C04 | Editor notice "You're an editor of this story, so you can't change its details." (replaces the form) | `story-form-screen.tsx:100-102` |
+| SCR-STM-03-C01 | Header "Edit story" / "Change how your story is displayed." | `story-form-screen.tsx:106`, `strings.en.ts:168-169` |
+| SCR-STM-03-C02 | Link "Manage chapters" → `/studio/story/{id}/chapters` (all roles) | `story-form-screen.tsx:107-112` |
+| SCR-STM-03-C03 | Notice "This story is deleted." (when deleted) | `story-form-screen.tsx:113` |
+| SCR-STM-03-C04 | Editor notice "You're an editor of this story, so you can't change its details." (replaces the form) | `story-form-screen.tsx:114-116` |
 | SCR-STM-03-C05 | Cover block: label "Cover", preview (2:3), "Add a cover"/"Change cover" ("Uploading…"), "Remove cover", hidden file input "Choose a cover", hint, alert; after a valid pick the crop dialog "Adjust the cover" (2:3 frame, "Zoom" slider, "Use photo"/"Cancel") | `components/cover-editor.tsx`, `packages/ui/src/widgets/image-crop-dialog.tsx` |
 | SCR-STM-03-C06..C13 | Same fields as SCR-STM-02-C04..C11 (title, slug, synopsis, category, tags, language, status, visibility, 18+) pre-filled | `story-form-screen.tsx:212-395` |
 | SCR-STM-03-C14 | "Save changes" (disabled until something changed; spinner + "Saving…"; after a save a check draws itself next to "Saved" for 2 s, announced politely; Lucian 001 without the glass), "Cancel" → `/studio` | `story-form-screen.tsx`, `packages/ui/src/widgets/submit-button.tsx` |
 | SCR-STM-03-C15 | Owner only: "Delete story" (destructive outline) or "Restore story" when deleted | `story-form-screen.tsx:404-433` |
-| SCR-STM-03-C16 | Confirm dialog "Delete this story?" | `story-form-screen.tsx:437-450` |
-| SCR-STM-03-C17 | Skeleton; error state (retry); empty state "Story not found" | `story-form-screen.tsx:76-89` |
+| SCR-STM-03-C16 | Confirm dialog "Delete this story?" | `story-form-screen.tsx:473-486` |
+| SCR-STM-03-C17 | Skeleton; error state (retry); empty state "Story not found" | `story-form-screen.tsx:81-94` |
 | SCR-STM-03-C18 | Cover drop zone (Lucian 032) | As SCR-PRF-02-C14 for the cover row: same checks, crop dialog (2:3) and errors as the picker | `components/cover-editor.tsx`, `packages/ui/src/widgets/drop-zone.tsx` |
 | SCR-STM-03-C19 | Upload veil and size bars (Lucian 082, 301) | As SCR-PRF-02-C15 for the cover preview: veil with a turning ring while uploading, a hop when done, then original vs uploaded size with the saving | `components/cover-editor.tsx`, `_shared/use-image-sizes.ts` |
 | SCR-STM-03-C19 | Unsaved changes bar (Lucian 250): rises from the bottom while the form is dirty or the tags changed, "N unsaved changes", "Discard" (resets fields and tags) / "Save" (the same submit as C14). While dirty, closing the tab asks the browser's leave question and a click on an in-app link outside the form is stopped: the bar shakes, turns red, says "Save or discard your changes before leaving" and focuses Save. The form's own Cancel link is not stopped. Not shown when creating | `story-form-screen.tsx`, `packages/ui/src/widgets/unsaved-changes-bar.tsx` |
@@ -43,7 +43,7 @@
 | Validation | BR-STM-007; slug never auto-changes (BR-STM-008) |
 | Error behavior | Slug taken → field; 0 rows → "Story not found."; forbidden → "You don't have permission to do this."; network → "No connection…"; tags refused → toast + message under Tags, Save stays enabled |
 | Navigation | Stays |
-| Evidence | `story-form-screen.tsx:162-190`, `story-tags.test.tsx:409-460`, `story-editing.test.tsx:384` |
+| Evidence | `story-form-screen.tsx:162-190`, `story-tags.test.tsx:410-461`, `story-editing.test.tsx:388` |
 
 | Field | SCR-STM-03-A02 Change / add cover |
 | --- | --- |
@@ -54,13 +54,13 @@
 | Validation | Type JPG/PNG/WebP, ≤ 10 MB (client); ≤ 2 MiB after processing (bucket) |
 | Error behavior | Inline alert (`role="alert"`) with the specific reason (BR-STM-014) |
 | Navigation | — |
-| Evidence | `components/cover-editor.tsx:54-59,84-103` |
+| Evidence | `components/cover-editor.tsx:62-67,94-105,117-131` |
 
 | Field | SCR-STM-03-A03 Remove cover |
 | --- | --- |
 | Trigger | "Remove cover" (only when a cover exists) |
 | Expected behavior | Key cleared, object deleted, toast "Cover removed."; no confirmation |
-| Evidence | `components/cover-editor.tsx:70-83` |
+| Evidence | `components/cover-editor.tsx:79-93` |
 
 | Field | SCR-STM-03-A04 Delete story |
 | --- | --- |
@@ -71,7 +71,7 @@
 | Validation | — |
 | Error behavior | Dialog stays open, buttons re-enabled, **no message** (F-STM-03) |
 | Navigation | SCR-STM-01 |
-| Evidence | `story-form-screen.tsx:424-450`, `packages/ui/src/widgets/confirm-dialog.tsx:15-18,40-51` |
+| Evidence | `story-form-screen.tsx:489-515`, `packages/ui/src/widgets/confirm-dialog.tsx:15-18,40-51` |
 
 | Field | SCR-STM-03-A05 Restore story |
 | --- | --- |
@@ -79,13 +79,13 @@
 | Preconditions | Owner; story deleted |
 | Expected behavior | `deleted_at = null`; toast "Story restored."; notice and button update after refetch |
 | Error behavior | Toast; moderator-removed → "You don't have permission to do this." (F-STM-02) |
-| Evidence | `story-form-screen.tsx:405-422` |
+| Evidence | `story-form-screen.tsx:470-487` |
 
 | Field | SCR-STM-03-A06 Manage chapters / Cancel |
 | --- | --- |
 | Trigger | "Manage chapters" link; "Cancel" |
 | Expected behavior | Navigate to SCR-CHM-01 / SCR-STM-01; unsaved edits discarded without prompt (U-STM-03) |
-| Evidence | `story-form-screen.tsx:93-98,401-403` |
+| Evidence | `story-form-screen.tsx:107-112,466-468` |
 
 Tag actions: as SCR-STM-02-A03.
 
@@ -93,7 +93,7 @@ Tag actions: as SCR-STM-02-A03.
 | State | Status | Evidence / note |
 | --- | --- | --- |
 | Initial | Implemented | Skeleton until story + role are known |
-| Loading | Implemented | `Skeleton` `aria-busy` (`story-form-screen.tsx:76`) |
+| Loading | Implemented | `Skeleton` `aria-busy` (`story-form-screen.tsx:90`) |
 | Empty | Implemented | "Story not found" for no access / missing |
 | Populated | Implemented | Form pre-filled with stored values and tags |
 | Validation error | Implemented | Field and tag messages |

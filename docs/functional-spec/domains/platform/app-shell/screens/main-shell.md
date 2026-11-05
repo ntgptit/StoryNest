@@ -16,7 +16,7 @@
 | ID | Component | Notes / text (en; vi key `shell.*`) |
 | --- | --- | --- |
 | SCR-SHELL-01-C01 | Sticky header (`<header>`, safe-area top, blurred) | `app-shell.tsx`. Publishes the space it covers as `--app-header-offset` (sticky page bars use `top-below-header`). Hide-on-scroll on request, see C14 |
-| SCR-SHELL-01-C02 | Brand link "StoryNest" → `/` | `site-header.tsx:13-15` |
+| SCR-SHELL-01-C02 | Brand link "StoryNest" → `/` | `site-header.tsx:17-19` |
 | SCR-SHELL-01-C03 | Search slot (OBJ-SRCH) | < sm: icon link "open search" → `/search`; ≥ sm: combobox with suggestions |
 | SCR-SHELL-01-C04 | Adult-content button slot (OBJ-MAT) | `aria-pressed`, opens dialog |
 | SCR-SHELL-01-C05 | Language switcher | Shows current code "VI"/"EN"; `aria-label` "Switch to English" / "Switch to Tiếng Việt"; `size="sm"` (32 px high) |
@@ -50,10 +50,10 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | `/settings` | — | — | Settings | — | Menu only; not on `/me` (U-PRF-01) |
 | `/notifications` | Bell (members) | — | — | — | OK for members |
 | `/search` | Search box / icon | — | — | — | OK |
-| `/ranking` | Desktop nav "Rankings" ▾ (≥ md); mobile menu (C15) | — | — | Home "see ranking" link (`discover-screen.tsx:60`), sitemap | OK |
-| `/following` | Desktop nav "Following" (≥ md, members); mobile menu (C15, members) | — | — | Home "see following" link for members (`discover-screen.tsx:55-58`) | OK |
+| `/ranking` | Desktop nav "Rankings" ▾ (≥ md); mobile menu (C15) | — | — | Home "see ranking" link (`discover-screen.tsx:66`), sitemap | OK |
+| `/following` | Desktop nav "Following" (≥ md, members); mobile menu (C15, members) | — | — | Home "see following" link for members (`discover-screen.tsx:61-64`) | OK |
 | `/author/<me>` (own public page) | — | — | — | Own story pages only | Missing from `/me` and menu (U-PRF-01) |
-| `/lists/<id>` | — | — | — | Library "my lists" (`lists/components/my-lists.tsx:64`) | OK |
+| `/lists/<id>` | — | — | — | Library "my lists" (`lists/components/my-lists.tsx:75`) | OK |
 | `/moderation` | — | — | Moderation (moderators) | — | OK |
 | `/login` | Sign in (guests, no `next`) | via protected items | — | redirects | Loses current page (U-SHELL-04) |
 | `/dev/gallery` | — | — | — | — | Intended (dev only) |
@@ -70,7 +70,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | Protected targets redirect guests to sign-in (BR-AUTH-008) |
 | Navigation | `/`, `/library`, `/studio`, `/me` |
-| Evidence | `main-shell.tsx:13-18`, `bottom-nav.tsx:22-74` |
+| Evidence | `shell/model/nav-items.ts:9-14`, `bottom-nav.tsx:23-75` |
 
 | Field | SCR-SHELL-01-A02 Open account menu and choose an item |
 | --- | --- |
@@ -81,7 +81,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | — |
 | Navigation | `/library`, `/studio`, `/me`, `/moderation` (mods), `/settings` |
-| Evidence | `user-menu.tsx:50-80`, `shell.test.tsx` |
+| Evidence | `user-menu.tsx:52-83`, `shell.test.tsx` |
 
 | Field | SCR-SHELL-01-A03 Sign out |
 | --- | --- |
@@ -92,7 +92,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | Toast "Could not sign out. Please try again." |
 | Navigation | `/` |
-| Evidence | `user-menu.tsx:40-48,77` |
+| Evidence | `user-menu.tsx:42-50,80` |
 
 | Field | SCR-SHELL-01-A04 Sign in |
 | --- | --- |
@@ -103,7 +103,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | — |
 | Navigation | SCR-AUTH-01 |
-| Evidence | `user-menu.tsx:30-36` |
+| Evidence | `user-menu.tsx:32-38` |
 
 | Field | SCR-SHELL-01-A05 Switch language |
 | --- | --- |
@@ -114,7 +114,7 @@ Legend: ✓ reachable, — not reachable. "Other" = only from content inside som
 | Validation | — |
 | Error behavior | — |
 | Navigation | Stays |
-| Evidence | `language-switcher.tsx:8-23` |
+| Evidence | `language-switcher.tsx:10-24` |
 
 | Field | SCR-SHELL-01-A06 Open a desktop navigation panel |
 | --- | --- |
@@ -137,7 +137,7 @@ Below `sm` the SearchBox icon is a button (`aria-expanded`) that opens the same 
 | State | Status | Evidence / note |
 | --- | --- | --- |
 | Initial | Implemented | |
-| Loading (auth) | Implemented | Round skeleton for C07 (`user-menu.tsx:28`) |
+| Loading (auth) | Implemented | Round skeleton for C07 (`user-menu.tsx:30`) |
 | Loading (route) | Implemented | C10 (generic shape, U-SHELL-03) |
 | Empty | Not applicable | |
 | Populated | Implemented | |

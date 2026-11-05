@@ -28,7 +28,7 @@
 | Postconditions | Device choice = shown (global, not per story) |
 | Affected objects | OBJ-MAT, OBJ-STORY, OBJ-READ |
 | Related screens | SCR-MAT-01 |
-| Status | Verified (`adult-content/components/adult-gate.tsx:17-32`, `reader/screens/reader-screen.tsx:45-46`, `adult-content/adult-content.test.tsx:221-246`); page-source leak noted in F-MAT-01 |
+| Status | Verified (`adult-content/components/adult-gate.tsx:17-32`, `reader/screens/reader-screen.tsx:73-74`, `adult-content/adult-content.test.tsx:221-246`); page-source leak noted in F-MAT-01 |
 
 ### WF-MAT-03 — The choice follows the account (cross-device)
 | Field | Value |
@@ -58,4 +58,4 @@
 | Postconditions | As WF-MAT-01 |
 | Affected objects | OBJ-MAT, OBJ-SET |
 | Related screens | SCR-SET-* (owned by OBJ-SET), SCR-MAT-01 |
-| Status | Verified (`packages/features/src/settings/screens/settings-screen.tsx:152-171`, `settings/strings.en.ts:23-31`) |
+| Status | Verified (`packages/features/src/settings/screens/settings-screen.tsx:276-295`, `settings/strings.en.ts:30-38`) |

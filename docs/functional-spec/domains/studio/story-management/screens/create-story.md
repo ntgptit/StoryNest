@@ -18,19 +18,19 @@
 ## B. Components
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
-| SCR-STM-02-C01 | Header "New story" / "Fill in the basics. You can change them any time, then add chapters later." | `story-form-screen.tsx:66-67`, `strings.en.ts:166-167` |
-| SCR-STM-02-C02 | Error banner (`role="alert"`) for non-field save errors | `story-form-screen.tsx:197-204` |
-| SCR-STM-02-C03 | Cover hint "Save the story first, then you can add a cover." | `story-form-screen.tsx:208-210` |
+| SCR-STM-02-C01 | Header "New story" / "Fill in the basics. You can change them any time, then add chapters later." | `story-form-screen.tsx:71-72`, `strings.en.ts:166-167` |
+| SCR-STM-02-C02 | Error banner (`role="alert"`) for non-field save errors | `story-form-screen.tsx:208-215` |
+| SCR-STM-02-C03 | Cover hint "Save the story first, then you can add a cover." | `story-form-screen.tsx:219-221` |
 | SCR-STM-02-C04 | "Story title" input | `story-form-screen.tsx:212-233` |
 | SCR-STM-02-C05 | "URL slug" input + hint "Lowercase letters, numbers and hyphens. Generated from the story title; you can edit it." | `story-form-screen.tsx:235-256` |
-| SCR-STM-02-C06 | "Synopsis" textarea (6 rows) + hint "Up to 5000 characters." | `story-form-screen.tsx:258-271` |
-| SCR-STM-02-C07 | "Category" select ("Not selected" + roots and "Parent › Child") | `story-form-screen.tsx:273-300`, `model/story-form.ts:69-81` |
+| SCR-STM-02-C06 | "Synopsis" textarea (6 rows) + hint "Up to 5000 characters." | `story-form-screen.tsx:265-278` |
+| SCR-STM-02-C07 | "Category" select ("Not selected" + roots and "Parent › Child") | `story-form-screen.tsx:280-307`, `model/story-form.ts:71-83` |
 | SCR-STM-02-C08 | Tag editor: label "Tags", counter "n/10 tags", chips with remove buttons, input (placeholder "E.g. Romance, Adventure"), hint, alert, popular suggestions. A chip just added pops in; a list that goes past the cap (the existing addTags "tooMany" rule) turns the counter red with a short shake (Lucian 019, motion-safe; nothing moves on load) | `components/tag-editor.tsx` |
-| SCR-STM-02-C09 | "Language" select (Tiếng Việt / English) and "Status" select | `story-form-screen.tsx:304-353` |
+| SCR-STM-02-C09 | "Language" select (Tiếng Việt / English) and "Status" select | `story-form-screen.tsx:311-360` |
 | SCR-STM-02-C06b | Search / share preview (Lucian 249): tabs "Search result" / "Link share"; title, address `/story/{id}/{slug}` on the share origin, synopsis cut exactly as the story page's meta description (`storyMetaDescription`, 160 chars), cover once there is one; length bar "Synopsis: n/160 characters shown" (warning colour when it will be cut); note "This story will not show up in search engines…" when `isIndexable` is false (not public, or 18+) | `story-form-screen.tsx` (StoryLinkPreview), `packages/ui/src/widgets/search-result-preview.tsx` |
 | SCR-STM-02-C10 | "Visibility" radio cards (Lucian 015): Private / Link only / Public with the Lock / Link2 / Globe icons and the existing per-value hints as descriptions; real radio group (arrow keys move and choose), the frame slides to the chosen card | `story-form-screen.tsx`, `packages/ui/src/widgets/radio-cards.tsx` |
-| SCR-STM-02-C11 | "Mature content (18+)" switch + hint | `story-form-screen.tsx:381-395` |
-| SCR-STM-02-C12 | "Create story" submit ("Saving…" while busy), "Cancel" link → `/studio` | `story-form-screen.tsx:397-403` |
+| SCR-STM-02-C11 | "Mature content (18+)" switch + hint | `story-form-screen.tsx:441-455` |
+| SCR-STM-02-C12 | "Create story" submit ("Saving…" while busy), "Cancel" link → `/studio` | `story-form-screen.tsx:426-432` |
 
 ## C. User actions & system responses
 
@@ -43,13 +43,13 @@
 | Validation | Re-validated live only after the first submit |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `story-form-screen.tsx:221-226`, `story-editing.test.tsx:298` |
+| Evidence | `story-form-screen.tsx:256-261`, `story-editing.test.tsx:298` |
 
 | Field | SCR-STM-02-A02 Edit the slug |
 | --- | --- |
 | Trigger | Typing in "URL slug" |
 | Expected behavior | Auto-fill stops for the rest of this form |
-| Evidence | `story-form-screen.tsx:246-248` |
+| Evidence | `story-form-screen.tsx:281-283` |
 
 | Field | SCR-STM-02-A03 Add / remove tags |
 | --- | --- |
@@ -60,7 +60,7 @@
 | Validation | Invalid name → "Each tag needs at least 2 letters or numbers and at most 40 characters."; more than 10 → "A story can have at most 10 tags." (valid ones still added); input disabled at 10 |
 | Error behavior | — |
 | Navigation | — |
-| Evidence | `components/tag-editor.tsx:46-62,66-72`, `model/tags.ts:49-66`, `story-tags.test.tsx:274-351` |
+| Evidence | `components/tag-editor.tsx:46-62,66-72`, `model/tags.ts:49-66`, `story-tags.test.tsx:275-352` |
 
 | Field | SCR-STM-02-A04 Create story |
 | --- | --- |
@@ -71,19 +71,19 @@
 | Validation | BR-STM-007 field messages; nothing sent when invalid |
 | Error behavior | Slug taken → slug field "You already have a story with this URL slug. Choose a different one."; forbidden/notFound/network/other → banner; tags refused → toast "Story saved, but the tags couldn't be saved. <reason>" then navigation |
 | Navigation | SCR-STM-03 |
-| Evidence | `story-form-screen.tsx:142-172,189-190`, `story-editing.test.tsx:309,328,335,344`, `story-tags.test.tsx:365,390` |
+| Evidence | `story-form-screen.tsx:149-179,199-200`, `story-editing.test.tsx:309,328,335,348`, `story-tags.test.tsx:384,409` |
 
 | Field | SCR-STM-02-A05 Cancel |
 | --- | --- |
 | Trigger | "Cancel" |
 | Expected behavior | Navigate to `/studio`; entered data discarded without confirmation |
-| Evidence | `story-form-screen.tsx:401-403` |
+| Evidence | `story-form-screen.tsx:466-468` |
 
 ## D. UI states
 | State | Status | Evidence / note |
 | --- | --- | --- |
 | Initial | Implemented | Defaults BR-STM-006 |
-| Loading | Partial | Category list loads asynchronously; the select shows only "Not selected" until it arrives (no indicator) — Inferred from `story-form-screen.tsx:122,191` |
+| Loading | Partial | Category list loads asynchronously; the select shows only "Not selected" until it arrives (no indicator) — Inferred from `story-form-screen.tsx:136,228` |
 | Empty | Not applicable | — |
 | Populated | Not applicable | — |
 | Validation error | Implemented | Field messages (`FormMessage`), tag alerts |

@@ -18,18 +18,18 @@
 ## B. Components
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
-| SCR-CHM-01-C01 | Header "Manage chapters" / "Order, URL slugs and status of the chapters in "<story>"." | `chapter-manager-screen.tsx:122`, `strings.en.ts:22-23` |
+| SCR-CHM-01-C01 | Header "Manage chapters" / "Order, URL slugs and status of the chapters in "<story>"." | `chapter-manager-screen.tsx:123`, `strings.en.ts:22-23` |
 | SCR-CHM-01-C02 | Breadcrumb (Lucian 103) `nav` "Location in Studio": Studio → `/studio` › story title → `/studio/story/{id}` › Chapters (current page). Beside the story crumb, when the author has more than one story, a "Switch to another story" button (Lucian 037) opens a menu of their stories (useMyStories, role as second line, check on the current one) and opens the chapters of the one picked. Replaces the old "Back to story details" link | `components/studio-crumbs.tsx`, `packages/ui/src/widgets/breadcrumbs.tsx` |
 | SCR-CHM-01-C12 | Scheduled outbox (Lucian #190), above the list, only when a live chapter is scheduled: heading "Scheduled", "These chapters publish by themselves, soonest first. Times are in {zone}."; one card per chapter in `scheduled_for` order with the time (relative + exact, user locale/time zone) as a button (`aria-expanded`) opening an inline `datetime-local` "New publish time" (min now+1 min) + "Save new time" / "Cancel"; title, "Chapter n · /slug"; "Publish now"; [owner/co-author] "Cancel schedule"; inline `role="alert"` on refusal. A rescheduled time drops into place (`animate-outbox-moved`) | `components/scheduled-chapters.tsx`, `model/studio-chapter.ts` (`scheduledChapters`) |
-| SCR-CHM-01-C03 | Ordered list "Chapter list": row with "Chapter n", title / "(untitled)", status badge, "Deleted" badge, `/slug` | `chapter-manager-screen.tsx:134-156` |
-| SCR-CHM-01-C04 | Live-row actions: Move up / Move down (icon buttons, aria-label "Move up: <title>"), "Write", "Change URL slug", [owner/co-author] "Archive" or "Unarchive", "Delete" | `chapter-manager-screen.tsx:176-240` |
-| SCR-CHM-01-C05 | Deleted-row action: [owner/co-author] "Restore" | `chapter-manager-screen.tsx:158-174` |
-| SCR-CHM-01-C06 | Numbering note | `chapter-manager-screen.tsx:248` |
-| SCR-CHM-01-C07 | Empty state "This story has no chapters yet" / "Add the first chapter below." | `chapter-manager-screen.tsx:130-131` |
-| SCR-CHM-01-C08 | Add form "Add chapter": "Chapter title", "URL slug", submit ("Adding…") | `chapter-manager-screen.tsx:314-371` |
+| SCR-CHM-01-C03 | Ordered list "Chapter list": row with "Chapter n", title / "(untitled)", status badge, "Deleted" badge, `/slug` | `chapter-manager-screen.tsx:242-261`, `components/chapter-row.tsx:131-142` |
+| SCR-CHM-01-C04 | Live-row actions: Move up / Move down (icon buttons, aria-label "Move up: <title>"), "Write", "Change URL slug", [owner/co-author] "Archive" or "Unarchive", "Delete" | `components/chapter-row.tsx:159-209` |
+| SCR-CHM-01-C05 | Deleted-row action: [owner/co-author] "Restore" | `components/chapter-row.tsx:146-157` |
+| SCR-CHM-01-C06 | Numbering note | `chapter-manager-screen.tsx:263` |
+| SCR-CHM-01-C07 | Empty state "This story has no chapters yet" / "Add the first chapter below." | `chapter-manager-screen.tsx:238-239` |
+| SCR-CHM-01-C08 | Add form "Add chapter": "Chapter title", "URL slug", submit ("Adding…") | `chapter-manager-screen.tsx:386-443` |
 | SCR-CHM-01-C09 | Rename dialog "Change chapter URL slug" | `components/rename-slug-dialog.tsx:66-100` |
-| SCR-CHM-01-C10 | Confirm dialog (archive or delete; delete is destructive) | `chapter-manager-screen.tsx:267-283` |
-| SCR-CHM-01-C11 | Skeleton; error state (retry both queries); "Story not found" empty state | `chapter-manager-screen.tsx:50-72` |
+| SCR-CHM-01-C10 | Confirm dialog (archive or delete; delete is destructive) | `chapter-manager-screen.tsx:322-347` |
+| SCR-CHM-01-C11 | Skeleton; error state (retry both queries); "Story not found" empty state | `chapter-manager-screen.tsx:69-91` |
 | SCR-CHM-01-C13 | Row context menu (Lucian #038): right-click, long press (touch) or Shift+F10 / menu key on any control of a row opens a menu with the row's own actions (Write, Move up/down, Change URL slug, [owner/co-author] Archive/Unarchive, Delete; Restore on a deleted row), same enabled/disabled rules as the buttons. On phones (below `sm`) Change URL slug / Archive / Delete fold into a "..." button ("More actions: <title>"); Write and the arrows stay visible. No action was removed | `components/chapter-row.tsx`, `packages/ui/src/widgets/row-actions-menu.tsx` |
 | SCR-CHM-01-C14 | Drag to reorder (Lucian #255 / #317): a grip at the start of each live row (pointer and touch; hidden from assistive tech, the arrows stay the keyboard route); the row lifts, the others open a gap, the drop is sent through the same `reorder_chapters` call (optimistic, rolled back on refusal). Any order change (arrows, drop, reload) flies the rows to their new places; nothing animates on load | `packages/ui/src/widgets/sortable-list.tsx` |
 | SCR-CHM-01-C15 | [owner/co-author] Bulk selection (Lucian #178): checkbox per row ("Select <title>", Shift-click selects a range); dock "N chapters selected" with "Select all", Archive (n) / Unarchive (n) / Delete (n) / Restore (n) — each counting only the selected chapters the row rule (`chapterStateActions`) allows — and clear (also Escape) | `chapter-manager-screen.tsx`, `packages/ui/src/widgets/bulk-action-dock.tsx` |
@@ -45,7 +45,7 @@
 | Validation | Title required ≤ 200; slug required ≤ 120, lowercase/digits/hyphens |
 | Error behavior | Slug taken → field; other → toast (BR-CHM-014) |
 | Navigation | Stays |
-| Evidence | `chapter-manager-screen.tsx:299-312`; `chapter-management.test.tsx:381,399,414` |
+| Evidence | `chapter-manager-screen.tsx:371-384`; `chapter-management.test.tsx:429,447,462` |
 
 | Field | SCR-CHM-01-A02 Move up / down |
 | --- | --- |
@@ -56,13 +56,13 @@
 | Validation | Server: full live set exactly once |
 | Error behavior | Rollback + toast "The chapter list was changed elsewhere…" (22023) or other kind |
 | Navigation | — |
-| Evidence | `chapter-manager-screen.tsx:105-109,177-196`; `chapter-management.test.tsx:301-368` |
+| Evidence | `chapter-manager-screen.tsx:106-110,178-197`; `chapter-management.test.tsx:349-416` |
 
 | Field | SCR-CHM-01-A03 Write |
 | --- | --- |
 | Trigger | "Write" |
 | Expected behavior | Navigate to SCR-EDT-01 `/studio/story/{id}/chapter/{chapterId}` |
-| Evidence | `chapter-manager-screen.tsx:197-199` |
+| Evidence | `components/chapter-row.tsx:180-182` |
 
 | Field | SCR-CHM-01-A04 Change URL slug |
 | --- | --- |
@@ -73,7 +73,7 @@
 | Validation | `chapterSlugFormSchema`; unchanged → close without request |
 | Error behavior | Taken → field; other → toast; dialog stays open |
 | Navigation | — |
-| Evidence | `components/rename-slug-dialog.tsx:44-64`; `chapter-management.test.tsx:428` |
+| Evidence | `components/rename-slug-dialog.tsx:44-64`; `chapter-management.test.tsx:476` |
 
 | Field | SCR-CHM-01-A05 Archive |
 | --- | --- |
@@ -81,13 +81,13 @@
 | Preconditions | Owner/co-author; not archived |
 | Expected behavior | `archive_chapter`; toast "Chapter archived."; badge "Archived"; button becomes "Unarchive" |
 | Error behavior | Toast; dialog stays open |
-| Evidence | `chapter-manager-screen.tsx:220-229,277-282`; `chapter-management.test.tsx:443` |
+| Evidence | `chapter-manager-screen.tsx:226-227,322-345` (shared confirm dialog, PR #60); `chapter-management.test.tsx:491` |
 
 | Field | SCR-CHM-01-A06 Unarchive |
 | --- | --- |
 | Trigger | "Unarchive" (no confirm; disabled while running) |
 | Expected behavior | `unarchive_chapter`; toast "Unarchived. The chapter is back to draft." |
-| Evidence | `chapter-manager-screen.tsx:205-219` |
+| Evidence | `components/chapter-row.tsx:186-202`, `chapter-manager-screen.tsx:195-201` |
 
 | Field | SCR-CHM-01-A07 Delete |
 | --- | --- |
@@ -95,14 +95,14 @@
 | Preconditions | Owner/co-author |
 | Expected behavior | `deleted_at` set; toast "Chapter deleted."; row moves last, struck through |
 | Error behavior | Toast; dialog stays open |
-| Evidence | `chapter-manager-screen.tsx:230-238,277-281`; `chapter-management.test.tsx:457` |
+| Evidence | `chapter-manager-screen.tsx:226-227,322-345` (shared confirm dialog, PR #60); `chapter-management.test.tsx:505` |
 
 | Field | SCR-CHM-01-A08 Restore |
 | --- | --- |
 | Trigger | "Restore" on a deleted row (no confirm) |
 | Preconditions | Owner/co-author |
 | Expected behavior | `deleted_at` cleared; toast "Chapter restored." |
-| Evidence | `chapter-manager-screen.tsx:158-174` |
+| Evidence | `components/chapter-row.tsx:146-157` |
 
 | Field | SCR-CHM-01-A10 Reschedule / Publish now / Cancel schedule (outbox) |
 | --- | --- |
@@ -119,7 +119,7 @@
 | --- | --- |
 | Trigger | Link; "Try again" in error state |
 | Expected behavior | Navigate to SCR-STM-03 (editor sees read-only notice there); refetch story and chapters |
-| Evidence | `chapter-manager-screen.tsx:51-62,123-128` |
+| Evidence | `chapter-manager-screen.tsx:69-80,231-236` |
 
 ## D. UI states
 | State | Status | Evidence / note |

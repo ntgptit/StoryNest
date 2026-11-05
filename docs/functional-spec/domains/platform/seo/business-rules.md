@@ -39,7 +39,7 @@ No screen.
 | Expected behavior | 18+ exclusion is a policy choice recorded in WBS 6.6 |
 | Exceptions | Owner account status is not considered (F-SEO-01) |
 | Related screens | Story page, reader (D-READING) |
-| Evidence | `packages/features/src/story/model/story-detail.ts:20-26`, `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:30,55`, `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx:29,52`, `docs/WBS.md:224` |
+| Evidence | `packages/features/src/story/model/story-detail.ts:34-40`, `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:29,54`, `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx:29,52`, `docs/WBS.md:224` |
 | Status | Verified |
 
 ### BR-SEO-003 — Canonical URLs
@@ -51,7 +51,7 @@ No screen.
 | Expected behavior | `alternates.canonical` relative, made absolute by `metadataBase` |
 | Exceptions | Missing/hidden story or chapter → real 404 (`notFound()`) and fallback title "Truyện"/"Chương" with `index: false` |
 | Related screens | Story page, reader |
-| Evidence | `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:18-28,45-50`, `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx:18-28,42-47`, `docs/WBS.md:282` |
+| Evidence | `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:17-27,44-49`, `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx:18-28,42-47`, `docs/WBS.md:282` |
 | Status | Verified |
 
 ### BR-SEO-004 — Page metadata content
@@ -63,7 +63,7 @@ No screen.
 | Expected behavior | Always Vietnamese (BR-I18N-007) |
 | Exceptions | Author page: static title "Tác giả", no description/canonical (F-SEO-02); ranking: title only |
 | Related screens | — |
-| Evidence | `apps/web/src/app/layout.tsx:13-18`, `apps/web/src/lib/strings.ts:5-38`, `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:18-39`, `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx:18-36`, `apps/web/src/app/(main)/author/[username]/page.tsx:8` |
+| Evidence | `apps/web/src/app/layout.tsx:13-18`, `apps/web/src/lib/strings.ts:5-38`, `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx:17-38`, `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx:18-36`, `apps/web/src/app/(main)/author/[username]/page.tsx:8` |
 | Status | Verified |
 
 ### BR-SEO-005 — Structured data

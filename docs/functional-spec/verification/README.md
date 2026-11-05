@@ -111,14 +111,85 @@ repeated.
 | --- | --- |
 | 01–02 | VER-AUT-01…05 |
 | 03–04 | VER-TEAM-01…08, VER-AUT-15 |
-| 05–07 | VER-RDR-01…08 |
+| 05–07 (incl. `06a`) | VER-RDR-01…08 |
 | 08 | VER-AUT-06, VER-AUT-08, VER-AUT-14 |
 | 09–10 | VER-AUT-07, 09…13 |
 | 11 | VER-RDR-09…11, VER-X-01…06 |
 | 12–13 | VER-MOD-01…09 |
+
+## Full re-run after PR #60
+
+2026-11-05, `main` at `e17014b`, `storynest-dev`, the same six QA accounts, a new QA story (`[QA] Câu chuyện kiểm thử A`,
+slug suffix from `QA_SLUG_SUFFIX`). Earlier QA stories were renamed "(lượt chạy N)" so scripts find the new one. Nothing
+was deleted from the shared project (see Cleanup below).
+
+**Result: all scripts ran to the end; 49 cases recorded.**
+
+| Result | Count |
+| --- | --- |
+| PASS | 30 |
+| CONFIRMED (known finding reproduced) | 14 |
+| CHECK (read the note) | 2 (VER-RDR-03, VER-RDR-06) |
+| NEW DEFECT (F-STM-09 again) | 1 (VER-AUT-15) |
+| INFO | 2 |
+
+The run needed these run-book fixes (all committed): `lib.mjs` exported a `URL` that hid the global `URL`, so no script
+started; the story form now has a link ("Đường dẫn") that must be unique per author, so `01` fills it from
+`QA_SLUG_SUFFIX`; visibility is a radio-card group (`01`, `02`); `02` no longer fails when `01` already published
+chapter 1; "Hẹn giờ…" is an option of the publish split button ("Cách đăng khác", helper `openSchedule` in `pw.mjs`);
+comment edit is in the options menu (`05`); `pw.mjs` marks the editor tour as seen; and `06a-stage4.mjs` (add, write and
+publish chapter 2, follower notification) was missing from the run-book although `07` and `09` need chapter 2.
+
+Two steps are outside the scripts: after `04-stage2b.mjs` the owner cannot restore the deleted story (F-STM-09), so the
+QA story is restored with an admin `update public.stories set deleted_at = null where id = '<QA story>'` (QA-owned row
+only) before `05`. Run order: `01`–`04`, that restore, then `05`, `06`, `06a`, `07`…`13` (env: `QA_SLUG_SUFFIX` new for
+each run).
+
+Not re-run after the last edit: the lookup in `06a-stage4.mjs` (RDR-08 part) is now limited to this story's chapter
+(it failed on the shared comment text with several QA stories present); `07` records VER-RDR-07/08 anyway and passed.
+
+## After PR #62 and #63 (batch 3 UI, batch 4 backend)
+
+Merged into this branch before PR #61 was merged. Their screen-table rows (written for the new code) were kept; the
+Lucian trial stays **DEC-025**. 811 citations that only moved were re-pointed with `check-citations.mjs`. **239
+citations point at code that #62/#63 edited and were not re-read.** The new migrations (24) and features
+(announcements, edit locks, notification preferences, story role rights, …) are covered by those PRs' own spec rows,
+not by the Phase 1–9 audits, and no runtime re-run was done on them. To list the open citations:
+
+```text
+node docs/functional-spec/verification/check-citations.mjs --base e17014b --head origin/main \
+  --written-with-head "e17014b..origin/main,8ab3b3d"
+```
 
 ## Cleanup
 
 Kept for repeatable runs until the Product Owner asks for removal. [cleanup.sql](cleanup.sql) removes only rows tied
 to the six QA account ids (reports, comments, QA stories with their cascades, then the accounts). It never touches
 non-QA rows; moderation audit rows are kept as history by default.
+
+**Known limit (2026-11-05):** deleting a QA story fails on `deny_published_version_mutation` (published chapter versions are immutable, also through cascade), so the script cannot remove a story that has a published chapter. Use new story names (`QA_SLUG_SUFFIX`) for repeat runs; deleting would need that trigger disabled on dev, which was not done.
+
+## Regression after PR #60
+
+2026-11-05, `main` at `e17014b` (Lucian UX/UI trial), same QA accounts. Scripts were run ad hoc (not added to the
+run-book yet). Results:
+
+| Check | Result |
+| --- | --- |
+| REG-READ-390 / 1280 reader toolbar after scroll | **Fixed** |
+| REG-NAV-768 / 1280 primary navigation | **Fixed** (second header row; phone has "Mở menu") |
+| REG-EDT-01 Schedule on a published chapter | **Fixed** |
+| REG-EDT-02 leaving the editor via an in-app link | **Still open** (3 warm runs) |
+| REG-STM-09 owner restores a deleted story | **Still open** (42501) |
+| REG-TEAM-05 / 06 editor deletes chapter / co-author deletes story | **Still open** |
+| REG-404 missing story status | Still open (HTTP 200) |
+| REG-MAT-01 18+ title in HTML | Still open |
+| REG-SHELL-04 header sign-in without `next` | Still open |
+| REG-LIB, REG-SET, REG-MOD, REG-X-02 | Pass |
+
+**Run-book change needed:** the chapter editor shows a first-run tour per device (`SpotlightTour`) whose overlay
+intercepts clicks. Scripts that open the editor must click "Bỏ qua" first (or set the tour-seen flag). The 13 scripts
+were not re-run end to end.
+
+The QA story was soft-deleted by REG-TEAM-06 (as VER-TEAM-06 does) and restored through the admin channel because of
+F-STM-09; one more QA row repair, no other data touched.

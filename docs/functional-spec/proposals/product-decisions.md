@@ -27,6 +27,10 @@ Until step 1 happens for an item, agents must treat it as **Proposed** and must 
 > **Note (2026-11-05):** the development tasks are now planned in `docs/WBS.md` Phase 9. WPs that depend on a PD below are
 > marked ⚠️ there and start only after the PD is approved here. Planning them did not approve any PD.
 
+> **Note (PR #60):** Q-SHELL-01 (desktop/tablet navigation) was effectively answered by the shipped design (DEC-026) and
+> FP-036's open question Q-SET-01 by the device-only theme. Neither was approved here; the Product Owner merged the code.
+> PD-01 (shell-less reader) is **not** answered: the reader still lives in the main shell.
+
 ## 1. Previously approved decisions (WBS §4, 2026-11-03)
 
 | ID | Decision | Status | Consequence for Phase 2 |
