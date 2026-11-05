@@ -5,6 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-NOTI-01` |
+| Business domain | [D-COMMUNITY Community & Engagement](../../overview.md) |
+| Business object | [OBJ-NOTI](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Notifications (page) + header notification bell (component C01) |
 | Route | `/notifications` |
 | Route files | `apps/web/src/app/(main)/notifications/page.tsx` (server: `requireUser("/notifications")`, metadata title "Thông báo", `robots: noindex`), `apps/web/src/app/(main)/notifications/notifications-view.tsx` |

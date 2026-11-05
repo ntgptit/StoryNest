@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-CHM-01` |
+| Business domain | [D-STUDIO Authoring (Studio)](../../overview.md) |
+| Business object | [OBJ-CHM](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Chapter manager ("Manage chapters") |
 | Route | `/studio/story/[id]/chapters` |
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/chapters/page.tsx` (view `chapter-manager-view.tsx`) |

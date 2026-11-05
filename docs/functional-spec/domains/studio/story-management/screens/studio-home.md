@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-STM-01` |
+| Business domain | [D-STUDIO Authoring (Studio)](../../overview.md) |
+| Business object | [OBJ-STM](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Studio home ("Studio") |
 | Route | `/studio` |
 | Route file | `apps/web/src/app/(main)/studio/page.tsx` (view `apps/web/src/app/(main)/studio/studio-view.tsx`) |
@@ -131,7 +133,7 @@
 - SCR-STM-01-AC11 Given the invitations request fails, Then a retryable error is shown in the inbox area `[Proposed]` (U-STM-04).
 
 ## F. Findings referenced
-F-STM-02, U-STM-04, U-STM-05 (findings draft `findings-studio-manage.md`).
+F-STM-02, U-STM-04, U-STM-05 (details: [functional gap analysis](../../../../audits/functional-gap-analysis.md) / [UX gap analysis](../../../../audits/ux-ui-gap-analysis.md); F-STM-02 is an alias of F-MOD-02).
 
 ## G. Open questions
 Q-STM-02 (pagination threshold).

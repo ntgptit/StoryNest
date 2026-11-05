@@ -84,8 +84,8 @@ that disappeared between the two requests (`discovery/model/order-by-ids.ts:1-8`
 - Q-HOME-01 — Should stories of suspended/deactivated authors also disappear from the home feed (as in every other list), or is the current behaviour intended? See [findings](#findings-index).
 - Q-TAX-01 — How are categories provisioned in production (no migration inserts them)?
 - Q-RANK-01 — Should "Today" follow the reader's time zone instead of UTC?
-- Q-TAX-02, Q-SRCH-01, Q-REC-01, Q-AUTHOR-01 — object-level questions, listed in the screen/rule files and the findings draft.
+- Q-TAX-02, Q-SRCH-01, Q-REC-01, Q-AUTHOR-01 — object-level questions, listed in the screen/rule files and the [decision register](../../proposals/decision-register.md).
 
 ## Findings index
-Detailed finding blocks were handed to the orchestrator for the `audits/` folder: F-HOME-01, F-HOME-02, U-HOME-01, U-HOME-02, F-TAX-01, F-TAX-02, U-TAX-01, F-SRCH-01, U-SRCH-01,
+Full finding details are in the [functional gap analysis](../../audits/functional-gap-analysis.md) / [UX gap analysis](../../audits/ux-ui-gap-analysis.md): F-HOME-01, F-HOME-02, U-HOME-01, U-HOME-02, F-TAX-01, F-TAX-02, U-TAX-01, F-SRCH-01, U-SRCH-01,
 U-SRCH-02, U-RANK-01, U-RANK-02, F-REC-01, F-AUTHOR-01, F-AUTHOR-02, U-AUTHOR-01, U-AUTHOR-02.

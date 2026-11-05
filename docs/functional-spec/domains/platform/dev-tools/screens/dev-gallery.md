@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-DEV-01` |
+| Business domain | [D-PLATFORM Platform](../../overview.md) |
+| Business object | [OBJ-DEV](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | `/dev/gallery` (development only; 404 in production) |
 | Route file | `apps/web/src/app/dev/gallery/page.tsx` |
 | Screen component | `apps/web/src/app/dev/gallery/gallery.tsx` (`Gallery`) |

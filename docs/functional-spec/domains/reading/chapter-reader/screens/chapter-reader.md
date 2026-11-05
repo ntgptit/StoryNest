@@ -5,6 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-READ-01` |
+| Business domain | [D-READING Reading](../../overview.md) |
+| Business object | [OBJ-READ](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Chapter reader |
 | Route | `/story/[id]/[slug]/[chapterSlug]` (public) |
 | Route file | `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx` (server: metadata, 404/308, JSON-LD, hydrate); `.../[chapterSlug]/reader-view.tsx` (client wrapper, image URL resolver); `.../[chapterSlug]/opengraph-image.tsx` |

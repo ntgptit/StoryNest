@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-AUTH-03` |
+| Business domain | [D-ACCOUNT Account & Identity](../../overview.md) |
+| Business object | [OBJ-AUTH](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | `/forgot-password` |
 | Route file | `apps/web/src/app/(auth)/forgot-password/page.tsx` (+ `apps/web/src/app/(auth)/auth-pages.tsx:46-48`) |
 | Screen component | `packages/features/src/auth/screens/forgot-password-screen.tsx` (`ForgotPasswordScreen`) |

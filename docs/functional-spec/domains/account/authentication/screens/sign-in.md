@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-AUTH-01` |
+| Business domain | [D-ACCOUNT Account & Identity](../../overview.md) |
+| Business object | [OBJ-AUTH](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | `/login[?next=<path>][&error=callback]` |
 | Route file | `apps/web/src/app/(auth)/login/page.tsx` (+ wrapper `apps/web/src/app/(auth)/auth-pages.tsx:18-30`, layout `apps/web/src/app/(auth)/layout.tsx`) |
 | Screen component | `packages/features/src/auth/screens/sign-in-screen.tsx` (`SignInScreen`) |

@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-AUTH-04` |
+| Business domain | [D-ACCOUNT Account & Identity](../../overview.md) |
+| Business object | [OBJ-AUTH](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | `/reset-password` |
 | Route file | `apps/web/src/app/(auth)/reset-password/page.tsx` (+ `apps/web/src/app/(auth)/auth-pages.tsx:50-59`) |
 | Screen component | `packages/features/src/auth/screens/reset-password-screen.tsx` (`ResetPasswordScreen`) |

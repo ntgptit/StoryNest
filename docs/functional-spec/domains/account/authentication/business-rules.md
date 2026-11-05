@@ -16,7 +16,7 @@
 
 Screens: [SCR-AUTH-01 Sign in](screens/sign-in.md) · [SCR-AUTH-02 Sign up](screens/sign-up.md) ·
 [SCR-AUTH-03 Forgot password](screens/forgot-password.md) · [SCR-AUTH-04 Reset password](screens/reset-password.md).
-Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-02--open-an-email-link-auth-callback).
+Endpoint `GET /auth/callback` is documented in [workflows](workflows.md#wf-auth-02--open-an-email-link-authcallback).
 
 ## 2. Rules
 

@@ -1,7 +1,7 @@
 # OBJ-EDT — Chapter editor, autosave & publishing: business rules
 
 Domain: `D-STUDIO` · Folder: `domains/studio/chapter-editor` · Screen: [SCR-EDT-01 Chapter editor](screens/chapter-editor.md)
-· Workflows: [workflows.md](workflows.md) · Findings: `F-EDT-*` / `U-EDT-*` (findings draft, to be moved to `audits/`).
+· Workflows: [workflows.md](workflows.md) · Findings: `F-EDT-*` / `U-EDT-*` (details: [functional gap analysis](../../../audits/functional-gap-analysis.md) / [UX gap analysis](../../../audits/ux-ui-gap-analysis.md)).
 
 ## 1. Overview
 

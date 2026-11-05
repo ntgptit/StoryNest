@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-STM-03` |
+| Business domain | [D-STUDIO Authoring (Studio)](../../overview.md) |
+| Business object | [OBJ-STM](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Edit story ("Edit story") |
 | Route | `/studio/story/[id]` |
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/page.tsx` (view `apps/web/src/app/(main)/studio/story-form-view.tsx`) |

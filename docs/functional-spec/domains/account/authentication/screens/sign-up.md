@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-AUTH-02` |
+| Business domain | [D-ACCOUNT Account & Identity](../../overview.md) |
+| Business object | [OBJ-AUTH](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | `/register[?next=<path>]` |
 | Route file | `apps/web/src/app/(auth)/register/page.tsx` (+ `apps/web/src/app/(auth)/auth-pages.tsx:32-44`) |
 | Screen component | `packages/features/src/auth/screens/sign-up-screen.tsx` (`SignUpScreen`) |

@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-STM-02` |
+| Business domain | [D-STUDIO Authoring (Studio)](../../overview.md) |
+| Business object | [OBJ-STM](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Create story ("New story") |
 | Route | `/studio/new` |
 | Route file | `apps/web/src/app/(main)/studio/new/page.tsx` (view `apps/web/src/app/(main)/studio/story-form-view.tsx`) |

@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | SCR-SRCH-01 |
+| Business domain | [D-DISCOVERY Discovery](../../overview.md) |
+| Business object | [OBJ-SRCH](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Search results; the header SearchBox (rendered by the shell on every page) is component C01 |
 | Route | `/search?q=<term>&tab=<stories|authors|tags>` |
 | Route file | `apps/web/src/app/(main)/search/page.tsx` (+ `search-view.tsx`) |

@@ -5,6 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-LIB-01` |
+| Business domain | [D-LIBRARY Library](../../overview.md) |
+| Business object | [OBJ-LIB](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Library (Reading / Saved / Following / Lists) |
 | Route | `/library` |
 | Route files | `apps/web/src/app/(main)/library/page.tsx` (`requireUser("/library")`, title "Thư viện", `noindex`), `apps/web/src/app/(main)/library/library-view.tsx` (passes `coverUrlFor`) |

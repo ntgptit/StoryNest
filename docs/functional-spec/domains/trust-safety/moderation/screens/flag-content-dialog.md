@@ -8,6 +8,8 @@ containing "report"); the screen is the "Report" button and "Report content" dia
 | Field | Value |
 | --- | --- |
 | Screen ID | SCR-MOD-02 |
+| Business domain | [D-TRUST Trust & Safety](../../overview.md) |
+| Business object | [OBJ-MOD](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Report button + "Report content" dialog |
 | Route | None (embedded component) |
 | Route file | — (hosted by the routes below) |

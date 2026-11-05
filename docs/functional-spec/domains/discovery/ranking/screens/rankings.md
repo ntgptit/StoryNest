@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | SCR-RANK-01 |
+| Business domain | [D-DISCOVERY Discovery](../../overview.md) |
+| Business object | [OBJ-RANK](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Rankings ("Ranking") |
 | Route | `/ranking?period=<day|week|month|all>` (default week) |
 | Route file | `apps/web/src/app/(main)/ranking/page.tsx` (+ `ranking-view.tsx`) |

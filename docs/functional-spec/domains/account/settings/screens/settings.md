@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-SET-01` |
+| Business domain | [D-ACCOUNT Account & Identity](../../overview.md) |
+| Business object | [OBJ-SET](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | `/settings` (protected) |
 | Route file | `apps/web/src/app/(main)/settings/page.tsx` (+ `settings-view.tsx`) |
 | Screen component | `packages/features/src/settings/screens/settings-screen.tsx` (`SettingsScreen`) |

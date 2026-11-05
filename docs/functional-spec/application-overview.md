@@ -76,7 +76,7 @@ Full map with dependencies: [domain-map.md](domain-map.md).
 
 Documentation drift: WBS §0 "Hiện trạng" table and root `README.md` "Việc còn lại" still describe the pre-Phase-1
 state (e.g. "mới 1 component", "chưa có route nghiệp vụ nào", "Auth UI" as remaining work). See
-[coverage report](audits/coverage-report.md#documentation-drift).
+[coverage report](audits/coverage-report.md#5-documentation-drift).
 
 ## 6. Verification performed for this spec
 

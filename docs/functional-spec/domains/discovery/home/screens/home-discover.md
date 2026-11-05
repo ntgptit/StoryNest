@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | SCR-HOME-01 |
+| Business domain | [D-DISCOVERY Discovery](../../overview.md) |
+| Business object | [OBJ-HOME](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Home / Discover ("Recently updated") |
 | Route | `/` with optional `?category=<slug>` and `?tag=<slug>` (no `language` param — BR-HOME-005; pagination cursor is client state, not in the URL) |
 | Route file | `apps/web/src/app/(main)/page.tsx` (+ `discover-home.tsx`, `home-hero.tsx`, shared `loading.tsx`) |

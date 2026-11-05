@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-TEAM-01` |
+| Business domain | [D-STUDIO Authoring (Studio)](../../overview.md) |
+| Business object | [OBJ-TEAM](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Team ("Collaborators") |
 | Route | `/studio/story/[id]/team` |
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/team/page.tsx` (view `team-view.tsx`) |

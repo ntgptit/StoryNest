@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-PRF-02` |
+| Business domain | [D-ACCOUNT Account & Identity](../../overview.md) |
+| Business object | [OBJ-PRF](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | `/me/edit` (protected) |
 | Route file | `apps/web/src/app/(main)/me/edit/page.tsx` (+ `edit-profile-page.tsx`: after save → `/me` + refresh) |
 | Screen component | `packages/features/src/profile/screens/edit-profile-screen.tsx` (`EditProfileScreen`), `packages/features/src/profile/components/avatar-editor.tsx` (`AvatarEditor`) |

@@ -5,6 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | SCR-MOD-01 |
+| Business domain | [D-TRUST Trust & Safety](../../overview.md) |
+| Business object | [OBJ-MOD](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Moderation console (report queue) |
 | Route | `/moderation` (protected prefix; `noindex`; disallowed in robots.txt) |
 | Route file | `apps/web/src/app/(main)/moderation/page.tsx` (server guard), `apps/web/src/app/(main)/moderation/moderation-view.tsx` |

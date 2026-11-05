@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-SHELL-01` |
+| Business domain | [D-PLATFORM Platform](../../overview.md) |
+| Business object | [OBJ-SHELL](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | Frame of every route in `app/(main)/**` (`/`, `/story/**`, `/author/**`, `/search`, `/ranking`, `/following`, `/library`, `/lists/**`, `/notifications`, `/settings`, `/me/**`, `/studio/**`, `/moderation`) |
 | Route file | `apps/web/src/app/(main)/layout.tsx`, `apps/web/src/app/(main)/loading.tsx`, root `apps/web/src/app/layout.tsx` + `providers.tsx` |
 | Screen component | `packages/features/src/shell/components/main-shell.tsx` (`MainShell`) with `site-header.tsx`, `user-menu.tsx`, `language-switcher.tsx`, `route-loading.tsx`; widgets `packages/ui/src/widgets/{app-shell,bottom-nav,page-skeleton}.tsx` |

@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | SCR-AUTHOR-02 |
+| Business domain | [D-DISCOVERY Discovery](../../overview.md) |
+| Business object | [OBJ-AUTHOR](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | "From authors you follow" |
 | Route | `/following` |
 | Route file | `apps/web/src/app/(main)/following/page.tsx` (+ `following-view.tsx`) |

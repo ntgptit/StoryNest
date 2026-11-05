@@ -5,6 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-CMT-01` |
+| Business domain | [D-COMMUNITY Community & Engagement](../../overview.md) |
+| Business object | [OBJ-CMT](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Comment thread (`CommentThread` widget) |
 | Type | Embedded panel — no own route |
 | Mounted in | (1) Chapter reader SCR-READ-01 (OBJ-READ) route `/story/[id]/[slug]/[chapterSlug]` (`apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx`), as `<section id="comments">` after the vote and report buttons: `packages/features/src/reader/screens/reader-screen.tsx:117-124` (chapter scope, newest first). (2) Same reader, bottom `Sheet` opened from the trailing button of each paragraph/heading: `packages/features/src/reader/components/reader-blocks.tsx:64-76` (paragraph scope, oldest first). |

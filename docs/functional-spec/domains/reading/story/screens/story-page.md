@@ -5,6 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-STORY-01` |
+| Business domain | [D-READING Reading](../../overview.md) |
+| Business object | [OBJ-STORY](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Story page (public story detail) |
 | Route | `/story/[id]/[slug]` (public; not guarded) |
 | Route file | `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx` (server: metadata, 404/308, JSON-LD, hydrate); `apps/web/src/app/(main)/story/[id]/[slug]/story-view.tsx` (client wrapper); `apps/web/src/app/(main)/story/[id]/[slug]/opengraph-image.tsx` |

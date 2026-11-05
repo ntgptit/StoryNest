@@ -5,6 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | SCR-MAT-01 |
+| Business domain | [D-TRUST Trust & Safety](../../overview.md) |
+| Business object | [OBJ-MAT](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Adult content gate; component of the app header: "Mature content (18+)" toggle + dialog |
 | Route | Embedded on `/story/[id]/[slug]` and `/story/[id]/[slug]/[chapterSlug]` (gate); header on every `(main)` page (toggle) |
 | Route file | `apps/web/src/app/(main)/story/[id]/[slug]/page.tsx`, `apps/web/src/app/(main)/story/[id]/[slug]/[chapterSlug]/page.tsx` (hosts) |

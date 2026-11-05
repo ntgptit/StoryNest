@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-PRF-01` |
+| Business domain | [D-ACCOUNT Account & Identity](../../overview.md) |
+| Business object | [OBJ-PRF](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Route | `/me` (protected) |
 | Route file | `apps/web/src/app/(main)/me/page.tsx` (Server Component: `requireUser`, reads profile) |
 | Screen component | `apps/web/src/app/(main)/me/me-view.tsx` (`MeView`, web-only client view; texts in `packages/features/src/shell/strings*.ts` under `me.*`) |

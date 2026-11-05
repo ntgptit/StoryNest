@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | SCR-AUTHOR-01 |
+| Business domain | [D-DISCOVERY Discovery](../../overview.md) |
+| Business object | [OBJ-AUTHOR](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Author page |
 | Route | `/author/[username]` (URL-decoded; `authorHref` encodes) |
 | Route file | `apps/web/src/app/(main)/author/[username]/page.tsx` (+ `author-view.tsx`) |

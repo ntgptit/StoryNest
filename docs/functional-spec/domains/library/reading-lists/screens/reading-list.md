@@ -5,6 +5,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-LIST-01` |
+| Business domain | [D-LIBRARY Library](../../overview.md) |
+| Business object | [OBJ-LIST](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Reading list page (+ list form dialog, add-to-list sheet and My lists as components) |
 | Route | `/lists/[id]` |
 | Route files | `apps/web/src/app/(main)/lists/[id]/page.tsx` (no auth guard; title "Danh sách đọc"; `robots: noindex`), `apps/web/src/app/(main)/lists/[id]/list-view.tsx` |

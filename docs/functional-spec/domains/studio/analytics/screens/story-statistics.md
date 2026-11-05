@@ -4,6 +4,8 @@
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-STAT-01` |
+| Business domain | [D-STUDIO Authoring (Studio)](../../overview.md) |
+| Business object | [OBJ-STAT](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Story statistics ("Story statistics") |
 | Route | `/studio/story/[id]/stats` |
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/stats/page.tsx` (view `stats-view.tsx`) |

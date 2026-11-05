@@ -87,5 +87,5 @@ invalidates the story/discovery caches (`packages/features/src/studio/hooks/use-
 | Q-STM-01 | What may a suspended account still do to its own stories (edit, delete, rename chapter slugs)? Direct-table writes do not check account status; RPCs do. | Moderation effectiveness |
 | Q-STM-02 | When does the Studio list need pagination (WBS 3.1 defers it)? | Long-tail authors |
 
-Findings for this domain are in the analysis findings draft (IDs `F-STM-*`, `U-STM-*`, `F-CHM-*`, `U-CHM-*`,
+Findings for this domain are in the [functional gap analysis](../../audits/functional-gap-analysis.md) / [UX gap analysis](../../audits/ux-ui-gap-analysis.md) (IDs `F-STM-*`, `U-STM-*`, `F-CHM-*`, `U-CHM-*`,
 `F-TEAM-*`, `U-TEAM-*`, `U-STAT-*`); each screen spec lists the ones that concern it in section F.

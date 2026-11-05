@@ -7,6 +7,8 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-HIST-01` |
+| Business domain | [D-STUDIO Authoring (Studio)](../../overview.md) |
+| Business object | [OBJ-HIST](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Version history (browser title `appText.pageTitle.history` "Lịch sử phiên bản", always Vietnamese — `OBJ-I18N`) |
 | Route | `/studio/story/{id}/chapter/{chapterId}/history` (protected, `robots: noindex`) |
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/history/page.tsx` → `history-view.tsx` (passes `getImageUrlResolver()`) |
@@ -123,7 +125,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 
 ## F. Findings referenced
 
-F-HIST-01, F-HIST-02, U-HIST-01, F-EDT-02 (findings draft).
+F-HIST-01, F-HIST-02, U-HIST-01, F-EDT-02 (details: [functional gap analysis](../../../../audits/functional-gap-analysis.md) / [UX gap analysis](../../../../audits/ux-ui-gap-analysis.md)).
 
 ## G. Open questions
 

@@ -7,6 +7,8 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | Field | Value |
 | --- | --- |
 | Screen ID | `SCR-EDT-01` |
+| Business domain | [D-STUDIO Authoring (Studio)](../../overview.md) |
+| Business object | [OBJ-EDT](../business-rules.md) · workflows: [workflows.md](../workflows.md) |
 | Name | Chapter editor (vi `editorText.title` "Soạn chương"; browser title `appText.pageTitle.editChapter` "Soạn chương · StoryNest", always Vietnamese — owned by `OBJ-I18N`) |
 | Route | `/studio/story/{id}/chapter/{chapterId}` (protected prefix `/studio`, `robots: noindex`) |
 | Route file | `apps/web/src/app/(main)/studio/story/[id]/chapter/[chapterId]/page.tsx` → `chapter-editor-view.tsx` |
@@ -216,7 +218,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 ## F. Findings referenced
 
 F-EDT-01, F-EDT-02, F-EDT-03, F-EDT-04, F-EDT-05, F-EDT-06, F-EDT-07, F-EDT-08, F-EDT-09, F-EDT-10, U-EDT-01, U-EDT-02,
-U-EDT-03, U-EDT-04, U-EDT-05 (findings draft; to be consolidated in `audits/`).
+U-EDT-03, U-EDT-04, U-EDT-05 (details: [functional gap analysis](../../../../audits/functional-gap-analysis.md) / [UX gap analysis](../../../../audits/ux-ui-gap-analysis.md)).
 
 ## G. Open questions
 
