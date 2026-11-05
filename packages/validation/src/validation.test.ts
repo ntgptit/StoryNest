@@ -62,6 +62,13 @@ import {
   signInSchema,
   signUpSchema,
   profileFormSchema,
+  ANNOUNCEMENT_ERROR,
+  ANNOUNCEMENT_KIND,
+  ANNOUNCEMENT_KINDS,
+  NOTIFICATION_PREFERENCE_TYPES,
+  announcementFormSchema,
+  isAllowedAnnouncementLink,
+  toAnnouncementPayload,
 } from "./index.ts";
 
 type Contract = { enums: Record<string, string[]>; maxLengths: Record<string, number> };
@@ -86,6 +93,9 @@ describe("enums match the CHECK constraints of the real schema", () => {
     ["moderation_actions.target_kind", MODERATION_TARGET_KINDS],
     ["content_reports.status", REPORT_STATUSES],
     ["user_achievements.code", ACHIEVEMENT_CODES],
+    ["announcements.kind", ANNOUNCEMENT_KINDS],
+    ["announcements.locale", STORY_LANGUAGES],
+    ["notification_preferences.event_type", NOTIFICATION_PREFERENCE_TYPES],
   ];
   it.each(cases)("%s", (column, values) => {
     expect(contract.enums[column], `${column} missing from contract`).toBeDefined();
@@ -107,6 +117,7 @@ describe("named enum constants", () => {
     ["MODERATION_ACTION", MODERATION_ACTION, MODERATION_ACTIONS],
     ["MODERATION_TARGET_KIND", MODERATION_TARGET_KIND, MODERATION_TARGET_KINDS],
     ["ACHIEVEMENT_CODE", ACHIEVEMENT_CODE, ACHIEVEMENT_CODES],
+    ["ANNOUNCEMENT_KIND", ANNOUNCEMENT_KIND, ANNOUNCEMENT_KINDS],
   ] as const)("%s has exactly one constant per enum value", (_name, constants, values) => {
     expect(sorted(Object.values(constants))).toEqual(sorted(values));
   });
@@ -123,6 +134,9 @@ describe("length limits match the varchar columns", () => {
     ["chapter_versions.title", DB_LIMITS.chapterTitle],
     ["reading_lists.title", DB_LIMITS.readingListTitle],
     ["content_reports.reason", DB_LIMITS.reportReason],
+    ["announcements.title", DB_LIMITS.announcementTitle],
+    ["announcements.body", DB_LIMITS.announcementBody],
+    ["announcements.link_url", DB_LIMITS.announcementLink],
   ];
   it.each(cases)("%s", (column, max) => expect(contract.maxLengths[column]).toBe(max));
 });
@@ -466,5 +480,49 @@ describe("reading habits match the migration", () => {
     expect(sql).toContain(`c_stories_10 constant integer := ${ACHIEVEMENT_THRESHOLDS.stories_10.target};`);
     expect(sql).toContain(`('first_chapter', v_finished >= ${ACHIEVEMENT_THRESHOLDS.first_chapter.target})`);
     expect(sql).toContain(`('first_story', v_stories >= ${ACHIEVEMENT_THRESHOLDS.first_story.target})`);
+  });
+});
+
+describe("announcement form", () => {
+  const valid = {
+    kind: "banner",
+    title: "  Writing contest  ",
+    body: "",
+    link: "/ranking",
+    locale: "",
+    startsAt: "2026-11-05T10:00:00.000Z",
+    endsAt: "2026-11-12T10:00:00.000Z",
+  } as const;
+  const codes = (input: unknown) => {
+    const result = announcementFormSchema.safeParse(input);
+    return result.success ? [] : result.error.issues.map((issue) => issue.message);
+  };
+
+  it("turns a valid form into the row payload (empty fields are NULL)", () => {
+    expect(toAnnouncementPayload(announcementFormSchema.parse(valid))).toEqual({
+      kind: "banner",
+      title: "Writing contest",
+      body: null,
+      link_url: "/ranking",
+      locale: null,
+      starts_at: "2026-11-05T10:00:00.000Z",
+      ends_at: "2026-11-12T10:00:00.000Z",
+    });
+  });
+
+  it("applies the same rules as the CHECK constraints", () => {
+    expect(codes({ ...valid, title: "   " })).toEqual([ANNOUNCEMENT_ERROR.titleRequired]);
+    expect(codes({ ...valid, title: "a".repeat(81) })).toEqual([ANNOUNCEMENT_ERROR.titleTooLong]);
+    expect(codes({ ...valid, body: "a".repeat(281) })).toEqual([ANNOUNCEMENT_ERROR.bodyTooLong]);
+    expect(codes({ ...valid, endsAt: valid.startsAt })).toEqual([ANNOUNCEMENT_ERROR.endBeforeStart]);
+    expect(codes({ ...valid, startsAt: "soon" })).toEqual([ANNOUNCEMENT_ERROR.startInvalid]);
+    expect(codes({ ...valid, locale: "fr" })).toHaveLength(1);
+    for (const link of ["//evil.example", "/\\evil", "javascript:alert(1)", "http://example.com", "ranking"]) {
+      expect(isAllowedAnnouncementLink(link), link).toBe(false);
+      expect(codes({ ...valid, link }), link).toEqual([ANNOUNCEMENT_ERROR.linkInvalid]);
+    }
+    for (const link of ["/", "/ranking", "/story/abc?x=1", "https://example.com/contest"]) {
+      expect(isAllowedAnnouncementLink(link), link).toBe(true);
+    }
   });
 });

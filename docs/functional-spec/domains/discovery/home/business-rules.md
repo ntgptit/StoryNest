@@ -158,3 +158,15 @@
 | Related screens | SCR-HOME-01 |
 | Evidence | `discovery/screens/tag-filters.tsx:27`, `discovery/screens/discover-screen.tsx:74-83,117-124`, `recommendations/components/recommendation-list.tsx:25`, `discovery/discovery-tags.test.tsx:250`, `discovery/discovery.test.tsx:340` |
 | Status | Verified |
+
+### BR-HOME-013 — Event popup with "Don't show today" (Lucian 311, batch 4 · platform4)
+| Field | Value |
+| --- | --- |
+| Description | The unfiltered home page opens a popup with the active `announcements` of kind `popup` for the interface language: sliding cards (2.8 s each, drag or arrow keys, "1 / 3" and dots) with the end date ("Until 30 Nov") and an optional "View details" link |
+| Preconditions | At least one active popup (same window and language rule as BR-SHELL-015); not on a category/tag-filtered view |
+| Conditions | Opens once per visit of the page, unless "Don't show today" was chosen on this device today for these same announcements (`localStorage["storynest.announcements.popupSnoozed"] = {day, ids}`, day = the reader's local date) |
+| Expected behavior | "Don't show today" and "Close" (also Escape or a press outside) shrink the card into a gift button in the bottom corner (above the phone bottom navigation) that opens it again; after "Don't show today" a "See you tomorrow" note shows for a moment. The next day, or when a new popup announcement is published the same day, it opens again |
+| Exceptions | Per device only: nothing is stored in the account. Under reduced motion nothing slides by itself and the card closes without shrinking |
+| Related screens | SCR-HOME-01 (C12) |
+| Evidence | `packages/features/src/announcements/components/home-event-popup.tsx`, `packages/features/src/announcements/model/announcement.ts` (`isPopupSnoozed`, `snoozePopupToday`), `packages/ui/src/widgets/event-popup.tsx`, `apps/web/src/app/(main)/discover-home.tsx`, `announcements/announcements.test.tsx`. Rollback (top of the migration): `DROP FUNCTION public.active_announcements(text, text); DROP TABLE public.announcements;` |
+| Status | Verified (unit, SQL test); not run against a real Supabase project |

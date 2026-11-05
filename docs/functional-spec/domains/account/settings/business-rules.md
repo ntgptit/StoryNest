@@ -137,3 +137,27 @@ Screen: [SCR-SET-01 Settings](screens/settings.md).
 | Related screens | SCR-SET-01, SCR-SHELL-01 |
 | Evidence | `packages/features/src/settings/model/site-theme.ts`, `site-theme-store.ts`, `hooks/use-site-theme.ts`, `apps/web/src/app/layout.tsx`, `settings/site-theme.test.tsx` |
 | Status | Verified (unit) |
+
+### BR-SET-011 — Per-type in-app notification switches (Lucian 023, batch 4 · platform4)
+| Field | Value |
+| --- | --- |
+| Description | Under the three group switches (BR-SET-005 `notify_*`), a reader can switch off a single event type. The types are exactly those the notifications pipeline writes and a reader may mute: `chapter_published`, `comment_replied`, `collaboration_accepted`, `collaboration_declined`. `collaboration_invited` is not switchable (always delivered) |
+| Preconditions | Signed in |
+| Conditions | Table `notification_preferences(user_id, event_type, in_app)` (RLS: own rows only; no row = on). `notification_enabled(user, type)` = group switch AND type switch; the BEFORE INSERT trigger `notifications_respect_settings` drops a muted event whichever function creates it (outbox worker, `respond_invitation`) |
+| Expected behavior | A group switched on unfolds its details: for "Answers to invitations" a switch for Accepted and for Declined plus "Invitations to you · Always on"; for every group the channels ("In the app: On", "Email and push: Not available yet: StoryNest does not send email or push notifications."). A type switch saves on its own (optimistic, rollback + toast on refusal) |
+| Exceptions | Single-type groups have no separate type switch on screen (the group switch is the type's switch). Turning a type back on applies to the next event only, like BR-SET-006 |
+| Related screens | SCR-SET-01 (C04) |
+| Evidence | `supabase/migrations/20261106050100_notification_preferences.sql` (Rollback: `DROP TABLE public.notification_preferences;` then restore `notification_enabled` from `20261104001900_user_settings.sql`), `supabase/tests/551_notification_preferences.test.sql`, `packages/features/src/settings/{model/settings.ts,api/notification-preferences.api.ts,hooks/use-settings.ts,screens/settings-screen.tsx}`, `settings/settings.test.tsx` |
+| Status | Verified (SQL test, unit); not run against a real Supabase project |
+
+### BR-SET-012 — No email or push channel; "Turn all off"
+| Field | Value |
+| --- | --- |
+| Description | The notification section says plainly that only in-app notifications exist; a badge counts the groups on ("2 of 3 on" / "All off") and "Turn all off" switches the three groups off |
+| Preconditions | Signed in |
+| Conditions | There is no e-mail or push sender in the product (README "Việc còn lại" 7; WP 6.7), so no channel column exists |
+| Expected behavior | "Turn all off" switches the rows off one by one from the top (120 ms apart, at once under reduced motion) and saves the three `notify_*` columns in one upsert; the type switches are kept |
+| Exceptions | — |
+| Related screens | SCR-SET-01 (C04) |
+| Evidence | `packages/ui/src/widgets/expanding-settings.tsx`, `settings/screens/settings-screen.tsx` (`NotificationSettings`), `settings/model/settings.ts` (`withAllNotificationsOff`) |
+| Status | Verified (unit) |

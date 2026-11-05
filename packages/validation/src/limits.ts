@@ -10,6 +10,9 @@ export const DB_LIMITS = {
   readingListTitle: 120,
   reportReason: 40,
   commentBody: 10_000,
+  announcementTitle: 80,
+  announcementBody: 280,
+  announcementLink: 500,
 } as const;
 
 // Application-level guards (the database does not limit these). Tune freely; the server RPC accepts more.

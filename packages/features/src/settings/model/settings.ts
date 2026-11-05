@@ -1,4 +1,9 @@
-import { STORY_LANGUAGES, type StoryLanguage } from "@storynest/validation";
+import {
+  NOTIFICATION_PREFERENCE_TYPES,
+  STORY_LANGUAGES,
+  type NotificationPreferenceType,
+  type StoryLanguage,
+} from "@storynest/validation";
 
 /** Which in-app notifications the reader wants. The invitations addressed to the reader are always delivered. */
 export interface NotificationSettings {
@@ -62,3 +67,49 @@ export function withNotification(settings: AccountSettings, key: NotificationKey
 export function withLanguage(settings: AccountSettings, language: StoryLanguage): AccountSettings {
   return settings.language === language ? settings : { ...settings, language };
 }
+
+/** Every group switch off ("Turn all off"); the language and everything else stay. */
+export function withAllNotificationsOff(settings: AccountSettings): AccountSettings {
+  return {
+    ...settings,
+    notifications: { chapterPublished: false, commentReplied: false, collaborationAnswers: false },
+  };
+}
+
+// --- per-type switches (notification_preferences) --------------------------------------------------------------------
+// Under each group switch, a single event type can be switched off. A type is delivered only when its group AND its
+// own switch are on (the database enforces it at insert time). No row means on.
+
+/** In-app switch per event type the reader may mute. */
+export type NotificationTypeSettings = Record<NotificationPreferenceType, boolean>;
+
+export const DEFAULT_NOTIFICATION_TYPES: NotificationTypeSettings = Object.fromEntries(
+  NOTIFICATION_PREFERENCE_TYPES.map((type) => [type, true]),
+) as NotificationTypeSettings;
+
+/** Which group switch each type sits under (the order is the order on screen). */
+export const NOTIFICATION_GROUP_TYPES: Record<NotificationKey, readonly NotificationPreferenceType[]> = {
+  chapterPublished: ["chapter_published"],
+  commentReplied: ["comment_replied"],
+  collaborationAnswers: ["collaboration_accepted", "collaboration_declined"],
+};
+
+export interface NotificationPreferenceRow {
+  event_type: string;
+  in_app: boolean;
+}
+
+export const NOTIFICATION_PREFERENCE_COLUMNS = "event_type, in_app";
+
+const isPreferenceType = (value: string): value is NotificationPreferenceType =>
+  (NOTIFICATION_PREFERENCE_TYPES as readonly string[]).includes(value);
+
+/** Rows to switches; a type this client does not know (a newer server) is ignored. */
+export function toNotificationTypes(rows: readonly NotificationPreferenceRow[]): NotificationTypeSettings {
+  const types = { ...DEFAULT_NOTIFICATION_TYPES };
+  for (const row of rows) if (isPreferenceType(row.event_type)) types[row.event_type] = row.in_app;
+  return types;
+}
+
+/** A group with more than one type unfolds a switch per type; a single-type group's switch is the type's switch. */
+export const hasTypeSwitches = (key: NotificationKey): boolean => NOTIFICATION_GROUP_TYPES[key].length > 1;

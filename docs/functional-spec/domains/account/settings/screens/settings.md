@@ -20,7 +20,7 @@
 | SCR-SET-01-C01 | Page header | "Settings" / "Saved in your account, used on every device." |
 | SCR-SET-01-C02 | Settings skeleton / error state | Error: "Could not load your settings" / "Check your connection and try again." / "Try again" |
 | SCR-SET-01-C03 | Language section + select | "Language" / "Choose the interface language. Anything not translated yet is shown in Vietnamese." / label "Interface language", options "Tiếng Việt", "English" |
-| SCR-SET-01-C04 | Notifications section (3 switches) | "New chapters" – "A story you follow has a new chapter."; "Replies to comments" – "Someone replies to your comment."; "Answers to invitations" – "Someone you invited to collaborate accepts or declines." |
+| SCR-SET-01-C04 | Notifications section (expanding settings, Lucian 023) | Badge "n of 3 on" / "All off"; three group switches with icons (gray when off): "New chapters" – "A story you follow has a new chapter."; "Replies to comments" – "Someone replies to your comment."; "Answers to invitations" – "Someone you invited to collaborate accepts or declines." A group that is on unfolds: per-type switches "Accepted" / "Declined" and "Invitations to you · Always on" (answers group only), then "In the app: On · Email and push: Not available yet". "Turn all off" button (BR-SET-011, BR-SET-012) |
 | SCR-SET-01-C05 | Reading section | "Reading" / "Font size, line spacing, font and background of the reading page." + `ReaderSettingsSheet` trigger (OBJ-READ) |
 | SCR-SET-01-C06 | Adult content section + switch | "Adult content (18+)" / "Show 18+ stories" / "Hidden by default. Turning it on means you confirm you are 18 or older." (OBJ-MAT) |
 | SCR-SET-01-C07 | Age confirmation dialog | "Show adult stories?" / "Only turn this on if you are 18 or older. 18+ stories will appear in the lists." / "I am 18 or older, show 18+ stories" / "Keep hidden" |
@@ -29,7 +29,7 @@
 | SCR-SET-01-C09 | Appearance section (this device) | "Appearance" / "Saved on this device. While a chapter is open, the background chosen in the reading settings wins." / select "Theme": "Follow device", "Light", "Dark". Shown whatever the account settings query does (BR-SET-010) |
 
 Each section is a `<section aria-label>` with an `h2`; switches have `<Label htmlFor>`.
-Not present: account section (email, password, sign-out, deactivate/delete, export) — F-AUTH-07; email/push channels — F-SET-01.
+Not present: account section (email, password, sign-out, deactivate/delete, export) — F-AUTH-07; email/push channels — F-SET-01 (the section now says they are not available, BR-SET-012).
 
 ## C. User actions & system responses
 
@@ -54,6 +54,28 @@ Not present: account section (email, password, sign-out, deactivate/delete, expo
 | Error behavior | Rollback + toast "Could not save your settings. The previous value was restored." |
 | Navigation | Stays |
 | Evidence | `settings-screen.tsx:95-96,131-142`, `use-settings.ts:27-50` |
+
+| Field | SCR-SET-01-A09 Toggle one notification type |
+| --- | --- |
+| Trigger | Type switch inside an unfolded group of C04 |
+| Preconditions | Group on; per-type switches loaded |
+| Expected behavior | Optimistic flip + upsert of one `notification_preferences` row |
+| State change | `notification_preferences(user_id, event_type, in_app)` |
+| Validation | Type must be one of the four switchable types (CHECK) |
+| Error behavior | Rollback + toast "Could not save your settings. The previous value was restored." |
+| Navigation | Stays |
+| Evidence | `settings-screen.tsx` (`NotificationSettings`), `use-settings.ts` (`useSaveNotificationType`) |
+
+| Field | SCR-SET-01-A10 Turn all notifications off |
+| --- | --- |
+| Trigger | "Turn all off" in C04 |
+| Preconditions | At least one group on |
+| Expected behavior | Rows go off one by one, then one upsert with the three `notify_*` false |
+| State change | `user_settings.notify_*` |
+| Validation | — |
+| Error behavior | As A02 |
+| Navigation | Stays |
+| Evidence | `expanding-settings.tsx`, `settings-screen.tsx` |
 
 | Field | SCR-SET-01-A03 Open reading preferences |
 | --- | --- |

@@ -9,6 +9,7 @@ import { registeredCatalogs } from "./i18n.ts";
 const TRANSLATED = [
   "adult-content",
   "analytics",
+  "announcements",
   "auth",
   "author",
   "comments",

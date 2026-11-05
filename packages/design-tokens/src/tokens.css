@@ -1439,6 +1439,77 @@
   }
 }
 
+/*
+ * Batch 4 · platform4: announcements, notification settings and the role matrix. Adapted from Lucian UX/UI Prompt
+ * 023, 073 and 311 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their durations and curves:
+ * RollingBanner (073: messages roll up, the time bars fill, a shine sweeps the strip; it folds away on --ease-soft),
+ * EventPopup (311: the card bounces up on --ease-drop, slides glide sideways, it shrinks into the gift button on
+ * --ease-pour, the gift pops in and bumps) and ExpandingSettings (023: the details unfold on --ease-soft, the
+ * switched-off icon fades to gray). 184 (role matrix) is read-only here and has no motion.
+ */
+@theme {
+  /* A right a role has, in the role matrix (184's soft green check), one value per scheme. */
+  --color-granted: light-dark(oklch(0.92 0.03 130), oklch(0.36 0.04 155));
+  --color-granted-foreground: light-dark(oklch(0.42 0.08 140), oklch(0.91 0.07 130));
+  /* The popup's slides glide to the next one (311). */
+  --ease-slide: cubic-bezier(0.3, 1, 0.3, 1);
+  /* The gift button pops in with a strong overshoot (311). */
+  --ease-gift: cubic-bezier(0.3, 1.7, 0.5, 1);
+  --animate-banner-roll-in: banner-roll-in 0.55s var(--ease-soft) both;
+  --animate-banner-roll-out: banner-roll-out 0.55s var(--ease-soft) forwards;
+  --animate-banner-timer: banner-timer var(--banner-interval, 3.8s) linear forwards;
+  --animate-banner-shine: banner-shine 4.5s ease-in-out infinite;
+  --animate-popup-up: popup-up 0.55s var(--ease-drop) 0.3s backwards;
+  --animate-gift-bump: gift-bump 0.5s var(--ease-gift);
+  --animate-details-rise: details-rise 0.5s var(--ease-spring) 0.12s backwards;
+  @keyframes banner-roll-in {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+  @keyframes banner-roll-out {
+    to {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+  }
+  @keyframes banner-timer {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes banner-shine {
+    0%,
+    60% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(100vw + 100px));
+    }
+  }
+  @keyframes popup-up {
+    from {
+      opacity: 0;
+      transform: translateY(40px) scale(0.9);
+    }
+  }
+  @keyframes gift-bump {
+    40% {
+      transform: scale(1.2);
+    }
+  }
+  @keyframes details-rise {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);

@@ -31,6 +31,7 @@
 | SCR-MOD-01-C09 | Reason dialog | Title = action label; label "Reason (required, will be logged)"; placeholder "Example: violates the harassment policy"; inline length error; `role="alert"` request error; "Cancel" / "Confirm" ("Working…") | `report-card.tsx:245-275`, `strings.en.ts:85-93` |
 | SCR-MOD-01-C11 | Detail side panel (Lucian #273) | The report title is a button (a click on the card outside its controls too) that opens a right-hand panel (full width on phones) with the report's content, when it was reported and the same actions and reason dialog as the card; the card stays highlighted (`aria-current`). Arrows or J / K step to the next / previous loaded report ("i of n"), Esc or the close button closes. J/K are ignored while typing or in the reason dialog. A report that leaves the queue after an action is replaced by the one that took its place | `moderation-screen.tsx`, `components/report-card.tsx` (`variant="panel"`), `packages/ui/src/widgets/detail-panel.tsx` |
 | SCR-MOD-01-C10 | Status views | Skeleton (`aria-busy`), error state, empty text, client-only sign-in prompt / "no access" empty state | `moderation-screen.tsx:24-40,62-73` |
+| SCR-MOD-01-C12 | Announcements (batch 4 · platform4) | Below the queue: "New announcement" form (Where, Language, Title, Text, Link, Starts, Ends, "Create announcement") and the list with state badges, "End now" (showing only) and "Delete" with confirmation (BR-MOD-022, BR-SHELL-015, BR-HOME-013) | `announcements/components/announcement-manager.tsx` |
 
 ## C. User actions & system responses
 

@@ -8,4 +8,6 @@ export const studioKeys = {
   collaborators: (storyId: string) => ["studio", "collaborators", storyId] as const,
   storyInvitations: (storyId: string) => ["studio", "story-invitations", storyId] as const,
   myInvitations: (userId: string) => ["studio", "my-invitations", userId] as const,
+  /** The same for everyone (documentation of the roles), so not per user. */
+  roleRights: ["studio", "role-rights"] as const,
 };

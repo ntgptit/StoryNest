@@ -152,7 +152,11 @@ function fakeClient(handlers: Record<string, RpcHandler> = {}) {
     if (handler) return handler(args);
     return { data: name === "list_reports" ? [] : null, error: null };
   });
-  return { rpc, calls, of: (name: string) => calls.filter((c) => c.name === name) };
+  // The console also lists announcements (its own tests are in announcements/): an empty list here.
+  const limit = vi.fn(async () => ({ data: [], error: null }));
+  const order = vi.fn(() => ({ order, limit }));
+  const from = vi.fn(() => ({ select: () => ({ order }) }));
+  return { rpc, from, calls, of: (name: string) => calls.filter((c) => c.name === name) };
 }
 
 describe("moderation api", () => {

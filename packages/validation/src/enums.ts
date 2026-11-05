@@ -26,6 +26,18 @@ export const MODERATION_ACTIONS = [
 export const MODERATION_TARGET_KINDS = ["comment", "story", "user", "report"] as const;
 export const HIDE_SOURCES = ["author", "moderator"] as const;
 export const REPORT_STATUSES = ["pending", "reviewing", "resolved", "dismissed"] as const;
+/** announcements.kind: a line in the rolling banner of every page, or a card in the home page popup. */
+export const ANNOUNCEMENT_KINDS = ["banner", "popup"] as const;
+/**
+ * notification_preferences.event_type: the notification types a reader may switch off one by one (in-app only).
+ * collaboration_invited is deliberately absent: an invitation addressed to the reader is always delivered.
+ */
+export const NOTIFICATION_PREFERENCE_TYPES = [
+  "chapter_published",
+  "comment_replied",
+  "collaboration_accepted",
+  "collaboration_declined",
+] as const;
 
 export const accountStatusSchema = z.enum(ACCOUNT_STATUSES);
 export const storyStatusSchema = z.enum(STORY_STATUSES);
@@ -40,6 +52,8 @@ export const reportReasonSchema = z.enum(REPORT_REASONS);
 export const moderationActionSchema = z.enum(MODERATION_ACTIONS);
 export const moderationTargetKindSchema = z.enum(MODERATION_TARGET_KINDS);
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
+export const announcementKindSchema = z.enum(ANNOUNCEMENT_KINDS);
+export const notificationPreferenceTypeSchema = z.enum(NOTIFICATION_PREFERENCE_TYPES);
 
 // Named constants for the values code compares or filters on, so no query or condition spells a literal like
 // "published". `satisfies` makes the compiler reject a value that is not in the enum; validation.test.ts checks
@@ -119,6 +133,12 @@ export type ModerationTargetKind = z.infer<typeof moderationTargetKindSchema>;
 export const HIDE_SOURCE = { AUTHOR: "author", MODERATOR: "moderator" } as const satisfies Record<string, HideSource>;
 
 export type HideSource = z.infer<typeof hideSourceSchema>;
+export type AnnouncementKind = z.infer<typeof announcementKindSchema>;
+export type NotificationPreferenceType = z.infer<typeof notificationPreferenceTypeSchema>;
+export const ANNOUNCEMENT_KIND = { BANNER: "banner", POPUP: "popup" } as const satisfies Record<
+  string,
+  AnnouncementKind
+>;
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
 export type CommentStatus = z.infer<typeof commentStatusSchema>;
 export type InvitationStatus = z.infer<typeof invitationStatusSchema>;

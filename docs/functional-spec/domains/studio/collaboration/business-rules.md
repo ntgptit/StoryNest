@@ -28,6 +28,7 @@
 | BR-TEAM-011 | Where invitations are surfaced | Verified |
 | BR-TEAM-012 | Error mapping | Verified |
 | BR-TEAM-013 | `story_role` is the single source of the role | Verified |
+| BR-TEAM-014 | Read-only role matrix from `story_role_rights()` | Verified (SQL test) |
 
 ## 2. Rules
 
@@ -221,3 +222,15 @@ publish row above.
 | Related screens | All |
 | Evidence | `supabase/migrations/20261103000100_auth_and_rls.sql:65-91`; `packages/features/src/editor/api/publishing.api.ts:32-37`; `packages/features/src/studio/api/story-write.api.ts:59-82` |
 | Status | Verified |
+
+### BR-TEAM-014 — Read-only role permission matrix from `story_role_rights()` (Lucian 184, batch 4 · platform4)
+| Field | Value |
+| --- | --- |
+| Description | The team screen shows "What each role can do": one row per right, one column per role (Owner, Co-author, Editor), a check or a dash with "Allowed"/"Not allowed" for screen readers. Rights are fixed; there are no toggles |
+| Preconditions | Owner on the team screen (the matrix itself is readable by anyone: it is documentation) |
+| Conditions | Source of truth: `public.story_role_rights()` (IMMUTABLE, granted to anon/authenticated) lists 13 capabilities: view_drafts, edit_story, set_tags, change_cover, create_chapters, edit_drafts, reorder_chapters, publish_chapters (all three roles), unpublish_chapters, archive_chapters, moderate_comments, view_stats (owner + co-author), manage_team (owner). The SQL test runs each capability as owner, co-author, editor and a stranger against the real policies/RPCs and fails on any difference or on a capability without a check |
+| Expected behavior | The matrix is generated from the RPC; a capability the app has no label for yet shows under its key. The invite form's role hints were corrected: editors CAN publish and schedule (publish_chapter only needs a role) but cannot unpublish or archive |
+| Exceptions | Not listed: moving a chapter to the trash (`chapters.deleted_at`): the `chapters_update` policy lets every role write it while the app offers it to owners and co-authors only — reported as a finding, not changed |
+| Related screens | SCR-TEAM-01 (C09) |
+| Evidence | `supabase/migrations/20261106050200_story_role_rights.sql` (Rollback: `DROP FUNCTION public.story_role_rights();`), `supabase/tests/552_story_role_rights.test.sql`, `packages/features/src/studio/{api/role-rights.api.ts,hooks/use-role-rights.ts,model/role-rights.ts,screens/team-screen.tsx}`, `packages/ui/src/widgets/role-matrix.tsx`, `studio/collaboration.test.tsx` |
+| Status | Verified (SQL test, unit); not run against a real Supabase project |

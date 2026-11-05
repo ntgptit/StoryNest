@@ -25,3 +25,4 @@ export * from "./moderation/index.ts";
 export * from "./analytics/index.ts";
 export * from "./share/index.ts";
 export * from "./reading-habits/index.ts";
+export * from "./announcements/index.ts";

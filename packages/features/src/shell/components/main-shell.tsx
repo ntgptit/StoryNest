@@ -7,6 +7,7 @@ import { AppShell } from "@storynest/ui/widgets/app-shell";
 import { BottomNav } from "@storynest/ui/widgets/bottom-nav";
 import { PullToRefresh } from "@storynest/ui/widgets/pull-to-refresh";
 import { AdultContentSync } from "../../adult-content/index.ts";
+import { AnnouncementBanner } from "../../announcements/index.ts";
 import { AppLink, useNavigation, usePlatform } from "../../_shared/platform.tsx";
 import { useStandaloneDisplay } from "../hooks/use-installed-app.ts";
 import { navItems } from "../model/nav-items.ts";
@@ -20,7 +21,7 @@ import { SiteHeader } from "./site-header.tsx";
 
 /**
  * The frame of every regular page: header with the account menu (and the full-screen menu on phones), desktop
- * navigation row (md and up), offline strip, content column, mobile bottom navigation. Both navigations are built
+ * navigation row (md and up), rolling announcement strip, offline strip, content column, mobile bottom navigation. Both navigations are built
  * from the same `navItems()`. In the installed app the feeds can be pulled to refresh.
  */
 export function MainShell({ children }: { children: ReactNode }) {
@@ -37,6 +38,7 @@ export function MainShell({ children }: { children: ReactNode }) {
       navigation={
         <>
           <DesktopNav pathname={pathname} />
+          <AnnouncementBanner />
           <ConnectionStatus />
         </>
       }

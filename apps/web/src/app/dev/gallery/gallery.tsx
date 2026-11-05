@@ -156,6 +156,11 @@ import { SwipeToReply } from "@storynest/ui/widgets/swipe-to-reply";
 import { UploadVeil } from "@storynest/ui/widgets/upload-veil";
 // Batch 4 · habits4
 import { ReadingHabitsView, toReadingHabits, type DayRow, type StatsRow } from "@storynest/features";
+import { EventPopup } from "@storynest/ui/widgets/event-popup";
+import { ExpandingSettings } from "@storynest/ui/widgets/expanding-settings";
+import { RoleMatrix } from "@storynest/ui/widgets/role-matrix";
+import { RollingBanner } from "@storynest/ui/widgets/rolling-banner";
+import { MessageCircle, Users } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -3251,6 +3256,183 @@ function Habits4Example() {
   );
 }
 
+function Platform4BannerExample() {
+  const [closed, setClosed] = useState(false);
+  return (
+    <div id="platform4-banner" className="flex max-w-xl flex-col overflow-hidden rounded-lg border">
+      <RollingBanner
+        items={[
+          { id: "a", title: "Autumn writing contest", body: "Entries open until 30 November", href: "/ranking" },
+          { id: "b", title: "New: reading lists", body: "Collect stories and share them" },
+          { id: "c", title: "Maintenance on Sunday", body: "02:00 to 03:00, reading stays available" },
+        ]}
+        labels={{
+          region: "Announcements",
+          roleDescription: "rotating banner",
+          tag: "New",
+          next: "Next announcement",
+          close: "Close announcements",
+          reopen: "Show announcements again",
+        }}
+        closed={closed}
+        reopenable
+        onClose={() => setClosed(true)}
+        onReopen={() => setClosed(false)}
+        renderLink={(_item, children, className) => (
+          <a href="#platform4-banner" className={className}>
+            {children}
+          </a>
+        )}
+      />
+      <p className="p-3 text-sm text-muted-foreground">The page moves up when the strip folds away.</p>
+    </div>
+  );
+}
+
+function Platform4PopupExample() {
+  const [open, setOpen] = useState(false);
+  const [seen, setSeen] = useState(false);
+  return (
+    <div id="platform4-popup" className="flex flex-col gap-2">
+      <Button
+        className="w-fit"
+        onClick={() => {
+          setSeen(true);
+          setOpen(true);
+        }}
+      >
+        Open the event popup
+      </Button>
+      <EventPopup
+        slides={[
+          {
+            id: "a",
+            eyebrow: "Until 30 Nov",
+            title: "Autumn writing contest",
+            body: "Win a cover by our illustrators.",
+            href: "/ranking",
+          },
+          { id: "b", eyebrow: "Until 15 Dec", title: "Reading marathon", body: "Read 10 chapters, earn a badge." },
+          { id: "c", eyebrow: "Until 1 Jan", title: "New ranking", body: "Weekly top stories by category." },
+        ]}
+        open={open}
+        giftVisible={seen}
+        onHide={() => setOpen(false)}
+        onReopen={() => setOpen(true)}
+        labels={{
+          dialog: "Events",
+          dontShowToday: "Don't show today",
+          close: "Close",
+          reopen: "Show events again",
+          seeYouTomorrow: "See you tomorrow",
+          position: (index, count) => `${index} / ${count}`,
+          open: "View details",
+        }}
+        renderLink={(_slide, children, className) => (
+          <a href="#platform4-popup" className={className}>
+            {children}
+          </a>
+        )}
+      />
+    </div>
+  );
+}
+
+function Platform4SettingsExample() {
+  const [values, setValues] = useState({ chapters: true, replies: false, answers: true });
+  const [types, setTypes] = useState({ accepted: true, declined: false });
+  const channels = <p className="text-xs text-muted-foreground">In the app: on · Email and push: not available yet.</p>;
+  return (
+    <div id="platform4-settings" className="max-w-md rounded-xl border p-4">
+      <ExpandingSettings
+        summary={(on) => (on === 0 ? "All off" : `${on} of 3 on`)}
+        turnAllOff={{
+          label: "Turn all off",
+          onTurnAllOff: () => setValues({ chapters: false, replies: false, answers: false }),
+        }}
+        items={[
+          {
+            id: "chapters",
+            icon: <BookOpen />,
+            label: "New chapters",
+            description: "A story you follow has a new chapter.",
+            checked: values.chapters,
+            onCheckedChange: (on) => setValues((v) => ({ ...v, chapters: on })),
+            details: channels,
+          },
+          {
+            id: "replies",
+            icon: <MessageCircle />,
+            label: "Replies to comments",
+            description: "Someone replies to your comment.",
+            checked: values.replies,
+            onCheckedChange: (on) => setValues((v) => ({ ...v, replies: on })),
+            details: channels,
+          },
+          {
+            id: "answers",
+            icon: <Users />,
+            label: "Answers to invitations",
+            description: "Someone you invited accepts or declines.",
+            checked: values.answers,
+            onCheckedChange: (on) => setValues((v) => ({ ...v, answers: on })),
+            details: (
+              <div className="flex flex-col gap-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="platform4-accepted">Accepted</Label>
+                  <Switch
+                    id="platform4-accepted"
+                    checked={types.accepted}
+                    onCheckedChange={(on) => setTypes((v) => ({ ...v, accepted: on }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="platform4-declined">Declined</Label>
+                  <Switch
+                    id="platform4-declined"
+                    checked={types.declined}
+                    onCheckedChange={(on) => setTypes((v) => ({ ...v, declined: on }))}
+                  />
+                </div>
+                {channels}
+              </div>
+            ),
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
+function Platform4MatrixExample() {
+  const rights: [string, boolean, boolean, boolean][] = [
+    ["See the story and unpublished chapters", true, true, true],
+    ["Edit the story details", true, true, false],
+    ["Write and edit drafts", true, true, true],
+    ["Publish and schedule", true, true, true],
+    ["Unpublish chapters", true, true, false],
+    ["Invite and remove collaborators", true, false, false],
+  ];
+  return (
+    <div id="platform4-matrix" className="max-w-md rounded-xl border bg-card p-3">
+      <RoleMatrix
+        caption="Rights of the owner, co-authors and editors"
+        labels={{ right: "Right", allowed: "Allowed", notAllowed: "Not allowed" }}
+        columns={[
+          { key: "owner", label: "Owner" },
+          { key: "co_author", label: "Co-author" },
+          { key: "editor", label: "Editor" },
+        ]}
+        rows={rights.map(([label, owner, coAuthor, editor]) => ({
+          key: label,
+          label,
+          allowed: { owner, co_author: coAuthor, editor },
+        }))}
+      />
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -3540,6 +3722,13 @@ export function Gallery() {
 
       <Section title="Batch 4 · habits4">
         <Habits4Example />
+      </Section>
+
+      <Section title="Batch 4 · platform4">
+        <Platform4BannerExample />
+        <Platform4PopupExample />
+        <Platform4SettingsExample />
+        <Platform4MatrixExample />
       </Section>
     </AppShell>
   );

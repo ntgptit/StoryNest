@@ -12,6 +12,7 @@ import type {
   StoryCreate,
   StoryUpdate,
   UnpublishChapterArgs,
+  toAnnouncementPayload,
 } from "./index.ts";
 
 type Fn = Database["public"]["Functions"];
@@ -32,6 +33,7 @@ export const inserts = {
   comment: { ...({} as CommentCreate), author_id: uid } satisfies TablesInsert<"comments">,
   readingList: { ...({} as ReadingListCreate), owner_id: uid } satisfies TablesInsert<"reading_lists">,
   report: { ...({} as ReportCreate), reporter_id: uid } satisfies TablesInsert<"content_reports">,
+  announcement: {} as ReturnType<typeof toAnnouncementPayload> satisfies TablesInsert<"announcements">,
 };
 
 export const updates = { story: {} as StoryUpdate satisfies TablesUpdate<"stories"> };

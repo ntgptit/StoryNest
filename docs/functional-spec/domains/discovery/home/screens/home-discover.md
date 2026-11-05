@@ -29,6 +29,7 @@
 | SCR-HOME-01-C09 | Infinite list footer | Sentinel + "Load more" button, loading skeleton, end message "You've seen all the stories." | `infinite-list.tsx:58-71`, `discover-screen.tsx:110-115` |
 | SCR-HOME-01-C10 | Empty state | Generic or tag-specific | `discover-screen.tsx:90-95` |
 | SCR-HOME-01-C11 | Error state | Full (no items) or inline (next page) with "Try again" | `discover-screen.tsx:74-83,117-124` |
+| SCR-HOME-01-C12 | Event popup (Lucian 311, batch 4 · platform4) | Unfiltered home only: dialog "Events" with the active popup announcements as sliding cards ("Until …", title, text, "View details"), "Don't show today" / "Close", then a gift button "Show events again" (BR-HOME-013) | `announcements/components/home-event-popup.tsx`, `packages/ui/src/widgets/event-popup.tsx` |
 
 ## C. User actions and system responses
 

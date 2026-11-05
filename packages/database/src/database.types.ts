@@ -32,6 +32,49 @@ export type Database = {
         }
         Relationships: []
       }
+      announcements: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          kind: string
+          link_url: string | null
+          locale: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        ComputedFields: never
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          kind: string
+          link_url?: string | null
+          locale?: string | null
+          starts_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          kind?: string
+          link_url?: string | null
+          locale?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_users: {
         Row: {
           account_status: string
@@ -678,6 +721,35 @@ export type Database = {
           target_kind?: string
         }
         Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          event_type: string
+          in_app: boolean
+          updated_at: string
+          user_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          event_type: string
+          in_app?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          event_type?: string
+          in_app?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -1599,6 +1671,19 @@ export type Database = {
       }
     }
     Functions: {
+      active_announcements: {
+        Args: { p_kind?: string; p_locale?: string }
+        Returns: {
+          body: string
+          ends_at: string
+          id: string
+          kind: string
+          link_url: string
+          locale: string
+          starts_at: string
+          title: string
+        }[]
+      }
       add_story_to_list: {
         Args: { p_list_id: string; p_story_id: string }
         Returns: number
@@ -2037,6 +2122,15 @@ export type Database = {
         }[]
       }
       story_role: { Args: { p_story_id: string }; Returns: string }
+      story_role_rights: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          capability: string
+          co_author: boolean
+          editor: boolean
+          owner: boolean
+        }[]
+      }
       submit_report: {
         Args: {
           p_description?: string
