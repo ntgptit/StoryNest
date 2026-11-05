@@ -34,6 +34,7 @@ import { listText } from "./strings.ts";
 import { shareText } from "../share/index.ts";
 
 afterEach(cleanup);
+afterEach(() => vi.useRealTimers());
 
 const t = listText;
 const lid = (n: number) => `ad000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -471,6 +472,10 @@ describe("ListScreen", () => {
   });
 
   it("writes the age of each story in English when the language is English", async () => {
+    // Fixtures are dated 2026-11-04 09:00-10:05 UTC; pin "now" a few hours later so the relative age stays
+    // "N hours ago" instead of turning into "yesterday" once the real clock passes 24h (only Date is faked).
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-04T13:00:00Z"));
     setLanguage("en", { persist: false });
     try {
       const c = fakeClient({ detail: detail({ owner_id: "someone-else" }), items: [itemRow(1, 1)] });
