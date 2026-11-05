@@ -17,10 +17,10 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { useSortableList } from "@storynest/ui/widgets/sortable-list";
 import { translateErrors } from "../../_shared/form-resolver.ts";
-import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { currentLocale } from "../../_shared/i18n.ts";
 import { ChapterRow } from "../components/chapter-row.tsx";
+import { StudioCrumbs } from "../components/studio-crumbs.tsx";
 import { RenameSlugDialog } from "../components/rename-slug-dialog.tsx";
 import { ScheduledChapters } from "../components/scheduled-chapters.tsx";
 import {
@@ -227,13 +227,10 @@ function ChapterManager({
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <PageHeader title={t.title} description={t.description(storyTitle)} />
-      <AppLink
-        href={`/studio/story/${storyId}`}
-        className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
-      >
-        {t.backToStory}
-      </AppLink>
+      <div className="flex flex-col gap-2">
+        <StudioCrumbs storyId={storyId} storyTitle={storyTitle} page="chapters" />
+        <PageHeader title={t.title} description={t.description(storyTitle)} />
+      </div>
 
       <ScheduledChapters chapters={chapters} role={role} locale={locale} />
 

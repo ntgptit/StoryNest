@@ -21,7 +21,7 @@ Note: `MyInvitations` (invitee side) is **not** on this screen; it is mounted on
 | ID | Component | Notes / evidence |
 | --- | --- | --- |
 | SCR-TEAM-01-C01 | Header "Collaborators" / "Invite others to write "<story>" with you. They only join after accepting the invitation." | `team-screen.tsx:95`, `strings.en.ts:110-112` |
-| SCR-TEAM-01-C02 | Link "Back to story details" | `team-screen.tsx:96-101` |
+| SCR-TEAM-01-C02 | Breadcrumb Studio › story › Collaborators (Lucian 103), as on SCR-CHM-01-C02; the story switcher (Lucian 037) lists only stories the author owns (only the owner manages a team) and opens their team page | `components/studio-crumbs.tsx`, `packages/ui/src/widgets/breadcrumbs.tsx` |
 | SCR-TEAM-01-C03 | Section "Current collaborators": rows name, @username, role badge, "Remove"; empty "No collaborators yet." | `team-screen.tsx:103-134` |
 | SCR-TEAM-01-C04 | Section "Invitations": rows invitee name, @username · role, status badge (Pending/Accepted/Declined/Cancelled), "Cancel invitation" on pending; empty "No invitations sent." | `team-screen.tsx:136-176` |
 | SCR-TEAM-01-C05 | Form "Invite a collaborator": "Username" input + hint/error (same element), "Role" select + role hint, "Send invitation" | `team-screen.tsx:231-278` |
@@ -64,7 +64,7 @@ Note: `MyInvitations` (invitee side) is **not** on this screen; it is mounted on
 
 | Field | SCR-TEAM-01-A05 Back / Retry |
 | --- | --- |
-| Trigger | "Back to story details"; "Try again" |
+| Trigger | Breadcrumb (story / Studio); "Try again" |
 | Expected behavior | SCR-STM-03; refetch collaborators and invitations |
 | Evidence | `team-screen.tsx:79-91,96-101` |
 

@@ -25,6 +25,16 @@ export async function updateProfile(client: DataClient, userId: string, input: P
   return row;
 }
 
+/**
+ * Whether an account the viewer can see already uses this username (the column is citext, so case does not matter).
+ * Advisory only: suspended and deleted accounts are hidden by RLS but keep their names, so "free" here can still be
+ * refused by the unique constraint, which stays the real check.
+ */
+export async function isUsernameInUse(client: DataClient, username: string): Promise<boolean> {
+  const rows = unwrap(await client.from("app_users").select("id").eq("username", username).limit(1)) ?? [];
+  return rows.length > 0;
+}
+
 const AVATAR_BUCKET = "avatars";
 
 function toStorageError(error: { message: string; statusCode?: string | number; status?: number }): AppError {

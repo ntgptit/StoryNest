@@ -23,8 +23,18 @@ export interface ListRow {
   visibility: string;
   updated_at: string;
   items?: { count: number }[] | null;
+  /** The first few stories (by list order) for the cover pile of My lists; only that query asks for it. */
+  preview?: ListPreviewRow[] | null;
   owner?: Maybe<{ username: string; display_name: string }>;
 }
+
+export interface ListPreviewRow {
+  sort_order: number;
+  story: Maybe<{ cover_storage_key: string | null; deleted_at: string | null }>;
+}
+
+/** How many covers the pile of a list in My lists shows. */
+export const LIST_PREVIEW_COVERS = 3;
 
 export interface ReadingList {
   id: string;
@@ -35,6 +45,11 @@ export interface ReadingList {
   visibility: Visibility;
   updatedAt: string;
   storyCount: number;
+  /**
+   * Cover keys of the first stories, in list order (null for a story without a cover). A story the reader may not
+   * see (RLS) or that was deleted is left out, so it can hold fewer than LIST_PREVIEW_COVERS even in a long list.
+   */
+  previewCovers: (string | null)[];
 }
 
 export function toReadingList(row: ListRow): ReadingList {
@@ -49,6 +64,13 @@ export function toReadingList(row: ListRow): ReadingList {
     visibility: asVisibility(row.visibility),
     updatedAt: row.updated_at,
     storyCount: Number(row.items?.[0]?.count ?? 0),
+    previewCovers: [...(row.preview ?? [])]
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .flatMap((item) => {
+        const story = one(item.story);
+        return story && story.deleted_at === null ? [story.cover_storage_key] : [];
+      })
+      .slice(0, LIST_PREVIEW_COVERS),
   };
 }
 

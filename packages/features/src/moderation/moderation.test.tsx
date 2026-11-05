@@ -256,8 +256,8 @@ beforeEach(() => {
 });
 
 async function pickReason(label: string) {
-  fireEvent.keyDown(await screen.findByLabelText(t.report.reasonLabel), { key: "Enter" });
-  fireEvent.click(await screen.findByRole("option", { name: label }));
+  const group = await screen.findByRole("radiogroup", { name: t.report.reasonLabel });
+  fireEvent.click(within(group).getByRole("radio", { name: label }));
 }
 
 describe("ReportButton", () => {
@@ -306,6 +306,24 @@ describe("ReportButton", () => {
     fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: t.report.submit }));
     expect((await screen.findByRole("alert")).textContent).toBe(t.report.errors.rateLimited);
     expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+
+  it("adapts the details hint and example to the reason, and counts the characters", async () => {
+    renderUi(fakeClient(), <ReportButton kind="chapter" targetId={CHAPTER} />);
+    fireEvent.click(await screen.findByRole("button", { name: `${t.report.button} ${t.report.kinds.chapter}` }));
+    const details = (await screen.findByLabelText(t.report.detailsLabel)) as HTMLTextAreaElement;
+    expect(details.placeholder).toBe(t.report.detailsPlaceholder);
+    expect(screen.queryByText(t.report.reasonHelp.copyright.hint)).toBeNull();
+    await pickReason(t.report.reasons.copyright);
+    expect(screen.getByText(t.report.reasonHelp.copyright.hint)).toBeTruthy();
+    expect(details.placeholder).toBe(t.report.reasonHelp.copyright.placeholder);
+    await pickReason(t.report.reasons.spam);
+    expect(screen.queryByText(t.report.reasonHelp.copyright.hint)).toBeNull();
+    expect(details.getAttribute("aria-describedby")).toBe("report-details-hint report-details-count");
+    expect(document.getElementById("report-details-hint")?.textContent).toBe(t.report.reasonHelp.spam.hint);
+    fireEvent.change(details, { target: { value: "abc" } });
+    expect(document.getElementById("report-details-count")?.textContent).toBe(t.report.detailsCount(3, 2000));
+    expect(screen.getByRole("radio", { name: t.report.reasons.spam }).getAttribute("aria-checked")).toBe("true");
   });
 
   it("starts from a clean form after cancelling", async () => {

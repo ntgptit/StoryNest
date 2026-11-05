@@ -174,17 +174,17 @@ describe("ReaderSettingsSheet", () => {
     fireEvent.click(screen.getByRole("button", { name: readerText.settings.open }));
     await screen.findByText(readerText.settings.title);
 
-    fireEvent.click(screen.getByRole("button", { name: readerText.settings.themes.sepia }));
+    fireEvent.click(screen.getByRole("radio", { name: readerText.settings.themes.sepia }));
     fireEvent.click(screen.getByRole("button", { name: readerText.settings.fonts.serif }));
     fireEvent.click(screen.getByRole("button", { name: readerText.settings.lineHeights.relaxed }));
 
     expect(document.documentElement.dataset.readerTheme).toBe("sepia");
     expect(document.documentElement.dataset.readerFont).toBe("serif");
     expect(document.documentElement.dataset.readerLeading).toBe("relaxed");
-    expect(screen.getByRole("button", { name: readerText.settings.themes.sepia }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("radio", { name: readerText.settings.themes.sepia }).getAttribute("aria-checked")).toBe(
       "true",
     );
-    expect(screen.getByRole("button", { name: readerText.settings.themes.dark }).getAttribute("aria-pressed")).toBe(
+    expect(screen.getByRole("radio", { name: readerText.settings.themes.dark }).getAttribute("aria-checked")).toBe(
       "false",
     );
     expect(JSON.parse(window.localStorage.getItem(READER_PREFERENCES_STORAGE_KEY) ?? "{}")).toMatchObject({
@@ -194,14 +194,16 @@ describe("ReaderSettingsSheet", () => {
     });
   });
 
-  it("steps the font size and disables the buttons at the ends", async () => {
+  it("steps the font size and marks the buttons unavailable at the ends (a press there changes nothing)", async () => {
     await open();
     const larger = screen.getByRole("button", { name: readerText.settings.larger });
     const smaller = screen.getByRole("button", { name: readerText.settings.smaller });
     fireEvent.click(larger);
     fireEvent.click(larger);
     expect(getStoredReaderPreferences().fontSize).toBe("xl");
-    expect((larger as HTMLButtonElement).disabled).toBe(true);
+    expect(larger.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(larger);
+    expect(getStoredReaderPreferences().fontSize).toBe("xl");
     fireEvent.click(smaller);
     expect(getStoredReaderPreferences().fontSize).toBe("l");
   });

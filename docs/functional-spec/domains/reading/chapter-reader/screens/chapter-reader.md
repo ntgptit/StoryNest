@@ -26,8 +26,8 @@
 | SCR-READ-01-C01 | Adult gate (SCR-MAT-01) | Wraps everything when the story is mature (`BR-MAT-009`) | `reader-screen.tsx:71` |
 | SCR-READ-01-C02 | Reading tracker | Invisible. Restores and saves position (members) and records the read (everyone) | `reader/components/reading-tracker.tsx`, `reader-screen.tsx:73` |
 | SCR-READ-01-C03 | Back to story link | "←" + story title (truncated). Screen-reader text "Back to story" | `reader-screen.tsx:76-87` |
-| SCR-READ-01-C04 | Display button + Reading options sheet | Right sheet: Font size (−/+, current size name in `<output aria-live>`), Line spacing, Font, Background as `aria-pressed` toggle groups | `reader/components/reader-settings-sheet.tsx` |
-| SCR-READ-01-C05 | Contents button + TOC sheet | Right sheet listing published chapters, current one `aria-current="page"` | `reader/components/toc-sheet.tsx` |
+| SCR-READ-01-C04 | Display button + Reading options sheet | Right sheet: Font size (−/+ stepper, current size name in `<output aria-live>` rolling up or down; at an end the button is `aria-disabled` and a press shakes the stepper), Line spacing and Font as `aria-pressed` toggle groups, Background as a radio group of paper-colour swatches ("Aa" in the theme's ink; arrow keys move; the picked name shows beside the label). Picking a background spreads the new look in a circle from the swatch (View Transitions; instant with reduced motion or without the API) | `reader/components/reader-settings-sheet.tsx`, `packages/ui/src/widgets/rolling-stepper.tsx`, `swatch-picker.tsx`, `lib/view-transition.ts` (`revealFrom`) |
+| SCR-READ-01-C05 | Contents button + TOC sheet | Right sheet listing published chapters, current one `aria-current="page"`. A chapter with two or more headings gets an "In this chapter" outline on top (the section on screen when the sheet opened is `aria-current="location"`; an entry closes the sheet, scrolls to the heading and focuses it). A long story (more than 50 chapters, BR-READ-022) gets a scrub rail of range starts (1, 51, 101…): drag, press or ↑/↓/Home/End to jump the list, a bubble shows the mark under the finger | `reader/components/toc-sheet.tsx`, `packages/ui/src/widgets/section-outline.tsx`, `scrub-index.tsx` |
 | SCR-READ-01-C06 | Progress bar | `role="progressbar"` "Chapter reading progress", 0–100 of the **page** scroll | `packages/ui/src/widgets/reading-progress.tsx`, `reader-screen.tsx:93` |
 | SCR-READ-01-C07 | Chapter header | "Chapter N" + h1 title | `reader-screen.tsx:97-100` |
 | SCR-READ-01-C08 | Chapter blocks | Paragraph / heading (h2) / image / divider with anchors `b-{id}` and inline marks | `reader/components/reader-blocks.tsx`, `block-view.tsx`, `rich-text.tsx` |
@@ -43,6 +43,8 @@
 | SCR-READ-01-C18 | Quote tools | Toolbar over a selection inside one block (below it on touch screens): "Copy quote", "Comment on paragraph"; Esc dismisses (BR-READ-021) | `packages/ui/src/widgets/selection-toolbar.tsx`, `reader-blocks.tsx` |
 | SCR-READ-01-C19 | Landing highlight | One highlighter sweep over the block reached by a deep link or the resume position (BR-READ-021) | `packages/ui/src/widgets/highlight-sweep.tsx`, `reader-blocks.tsx` |
 | SCR-READ-01-C20 | Back to top | Round button (ring = page progress) after 1.5 screens of scrolling, above the BottomNav; glides to the top and focuses the chapter title | `packages/ui/src/widgets/back-to-top-button.tsx`, `reader-screen.tsx` |
+| SCR-READ-01-C22 | Read aloud | Round play/pause button in the toolbar (ring = share of text blocks read) where the browser has the Web Speech API; hidden otherwise and for a chapter without text. Speaks paragraphs and headings one by one in the app language, starting at the first block below the reader bar; pause remembers the block; stops when leaving the chapter | `reader/components/read-aloud-button.tsx`, `hooks/use-read-aloud.ts`, `packages/ui/src/widgets/play-pause-button.tsx` |
+| SCR-READ-01-C23 | Story finished | Under the last published chapter of a story marked completed only: card "You finished the story!" with Add to list (after the end marker), and Similar stories after the chapter nav. Its badge pops and confetti bursts once when the reader scrolls it into view (never on load; no confetti with reduced motion) | `reader/components/story-finished.tsx`, `packages/ui/src/widgets/finish-celebration.tsx` |
 | SCR-READ-01-C21 | Focus mode | Switch in the Reading options sheet; dims all blocks but the one at the reading line, follows scroll and ↑/↓ (BR-READ-020) | `reader-settings-sheet.tsx`, `hooks/use-reader-focus.ts` |
 
 ## C. User actions & system responses
@@ -111,8 +113,8 @@
 | Field | Value |
 | --- | --- |
 | Trigger | "Decrease font size" / "Increase font size" in C04 |
-| Preconditions | Not at the end of the scale |
-| Expected behavior | One step (s ↔ m ↔ l ↔ xl), applied at once. The size name is announced |
+| Preconditions | — |
+| Expected behavior | One step (s ↔ m ↔ l ↔ xl), applied at once. The size name rolls in and is announced. At the end of the scale the press changes nothing and the stepper shakes |
 | State change | Device copy, plus account copy after 1.5 s (members) |
 | Validation | Closed list |
 | Error behavior | — |
@@ -122,9 +124,9 @@
 #### SCR-READ-01-A07 — Change line spacing / font / background
 | Field | Value |
 | --- | --- |
-| Trigger | Toggle buttons in C04 ("Compact/Normal/Relaxed", "Sans-serif/Serif", "Match app theme/Light/Sepia/Dark") |
+| Trigger | Toggle buttons in C04 ("Compact/Normal/Relaxed", "Sans-serif/Serif") and the background swatches ("Match app theme/Light/Sepia/Dark") |
 | Preconditions | — |
-| Expected behavior | Applied at once to the reader (the background applies to the whole page). The pressed state updates |
+| Expected behavior | Applied at once to the reader (the background applies to the whole page, revealed in a circle from the swatch). The pressed / checked state updates |
 | State change | As A06 |
 | Validation | Closed list |
 | Error behavior | — |
@@ -216,7 +218,7 @@
 | Validation error | Not applicable | Preferences are closed lists. Comment and report forms belong to CMT/MOD |
 | Request error | Implemented (partial) | Load: error state + "Try again". Vote: toast + rollback. Progress, read and preference sync errors are silent by design. **Missing**: a vote-state load error hides the vote button (U-STORY-01) |
 | Success | Implemented | Vote state flips; preferences visibly apply. No toast for vote success (by design) |
-| Disabled | Implemented | Vote button while pending; font-size buttons at the ends; nav placeholders at the first/last chapter |
+| Disabled | Implemented | Vote button while pending; font-size buttons at the ends (`aria-disabled`, still focusable); nav placeholders at the first/last chapter |
 | Unauthorized | Implemented | Hidden or unpublished → 404 "Chapter not found" + "The chapter doesn't exist, isn't published, or has been removed." Guest vote → login |
 | Offline | Missing | No offline mode or cache. Network errors go to the error state; progress writes retry on the next push |
 | Unsaved changes | Not applicable | Settings auto-save. Pending progress is flushed on hide/leave |
@@ -235,7 +237,9 @@
 | SCR-READ-01-AC07 | **Given** the first published chapter **Then** "Previous chapter" is a disabled placeholder. **Given** the last **Then** "Next chapter" is disabled. Gaps in `sort_order` do not create dead links. |
 | SCR-READ-01-AC08 | **Given** the reader picks Sepia / Serif / Large **Then** the change applies immediately, survives a reload with no flash of the default theme, and is gone after leaving the reader. |
 | SCR-READ-01-AC09 | **Given** a member with a saved account copy **When** they open a chapter on a new device **Then** the account settings replace the device settings. **Given** no account copy and a customised device **Then** the device settings are uploaded. |
-| SCR-READ-01-AC10 | **Given** font size Extra large **Then** "Increase font size" is disabled. **Given** Small **Then** "Decrease font size" is disabled. |
+| SCR-READ-01-AC10 | **Given** font size Extra large **Then** "Increase font size" is `aria-disabled` and pressing it changes nothing. **Given** Small **Then** the same for "Decrease font size". |
+| SCR-READ-01-AC17 | **Given** a browser with speech synthesis **When** the reader presses "Read this chapter aloud" **Then** the text blocks are spoken one by one from the first block on screen; "Pause reading aloud" stops and a new play resumes at that block. **Given** no speech synthesis **Then** there is no button. |
+| SCR-READ-01-AC18 | **Given** the last published chapter of a completed story **Then** "You finished the story!" with Add to list and similar stories is shown; **Given** an ongoing story or another chapter **Then** it is not. |
 | SCR-READ-01-AC11 | **Given** a mature story not confirmed on this device **Then** no chapter text is rendered (not even during loading) until the reader confirms 18+. |
 | SCR-READ-01-AC12 | **Given** the chapter request fails **Then** "Couldn't load the chapter" with "Try again" is shown, and retry refetches the chapter and story. |
 | SCR-READ-01-AC13 | **Given** a public, non-mature story **Then** the page has `Chapter` JSON-LD with `isPartOf` Book. **Given** unlisted or mature **Then** `noindex,nofollow` and no JSON-LD. |

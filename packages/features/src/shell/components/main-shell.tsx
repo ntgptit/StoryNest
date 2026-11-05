@@ -12,8 +12,10 @@ import { useStandaloneDisplay } from "../hooks/use-installed-app.ts";
 import { navItems } from "../model/nav-items.ts";
 import { canOfferPullToRefresh, isPullRefreshPage } from "../model/pull-refresh.ts";
 import { shellText } from "../strings.ts";
+import { CommandPaletteLauncher } from "./command-palette-launcher.tsx";
 import { ConnectionStatus } from "./connection-status.tsx";
 import { DesktopNav } from "./desktop-nav.tsx";
+import { FirstRunIntro } from "./first-run-intro.tsx";
 import { SiteHeader } from "./site-header.tsx";
 
 /**
@@ -43,6 +45,8 @@ export function MainShell({ children }: { children: ReactNode }) {
       }
     >
       <AdultContentSync />
+      <FirstRunIntro />
+      <CommandPaletteLauncher />
       {/* The page's own queries are the active ones: refetching them is the page's "reload". */}
       <PullToRefresh
         enabled={pullToRefresh}

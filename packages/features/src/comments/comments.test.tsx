@@ -311,10 +311,13 @@ describe("CommentThread", () => {
     const c = fakeClient({ post_comment: (args) => ({ data: args.p_id, error: null }) });
     renderUi(c, thread());
     const box = await screen.findByLabelText(commentText.composer.label);
+    // The send button shows "posted" with a check for a moment after a success, and still sends the next text.
+    const send = (box as HTMLTextAreaElement).form!.querySelector<HTMLButtonElement>('button[type="submit"]')!;
     for (const text of ["Một", "Hai"]) {
       fireEvent.change(box, { target: { value: text } });
-      fireEvent.click(screen.getByRole("button", { name: commentText.composer.submit }));
+      fireEvent.click(send);
       await waitFor(() => expect((box as HTMLTextAreaElement).value).toBe(""));
+      await waitFor(() => expect(send.textContent).toBe(commentText.composer.done));
     }
     const [one, two] = c.of("post_comment");
     expect(two!.args.p_id).not.toBe(one!.args.p_id);
@@ -460,6 +463,23 @@ describe("CommentItem actions", () => {
     fireEvent.click(buttons[buttons.length - 1]!);
     await waitFor(() => expect(c.of("post_comment")).toHaveLength(1));
     expect(c.of("post_comment")[0]!.args).toMatchObject({ p_parent_id: cid(1), p_block_id: BLOCK, p_body: "Đồng ý" });
+  });
+
+  it("opens the reply box when a top-level comment is swiped right on touch, not on a short swipe", async () => {
+    const c = fakeClient({ list_comments: () => ({ data: [row(1)], error: null }) });
+    renderUi(c, thread());
+    const list = await listOf();
+    const content = list.getByText("Nội dung 1").closest("[data-swiping], .touch-pan-y") as HTMLElement;
+    const touch = (x: number) => ({ pointerType: "touch", isPrimary: true, pointerId: 1, clientX: x, clientY: 100 });
+    fireEvent.pointerDown(content, touch(20));
+    fireEvent.pointerMove(content, touch(50));
+    fireEvent.pointerUp(content, touch(50));
+    expect(screen.queryByLabelText(commentText.composer.replyLabel)).toBeNull();
+    fireEvent.pointerDown(content, touch(20));
+    fireEvent.pointerMove(content, touch(120));
+    fireEvent.pointerUp(content, touch(120));
+    expect(await screen.findByLabelText(commentText.composer.replyLabel)).toBeTruthy();
+    expect(list.getByRole("button", { name: commentText.item.reply }).getAttribute("aria-expanded")).toBe("true");
   });
 
   it("offers no reply on a reply, and no menu on someone else's comment", async () => {

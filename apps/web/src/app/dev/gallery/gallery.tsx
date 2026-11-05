@@ -69,6 +69,7 @@ import { CopyLinkButton } from "@storynest/ui/widgets/copy-link-button";
 import { ExpandableText } from "@storynest/ui/widgets/expandable-text";
 import { FindReplaceBar } from "@storynest/ui/widgets/find-replace-bar";
 import { FunnelSteps, type FunnelStep } from "@storynest/ui/widgets/funnel-steps";
+import { ScatterPicker } from "@storynest/ui/widgets/scatter-picker";
 import { ImageCropDialog, type CropArea } from "@storynest/ui/widgets/image-crop-dialog";
 import { MegaNav, MegaNavSection, megaNavItemClass, type MegaNavEntry } from "@storynest/ui/widgets/mega-nav";
 import { MergeChoice } from "@storynest/ui/widgets/merge-choice";
@@ -125,6 +126,34 @@ import { SplitButton } from "@storynest/ui/widgets/split-button";
 import { SplitPane } from "@storynest/ui/widgets/split-pane";
 import { SpotlightTour } from "@storynest/ui/widgets/spotlight-tour";
 import { UnsavedChangesBar } from "@storynest/ui/widgets/unsaved-changes-bar";
+import { CoverStack } from "@storynest/ui/widgets/cover-stack";
+import { InlineEditTitle } from "@storynest/ui/widgets/inline-edit-title";
+import { PadlockIcon } from "@storynest/ui/widgets/padlock-icon";
+// Batch 3 · studio3
+import { Breadcrumbs } from "@storynest/ui/widgets/breadcrumbs";
+import { InlineAlert } from "@storynest/ui/widgets/inline-alert";
+import { SubmitButton } from "@storynest/ui/widgets/submit-button";
+import { revealFrom } from "@storynest/ui/lib/view-transition";
+import { AccordionList } from "@storynest/ui/widgets/accordion-list";
+import { FinishCelebration } from "@storynest/ui/widgets/finish-celebration";
+import { PlayPauseButton } from "@storynest/ui/widgets/play-pause-button";
+import { RollingStepper } from "@storynest/ui/widgets/rolling-stepper";
+import { ScrubIndex, scrollRowToTop } from "@storynest/ui/widgets/scrub-index";
+import { SectionOutline } from "@storynest/ui/widgets/section-outline";
+import { SwatchPicker } from "@storynest/ui/widgets/swatch-picker";
+// Batch 3 · shell3
+import { PenLine, Settings } from "lucide-react";
+import { AvailabilityHint, type AvailabilityStatus } from "@storynest/ui/widgets/availability-hint";
+import { CommandPalette } from "@storynest/ui/widgets/command-palette";
+import { LockoutCountdown } from "@storynest/ui/widgets/lockout-countdown";
+import { WaveIntro } from "@storynest/ui/widgets/wave-intro";
+import { useArrivals } from "@storynest/ui/lib/use-arrivals";
+import { cn } from "@storynest/ui/lib/utils";
+import { CharacterRing } from "@storynest/ui/widgets/character-ring";
+import { ChoicePills } from "@storynest/ui/widgets/choice-pills";
+import { SizeShrink } from "@storynest/ui/widgets/size-shrink";
+import { SwipeToReply } from "@storynest/ui/widgets/swipe-to-reply";
+import { UploadVeil } from "@storynest/ui/widgets/upload-veil";
 
 const loginSchema = z.object({
   email: z.email("Enter a valid email"),
@@ -2325,6 +2354,817 @@ function AuthoringResponsiveExample() {
   );
 }
 
+const batch3StatsChapters = [
+  { n: 1, reads: 412, likes: 21, retention: null },
+  { n: 2, reads: 318, likes: 12, retention: 0.77 },
+  { n: 3, reads: 290, likes: 25, retention: 0.91 },
+  { n: 4, reads: 201, likes: 6, retention: 0.69 },
+  { n: 5, reads: 188, likes: 15, retention: 0.94 },
+  { n: 6, reads: 33, likes: 4, retention: 0.18 },
+  { n: 7, reads: 12, likes: 3, retention: 0.36 },
+];
+
+function Batch3StatsScatterExample() {
+  const [metric, setMetric] = useState<"likes" | "retention">("likes");
+  const [fade, setFade] = useState(false);
+  const metricName = metric === "likes" ? "Likes per 100 reads" : "Retention";
+  const plotted = batch3StatsChapters.flatMap((c) => {
+    const value = metric === "likes" ? (c.likes / c.reads) * 100 : c.retention;
+    return value === null ? [] : [{ ...c, value }];
+  });
+  const format = (v: number) => (metric === "likes" ? v.toFixed(1) : `${Math.round(v * 100)}%`);
+  return (
+    <div id="batch3-stats-scatter" className="max-w-xl">
+      <ScatterPicker
+        toolbar={
+          <div role="group" aria-label="Vertical axis" className="flex flex-wrap gap-1">
+            {(["likes", "retention"] as const).map((option) => (
+              <Button
+                key={option}
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-pressed={option === metric}
+                onClick={() => setMetric(option)}
+                className="aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-accent-foreground"
+              >
+                {option === "likes" ? "Likes per 100 reads" : "Retention"}
+              </Button>
+            ))}
+          </div>
+        }
+        label={`Chapters by reads (across) and ${metricName} (up)`}
+        hint="Use the arrow keys to move between chapters, Enter to pick one, Esc to let go."
+        xLabel="Reads →"
+        yLabel={`↑ ${metricName}`}
+        formatX={(v) => String(v)}
+        formatY={format}
+        summary={`${plotted.length} chapters plotted. Press a dot to see its figures.`}
+        filter={{ label: "Fade chapters under 42 reads", pressed: fade, onPressedChange: setFade, below: 42 }}
+        points={plotted.map((c) => {
+          const detail = `Chapter ${c.n}: ${c.reads} reads, ${c.likes} likes, ${metricName} ${format(c.value)}.`;
+          return { key: String(c.n), x: c.reads, y: c.value, label: detail, detail };
+        })}
+      />
+    </div>
+  );
+}
+
+function Browse3TitleExample() {
+  const [title, setTitle] = useState("Rainy-day reads");
+  return (
+    <div id="browse3-title" className="flex flex-col gap-1">
+      <InlineEditTitle
+        value={title}
+        onSave={async (next) => {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          if (next.toLowerCase() === "fail") throw new Error("Couldn't save. Try again.");
+          setTitle(next);
+        }}
+        validate={(next) => (next === "" ? "Enter a list name." : next.length > 40 ? "Up to 40 characters." : null)}
+        editLabel={`Rename list: ${title}`}
+        inputLabel="List name"
+        saveLabel="Save name"
+        cancelLabel="Cancel"
+      />
+      <p className="text-xs text-muted-foreground">Press the title. Enter saves, Esc cancels, "fail" fails.</p>
+    </div>
+  );
+}
+
+function Browse3PadlockExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Button id="browse3-padlock" variant="outline" className="w-fit" onClick={() => setOpen((v) => !v)}>
+      <PadlockIcon open={open} className="size-4" />
+      {open ? "Public" : "Private"}
+    </Button>
+  );
+}
+
+function Browse3CoverStackExample() {
+  const lists = [
+    { name: "Rainy-day reads", covers: [null, null, null] },
+    { name: "Short and sweet", covers: [null] },
+    { name: "Empty for now", covers: [] },
+  ];
+  return (
+    <ul id="browse3-stack" className="flex flex-col gap-2">
+      {lists.map((list) => (
+        <li key={list.name}>
+          <a
+            href="#browse3-stack"
+            className="group flex items-center gap-3 rounded-xl border bg-card p-3 text-card-foreground hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <CoverStack covers={list.covers.map((url) => ({ url }))} />
+            <span className="text-sm font-semibold">{list.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Browse3RevealExample() {
+  const [count, setCount] = useState(4);
+  const items = Array.from({ length: count }, (_, i) => ({ id: `story-${i + 1}` }));
+  return (
+    <div id="browse3-reveal">
+      <InfiniteList
+        items={items}
+        getKey={(item) => item.id}
+        listClassName="grid grid-cols-2 gap-3 sm:grid-cols-4"
+        renderItem={(item) => (
+          <div className="flex h-20 items-center justify-center rounded-xl border bg-card text-sm">{item.id}</div>
+        )}
+        hasMore={count < 16}
+        isLoadingMore={false}
+        onLoadMore={() => setCount((n) => Math.min(n + 4, 16))}
+        loadMoreLabel="Load more"
+        revealAppended
+      />
+    </div>
+  );
+}
+
+// Batch 3 · studio3: inline alerts (072), submit button states (001), breadcrumbs with a story switcher (103, 037).
+function Studio3AlertsExample() {
+  const [shown, setShown] = useState(true);
+  const heading = useRef<HTMLHeadingElement>(null);
+  return (
+    <div className="flex max-w-md flex-col gap-3" id="studio3-alerts">
+      <h3 ref={heading} tabIndex={-1} className="text-sm font-semibold outline-none">
+        Publish
+      </h3>
+      <InlineAlert
+        title="Unsaved text from this device"
+        actions={
+          <>
+            <Button size="sm">Restore</Button>
+            <Button size="sm" variant="ghost">
+              Discard
+            </Button>
+          </>
+        }
+      >
+        Kept 3 minutes ago, after the connection dropped.
+      </InlineAlert>
+      <InlineAlert tone="danger" title="The draft was changed elsewhere">
+        Reload to get the new draft; unsaved changes here will be lost.
+      </InlineAlert>
+      {shown ? (
+        <InlineAlert
+          tone="danger"
+          onDismiss={() => setShown(false)}
+          dismissLabel="Dismiss the error"
+          focusAfterDismiss={heading}
+        >
+          The draft or the chapter state changed elsewhere. Reload and try again.
+        </InlineAlert>
+      ) : (
+        <Button size="sm" variant="outline" className="w-fit" onClick={() => setShown(true)}>
+          Show the error again
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function Studio3SubmitExample() {
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(0);
+  return (
+    <form
+      id="studio3-submit"
+      className="flex items-center gap-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setBusy(true);
+        setTimeout(() => {
+          setBusy(false);
+          setSaved((count) => count + 1);
+        }, 1200);
+      }}
+    >
+      <SubmitButton label="Save changes" busyLabel="Saving…" doneLabel="Saved" busy={busy} succeeded={saved} />
+    </form>
+  );
+}
+
+function Studio3CrumbsExample() {
+  const toast = useAppToast();
+  const [story, setStory] = useState("a");
+  const stories = [
+    { id: "a", label: "The lantern keeper of the northern ferry crossing", description: "Owner" },
+    { id: "b", label: "Salt and paper", description: "Co-author" },
+    { id: "c", label: "Night market", description: "Editor" },
+  ];
+  const current = stories.find((item) => item.id === story)!;
+  return (
+    <div id="studio3-crumbs" className="max-w-xl">
+      <Breadcrumbs
+        label="Location in Studio"
+        LinkComponent={AppLink}
+        items={[
+          { label: "Studio", href: "/dev/gallery" },
+          {
+            label: current.label,
+            href: "/dev/gallery",
+            switcher: {
+              label: "Switch to another story",
+              value: story,
+              options: stories,
+              onSelect: (id) => {
+                setStory(id);
+                toast.info(`Would open /studio/story/${id}/chapters`);
+              },
+            },
+          },
+          { label: "Chapters" },
+        ]}
+      />
+    </div>
+  );
+}
+
+function Reader3ToolbarExample() {
+  const [playing, setPlaying] = useState(false);
+  const [read, setRead] = useState(0);
+  return (
+    <div className="flex items-center gap-3" data-slot="reader3-toolbar-demo">
+      <PlayPauseButton
+        playing={playing}
+        progress={read / 8}
+        onToggle={() => {
+          setPlaying((p) => !p);
+          if (!playing) setRead((n) => (n >= 8 ? 1 : n + 1));
+        }}
+        playLabel="Read this chapter aloud"
+        pauseLabel="Pause reading aloud"
+      />
+      <span className="text-sm text-muted-foreground">
+        {playing ? "Reading aloud" : "Paused"} · paragraph {read} of 8
+      </span>
+    </div>
+  );
+}
+
+const READER3_SIZES = ["Small", "Medium", "Large", "Extra large"];
+const READER3_THEMES = [
+  {
+    value: "site",
+    label: "Match app theme",
+    className: "bg-[linear-gradient(135deg,var(--color-paper-light)_50%,var(--color-paper-dark)_50%)]",
+  },
+  { value: "light", label: "Light", className: "bg-paper-light text-ink-light", content: "Aa" },
+  { value: "sepia", label: "Sepia", className: "bg-paper-sepia text-ink-sepia", content: "Aa" },
+  { value: "dark", label: "Dark", className: "bg-paper-dark text-ink-dark", content: "Aa" },
+] as const;
+type Reader3Theme = (typeof READER3_THEMES)[number]["value"];
+
+function Reader3SettingsExample() {
+  const [size, setSize] = useState(1);
+  const [theme, setTheme] = useState<Reader3Theme>("site");
+  return (
+    <div className="flex max-w-sm flex-col gap-6 rounded-xl border p-4" data-slot="reader3-settings-demo">
+      <RollingStepper
+        label="Font size"
+        valueText={READER3_SIZES[size] ?? ""}
+        position={size}
+        canDecrease={size > 0}
+        canIncrease={size < READER3_SIZES.length - 1}
+        onStep={(d) => setSize((n) => n + d)}
+        decreaseLabel="Decrease font size"
+        increaseLabel="Increase font size"
+      />
+      <SwatchPicker<Reader3Theme>
+        label="Background"
+        options={READER3_THEMES}
+        value={theme}
+        onChange={(next, swatch) =>
+          revealFrom(swatch, () => {
+            setTheme(next);
+            // Re-skins the whole gallery like the reader does; "Match app theme" puts it back.
+            if (next === "site") delete document.documentElement.dataset.readerTheme;
+            else document.documentElement.dataset.readerTheme = next;
+          })
+        }
+      />
+    </div>
+  );
+}
+
+function Reader3ContentsExample() {
+  const chapters = Array.from({ length: 240 }, (_, i) => i + 1);
+  const marks = chapters.filter((n) => n % 50 === 1);
+  const [active, setActive] = useState(0);
+  const list = useRef<HTMLOListElement>(null);
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row" data-slot="reader3-contents-demo">
+      <SectionOutline
+        title="In this chapter"
+        items={[
+          { id: "a", label: "The fog comes down" },
+          { id: "b", label: "A map in the drawer" },
+          { id: "c", label: "Lanterns" },
+        ]}
+        currentId="b"
+        onSelect={() => undefined}
+        className="sm:w-56"
+      />
+      <div className="relative h-72 min-w-0 rounded-xl border sm:flex-1">
+        <ol ref={list} className="h-full overflow-y-auto py-2 pr-12 pl-4 text-sm">
+          {chapters.map((n) => (
+            <li key={n} data-index={n - 1} className="py-1.5">
+              Chapter {n}
+            </li>
+          ))}
+        </ol>
+        <ScrubIndex
+          label="Jump to chapter"
+          marks={marks.map(String)}
+          active={active}
+          onSelect={(i) => {
+            setActive(i);
+            const row = list.current?.querySelector<HTMLElement>(`[data-index="${(marks[i] ?? 1) - 1}"]`);
+            if (row && list.current) scrollRowToTop(list.current, row);
+          }}
+          markLabel={(m) => `From chapter ${m}`}
+          className="absolute inset-y-2 right-2"
+        />
+      </div>
+    </div>
+  );
+}
+
+function Reader3FinishExample() {
+  const [play, setPlay] = useState(0);
+  return (
+    <div className="flex max-w-md flex-col gap-3" data-slot="reader3-finish-demo">
+      <FinishCelebration
+        title="You finished the story!"
+        description="The Misty Forest is complete. Thanks for reading all the way to the last chapter."
+        play={play}
+      >
+        <Button variant="outline">Add to list</Button>
+      </FinishCelebration>
+      <Button variant="ghost" className="w-fit" onClick={() => setPlay((n) => n + 1)}>
+        Celebrate again
+      </Button>
+    </div>
+  );
+}
+
+function Reader3RangesExample() {
+  const [open, setOpen] = useState<string | null>("0");
+  const ranges = [0, 50, 100, 150].map((start) => ({
+    start,
+    count: start === 150 ? 37 : 50,
+  }));
+  return (
+    <AccordionList
+      className="max-w-xl"
+      openId={open}
+      onOpenChange={setOpen}
+      items={ranges.map(({ start, count }) => ({
+        id: String(start),
+        title: `Chapters ${start + 1}–${start + count}`,
+        meta: `${count} chapters`,
+        content: (
+          <ol className="divide-y border-t text-sm">
+            {Array.from({ length: 5 }, (_, i) => (
+              <li key={i} className="px-4 py-2.5">
+                Chapter {start + i + 1}
+              </li>
+            ))}
+          </ol>
+        ),
+      }))}
+    />
+  );
+}
+
+function Shell3LockoutExample() {
+  const total = 15;
+  const cooldown = useCountdown(total);
+  const [started, setStarted] = useState(false);
+  return (
+    <div id="shell3-lockout" className="flex max-w-sm flex-col gap-3">
+      {started ? (
+        <LockoutCountdown
+          secondsLeft={cooldown.left}
+          total={total}
+          title="Too many attempts"
+          readyTitle="You can try again now"
+          waitingLabel={(clock) => `Try again in ${clock}`}
+          action={
+            cooldown.left > 0 ? (
+              <a href="#shell3-lockout" className="text-primary underline-offset-4 hover:underline">
+                Reset your password instead
+              </a>
+            ) : undefined
+          }
+        />
+      ) : null}
+      <Button
+        type="button"
+        disabled={cooldown.left > 0}
+        onClick={() => {
+          setStarted(true);
+          cooldown.restart();
+        }}
+      >
+        Sign in
+      </Button>
+    </div>
+  );
+}
+
+const shell3TakenNames = ["reader", "admin", "storynest"];
+
+function Shell3AvailabilityExample() {
+  const [value, setValue] = useState("");
+  const [status, setStatus] = useState<AvailabilityStatus>("idle");
+  const timer = useRef<number | undefined>(undefined);
+  return (
+    <div id="shell3-availability" className="flex max-w-sm flex-col gap-2">
+      <Label htmlFor="shell3-username">Username (try “reader”)</Label>
+      <Input
+        id="shell3-username"
+        value={value}
+        autoCapitalize="none"
+        spellCheck={false}
+        onChange={(event) => {
+          const next = event.target.value;
+          setValue(next);
+          window.clearTimeout(timer.current);
+          if (!/^[A-Za-z0-9_]{3,30}$/.test(next)) return setStatus("idle");
+          setStatus("checking");
+          timer.current = window.setTimeout(
+            () => setStatus(shell3TakenNames.includes(next.toLowerCase()) ? "taken" : "available"),
+            700,
+          );
+        }}
+      />
+      <AvailabilityHint
+        status={status}
+        labels={{
+          checking: "Checking the name…",
+          available: "This name looks free",
+          taken: "This name is already taken",
+        }}
+      />
+    </div>
+  );
+}
+
+function Shell3RetryExample() {
+  const [attempts, setAttempts] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  if (loaded) {
+    return (
+      <div className="flex items-center gap-2">
+        <p className="text-sm">Loaded after {attempts} retries.</p>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setLoaded(false);
+            setAttempts(0);
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div id="shell3-retry" className="rounded-xl border">
+      <ErrorState
+        title="Couldn't load this list"
+        description="The first retry fails, the second works."
+        retryLabel="Retry"
+        onRetry={() =>
+          new Promise<void>((resolve) =>
+            window.setTimeout(() => {
+              setAttempts((count) => count + 1);
+              if (attempts >= 1) setLoaded(true);
+              resolve();
+            }, 900),
+          )
+        }
+      />
+    </div>
+  );
+}
+
+function Shell3IntroExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div id="shell3-intro">
+      <Button variant="outline" onClick={() => setOpen(true)}>
+        Show the first-run intro
+      </Button>
+      {open ? (
+        <WaveIntro
+          open
+          onOpenChange={setOpen}
+          pages={[
+            {
+              icon: BookOpen,
+              title: "Read your way",
+              body: "Open a story and read it chapter by chapter. Where you stopped is remembered for next time.",
+            },
+            {
+              icon: Library,
+              title: "Follow and save to your Library",
+              body: "Follow the stories and authors you like, and save stories to your Library to find them again.",
+            },
+            {
+              icon: PenLine,
+              title: "Write in Studio",
+              body: "Start a new story, write it chapter by chapter and publish when you are ready.",
+            },
+          ]}
+          labels={{ next: "Next", done: "Get started", skip: "Skip", step: (n, total) => `Page ${n} of ${total}` }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+const shell3Commands = [
+  { key: "/", label: "Home", icon: Home },
+  { key: "/library", label: "Library", icon: Library },
+  { key: "/studio", label: "Studio", icon: PenLine },
+  { key: "/settings", label: "Settings", icon: Settings },
+];
+const shell3Stories = ["The Lantern Keeper", "Library of Ashes", "Studio Nights"];
+
+function Shell3PaletteExample() {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<string | null>(null);
+  const needle = query.trim().toLowerCase();
+  return (
+    <div id="shell3-palette" className="flex flex-wrap items-center gap-3">
+      <Button
+        variant="outline"
+        onClick={() => {
+          setQuery("");
+          setOpen(true);
+        }}
+      >
+        Open the command palette (Ctrl/⌘ K in the app)
+      </Button>
+      {picked ? <span className="text-sm text-muted-foreground">Picked: {picked}</span> : null}
+      <CommandPalette
+        open={open}
+        onOpenChange={setOpen}
+        query={query}
+        onQueryChange={setQuery}
+        groups={[
+          {
+            key: "go",
+            label: "Go to",
+            items: shell3Commands
+              .filter((c) => c.label.toLowerCase().includes(needle))
+              .map((c) => ({ ...c, onSelect: () => setPicked(c.key) })),
+          },
+          {
+            key: "stories",
+            label: "Stories",
+            items:
+              needle.length >= 2
+                ? shell3Stories
+                    .filter((title) => title.toLowerCase().includes(needle))
+                    .map((title) => ({ key: title, label: title, icon: BookOpen, onSelect: () => setPicked(title) }))
+                : [],
+          },
+        ]}
+        labels={{
+          title: "Command palette",
+          input: "Find a page or a story",
+          placeholder: "Go to a page or find a story…",
+          empty: "Nothing matches",
+          results: "Results",
+        }}
+        footer={
+          <>
+            <span>↑↓ select</span>
+            <span>Enter open</span>
+            <span>Esc close</span>
+          </>
+        }
+      />
+    </div>
+  );
+}
+
+type Community3Kind = "all" | "chapters" | "replies" | "team";
+type Community3Row = { id: string; kind: Exclude<Community3Kind, "all">; text: string; read: boolean };
+
+function Community3NotificationsExample() {
+  const [rows, setRows] = useState<Community3Row[]>([
+    { id: "n3", kind: "chapters", text: "“Salt and paper” just published chapter 12", read: false },
+    { id: "n2", kind: "replies", text: "Mai replied to your comment: “Same here!”", read: true },
+    { id: "n1", kind: "team", text: "Lan invited you to co-author “Night market”", read: false },
+  ]);
+  const [kind, setKind] = useState<Community3Kind>("all");
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const arrivals = useArrivals(rows, (row) => row.id);
+  const scoped = rows.filter((row) => !unreadOnly || !row.read);
+  const shown = scoped.filter((row) => kind === "all" || row.kind === kind);
+  const count = (value: Community3Kind) => scoped.filter((row) => value === "all" || row.kind === value).length;
+  const labels: Record<Community3Kind, string> = {
+    all: "All",
+    chapters: "New chapters",
+    replies: "Replies",
+    team: "Team",
+  };
+  return (
+    <div id="community3-notifications" className="flex max-w-2xl flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <ChoicePills
+          aria-label="Filter by type"
+          value={kind}
+          onValueChange={setKind}
+          options={(Object.keys(labels) as Community3Kind[]).map((value) => ({
+            value,
+            label: labels[value],
+            count: count(value),
+          }))}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          aria-pressed={unreadOnly}
+          className="aria-pressed:border-primary aria-pressed:bg-primary/10"
+          onClick={() => setUnreadOnly((on) => !on)}
+        >
+          Unread only
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() =>
+            setRows((current) => [
+              {
+                id: `n${current.length + 1}`,
+                kind: "replies",
+                text: `Reader ${current.length + 1} replied to your comment`,
+                read: false,
+              },
+              ...current,
+            ])
+          }
+        >
+          Simulate a new one
+        </Button>
+      </div>
+      <p aria-live="polite" className="min-h-4 text-xs text-muted-foreground">
+        {kind !== "all" || unreadOnly ? `Showing ${shown.length} of ${rows.length} loaded notifications` : ""}
+      </p>
+      <ul className="flex flex-col gap-2">
+        {shown.map((row) => (
+          <li
+            key={row.id}
+            className={cn(
+              "rounded-xl border bg-card p-3 text-sm",
+              !row.read && "font-medium",
+              arrivals.has(row.id) && "animate-row-arrive",
+            )}
+          >
+            {row.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const COMMUNITY3_REASONS = {
+  spam: { label: "Spam or advertising", hint: "Say what is being advertised or repeated, if it isn't obvious." },
+  harassment: { label: "Harassment or abuse", hint: "Say who is targeted and how. Quoting the words helps." },
+  copyright: { label: "Copyright infringement", hint: "Name the original work and where it was first published." },
+  other: { label: "Other reason", hint: "Tell us what is wrong. The more specific, the faster a moderator can act." },
+} as const;
+type Community3Reason = keyof typeof COMMUNITY3_REASONS;
+
+function Community3ReportExample() {
+  const [reason, setReason] = useState<Community3Reason | "">("");
+  const [details, setDetails] = useState("");
+  const max = 200;
+  return (
+    <div id="community3-report" className="flex max-w-md flex-col gap-3">
+      <p id="community3-reason" className="text-sm font-medium">
+        Reason
+      </p>
+      <ChoicePills
+        aria-labelledby="community3-reason"
+        value={reason}
+        onValueChange={setReason}
+        options={(Object.keys(COMMUNITY3_REASONS) as Community3Reason[]).map((value) => ({
+          value,
+          label: COMMUNITY3_REASONS[value].label,
+        }))}
+      />
+      <div className="relative">
+        <Textarea
+          aria-label="Details (optional)"
+          aria-describedby="community3-count"
+          maxLength={max}
+          value={details}
+          className="pr-10"
+          onChange={(event) => setDetails(event.target.value)}
+        />
+        <CharacterRing
+          id="community3-count"
+          length={details.length}
+          max={max}
+          label={`${details.length} of ${max} characters`}
+          className="pointer-events-none absolute right-2.5 bottom-2.5"
+        />
+      </div>
+      {reason === "" ? null : (
+        <p key={reason} className="animate-hint-swap text-xs text-muted-foreground">
+          {COMMUNITY3_REASONS[reason].hint}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Community3UploadExample() {
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(0);
+  return (
+    <div id="community3-upload" className="flex flex-col gap-3">
+      <div className="flex items-end gap-4">
+        <UploadVeil busy={busy} done={done} className="w-24 rounded-lg">
+          <StoryCover title="Salt and paper" coverUrl={null} />
+        </UploadVeil>
+        <UploadVeil busy={busy} done={done} className="rounded-full">
+          <span className="grid size-20 place-items-center rounded-full bg-secondary text-2xl font-semibold">M</span>
+        </UploadVeil>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            setTimeout(() => {
+              setBusy(false);
+              setDone((count) => count + 1);
+            }, 1500);
+          }}
+        >
+          {busy ? "Uploading…" : "Change cover"}
+        </Button>
+      </div>
+      {done > 0 && !busy ? (
+        <SizeShrink
+          original={3_240_000}
+          result={86_000}
+          formatSize={(bytes) =>
+            bytes >= 1_000_000 ? `${(bytes / 1_000_000).toFixed(1)} MB` : `${Math.round(bytes / 1000)} kB`
+          }
+          labels={{
+            original: "Original",
+            result: "Uploaded",
+            saved: (percent) => `${percent}% smaller`,
+            summary: (original, result, percent) => `Original ${original}, uploaded ${result}, ${percent}% smaller`,
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function Community3SwipeExample() {
+  const [replying, setReplying] = useState(false);
+  return (
+    <div id="community3-swipe" className="flex max-w-md flex-col gap-2">
+      <SwipeToReply onReply={() => setReplying(true)}>
+        <article className="flex flex-col gap-1 rounded-lg border bg-card p-3 text-sm">
+          <span className="font-medium">Mai</span>
+          <p>That last chapter broke my heart. (Swipe me right on a touch screen.)</p>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-fit px-2 text-xs"
+            aria-expanded={replying}
+            onClick={() => setReplying((open) => !open)}
+          >
+            Reply
+          </Button>
+        </article>
+      </SwipeToReply>
+      {replying ? <Textarea aria-label="Write a reply" autoFocus placeholder="Write a reply…" /> : null}
+    </div>
+  );
+}
+
 export function Gallery() {
   const toast = useAppToast();
   const { pathname } = useNavigation();
@@ -2570,6 +3410,46 @@ export function Gallery() {
         <AuthoringTourExample />
         <AuthoringSplitExample />
         <AuthoringResponsiveExample />
+      </Section>
+
+      <Section title="Batch 3 · stats3">
+        <Batch3StatsScatterExample />
+      </Section>
+
+      <Section title="Batch 3 · browse3">
+        <Browse3TitleExample />
+        <Browse3PadlockExample />
+        <Browse3CoverStackExample />
+        <Browse3RevealExample />
+      </Section>
+
+      <Section title="Batch 3 · studio3">
+        <Studio3AlertsExample />
+        <Studio3SubmitExample />
+        <Studio3CrumbsExample />
+      </Section>
+
+      <Section title="Batch 3 · reader3">
+        <Reader3ToolbarExample />
+        <Reader3SettingsExample />
+        <Reader3ContentsExample />
+        <Reader3FinishExample />
+        <Reader3RangesExample />
+      </Section>
+
+      <Section title="Batch 3 · shell3">
+        <Shell3LockoutExample />
+        <Shell3AvailabilityExample />
+        <Shell3RetryExample />
+        <Shell3IntroExample />
+        <Shell3PaletteExample />
+      </Section>
+
+      <Section title="Batch 3 · community3">
+        <Community3NotificationsExample />
+        <Community3ReportExample />
+        <Community3UploadExample />
+        <Community3SwipeExample />
       </Section>
     </AppShell>
   );

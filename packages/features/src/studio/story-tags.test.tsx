@@ -316,6 +316,24 @@ describe("TagEditor", () => {
     expect(field().disabled).toBe(true);
   });
 
+  it("pops in only the chips just added, and flags the counter when a list goes past the cap", () => {
+    renderUi(fakeClient({}).client, <Harness initial={[chip("một")]} />);
+    const item = (name: string) => chips().getByText(`#${name}`).closest("li")!;
+    const counter = () => screen.getByText(new RegExp(`/${MAX_STORY_TAGS}`));
+    expect(item("một").className).not.toContain("animate-check-pop"); // there on first render: no motion
+    expect(counter().getAttribute("data-state")).toBe("ok");
+    expect(counter().className).not.toContain("animate-field-shake");
+    fireEvent.change(field(), { target: { value: "hai," } });
+    expect(item("hai").className).toContain("animate-check-pop");
+    expect(item("một").className).not.toContain("animate-check-pop");
+    fireEvent.change(field(), {
+      target: { value: Array.from({ length: MAX_STORY_TAGS }, (_, i) => `thẻ ${i}`).join(",") },
+    });
+    expect(counter().getAttribute("data-state")).toBe("over");
+    expect(counter().className).toContain("animate-field-shake");
+    expect(counter().className).toContain("text-destructive");
+  });
+
   it("shows a problem from the last save", () => {
     renderUi(fakeClient({}).client, <Harness error={t.errors.quota} />);
     expect(screen.getByRole("alert").textContent).toBe(t.errors.quota);
@@ -421,7 +439,11 @@ describe("StoryFormScreen: tags", () => {
     });
     expect(f.writes.filter((w) => w.table === "stories" && w.op === "update")).toEqual([]);
     await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", studioText.form.saved));
-    await waitFor(() => expect(save().disabled).toBe(true)); // saved: nothing left to save
+    // Saved: the button draws its check under "Saved" for a moment, and there is nothing left to save.
+    const done = screen.getByRole("button", { name: studioText.form.done }) as HTMLButtonElement;
+    expect(done.disabled).toBe(true);
+    expect(done.getAttribute("data-state")).toBe("done");
+    expect(screen.getAllByRole("status").some((el) => el.textContent === studioText.form.done)).toBe(true);
   });
 
   it("shows the tags as the database stored them after saving", async () => {

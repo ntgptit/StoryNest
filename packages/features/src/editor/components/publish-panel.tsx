@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarClock } from "lucide-react";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
 import {
@@ -16,6 +16,7 @@ import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
 import { CHAPTER_STATUS } from "@storynest/validation";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
+import { InlineAlert } from "@storynest/ui/widgets/inline-alert";
 import { ReadinessChecklist } from "@storynest/ui/widgets/readiness-checklist";
 import { SplitButton } from "@storynest/ui/widgets/split-button";
 import { useChapterPublishState, usePublishFlow } from "../hooks/use-publishing.ts";
@@ -27,11 +28,27 @@ import {
   localZone,
   minLocalDateTime,
   publishReadiness,
+  scheduleCountdown,
   scheduleInstant,
 } from "../model/publishing.ts";
 import { editorText } from "../strings.ts";
 
 const t = editorText.publish;
+
+/** How often the "Goes live in …" line is refreshed: it never shows seconds, so twice a minute is enough. */
+const COUNTDOWN_TICK_MS = 30_000;
+
+/** The current time, refreshed every `everyMs` while `enabled` (the schedule countdown); frozen otherwise. */
+function useNow(enabled: boolean, everyMs: number): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!enabled) return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), everyMs);
+    return () => clearInterval(timer);
+  }, [enabled, everyMs]);
+  return now;
+}
 
 /**
  * Publish now, schedule, or take the chapter back. Everything is based on the saved draft: before any of them the
@@ -40,6 +57,9 @@ const t = editorText.publish;
  * The buttons are locked from the first click until the answer is back, so a double click cannot publish twice.
  * Publish and Schedule… are one split button (Lucian 010); the readiness checklist above it (Lucian 014) lists the
  * existing rules (publishReadiness) and keeps the split button locked, and says why, until they all hold.
+ * While it runs, the split button's label follows the steps (saving the draft, then publishing; Lucian 081's steps); a
+ * refusal shows as an inline alert that can be dismissed (Lucian 072); a scheduled chapter counts down to its time
+ * (Lucian 100, as text: no flipping digits).
  */
 export function PublishPanel({
   chapterId,
@@ -60,11 +80,14 @@ export function PublishPanel({
   const [confirmUnpublish, setConfirmUnpublish] = useState(false);
   const [scheduleValue, setScheduleValue] = useState("");
   const [scheduleError, setScheduleError] = useState<string | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const scheduledFor = state.data?.status === CHAPTER_STATUS.SCHEDULED ? state.data.scheduledFor : null;
+  const now = useNow(scheduledFor !== null, COUNTDOWN_TICK_MS);
 
   if (!state.data) return null;
   const current = state.data;
   const zone = localZone();
-  const { busy, error } = flow;
+  const { busy, error, phase } = flow;
 
   const publish = () => flow.publish(current.status === CHAPTER_STATUS.PUBLISHED ? t.republished : t.published);
 
@@ -92,16 +115,24 @@ export function PublishPanel({
   return (
     <section aria-label={t.title} className="flex flex-col gap-3 rounded-lg border p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-base font-semibold">{t.title}</h2>
+        <h2 ref={headingRef} tabIndex={-1} className="text-base font-semibold outline-none">
+          {t.title}
+        </h2>
         <Badge variant="outline">{stateText}</Badge>
+        {scheduledFor ? (
+          <span className="text-xs text-muted-foreground">{scheduleCountdown(scheduledFor, locale, now)}</span>
+        ) : null}
       </div>
       {error ? (
-        <p
-          role="alert"
-          className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        <InlineAlert
+          key={error}
+          tone="danger"
+          onDismiss={flow.dismissError}
+          dismissLabel={t.dismissError}
+          focusAfterDismiss={headingRef}
         >
           {error}
-        </p>
+        </InlineAlert>
       ) : null}
       {current.role === null ? null : (
         <ReadinessChecklist
@@ -122,7 +153,7 @@ export function PublishPanel({
           <SplitButton
             label={current.status === CHAPTER_STATUS.PUBLISHED ? t.republish : t.publish}
             busy={busy}
-            busyLabel={t.working}
+            busyLabel={phase && phase !== "unpublishing" ? t.phase[phase] : t.working}
             disabled={!ready}
             describedBy={checklistId}
             onClick={() => void publish()}
@@ -183,8 +214,8 @@ export function PublishPanel({
             <Button type="button" variant="ghost" onClick={() => setScheduling(false)}>
               {t.scheduleDialog.cancel}
             </Button>
-            <Button type="button" onClick={() => void submitSchedule()} disabled={busy}>
-              {t.scheduleDialog.submit}
+            <Button type="button" onClick={() => void submitSchedule()} disabled={busy} aria-busy={busy || undefined}>
+              {phase === "saving" || phase === "scheduling" ? t.phase[phase] : t.scheduleDialog.submit}
             </Button>
           </DialogFooter>
         </DialogContent>

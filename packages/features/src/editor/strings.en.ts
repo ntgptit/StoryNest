@@ -151,6 +151,10 @@ export const en = {
       },
     },
     working: "Working…",
+    phase: { saving: "Saving draft…", publishing: "Publishing…", scheduling: "Scheduling…" },
+    countdown: (relative: string) => `Goes live ${relative}`,
+    dueNow: "Going live any moment",
+    dismissError: "Dismiss the error",
     saveFirst:
       "The draft couldn't be saved, so it wasn't published. Check the chapter title and content and try again.",
     published: "Chapter published.",

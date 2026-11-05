@@ -49,7 +49,7 @@ export function PreviewScreen({
         title={t.error.title}
         description={t.error.description}
         retryLabel={t.error.retry}
-        onRetry={() => void draft.refetch()}
+        onRetry={() => draft.refetch()}
       />
     );
   }

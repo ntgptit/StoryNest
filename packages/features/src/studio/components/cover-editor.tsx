@@ -3,9 +3,13 @@
 import { Button } from "@storynest/ui/components/button";
 import { DropZone } from "@storynest/ui/widgets/drop-zone";
 import { ImageCropDialog } from "@storynest/ui/widgets/image-crop-dialog";
+import { SizeShrink } from "@storynest/ui/widgets/size-shrink";
 import { StoryCover } from "@storynest/ui/widgets/story-cover";
-import { useRef } from "react";
+import { UploadVeil } from "@storynest/ui/widgets/upload-veil";
+import { useRef, useState } from "react";
 import { usePublicUrl } from "../../_shared/avatar.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
+import { formatBytes, useImageSizes } from "../../_shared/use-image-sizes.ts";
 import {
   ImageError,
   createBrowserRenderer,
@@ -39,7 +43,8 @@ function coverErrorMessage(error: Error): string {
 /**
  * The story's cover with "change" and "remove". A new picture, picked or dropped onto the cover row (Lucian 032),
  * opens the crop editor (2:3 frame); "Use photo" uploads the chosen part, "Cancel" uploads nothing. Authors decide
- * how their cover looks.
+ * how their cover looks. While it uploads a veil with a turning ring lies over the cover (Lucian 082, no byte
+ * progress exists), and afterwards the original and uploaded file size are shown (Lucian 301).
  */
 export function CoverEditor({
   story,
@@ -52,8 +57,11 @@ export function CoverEditor({
 }) {
   const toast = useAppToast();
   const input = useRef<HTMLInputElement>(null);
-  const upload = useUploadCover(story, render);
+  const measured = useImageSizes(render);
+  const upload = useUploadCover(story, measured.render);
   const remove = useRemoveCover(story);
+  const [uploaded, setUploaded] = useState(0);
+  const locale = currentLocale();
   const url = usePublicUrl(COVERS_BUCKET, story.coverStorageKey);
   const crop = useCropSource();
   const busy = upload.isPending || remove.isPending;
@@ -63,6 +71,7 @@ export function CoverEditor({
     if (file === undefined) return;
     upload.reset();
     remove.reset();
+    measured.clear();
     crop.open(file);
   };
 
@@ -71,7 +80,9 @@ export function CoverEditor({
       <p className="text-sm leading-none font-medium">{t.label}</p>
       <DropZone label={t.drop} disabled={busy} onFiles={(files) => pick(files[0])} className="self-start pr-2">
         <div className="flex items-end gap-4" aria-busy={busy}>
-          <StoryCover title={title} coverUrl={url} className="w-24 shrink-0" />
+          <UploadVeil busy={upload.isPending} done={uploaded} className="w-24 rounded-lg">
+            <StoryCover title={title} coverUrl={url} />
+          </UploadVeil>
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
               {upload.isPending ? t.uploading : story.coverStorageKey === null ? t.add : t.change}
@@ -85,6 +96,7 @@ export function CoverEditor({
                 onClick={() => {
                   upload.reset();
                   crop.clearError();
+                  measured.clear();
                   remove.mutate(undefined, { onSuccess: () => toast.success(t.removed) });
                 }}
               >
@@ -109,6 +121,14 @@ export function CoverEditor({
       <p className="text-xs text-muted-foreground">
         {t.hint} <span className="pointer-coarse:hidden">{t.dropHint}</span>
       </p>
+      {measured.sizes === null || busy ? null : (
+        <SizeShrink
+          original={measured.sizes.original}
+          result={measured.sizes.prepared}
+          formatSize={(bytes) => formatBytes(bytes, locale)}
+          labels={t.size}
+        />
+      )}
       {error === null ? null : (
         <p role="alert" className="text-sm text-destructive">
           {coverErrorMessage(error)}
@@ -125,7 +145,17 @@ export function CoverEditor({
           onConfirm={(area) => {
             const file = crop.source?.file;
             crop.close();
-            if (file !== undefined) upload.mutate({ file, crop: area }, { onSuccess: () => toast.success(t.saved) });
+            if (file !== undefined)
+              upload.mutate(
+                { file, crop: area },
+                {
+                  onSuccess: () => {
+                    measured.commit();
+                    setUploaded((count) => count + 1);
+                    toast.success(t.saved);
+                  },
+                },
+              );
           }}
         />
       )}

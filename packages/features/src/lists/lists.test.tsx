@@ -87,6 +87,27 @@ describe("list model", () => {
     expect(toReadingList(listRow(1, { visibility: "weird" })).visibility).toBe("private");
   });
 
+  it("keeps the first covers in list order, leaving out stories that are hidden or deleted", () => {
+    const cover = (key: string | null, deleted: string | null = null) => ({
+      cover_storage_key: key,
+      deleted_at: deleted,
+    });
+    const list = toReadingList(
+      listRow(5, {
+        preview: [
+          { sort_order: 3, story: cover("c") },
+          { sort_order: 1, story: [cover("a")] },
+          { sort_order: 2, story: null },
+          { sort_order: 4, story: cover(null) },
+          { sort_order: 5, story: cover("e", "2026-11-04T00:00:00Z") },
+          { sort_order: 6, story: cover("f") },
+        ],
+      }),
+    );
+    expect(list.previewCovers).toEqual(["a", "c", null]);
+    expect(toReadingList(listRow(1)).previewCovers).toEqual([]);
+  });
+
   it("orders the stories as stored and drops a deleted one", () => {
     const items = toListItems([
       itemRow(2, 2),
@@ -151,7 +172,7 @@ function fakeClient(options: {
     const op: Op = { table, calls: [], op: "select", single: false };
     ops.push(op);
     const builder: Record<string, unknown> = {};
-    for (const method of ["select", "eq", "in", "order", "returns"]) {
+    for (const method of ["select", "eq", "in", "order", "limit", "returns"]) {
       builder[method] = (...args: unknown[]) => {
         op.calls.push([method, args]);
         return builder;
@@ -216,6 +237,13 @@ describe("lists api", () => {
     expect(callOf(q, "order")).toEqual(["updated_at", { ascending: false }]);
     const columns = String(callOf(q, "select")?.[0]);
     expect(columns).toContain("items:reading_list_items(count)");
+    // The cover pile: the first stories of each list, ordered and limited inside the embed.
+    expect(columns).toContain("preview:reading_list_items(sort_order, story:stories!reading_list_items_story_id_fkey(");
+    expect(q.calls.filter(([m]) => m === "order").map(([, a]) => a)).toContainEqual([
+      "sort_order",
+      { referencedTable: "preview", ascending: true },
+    ]);
+    expect(callOf(q, "limit")).toEqual([3, { referencedTable: "preview" }]);
   });
 
   it("reads one list with its owner and its stories in order; null when the list is not visible", async () => {
@@ -348,6 +376,24 @@ describe("MyLists", () => {
     expect(within(links[0]!).getByText(t.visibility.public)).toBeTruthy();
     expect(within(links[1]!).getByText(t.visibility.private)).toBeTruthy();
     expect(within(links[0]!).getByText(/2 truyện/)).toBeTruthy();
+  });
+
+  it("starts each row with a pile of the list's first covers", async () => {
+    const c = fakeClient({
+      mine: [
+        listRow(1, {
+          preview: [
+            { sort_order: 1, story: { cover_storage_key: "k1", deleted_at: null } },
+            { sort_order: 2, story: { cover_storage_key: null, deleted_at: null } },
+          ],
+        }),
+      ],
+    });
+    renderUi(c, <MyLists coverUrlFor={(key) => `https://cdn.test/${key}`} />);
+    const link = within(await screen.findByRole("list", { name: t.myLists.listLabel })).getByRole("link");
+    const pile = link.querySelector("[aria-hidden=true]")!;
+    expect(pile.children).toHaveLength(2);
+    expect([...link.querySelectorAll("img")].map((img) => img.getAttribute("src"))).toEqual(["https://cdn.test/k1"]);
   });
 
   it("shows an empty note and a retry for a failed load", async () => {
@@ -579,7 +625,47 @@ describe("ListScreen", () => {
       ["reading_list_id", lid(1)],
       ["story_id", sid(2)],
     ]);
-    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.page.removed));
+    await waitFor(() =>
+      expect(toasts.show).toHaveBeenCalledWith("success", t.page.removed, {
+        action: { label: t.page.undo, onClick: expect.any(Function) },
+      }),
+    );
+  });
+
+  it("undoes a removal: puts the story back, then restores the order it had", async () => {
+    const c = fakeClient({ detail: detail(), items: [itemRow(1), itemRow(2), itemRow(3)] });
+    renderUi(c, <ListScreen listId={lid(1)} />);
+    await screen.findByRole("list", { name: t.page.storiesLabel });
+    fireEvent.click(screen.getAllByRole("button", { name: t.page.remove })[0]!);
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.page.removed, expect.anything()));
+    const options = toasts.show.mock.calls.find(([, message]) => message === t.page.removed)?.[2] as {
+      action: { onClick: () => void };
+    };
+    options.action.onClick();
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.page.restored));
+    expect(c.rpcCalls).toEqual([
+      { name: "add_story_to_list", args: { p_list_id: lid(1), p_story_id: sid(1) } },
+      { name: "reorder_list_items", args: { p_list_id: lid(1), p_story_ids: [sid(1), sid(2), sid(3)] } },
+    ]);
+  });
+
+  it("lets the owner rename the list in place: Enter saves through the list update, a blank name is refused", async () => {
+    const c = fakeClient({ detail: detail({ title: "Cũ", description: "Mô tả", visibility: "unlisted" }), items: [] });
+    renderUi(c, <ListScreen listId={lid(1)} />);
+    fireEvent.click(await screen.findByRole("button", { name: t.page.rename("Cũ") }));
+    const field = screen.getByRole("textbox", { name: t.form.name });
+    fireEvent.change(field, { target: { value: "   " } });
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(screen.getByRole("alert").textContent).toBe(t.form.validation.nameRequired);
+    fireEvent.change(field, { target: { value: " Mới " } });
+    fireEvent.keyDown(field, { key: "Enter" });
+    await waitFor(() => expect(c.of("reading_lists", "update")).toHaveLength(1));
+    expect(c.of("reading_lists", "update")[0]!.values).toEqual({
+      title: "Mới",
+      description: "Mô tả",
+      visibility: "unlisted",
+    });
+    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.page.renamed));
   });
 
   it("edits the list through a dialog", async () => {

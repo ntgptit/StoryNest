@@ -9,6 +9,7 @@ import { Skeleton } from "@storynest/ui/components/skeleton";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { InlineEditTitle } from "@storynest/ui/widgets/inline-edit-title";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { DragHandle, SortableItem, useSortableList } from "@storynest/ui/widgets/sortable-list";
 import { StoryCard } from "@storynest/ui/widgets/story-card";
@@ -19,8 +20,16 @@ import { useAppToast } from "../../_shared/toast.tsx";
 import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
 import { ShareButton } from "../../share/index.ts";
 import { ListFormDialog } from "../components/list-form-dialog.tsx";
-import { useDeleteList, useList, useRemoveFromList, useReorderList, useUpdateList } from "../hooks/use-lists.ts";
-import { listErrorMessage, listHref, moveStory, type ReadingList } from "../model/list.ts";
+import {
+  useAddToList,
+  useDeleteList,
+  useList,
+  useRemoveFromList,
+  useReorderList,
+  useUpdateList,
+} from "../hooks/use-lists.ts";
+import { checkListForm, listErrorMessage, listHref, moveStory, type ReadingList } from "../model/list.ts";
+import type { AppError } from "../../_shared/errors.ts";
 import { listText } from "../strings.ts";
 
 const t = listText.page;
@@ -32,8 +41,9 @@ const VISIBILITY_ICON: Record<Visibility, typeof Lock> = {
 };
 
 /**
- * One reading list. Everyone who may see it reads it; its owner can also rename it, change who sees it, reorder or
- * remove its stories and delete it.
+ * One reading list. Everyone who may see it reads it; its owner can also rename it (in place by pressing the title, or
+ * in the edit dialog with the description and visibility), change who sees it, reorder or remove its stories (the toast
+ * offers Undo) and delete it.
  */
 export function ListScreen({
   listId,
@@ -49,6 +59,7 @@ export function ListScreen({
   const update = useUpdateList(listId);
   const remove = useDeleteList(listId);
   const removeStory = useRemoveFromList();
+  const addStory = useAddToList();
   const reorder = useReorderList(listId);
   const isOwner = auth.status === "authenticated" && detail.data !== null && auth.user.id === detail.data?.list.ownerId;
   // Called before the loading and error returns (hooks): with no list yet it simply has nothing to order.
@@ -78,7 +89,7 @@ export function ListScreen({
         title={t.error.title}
         description={t.error.description}
         retryLabel={t.error.retry}
-        onRetry={() => void detail.refetch()}
+        onRetry={() => detail.refetch()}
       />
     );
   }
@@ -111,6 +122,35 @@ export function ListScreen({
     );
   };
 
+  // Promises (mutateAsync), not mutate callbacks: the card is gone by the time the toast's Undo is pressed. Undo puts
+  // the story back (it lands at the end) and then sends the order it had before; if the list changed meanwhile the
+  // server refuses that order and the story simply stays at the end.
+  const removeItem = (storyId: string) => {
+    const before = ids;
+    const undo = () => {
+      addStory
+        .mutateAsync({ listId, storyId })
+        .then(() => (before.at(-1) === storyId ? undefined : reorder.mutateAsync(before).catch(() => undefined)))
+        .then(
+          () => toast.success(t.restored),
+          (error: AppError) => toast.error(listErrorMessage(error)),
+        );
+    };
+    removeStory.mutateAsync({ listId, storyId }).then(
+      () => toast.success(t.removed, { action: { label: t.undo, onClick: undo } }),
+      (error: AppError) => toast.error(listErrorMessage(error)),
+    );
+  };
+
+  const rename = async (title: string) => {
+    try {
+      await update.mutateAsync({ title, description: list.description, visibility: list.visibility });
+    } catch (error) {
+      throw new Error(listErrorMessage(error as AppError), { cause: error });
+    }
+    toast.success(t.renamed);
+  };
+
   const move = (storyId: string, direction: 1 | -1) => {
     const next = moveStory(ids, storyId, direction);
     if (next === null) return;
@@ -121,6 +161,19 @@ export function ListScreen({
     <section aria-label={list.title} className="flex flex-col gap-6">
       <PageHeader
         title={list.title}
+        heading={
+          isOwner ? (
+            <InlineEditTitle
+              value={list.title}
+              onSave={rename}
+              validate={(title) => checkListForm({ ...list, title }).title}
+              editLabel={t.rename(list.title)}
+              inputLabel={listText.form.name}
+              saveLabel={t.renameSave}
+              cancelLabel={t.cancel}
+            />
+          ) : undefined
+        }
         description={list.description === "" ? undefined : list.description}
         actions={
           isOwner ? (
@@ -211,15 +264,7 @@ export function ListScreen({
                     size="sm"
                     variant="ghost"
                     disabled={removeStory.isPending}
-                    onClick={() =>
-                      removeStory.mutate(
-                        { listId, storyId: item.storyId },
-                        {
-                          onSuccess: () => toast.success(t.removed),
-                          onError: (error) => toast.error(listErrorMessage(error)),
-                        },
-                      )
-                    }
+                    onClick={() => removeItem(item.storyId)}
                   >
                     {t.remove}
                   </Button>

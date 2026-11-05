@@ -13,6 +13,7 @@ import { formatCount } from "@storynest/utils";
 import { useAuth } from "../../_shared/auth.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useStoryChapters } from "../../story/index.ts";
+import { ChapterScatter } from "../components/chapter-scatter.tsx";
 import { DailyChart } from "../components/daily-chart.tsx";
 import { ReadsHeatmap } from "../components/reads-heatmap.tsx";
 import { ReadThroughFunnel } from "../components/read-through-funnel.tsx";
@@ -176,6 +177,15 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
                 <ReadThroughFunnel chapters={rows} locale={locale} />
               )}
               <p className="text-xs text-muted-foreground">{t.funnel.note}</p>
+            </section>
+          ) : null}
+
+          {/* A scatter needs at least two chapters with reads to compare; until then the table says it all. */}
+          {rows.filter((row) => row.reads > 0).length >= 2 ? (
+            <section aria-label={t.scatter.title} className="flex flex-col gap-2">
+              <h2 className="text-lg font-semibold">{t.scatter.title}</h2>
+              <ChapterScatter chapters={rows} locale={locale} />
+              <p className="text-xs text-muted-foreground">{t.scatter.note}</p>
             </section>
           ) : null}
 

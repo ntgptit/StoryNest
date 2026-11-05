@@ -64,25 +64,34 @@ export function usePublishAction(chapterId: string) {
   });
 }
 
+/** Which await of a running action is in progress, for the button's label: saving the draft, then sending it. */
+export type PublishPhase = "saving" | "publishing" | "scheduling" | "unpublishing";
+
 /**
  * The publish / schedule / unpublish flow every surface shares (the editor's publish panel, the chapter manager's
  * scheduled list). One action at a time: locked from the first click until the answer is back, so a double click
  * cannot publish twice. Publish and schedule first ask `ensureSaved` for the draft revision to send (null: it could
  * not be saved, nothing is sent), so a draft someone else changed meanwhile is refused instead of published over.
  * A refusal is shown as `error` (the RPC contract's message); success shows `success` as a toast.
- * Each action resolves to whether it went through.
+ * Each action resolves to whether it went through. `phase` says which step is running (Lucian 081's steps), and
+ * `dismissError` hides the shown refusal.
  */
 export function usePublishFlow(chapterId: string, ensureSaved: () => Promise<number | null>) {
   const toast = useAppToast();
   const action = usePublishAction(chapterId);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<PublishPhase | null>(null);
   const lock = useRef(false);
 
-  const run = async (task: (revision: number) => Promise<void>, needsSaved: boolean, success: string) => {
+  const run = async (
+    task: (revision: number) => Promise<void>,
+    sending: Exclude<PublishPhase, "saving">,
+    needsSaved: boolean,
+    success: string,
+  ) => {
     if (lock.current) return false;
     lock.current = true;
-    setBusy(true);
+    setPhase(needsSaved ? "saving" : sending);
     setError(null);
     try {
       let revision = 0;
@@ -93,6 +102,7 @@ export function usePublishFlow(chapterId: string, ensureSaved: () => Promise<num
           return false;
         }
         revision = saved;
+        setPhase(sending);
       }
       await task(revision);
       toast.success(success);
@@ -102,22 +112,31 @@ export function usePublishFlow(chapterId: string, ensureSaved: () => Promise<num
       return false;
     } finally {
       lock.current = false;
-      setBusy(false);
+      setPhase(null);
     }
   };
 
   return {
-    busy,
+    busy: phase !== null,
+    phase,
     error,
+    dismissError: () => setError(null),
     publish: (success: string) =>
-      run((revision) => action.mutateAsync({ kind: "publish", expectedRevision: revision }), true, success),
+      run(
+        (revision) => action.mutateAsync({ kind: "publish", expectedRevision: revision }),
+        "publishing",
+        true,
+        success,
+      ),
     /** `scheduledFor` is the ISO instant from scheduleInstant (the picker's value already checked). */
     schedule: (scheduledFor: string, success: string) =>
       run(
         (revision) => action.mutateAsync({ kind: "schedule", expectedRevision: revision, scheduledFor }),
+        "scheduling",
         true,
         success,
       ),
-    unpublish: (success: string) => run(() => action.mutateAsync({ kind: "unpublish" }), false, success),
+    unpublish: (success: string) =>
+      run(() => action.mutateAsync({ kind: "unpublish" }), "unpublishing", false, success),
   };
 }

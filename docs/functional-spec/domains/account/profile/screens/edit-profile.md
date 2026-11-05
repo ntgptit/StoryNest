@@ -31,7 +31,9 @@
 | SCR-PRF-02-C12 | Cancel link → `/me` | "Cancel" |
 | SCR-PRF-02-C12b | Unsaved changes bar (Lucian 250) | While the form is dirty: "N unsaved changes", "Discard" (reset) / "Save" (same submit as C11). Closing the tab asks first; an in-app link outside the form is stopped and the bar warns "Save or discard your changes before leaving" (Cancel is not stopped). Avatar changes save instantly and do not count |
 | SCR-PRF-02-C13 | Guard texts | Skeleton while loading; "You need to sign in to edit your profile." + "Sign in" (`/login?next=%2Fme%2Fedit`); "No profile found for this account." |
+| SCR-PRF-02-C15 | Username availability hint (Lucian 300, batch 3 · shell3) | Under the username field, as SCR-AUTH-02-C13 but "This name is already taken"; the person's own current name (any case) is never checked. Advisory: Save still decides, and a unique violation still shows "This username is already taken." on the field |
 | SCR-PRF-02-C14 | Avatar drop zone (Lucian 032) | A picture dragged onto the avatar row highlights it ("Drop the picture here", marching dashed frame) and, dropped, goes through the same checks and crop dialog as a picked one. Hint gains "You can also drag a picture here." on fine pointers |
+| SCR-PRF-02-C15 | Upload veil and size bars (Lucian 082, 301) | While the picture is prepared and uploaded, a dark veil with a turning ring lies over the avatar (indeterminate: the upload reports no byte progress; no pause); it hops once when done. After a successful upload two bars compare the picked file and the uploaded WebP/JPEG ("Original 3.2 MB", "Uploaded 30 kB", "97% smaller"; one sentence for screen readers); a new pick or "Remove" hides them, a reload forgets them | `components/avatar-editor.tsx`, `_shared/use-image-sizes.ts`, `ui/widgets/upload-veil.tsx`, `ui/widgets/size-shrink.tsx` |
 
 ## C. User actions & system responses
 

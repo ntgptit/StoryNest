@@ -6,6 +6,8 @@ import type { DataClient } from "../_shared/client.ts";
 import { DataProvider } from "../_shared/data.tsx";
 import type { ImageRenderer, PreparedImage } from "../_shared/image-prepare.ts";
 import { ToastProvider } from "../_shared/toast.tsx";
+import { formatBytes } from "../_shared/use-image-sizes.ts";
+import { currentLocale } from "../_shared/i18n.ts";
 import { removeCover, uploadCover } from "./api/story-write.api.ts";
 import { CoverEditor } from "./components/cover-editor.tsx";
 import { studioText } from "./strings.ts";
@@ -128,6 +130,15 @@ describe("removeCover", () => {
   });
 });
 
+describe("formatBytes", () => {
+  it("shows kilobytes below a megabyte and megabytes with one decimal above, in the reader's language", () => {
+    expect(formatBytes(84_000, "en")).toBe("84 kB");
+    expect(formatBytes(400, "en")).toBe("1 kB");
+    expect(formatBytes(3_240_000, "en")).toBe("3.2 MB");
+    expect(formatBytes(3_240_000, "vi")).toBe("3,2 MB");
+  });
+});
+
 describe("CoverEditor", () => {
   /** jsdom has no image decoder nor object URLs: a picked file decodes as a 1200 x 600 picture. */
   let revoke: ReturnType<typeof vi.fn>;
@@ -176,6 +187,30 @@ describe("CoverEditor", () => {
     expect(calls.map((c) => c.split(" ")[0])).toEqual(["upload", "save"]);
     expect(renderer).toHaveBeenCalledWith(expect.any(File), { x: 500, y: 150, width: 200, height: 300 });
     expect(revoke).toHaveBeenCalledWith("blob:picked");
+  });
+
+  it("veils the cover while uploading, then shows the original and the uploaded size", async () => {
+    const { client } = fakeClient();
+    let finish: (value: PreparedImage) => void = () => {};
+    const small: PreparedImage = { ...prepared, blob: new Blob(["y".repeat(84_000)], { type: "image/webp" }) };
+    const renderer = vi.fn<ImageRenderer>(() => new Promise((resolve) => (finish = resolve)));
+    const { toast } = setup(null, renderer, client);
+    choose(new File(["x".repeat(2_400_000)], "me.png", { type: "image/png" }));
+    await confirmCrop();
+    await waitFor(() =>
+      expect(document.querySelector('[data-slot="upload-veil"]')?.getAttribute("data-busy")).toBe("true"),
+    );
+    finish(small);
+    await waitFor(() => expect(toast).toHaveBeenCalled());
+    const locale = currentLocale();
+    expect(document.querySelector('[data-slot="upload-veil"]')?.getAttribute("data-busy")).toBeNull();
+    expect(
+      screen.getByText(t.size.summary(formatBytes(2_400_000, locale), formatBytes(84_000, locale), 97)),
+    ).toBeTruthy();
+    // A new pick hides the old numbers.
+    choose(new File(["x"], "again.png", { type: "image/png" }));
+    await screen.findByRole("application", { name: t.crop.frame });
+    expect(document.querySelector('[data-slot="size-shrink"]')).toBeNull();
   });
 
   it("uploads nothing when the crop is cancelled", async () => {

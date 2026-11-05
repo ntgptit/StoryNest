@@ -95,6 +95,26 @@ export const en = {
         .filter(Boolean)
         .join(", ") + ".",
   },
+  scatter: {
+    title: "Chapters compared",
+    metricLabel: "Vertical axis",
+    metrics: { likesPer100: "Likes per 100 reads", retention: "Retention" },
+    label: (metric: string) => `Chapters by reads (across) and ${metric} (up)`,
+    hint: "Use the arrow keys to move between chapters, Enter to pick one, Esc to let go.",
+    xAxis: "Reads →",
+    yAxis: (metric: string) => `↑ ${metric}`,
+    filter: (reads: string) => `Fade chapters under ${reads} reads`,
+    summary: (shown: number, faded: number) =>
+      `${shown} chapter${shown === 1 ? "" : "s"} plotted${faded > 0 ? `, ${faded} faded` : ""}. Press a dot to see its figures.`,
+    omittedLikes: (count: number) =>
+      `${count} chapter${count === 1 ? " has" : "s have"} no reads yet and ${count === 1 ? "is" : "are"} not plotted.`,
+    omittedRetention: (count: number) =>
+      `${count} chapter${count === 1 ? " has" : "s have"} no retention (the first chapter, or the one before had no reads) and ${count === 1 ? "is" : "are"} not plotted.`,
+    empty: "No chapter can be plotted on this axis yet.",
+    detail: (point: { number: number; title: string; reads: string; likes: string; metric: string; value: string }) =>
+      `Chapter ${point.number} · ${point.title}: ${point.reads} read${point.reads === "1" ? "" : "s"}, ${point.likes} like${point.likes === "1" ? "" : "s"}, ${point.metric} ${point.value}.`,
+    note: "Reads are each chapter's all-time reads (a reader counts once per chapter per day), not distinct readers. Likes per 100 reads = likes ÷ reads × 100; a chapter with few reads swings a lot, so those can be faded.",
+  },
   chapters: {
     title: "By chapter",
     note: "“Retention” is the chapter's reads compared with the previous chapter.",

@@ -77,7 +77,7 @@ export function LibraryScreen({
               </TabsContent>
             ))}
             <TabsContent value={LISTS_TAB} className="pt-4">
-              <MyLists locale={locale} />
+              <MyLists locale={locale} coverUrlFor={coverUrlFor} />
             </TabsContent>
           </div>
         </div>
@@ -112,7 +112,7 @@ function LibraryList({
         title={t.error.title}
         description={t.error.description}
         retryLabel={t.error.retry}
-        onRetry={() => void list.refetch()}
+        onRetry={() => list.refetch()}
       />
     );
   }

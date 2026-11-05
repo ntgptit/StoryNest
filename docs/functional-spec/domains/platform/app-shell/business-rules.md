@@ -131,7 +131,7 @@ Screen: [SCR-SHELL-01 Main shell](screens/main-shell.md).
 | --- | --- |
 | Description | Behaviour every screen inherits from `packages/ui/src/widgets` |
 | Preconditions | — |
-| Conditions | `ConfirmDialog`: buttons disabled while `onConfirm` runs; stays open if it throws; cannot be dismissed while pending. `InfiniteList`: loads next page via IntersectionObserver (240 px margin), never while loading or when nothing left; optional visible "load more" button for keyboard. `ErrorState`: `role="alert"`, optional retry/extra action. `EmptyState`: icon, title, description, action. `PageHeader`: h1, description, actions, optional back button. `PageSkeleton`: BR-SHELL-005 |
+| Conditions | `ConfirmDialog`: buttons disabled while `onConfirm` runs; stays open if it throws; cannot be dismissed while pending. `InfiniteList`: loads next page via IntersectionObserver (240 px margin), never while loading or when nothing left; optional visible "load more" button for keyboard. `ErrorState`: `role="alert"`, optional retry/extra action; when the retry returns a promise (`() => query.refetch()`, most callers) the button shows a spinner and is busy until it settles, and if the panel is still there the icon shakes once and the title is spoken again (Lucian 090, batch 3 · shell3). No automatic retry beyond the query client's own (`shouldRetry`). `EmptyState`: icon, title, description, action. `PageHeader`: h1, description, actions, optional back button. `PageSkeleton`: BR-SHELL-005 |
 | Expected behavior | Text always supplied by callers (translated) |
 | Exceptions | English fallbacks `"Retry"` / `"Back"` when a caller omits the label (all current callers pass one) |
 | Related screens | All |

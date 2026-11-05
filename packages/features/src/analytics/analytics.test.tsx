@@ -12,6 +12,7 @@ import { analyticsKeys } from "./keys.ts";
 import {
   alignDaily,
   barPercent,
+  chapterScatter,
   DEFAULT_RANGE,
   formatChange,
   formatDay,
@@ -22,6 +23,7 @@ import {
   heatLegend,
   heatLevel,
   isRangeDays,
+  lowReadsThreshold,
   publishedByDay,
   readThroughFunnel,
   sumDaily,
@@ -36,6 +38,7 @@ import {
 import { DailyChart } from "./components/daily-chart.tsx";
 import { ReadsHeatmap } from "./components/reads-heatmap.tsx";
 import { ReadThroughFunnel } from "./components/read-through-funnel.tsx";
+import { ChapterScatter } from "./components/chapter-scatter.tsx";
 import { StoryStatsScreen } from "./index.ts";
 import { analyticsText } from "./strings.ts";
 
@@ -378,6 +381,85 @@ describe("ReadThroughFunnel", () => {
   });
 });
 
+describe("chapter scatter model", () => {
+  const stat = (number: number, reads: number, votes: number, retention: number | null): ChapterStat => ({
+    chapterId: `c${number}`,
+    slug: `chuong-${number}`,
+    number,
+    title: `Chương ${number}`,
+    reads,
+    votes,
+    comments: 0,
+    retention,
+  });
+  const chapters = [stat(2, 50, 1, 0.5), stat(1, 100, 4, null), stat(3, 0, 0, 0), stat(4, 8, 2, null)];
+
+  it("plots likes per 100 reads in reading order and leaves out chapters without reads", () => {
+    const { points, omitted } = chapterScatter(chapters, "likesPer100");
+    expect(points.map((p) => [p.number, p.reads, p.value])).toEqual([
+      [1, 100, 4],
+      [2, 50, 2],
+      [4, 8, 25],
+    ]);
+    expect(omitted).toBe(1);
+  });
+
+  it("plots retention and leaves out the chapters without a basis", () => {
+    const { points, omitted } = chapterScatter(chapters, "retention");
+    expect(points.map((p) => [p.number, p.value])).toEqual([
+      [2, 0.5],
+      [3, 0],
+    ]);
+    expect(omitted).toBe(2);
+  });
+
+  it("fades under a tenth of the most-read chapter, and has no filter when that is 1 read or less", () => {
+    expect(lowReadsThreshold(chapters)).toBe(10);
+    expect(lowReadsThreshold([stat(1, 101, 0, null)])).toBe(11);
+    expect(lowReadsThreshold([stat(1, 10, 0, null)])).toBe(0);
+    expect(lowReadsThreshold([])).toBe(0);
+  });
+});
+
+describe("ChapterScatter", () => {
+  const rows = (...pairs: [number, number][]) =>
+    pairs.flatMap(([reads, votes], i) => toChapterStat(chapterRow(i + 1, { reads, votes })) ?? []);
+  const status = () => document.querySelector('[data-slot="scatter-status"]')?.textContent;
+
+  it("shows a chapter's reads and likes, switches the axis to retention and fades chapters with few reads", () => {
+    render(<ChapterScatter chapters={rows([200, 10], [100, 1], [5, 1])} locale="en" />);
+    const s = t.scatter;
+    expect(status()).toBe(s.summary(3, 0));
+    const second = screen.getByRole("button", { name: /Tựa chương 2/ });
+    fireEvent.click(second);
+    const detail = s.detail({
+      number: 2,
+      title: "Tựa chương 2",
+      reads: "100",
+      likes: "1",
+      metric: s.metrics.likesPer100,
+      value: "1",
+    });
+    expect(status()).toBe(detail);
+
+    fireEvent.click(screen.getByRole("button", { name: s.metrics.retention }));
+    expect(screen.getByRole("button", { name: s.metrics.retention }).getAttribute("aria-pressed")).toBe("true");
+    // chapterRow gives chapters 2 and 3 a retention of 80% and chapter 1 none.
+    expect(screen.getByRole("group", { name: s.label(s.metrics.retention) })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: /Tựa chương/ })).toHaveLength(2);
+
+    fireEvent.click(screen.getByRole("button", { name: s.filter("20") }));
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: /Tựa chương 3/ }).disabled).toBe(true);
+    expect(status()).toBe(`${s.summary(2, 1)} ${s.omittedRetention(1)}`);
+  });
+
+  it("offers no filter when no chapter is far below the most read", () => {
+    render(<ChapterScatter chapters={rows([20, 1], [18, 2])} locale="en" />);
+    expect(screen.queryByRole("button", { name: /^Fade|^Làm mờ/ })).toBeNull();
+    expect(screen.getAllByRole("button", { name: /Tựa chương/ })).toHaveLength(2);
+  });
+});
+
 describe("analytics api", () => {
   it("asks for the chapters of one story and maps the rows", async () => {
     const c = fakeClient({ author_chapter_stats: () => ({ data: [chapterRow(1), chapterRow(2)], error: null }) });
@@ -478,6 +560,10 @@ describe("StoryStatsScreen", () => {
     expect(
       funnel.getByText(`${t.funnel.summary(3, 1, "50%")} ${t.funnel.biggestDrop(3, formatChange(1 - 40 / 60))}`),
     ).toBeTruthy();
+
+    // Chapters compared: one dot per chapter with reads.
+    const scatter = within(screen.getByRole("region", { name: t.scatter.title }));
+    expect(scatter.getAllByRole("button", { name: /Tựa chương/ })).toHaveLength(3);
 
     const table = within(screen.getByRole("table"));
     const rowOf = (title: string) => table.getByText(title).closest("tr")!;

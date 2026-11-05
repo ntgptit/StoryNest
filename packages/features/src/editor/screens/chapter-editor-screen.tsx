@@ -14,6 +14,7 @@ import { AutosaveIcon, type AutosaveIconState } from "@storynest/ui/widgets/auto
 import { DropZone } from "@storynest/ui/widgets/drop-zone";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { InlineAlert } from "@storynest/ui/widgets/inline-alert";
 import { SplitPane, useMinWidth } from "@storynest/ui/widgets/split-pane";
 import { SpotlightTour, type TourStep } from "@storynest/ui/widgets/spotlight-tour";
 import { useDataClientGetter } from "../../_shared/data.tsx";
@@ -98,7 +99,7 @@ export function ChapterEditorScreen({
         title={t.error.title}
         description={t.error.description}
         retryLabel={t.error.retry}
-        onRetry={() => void draft.refetch()}
+        onRetry={() => draft.refetch()}
       />
     );
   }
@@ -443,50 +444,53 @@ function DraftEditor({
       {backup && merging ? (
         <DraftMergeView mine={backup} server={draft} onApply={applyMergedVersion} onCancel={() => setMerging(false)} />
       ) : backup ? (
-        <div role="status" className="flex flex-col gap-2 rounded-md border bg-card p-3 text-sm">
-          <p className="font-medium">{t.backup.title}</p>
-          <p className="text-muted-foreground">
-            {t.backup.description(formatRelativeTime(backup.savedAt, locale))}
-            {backup.baseRevision < draft.revision ? ` ${t.backup.olderBase}` : ""}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" onClick={restoreBackup} disabled={!editor}>
-              {t.backup.restore}
-            </Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => setMerging(true)} disabled={!editor}>
-              {t.merge.open}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                clearBackup(draft.chapterId);
-                setBackup(null);
-              }}
-            >
-              {t.backup.discard}
-            </Button>
-          </div>
-        </div>
+        <InlineAlert
+          title={t.backup.title}
+          actions={
+            <>
+              <Button type="button" size="sm" onClick={restoreBackup} disabled={!editor}>
+                {t.backup.restore}
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => setMerging(true)} disabled={!editor}>
+                {t.merge.open}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  clearBackup(draft.chapterId);
+                  setBackup(null);
+                }}
+              >
+                {t.backup.discard}
+              </Button>
+            </>
+          }
+        >
+          {t.backup.description(formatRelativeTime(backup.savedAt, locale))}
+          {backup.baseRevision < draft.revision ? ` ${t.backup.olderBase}` : ""}
+        </InlineAlert>
       ) : null}
 
       {conflict ? (
-        <div
-          role="alert"
-          className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm"
+        // Not dismissable: the draft cannot be saved again until it is reloaded or merged.
+        <InlineAlert
+          tone="danger"
+          title={t.conflict.title}
+          actions={
+            <>
+              <Button type="button" size="sm" variant="outline" onClick={() => void onReload()}>
+                {t.conflict.reload}
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => void onReload({ merge: true })}>
+                {t.merge.conflictOpen}
+              </Button>
+            </>
+          }
         >
-          <p className="font-medium text-destructive">{t.conflict.title}</p>
-          <p className="text-muted-foreground">{t.conflict.description}</p>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" variant="outline" onClick={() => void onReload()}>
-              {t.conflict.reload}
-            </Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => void onReload({ merge: true })}>
-              {t.merge.conflictOpen}
-            </Button>
-          </div>
-        </div>
+          {t.conflict.description}
+        </InlineAlert>
       ) : null}
 
       <div className="flex flex-col gap-1.5">

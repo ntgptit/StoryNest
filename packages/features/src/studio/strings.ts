@@ -14,11 +14,16 @@ const vi = {
   error: { title: "Không tải được danh sách truyện", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   listLabel: "Truyện của tôi",
   create: "Viết truyện mới",
+  crumbs: {
+    label: "Vị trí trong Studio",
+    switchStory: "Chuyển sang truyện khác",
+    chapters: "Chương",
+    team: "Cộng tác viên",
+  },
   chaptersLink: "Quản lý chương",
   chapters: {
     title: "Quản lý chương",
     description: (storyTitle: string) => `Thứ tự, đường dẫn và trạng thái các chương của "${storyTitle}".`,
-    backToStory: "Về thông tin truyện",
     listLabel: "Danh sách chương",
     add: {
       title: "Thêm chương",
@@ -151,7 +156,6 @@ const vi = {
     title: "Cộng tác viên",
     description: (storyTitle: string) =>
       `Mời người khác cùng viết "${storyTitle}". Họ chỉ tham gia sau khi chấp nhận lời mời.`,
-    backToStory: "Về thông tin truyện",
     onlyOwner: {
       title: "Chỉ chủ sở hữu quản lý được",
       description: "Bạn không có quyền mời hay gỡ cộng tác viên của truyện này.",
@@ -252,6 +256,7 @@ const vi = {
     submitCreate: "Tạo truyện",
     submitSave: "Lưu thay đổi",
     submitting: "Đang lưu…",
+    done: "Đã lưu",
     cancel: "Hủy",
     created: "Đã tạo truyện.",
     saved: "Đã lưu thay đổi.",
@@ -265,6 +270,15 @@ const vi = {
       drop: "Thả ảnh vào đây",
       dropHint: "Có thể kéo thả ảnh vào đây.",
       hint: "JPG, PNG hoặc WebP, tối đa 10 MB. Bạn chọn phần ảnh tỉ lệ 2:3 muốn giữ trước khi tải lên.",
+      size: {
+        original: "Ảnh gốc",
+        result: "Đã tải lên",
+        saved: (percent: number) => `Nhẹ hơn ${percent}%`,
+        summary: (original: string, result: string, percent: number) =>
+          percent > 0
+            ? `Ảnh gốc ${original}, đã tải lên ${result}, nhẹ hơn ${percent}%`
+            : `Ảnh gốc ${original}, đã tải lên ${result}`,
+      },
       saveFirst: "Lưu truyện trước, rồi bạn có thể thêm ảnh bìa.",
       saved: "Đã cập nhật ảnh bìa.",
       removed: "Đã gỡ ảnh bìa.",

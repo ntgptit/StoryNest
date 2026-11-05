@@ -49,3 +49,21 @@ export function authErrorMessage(error: AppError): string {
       return authText.errors.generic;
   }
 }
+
+const RATE_LIMIT_CODES = new Set(["over_request_rate_limit", "over_email_send_rate_limit", "over_sms_send_rate_limit"]);
+/** Longest wait shown as a countdown; a longer one stays the plain "try again later" message. */
+const MAX_LOCKOUT_SECONDS = 15 * 60;
+
+/**
+ * The wait a rate-limit error asked for, in whole seconds, or null when it named none. Supabase sends the browser no
+ * Retry-After, but its email limit says it in the message ("you can only request this after 37 seconds"). Nothing is
+ * estimated: without that hint the screen shows the usual message and no countdown.
+ */
+export function retryAfterSeconds(error: AppError | null | undefined): number | null {
+  if (!error) return null;
+  if (error.kind !== "rateLimited" && !(error.code !== undefined && RATE_LIMIT_CODES.has(error.code))) return null;
+  const match = /(\d+)\s*(?:seconds?|secs?|s)\b/i.exec(error.message);
+  if (!match) return null;
+  const seconds = Number(match[1]);
+  return seconds > 0 && seconds <= MAX_LOCKOUT_SECONDS ? seconds : null;
+}

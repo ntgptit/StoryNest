@@ -55,4 +55,45 @@ export const en = {
     noBio: "No bio yet.",
     missingProfile: "No profile was found for this account.",
   },
+  palette: {
+    title: "Command palette",
+    input: "Find a page or a story",
+    placeholder: "Go to a page or find a story…",
+    results: "Results",
+    empty: "Nothing matches",
+    goTo: "Go to",
+    stories: "Stories",
+    searchAll: (term: string) => `See all results for “${term}”`,
+    notifications: "Notifications",
+    newStory: "Write a new story",
+    hints: { move: "↑↓ select", run: "Enter open", close: "Esc close" },
+  },
+  intro: {
+    pages: {
+      read: {
+        title: "Read your way",
+        body: "Open a story and read it chapter by chapter. Where you stopped is remembered for next time.",
+      },
+      follow: {
+        title: "Follow and save to your Library",
+        body: "Follow the stories and authors you like, and save stories to your Library to find them again.",
+      },
+      write: {
+        title: "Write in Studio",
+        body: "Start a new story, write it chapter by chapter and publish when you are ready.",
+      },
+    },
+    next: "Next",
+    done: "Get started",
+    skip: "Skip",
+    step: (page: number, total: number) => `Page ${page} of ${total}`,
+  },
+  notFound: {
+    title: "Page not found",
+    description: "This address does not exist, or the page was removed.",
+    didYouMean: "Did you mean",
+    searchFor: (term: string) => `Search for “${term}”`,
+    searchAuthors: (term: string) => `Search authors for “${term}”`,
+    home: "Go to the home page",
+  },
 };
