@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isValidStorageKey } from "@storynest/utils";
 import type { DataClient } from "../_shared/client.ts";
 import { DataProvider } from "../_shared/data.tsx";
@@ -129,6 +129,23 @@ describe("removeCover", () => {
 });
 
 describe("CoverEditor", () => {
+  /** jsdom has no image decoder nor object URLs: a picked file decodes as a 1200 x 600 picture. */
+  let revoke: ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    revoke = vi.fn();
+    vi.stubGlobal(
+      "createImageBitmap",
+      vi.fn(async () => ({ width: 1200, height: 600, close: () => {} })),
+    );
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:picked");
+    URL.revokeObjectURL = revoke as unknown as typeof URL.revokeObjectURL;
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+  const confirmCrop = async () => fireEvent.click(await screen.findByRole("button", { name: t.crop.confirm }));
+
   function setup(coverStorageKey: string | null, renderer: ImageRenderer, client: DataClient) {
     const toast = vi.fn();
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
@@ -145,12 +162,32 @@ describe("CoverEditor", () => {
   }
   const choose = (file: File) => fireEvent.change(screen.getByLabelText(t.inputLabel), { target: { files: [file] } });
 
-  it("uploads the chosen picture and says so", async () => {
+  it("opens a 2:3 crop editor on pick, then uploads the chosen part and says so", async () => {
     const { client, calls } = fakeClient();
-    const { toast } = setup(null, async () => prepared, client);
+    const renderer = vi.fn<ImageRenderer>(async () => prepared);
+    const { toast } = setup(null, renderer, client);
     choose(new File(["x"], "me.png", { type: "image/png" }));
+    const frame = await screen.findByRole("application", { name: t.crop.frame });
+    expect(frame.style.aspectRatio).toMatch(/^0\.666/); // the 2:3 frame
+    expect(calls).toEqual([]);
+    fireEvent.change(screen.getByRole("slider", { name: t.crop.zoom }), { target: { value: "200" } });
+    await confirmCrop();
     await waitFor(() => expect(toast).toHaveBeenCalled());
     expect(calls.map((c) => c.split(" ")[0])).toEqual(["upload", "save"]);
+    expect(renderer).toHaveBeenCalledWith(expect.any(File), { x: 500, y: 150, width: 200, height: 300 });
+    expect(revoke).toHaveBeenCalledWith("blob:picked");
+  });
+
+  it("uploads nothing when the crop is cancelled", async () => {
+    const { client, calls } = fakeClient();
+    const renderer = vi.fn<ImageRenderer>(async () => prepared);
+    setup(null, renderer, client);
+    choose(new File(["x"], "me.png", { type: "image/png" }));
+    fireEvent.click(await screen.findByRole("button", { name: t.crop.cancel }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(revoke).toHaveBeenCalledWith("blob:picked");
+    expect(renderer).not.toHaveBeenCalled();
+    expect(calls).toEqual([]);
   });
 
   it("shows the current cover from the public address", () => {
@@ -186,6 +223,7 @@ describe("CoverEditor", () => {
     const { client } = fakeClient({ uploadError: { message: "mime type not allowed", statusCode: "415" } });
     setup(null, async () => prepared, client);
     choose(new File(["x"], "me.png", { type: "image/png" }));
+    await confirmCrop();
     expect((await screen.findByRole("alert")).textContent).toBe(t.errors.rejected);
   });
 
@@ -193,6 +231,7 @@ describe("CoverEditor", () => {
     const { client } = fakeClient({ uploadError: { message: "violates row-level security", statusCode: "403" } });
     setup(null, async () => prepared, client);
     choose(new File(["x"], "me.png", { type: "image/png" }));
+    await confirmCrop();
     expect((await screen.findByRole("alert")).textContent).toBe(t.errors.forbidden);
   });
 });

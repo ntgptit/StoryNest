@@ -4,16 +4,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authKeys, type Profile } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
+import type { ImageUpload } from "../../_shared/image-prepare.ts";
 import { removeAvatar, uploadAvatar } from "../api/profile.api.ts";
 import { prepareAvatar, type AvatarRenderer } from "../model/avatar-image.ts";
 
-/** Picks, crops, uploads and saves a new picture; the fresh profile goes into the auth cache so the header updates. */
+/** Crops (to the chosen square, else the centred one), uploads and saves a new picture; the fresh profile goes into the auth cache so the header updates. */
 export function useUploadAvatar(profile: Profile, render?: AvatarRenderer) {
   const getClient = useDataClientGetter();
   const queryClient = useQueryClient();
-  return useMutation<Profile, Error, File>({
-    mutationFn: async (file) => {
-      const avatar = await prepareAvatar(file, render); // AvatarError passes through, the screen has text for it
+  return useMutation<Profile, Error, ImageUpload>({
+    mutationFn: async ({ file, crop }) => {
+      const avatar = await prepareAvatar(file, render, crop); // AvatarError passes through, the screen has text for it
       try {
         return await uploadAvatar(getClient(), profile, avatar);
       } catch (error) {

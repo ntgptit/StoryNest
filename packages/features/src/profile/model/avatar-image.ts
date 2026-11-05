@@ -6,6 +6,7 @@ import {
   createBrowserRenderer,
   outputSize,
   prepareImage,
+  type CropRect,
   type ImageRenderer,
   type PreparedImage,
 } from "../../_shared/image-prepare.ts";
@@ -33,7 +34,14 @@ export function outputSide(side: number): number {
 
 export const renderInBrowser: AvatarRenderer = createBrowserRenderer({ aspect: 1, maxWidth: AVATAR_SIZE });
 
-/** Checks the picked file, then crops it to a square and re-encodes it. Throws AvatarError. */
-export function prepareAvatar(file: Blob, render: AvatarRenderer = renderInBrowser): Promise<PreparedAvatar> {
-  return prepareImage(file, render);
+/**
+ * Checks the picked file, then crops it to a square (the one chosen in the crop editor, else the centred one) and
+ * re-encodes it. Throws AvatarError.
+ */
+export function prepareAvatar(
+  file: Blob,
+  render: AvatarRenderer = renderInBrowser,
+  crop?: CropRect,
+): Promise<PreparedAvatar> {
+  return prepareImage(file, render, crop);
 }

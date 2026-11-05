@@ -25,9 +25,17 @@ const vi = {
     remove: "Gỡ ảnh",
     uploading: "Đang tải lên…",
     inputLabel: "Chọn ảnh đại diện",
-    hint: "JPG, PNG hoặc WebP, tối đa 10 MB. Ảnh được cắt vuông ở giữa.",
+    hint: "JPG, PNG hoặc WebP, tối đa 10 MB. Bạn chọn phần ảnh vuông muốn giữ trước khi tải lên.",
     saved: "Đã cập nhật ảnh đại diện.",
     removed: "Đã gỡ ảnh đại diện.",
+    crop: {
+      title: "Căn chỉnh ảnh đại diện",
+      description: "Kéo để di chuyển ảnh, kéo thanh trượt, cuộn chuột hoặc chụm hai ngón để phóng to.",
+      frame: "Vị trí ảnh. Dùng phím mũi tên để di chuyển, phím cộng và trừ để phóng to, thu nhỏ.",
+      zoom: "Thu phóng",
+      confirm: "Dùng ảnh này",
+      cancel: "Hủy",
+    },
     errors: {
       type: "Chỉ dùng được ảnh JPG, PNG hoặc WebP.",
       tooLarge: "Ảnh quá lớn (tối đa 10 MB).",

@@ -1,10 +1,12 @@
 "use client";
 
 import { Button } from "@storynest/ui/components/button";
+import { ImageCropDialog } from "@storynest/ui/widgets/image-crop-dialog";
 import { useRef } from "react";
 import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
 import type { Profile } from "../../_shared/auth.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
+import { useCropSource } from "../../_shared/use-crop-source.ts";
 import { useRemoveAvatar, useUploadAvatar } from "../hooks/use-avatar.ts";
 import { AVATAR_ACCEPTED_TYPES, type AvatarRenderer } from "../model/avatar-image.ts";
 import { avatarErrorMessage } from "../model/messages.ts";
@@ -12,20 +14,24 @@ import { profileText } from "../strings.ts";
 
 const t = profileText.avatar;
 
-/** Shows the current picture with "change" and "remove". A new file is cropped to a square and uploaded at once. */
+/**
+ * Shows the current picture with "change" and "remove". A new file opens the crop editor (round mask, square result);
+ * "Use photo" uploads the chosen square, "Cancel" uploads nothing.
+ */
 export function AvatarEditor({ profile, render }: { profile: Profile; render?: AvatarRenderer }) {
   const toast = useAppToast();
   const input = useRef<HTMLInputElement>(null);
   const upload = useUploadAvatar(profile, render);
   const remove = useRemoveAvatar(profile);
+  const crop = useCropSource();
   const busy = upload.isPending || remove.isPending;
-  const error = upload.error ?? remove.error;
+  const error = crop.error ?? upload.error ?? remove.error;
 
   const pick = (file: File | undefined) => {
     if (file === undefined) return;
     upload.reset();
     remove.reset();
-    upload.mutate(file, { onSuccess: () => toast.success(t.saved) });
+    crop.open(file);
   };
 
   return (
@@ -48,6 +54,7 @@ export function AvatarEditor({ profile, render }: { profile: Profile; render?: A
               disabled={busy}
               onClick={() => {
                 upload.reset();
+                crop.clearError();
                 remove.mutate(undefined, { onSuccess: () => toast.success(t.removed) });
               }}
             >
@@ -73,6 +80,22 @@ export function AvatarEditor({ profile, render }: { profile: Profile; render?: A
         <p role="alert" className="text-sm text-destructive">
           {avatarErrorMessage(error)}
         </p>
+      )}
+      {crop.source === null ? null : (
+        <ImageCropDialog
+          imageUrl={crop.source.url}
+          imageWidth={crop.source.width}
+          imageHeight={crop.source.height}
+          aspect={1}
+          shape="round"
+          labels={t.crop}
+          onCancel={crop.close}
+          onConfirm={(area) => {
+            const file = crop.source?.file;
+            crop.close();
+            if (file !== undefined) upload.mutate({ file, crop: area }, { onSuccess: () => toast.success(t.saved) });
+          }}
+        />
       )}
     </div>
   );

@@ -6,6 +6,7 @@
   "exports": {
     "./lib/utils": "./src/lib/utils.ts",
     "./lib/use-trigger-count": "./src/lib/use-trigger-count.ts",
+    "./lib/crop-math": "./src/lib/crop-math.ts",
     "./components/*": "./src/components/*.tsx",
     "./widgets/*": "./src/widgets/*.tsx"
   },

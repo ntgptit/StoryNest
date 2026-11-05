@@ -96,10 +96,10 @@ Screens: [SCR-PRF-01 My profile](screens/my-profile.md) · [SCR-PRF-02 Edit prof
 | Description | The browser checks, crops and re-encodes the picked picture before upload |
 | Preconditions | File picked in the avatar editor |
 | Conditions | Type ∈ JPEG/PNG/WebP else "Only JPG, PNG or WebP pictures can be used."; size ≤ 10 MB else "That picture is too large (10 MB at most)."; undecodable → "This picture could not be read. Try another one." |
-| Expected behavior | Largest centred square, scaled to ≤ 256 px (never enlarged), encoded WebP q 0.85 (JPEG if WebP encoding unavailable) |
+| Expected behavior | Type and size are checked before the crop dialog (#069 `ImageCropDialog`) opens; the user picks a square (zoom 1-3×, never leaving the picture; the untouched view is the largest centred square, identical to the earlier automatic crop). That square is scaled to ≤ 256 px (never enlarged), encoded WebP q 0.85 (JPEG if WebP encoding unavailable). Cancel uploads nothing |
 | Exceptions | — |
 | Related screens | SCR-PRF-02 |
-| Evidence | `packages/features/src/_shared/image-prepare.ts:3-90`, `packages/features/src/profile/model/avatar-image.ts:13-39`, `packages/features/src/profile/model/messages.ts:38-55`, `packages/features/src/profile/avatar.test.tsx` |
+| Evidence | `packages/features/src/_shared/image-prepare.ts` (`cropBox` with optional crop, `checkImageFile`), `packages/features/src/_shared/use-crop-source.ts`, `packages/ui/src/lib/crop-math.ts`, `packages/features/src/profile/model/avatar-image.ts`, `packages/features/src/profile/model/messages.ts:38-55`, `packages/features/src/profile/avatar.test.tsx` |
 | Status | Verified |
 
 ### BR-PRF-008 — Avatar bucket and write policy (server)

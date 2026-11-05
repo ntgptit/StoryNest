@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { StoryForm } from "@storynest/validation";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
-import { prepareImage, type ImageRenderer } from "../../_shared/image-prepare.ts";
+import { prepareImage, type ImageRenderer, type ImageUpload } from "../../_shared/image-prepare.ts";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
 import { discoveryKeys } from "../../discovery/index.ts";
 import { storyKeys } from "../../story/index.ts";
@@ -127,13 +127,13 @@ export function useSetStoryTags() {
   });
 }
 
-/** Prepares (2:3 crop), uploads and saves a cover. ImageError passes through for the screen to explain. */
+/** Prepares (the chosen 2:3 crop, else the centred one), uploads and saves a cover. ImageError passes through for the screen to explain. */
 export function useUploadCover(story: { id: string; coverStorageKey: string | null }, render: ImageRenderer) {
   const getClient = useDataClientGetter();
   const invalidate = useInvalidateStoryViews();
-  return useMutation<string, Error, File>({
-    mutationFn: async (file) => {
-      const cover = await prepareImage(file, render);
+  return useMutation<string, Error, ImageUpload>({
+    mutationFn: async ({ file, crop }) => {
+      const cover = await prepareImage(file, render, crop);
       try {
         return await uploadCover(getClient(), story, cover);
       } catch (error) {

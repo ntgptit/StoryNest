@@ -204,7 +204,7 @@
 | --- | --- |
 | Description | A cover can be added/changed only for a story that already exists (edit form), by owner or co-author |
 | Preconditions | Edit mode; role owner/co_author; active account |
-| Conditions | Client: JPEG/PNG/WebP, input ≤ 10 MB, centre-cropped to 2:3, ≤ 600 px wide, WebP (JPEG fallback). Storage: bucket `covers` public, ≤ 2 MiB, JPEG/PNG/WebP; key `<story_id>/<generated file name>` (no user file name); `upsert: false`. DB CHECK: `cover_storage_key` must lie in the story's own folder. Upload happens immediately on file pick (not with "Save changes") |
+| Conditions | Client: JPEG/PNG/WebP, input ≤ 10 MB, then a 2:3 crop dialog (#069 `ImageCropDialog`: drag, zoom 1-3×, the untouched view is the earlier centred crop; "Cancel" uploads nothing), the chosen part ≤ 600 px wide, WebP (JPEG fallback). Storage: bucket `covers` public, ≤ 2 MiB, JPEG/PNG/WebP; key `<story_id>/<generated file name>` (no user file name); `upsert: false`. DB CHECK: `cover_storage_key` must lie in the story's own folder. Upload happens on "Use photo" in the crop dialog (not with "Save changes") |
 | Expected behavior | Upload → set `stories.cover_storage_key` → delete the previous object (best effort) → toast "Cover updated." |
 | Exceptions | Set-key failure removes the just-uploaded object; 0 rows → notFound. Error texts: wrong type "Only JPG, PNG or WebP pictures can be used.", > 10 MB "That picture is too large (10 MB at most).", unreadable, 400/413/415 → "The server did not accept this picture…", 401/403 → "You are not allowed to change this story's cover.", network. Create mode shows `form.cover.saveFirst` ("Save the story first, then you can add a cover.") |
 | Related screens | SCR-STM-03 (SCR-STM-02 shows the hint) |

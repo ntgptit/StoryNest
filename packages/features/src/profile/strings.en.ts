@@ -21,9 +21,17 @@ export const en = {
     remove: "Remove picture",
     uploading: "Uploading…",
     inputLabel: "Choose a profile picture",
-    hint: "JPG, PNG or WebP, up to 10 MB. The picture is cropped to a square from the centre.",
+    hint: "JPG, PNG or WebP, up to 10 MB. You choose the square to keep before it is uploaded.",
     saved: "Profile picture updated.",
     removed: "Profile picture removed.",
+    crop: {
+      title: "Adjust your profile picture",
+      description: "Drag to move the picture; use the slider, the mouse wheel or a pinch to zoom.",
+      frame: "Picture position. Move it with the arrow keys and zoom with plus and minus.",
+      zoom: "Zoom",
+      confirm: "Use photo",
+      cancel: "Cancel",
+    },
     errors: {
       type: "Only JPG, PNG or WebP pictures can be used.",
       tooLarge: "That picture is too large (10 MB at most).",

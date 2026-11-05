@@ -21,7 +21,8 @@
 | SCR-PRF-02-C03 | Add/Change button | "Add a profile picture" / "Change picture" / "Uploading…" |
 | SCR-PRF-02-C04 | Remove button | "Remove picture" (only when set) |
 | SCR-PRF-02-C05 | Hidden file input | `aria-label` "Choose a profile picture", `accept` jpeg/png/webp, `tabIndex=-1` |
-| SCR-PRF-02-C06 | Avatar hint + error | "JPG, PNG or WebP, up to 10 MB. The picture is cropped to a square from the centre." / errors BR-PRF-007/008 |
+| SCR-PRF-02-C06 | Avatar hint + error | "JPG, PNG or WebP, up to 10 MB. You choose the square to keep before it is uploaded." / errors BR-PRF-007/008 |
+| SCR-PRF-02-C06b | Crop dialog (after a valid pick) | "Adjust your profile picture", round mask over a square frame, zoom slider "Zoom", "Use photo" / "Cancel"; frame `role="application"` with arrows (move) and +/− (zoom) |
 | SCR-PRF-02-C07 | Error banner (`role="alert"`) | Save failures except username taken |
 | SCR-PRF-02-C08 | Display name input | "Display name" |
 | SCR-PRF-02-C09 | Username input + hint | "Username" / "Letters, numbers and underscores, 3-30 characters. Changing it changes your profile address." |
@@ -99,7 +100,7 @@
 - SCR-PRF-02-AC04 Given an empty display name, then "Please enter a display name." shows.
 - SCR-PRF-02-AC05 Given a blank bio, when saving, then the bio becomes `NULL` and `/me` shows "No bio yet.".
 - SCR-PRF-02-AC06 Given a 12 MB PNG, when picked, then "That picture is too large (10 MB at most)." shows and nothing is uploaded.
-- SCR-PRF-02-AC07 Given a valid picture, when picked, then a ≤ 256 px square is uploaded to `avatars/<uid>/…`, the previous object is deleted and the header avatar changes.
+- SCR-PRF-02-AC07 Given a valid picture, when picked, then the crop dialog opens and nothing is uploaded yet; when "Use photo" is pressed, then the chosen ≤ 256 px square is uploaded to `avatars/<uid>/…`, the previous object is deleted and the header avatar changes. Given the dialog, when "Cancel" is pressed, then nothing is uploaded.
 - SCR-PRF-02-AC08 Given a suspended account, when picking a picture, then the upload is refused by Storage policy.
 - SCR-PRF-02-AC09 [Proposed] Given unsaved edits, when the user cancels, navigates away or switches language, then they are asked to confirm discarding (U-PRF-02).
 - SCR-PRF-02-AC10 [Proposed] Given the user typed a new username, then availability is checked before save and old `/author/<old>` links redirect to the new address (U-PRF-03).

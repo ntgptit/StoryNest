@@ -443,6 +443,18 @@
   background-attachment: fixed, scroll;
 }
 
+/*
+ * Crop batch (ImageCropDialog, adapted from Lucian UX/UI Prompt #069, MIT (c) 2026 Seokwoooo,
+ * lucianlabs.dev/uxui-prompt/#069). The frame ring and the rule-of-thirds guides are drawn on top of the photo, so
+ * they stay light in both schemes (like the element's white ring); the dim outside the round mask is `--scrim`.
+ */
+:root {
+  --crop-guide: oklch(1 0 0 / 85%);
+}
+@theme inline {
+  --color-crop-guide: var(--crop-guide);
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
