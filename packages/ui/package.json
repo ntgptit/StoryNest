@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./lib/utils": "./src/lib/utils.ts",
+    "./lib/use-trigger-count": "./src/lib/use-trigger-count.ts",
     "./components/*": "./src/components/*.tsx",
     "./widgets/*": "./src/widgets/*.tsx"
   },

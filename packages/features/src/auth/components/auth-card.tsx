@@ -24,13 +24,17 @@ export function AuthCard({
   );
 }
 
-/** Failure banner; role="alert" so screen readers announce it when it appears. */
+/**
+ * Failure banner; role="alert" so screen readers announce it when it appears. It shakes once when it appears or the
+ * message changes (head-shake from Lucian UX/UI Prompt 062, MIT (c) 2026 Seokwoooo).
+ */
 export function FormError({ message }: { message: string | null }) {
   if (!message) return null;
   return (
     <p
+      key={message}
       role="alert"
-      className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+      className="animate-shake rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
     >
       {message}
     </p>

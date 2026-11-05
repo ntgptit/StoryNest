@@ -1,8 +1,9 @@
 /* Lucian UX/UI Prompt #012 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#012 */ // token-check-ignore: element number in the required license line, not a colour
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
+import { turnedOn, useTriggerCount } from "../lib/use-trigger-count.ts";
 import { cn } from "../lib/utils.ts";
 
 /** The ribbon outline from the Lucian element above, drawn on a 44×56 grid. */
@@ -32,13 +33,8 @@ const BURST_PARTICLES = [
  * holds it carries the label and `aria-pressed`.
  */
 export function SaveRibbonIcon({ saved, className }: { saved: boolean; className?: string }) {
-  // Adjust state while rendering (no effect): count each off→on change so `key` can replay the animation.
-  const [previousSaved, setPreviousSaved] = useState(saved);
-  const [saveCount, setSaveCount] = useState(0);
-  if (saved !== previousSaved) {
-    setPreviousSaved(saved);
-    if (saved) setSaveCount((count) => count + 1);
-  }
+  // Each off→on change bumps the count; used as `key` it replays the animation (0 = never animated).
+  const saveCount = useTriggerCount(saved, turnedOn);
   const animate = saved && saveCount > 0;
 
   return (

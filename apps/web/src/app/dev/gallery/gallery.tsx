@@ -57,6 +57,10 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { SaveRibbonIcon } from "@storynest/ui/widgets/save-ribbon-icon";
+import { AutosaveIcon, type AutosaveIconState } from "@storynest/ui/widgets/autosave-icon";
+import { HeartBurstIcon } from "@storynest/ui/widgets/heart-burst-icon";
+import { RingingBellIcon } from "@storynest/ui/widgets/ringing-bell-icon";
+import { turnedOn, useTriggerCount } from "@storynest/ui/lib/use-trigger-count";
 import { StatPill } from "@storynest/ui/widgets/stat-pill";
 
 const loginSchema = z.object({
@@ -132,6 +136,73 @@ function SaveToggleExample() {
   );
 }
 
+const AUTOSAVE_STATES: AutosaveIconState[] = ["pending", "saving", "saved", "failed"];
+
+/** Motion widgets adapted from Lucian UX/UI Prompt elements; each one only animates on a change. */
+function MotionExamples() {
+  const [voted, setVoted] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const followRings = useTriggerCount(following, turnedOn);
+  const [arrivals, setArrivals] = useState(0);
+  const [autosave, setAutosave] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const autosaveState = AUTOSAVE_STATES[autosave % AUTOSAVE_STATES.length] ?? "pending";
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant={voted ? "default" : "outline"}
+          className="px-3"
+          aria-pressed={voted}
+          onClick={() => setVoted((value) => !value)}
+        >
+          <HeartBurstIcon active={voted} />
+          {voted ? "Voted" : "Vote"}
+        </Button>
+        <Button
+          type="button"
+          variant={following ? "default" : "outline"}
+          className="px-3"
+          aria-pressed={following}
+          onClick={() => setFollowing((value) => !value)}
+        >
+          <RingingBellIcon rings={followRings} active={following} />
+          {following ? "Following" : "Follow"}
+        </Button>
+        <Button type="button" variant="ghost" onClick={() => setArrivals((value) => value + 1)}>
+          <RingingBellIcon rings={arrivals} className="size-5" />
+          New notification
+        </Button>
+        <Button type="button" variant="ghost" onClick={() => setAutosave((value) => value + 1)}>
+          <AutosaveIcon state={autosaveState} />
+          Autosave: {autosaveState}
+        </Button>
+      </div>
+      <div className="flex max-w-sm flex-col gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-fit"
+          onClick={() => setError((value) => (value === "Wrong password" ? "Too many attempts" : "Wrong password"))}
+        >
+          Show sign-in error
+        </Button>
+        {/* Same look and key-driven replay as the auth FormError. */}
+        {error ? (
+          <p
+            key={error}
+            role="alert"
+            className="animate-shake rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {error}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function InfiniteExample() {
   const [count, setCount] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -194,6 +265,10 @@ export function Gallery() {
           <Button disabled>Disabled</Button>
           <SaveToggleExample />
         </div>
+      </Section>
+
+      <Section title="Motion">
+        <MotionExamples />
       </Section>
 
       <Section title="Form controls">

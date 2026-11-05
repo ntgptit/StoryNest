@@ -17,6 +17,7 @@ improvements. Baseline: commit `204a1ea`, analysed 2026-11-04.
 | Follow a user journey across screens | [workflow-map.md](workflow-map.md) |
 | See what is broken or missing | [audits/functional-gap-analysis.md](audits/functional-gap-analysis.md), [audits/ux-ui-gap-analysis.md](audits/ux-ui-gap-analysis.md) |
 | Know how much is verified | [audits/coverage-report.md](audits/coverage-report.md) |
+| See which Lucian UX/UI elements are used (all 400 checked) | [audits/lucian-uxui-mapping.md](audits/lucian-uxui-mapping.md) |
 | Plan the next work | [proposals/feature-backlog.md](proposals/feature-backlog.md), [proposals/implementation-roadmap.md](proposals/implementation-roadmap.md) |
 | Answer open business questions | [proposals/decision-register.md](proposals/decision-register.md) |
 | Edit this spec | [CONVENTIONS.md](CONVENTIONS.md) (IDs, templates, verification tags, rule ownership) |

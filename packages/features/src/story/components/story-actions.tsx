@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, BellRing } from "lucide-react";
 import { Button } from "@storynest/ui/components/button";
+import { turnedOn, useTriggerCount } from "@storynest/ui/lib/use-trigger-count";
+import { RingingBellIcon } from "@storynest/ui/widgets/ringing-bell-icon";
 import { SaveRibbonIcon } from "@storynest/ui/widgets/save-ribbon-icon";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { AddToListButton } from "../../lists/index.ts";
@@ -17,6 +18,8 @@ export function StoryActions({ storyId }: { storyId: string }) {
   const { state, follow, save, signedIn } = useStoryLibrary(storyId);
   const navigation = useNavigation();
   const toast = useAppToast();
+  // Rings when following turns on; loading the page with "following" already on does not count.
+  const followRings = useTriggerCount(state.data?.following, turnedOn);
   if (!state.data) return null;
 
   const { following, saved } = state.data;
@@ -27,6 +30,8 @@ export function StoryActions({ storyId }: { storyId: string }) {
       <Button
         type="button"
         variant={following ? "default" : "outline"}
+        // Same padding the Button gives a direct <svg> child; RingingBellIcon wraps its svg in a span.
+        className="px-3"
         aria-pressed={signedIn ? following : undefined}
         disabled={follow.isPending}
         onClick={() => {
@@ -37,7 +42,7 @@ export function StoryActions({ storyId }: { storyId: string }) {
           });
         }}
       >
-        {following ? <BellRing aria-hidden className="size-4" /> : <Bell aria-hidden className="size-4" />}
+        <RingingBellIcon rings={followRings} active={following} />
         {following ? t.following : t.follow}
       </Button>
       <Button

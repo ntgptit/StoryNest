@@ -251,6 +251,183 @@
       transform: rotate(var(--burst-angle)) translateY(-1.5rem) scale(1.1) rotate(160deg);
     }
   }
+
+  /* Vote heart (HeartBurstIcon, Lucian #022): crouch, fill and leap; a ring and two rings of dots fly out. */
+  --animate-heart-beat: heart-beat 0.7s var(--ease-soft);
+  --animate-heart-fill: heart-fill 0.7s var(--ease-soft);
+  --animate-heart-ring: heart-ring 0.6s var(--ease-soft) 0.1s both;
+  --animate-heart-fly: heart-fly 0.7s var(--ease-soft) 0.18s both;
+  --animate-heart-fly-near: heart-fly-near 0.7s var(--ease-soft) 0.18s both;
+  @keyframes heart-beat {
+    0% {
+      transform: scale(1);
+    }
+    18% {
+      transform: scale(0.72);
+    }
+    48% {
+      transform: scale(1.24);
+    }
+    70% {
+      transform: scale(0.94);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes heart-fill {
+    0%,
+    18% {
+      transform: scale(0);
+    }
+    48% {
+      transform: scale(1);
+    }
+  }
+  @keyframes heart-ring {
+    0% {
+      opacity: 1;
+      transform: scale(0.3);
+      border-width: 0.4rem;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1);
+      border-width: 0;
+    }
+  }
+  /* Dots: each holder is rotated by --burst-angle; the dot itself moves outwards along that direction. */
+  @keyframes heart-fly {
+    0% {
+      opacity: 1;
+      transform: translate(0, -0.875rem) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(0, -1.625rem) scale(0.2);
+    }
+  }
+  @keyframes heart-fly-near {
+    0% {
+      opacity: 1;
+      transform: translate(0.175rem, -0.75rem) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(0.3rem, -1.4rem) scale(0.2);
+    }
+  }
+
+  /* Bell (RingingBellIcon, Lucian #006 / #074): a damped swing; the unread badge pops when the count goes up. */
+  --animate-bell-ring: bell-ring 0.9s var(--ease-soft);
+  --animate-badge-pop: badge-pop 0.45s var(--ease-spring);
+  @keyframes bell-ring {
+    0% {
+      transform: rotate(0);
+    }
+    15% {
+      transform: rotate(18deg);
+    }
+    30% {
+      transform: rotate(-15deg);
+    }
+    45% {
+      transform: rotate(11deg);
+    }
+    60% {
+      transform: rotate(-7deg);
+    }
+    75% {
+      transform: rotate(3deg);
+    }
+    100% {
+      transform: rotate(0);
+    }
+  }
+  @keyframes badge-pop {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.5);
+    }
+  }
+
+  /* Error head-shake (FormError, Lucian #062). */
+  --animate-shake: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  @keyframes shake {
+    15% {
+      transform: translateX(-9px) rotate(-0.6deg);
+    }
+    30% {
+      transform: translateX(8px) rotate(0.5deg);
+    }
+    45% {
+      transform: translateX(-6px);
+    }
+    60% {
+      transform: translateX(4px);
+    }
+    75% {
+      transform: translateX(-2px);
+    }
+  }
+
+  /* Loading skeleton (Lucian #079): one streak of light sweeps across every block at once (see .skeleton-shine). */
+  --animate-skeleton-shine: skeleton-shine 1.6s linear infinite;
+  @keyframes skeleton-shine {
+    from {
+      background-position:
+        -100vw 0,
+        0 0;
+    }
+    to {
+      background-position:
+        100vw 0,
+        0 0;
+    }
+  }
+
+  /* Autosave (AutosaveIcon, Lucian #355): dots bob while saving, the check draws itself when saved. */
+  --animate-autosave-bob: autosave-bob 0.9s ease-in-out infinite;
+  --animate-draw-in: draw-in 0.35s var(--ease-soft) both;
+  @keyframes autosave-bob {
+    50% {
+      transform: translateY(-2.5px);
+    }
+  }
+  /* Paths that use it set pathLength="1" so one dash covers the whole stroke. */
+  @keyframes draw-in {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
+/*
+ * Skeleton streak: the highlight is fixed to the viewport, so all blocks on screen show one shared streak instead of
+ * each block flashing on its own (browsers without fixed backgrounds, e.g. iOS Safari, fall back to one per block).
+ * Pair it with `animate-skeleton-shine`.
+ */
+@utility skeleton-shine {
+  background-color: var(--accent);
+  background-image:
+    linear-gradient(
+      100deg,
+      transparent 35%,
+      color-mix(in oklab, var(--accent), var(--foreground) 7%) 50%,
+      transparent 65%
+    ),
+    linear-gradient(var(--accent), var(--accent));
+  background-size:
+    100vw 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed, scroll;
 }
 
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */

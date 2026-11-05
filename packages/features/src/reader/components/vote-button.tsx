@@ -1,8 +1,8 @@
 "use client";
 
-import { Heart } from "lucide-react";
 import { formatCount } from "@storynest/utils";
 import { Button } from "@storynest/ui/components/button";
+import { HeartBurstIcon } from "@storynest/ui/widgets/heart-burst-icon";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useChapterVote } from "../hooks/use-chapter-vote.ts";
@@ -33,11 +33,13 @@ export function VoteButton({ chapterId, locale = currentLocale() }: { chapterId:
       <Button
         type="button"
         variant={voted ? "default" : "outline"}
+        // Same padding the Button gives a direct <svg> child; HeartBurstIcon wraps its svg in a span.
+        className="px-3"
         aria-pressed={signedIn ? voted : undefined}
         disabled={toggle.isPending}
         onClick={onClick}
       >
-        <Heart aria-hidden className={voted ? "size-4 fill-current" : "size-4"} />
+        <HeartBurstIcon active={voted} />
         {!signedIn ? t.guest : voted ? t.remove : t.add}
       </Button>
       <span className="text-sm text-muted-foreground" aria-live="polite">

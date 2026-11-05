@@ -9,6 +9,7 @@ import { Button } from "@storynest/ui/components/button";
 import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
 import { Skeleton } from "@storynest/ui/components/skeleton";
+import { AutosaveIcon, type AutosaveIconState } from "@storynest/ui/widgets/autosave-icon";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { useDataClientGetter } from "../../_shared/data.tsx";
@@ -28,6 +29,17 @@ import { editorExtensions } from "../model/extensions.ts";
 import { clearBackup, differsFromServer, readBackup, writeBackup, type DraftBackup } from "../model/local-backup.ts";
 import { editorText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
+
+/** How each autosave status looks in the footer cloud icon. */
+const AUTOSAVE_ICON: Record<AutosaveStatus, AutosaveIconState> = {
+  idle: "idle",
+  dirty: "pending",
+  saving: "saving",
+  saved: "saved",
+  error: "failed",
+  conflict: "failed",
+  invalid: "failed",
+};
 
 const t = editorText;
 
@@ -379,9 +391,16 @@ function DraftEditor({
       <PublishPanel chapterId={draft.chapterId} locale={locale} ensureSaved={ensureSaved} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground" aria-live="polite">
+        <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground" aria-live="polite">
           {t.words(formatCount(words, locale))}
-          {statusText !== "" ? ` · ${statusText}` : unsaved ? ` · ${t.unsaved}` : ""}
+          {statusText !== "" || unsaved ? (
+            // Spaces keep the announced text "N words · status"; in the flex row they collapse and the gap spaces it.
+            <>
+              {" "}
+              <span aria-hidden>·</span> <AutosaveIcon state={statusText !== "" ? AUTOSAVE_ICON[status] : "pending"} />{" "}
+              {statusText !== "" ? statusText : t.unsaved}
+            </>
+          ) : null}
         </p>
         <Button type="button" onClick={onSaveClick} disabled={status === "saving" || !editor}>
           {status === "saving" ? t.saving : t.save}

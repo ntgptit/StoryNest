@@ -32,18 +32,88 @@ const tabsListVariants = cva(
   },
 );
 
+type IndicatorBox = { x: number; y: number; width: number; height: number };
+
+/** Position of the active trigger inside its list, or null when there is none or it is not laid out (e.g. jsdom). */
+function measureActiveTab(list: HTMLElement): IndicatorBox | null {
+  const active = list.querySelector<HTMLElement>('[role="tab"][data-state="active"]');
+  if (!active || active.offsetWidth === 0) return null;
+  return { x: active.offsetLeft, y: active.offsetTop, width: active.offsetWidth, height: active.offsetHeight };
+}
+
+function sameBox(a: IndicatorBox | null, b: IndicatorBox | null) {
+  return a === b || (!!a && !!b && a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height);
+}
+
+/**
+ * Tracks the active trigger so one pill can glide between tabs (adapted from Lucian UX/UI Prompt 039, MIT (c) 2026
+ * Seokwoooo). `settled` turns on one frame after the first measurement, so the pill appears in place on load and only
+ * slides on later changes. Until it is measured the active trigger keeps its own background (SSR, no-JS, jsdom).
+ */
+function useActiveTabIndicator(listRef: React.RefObject<HTMLDivElement | null>) {
+  const [box, setBox] = React.useState<IndicatorBox | null>(null);
+  const [settled, setSettled] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const update = () => {
+      const next = measureActiveTab(list);
+      setBox((current) => (sameBox(current, next) ? current : next));
+    };
+    update();
+    const frame = window.requestAnimationFrame(() => setSettled(true));
+    const mutations = new MutationObserver(update);
+    mutations.observe(list, { subtree: true, attributes: true, attributeFilter: ["data-state"] });
+    const resizes = typeof ResizeObserver === "function" ? new ResizeObserver(update) : null;
+    resizes?.observe(list);
+    list.querySelectorAll('[role="tab"]').forEach((tab) => resizes?.observe(tab));
+    return () => {
+      window.cancelAnimationFrame(frame);
+      mutations.disconnect();
+      resizes?.disconnect();
+    };
+  }, [listRef]);
+
+  return { box, settled };
+}
+
 function TabsList({
   className,
   variant = "default",
+  children,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
+  const listRef = React.useRef<HTMLDivElement>(null);
+  const { box, settled } = useActiveTabIndicator(listRef);
+  // The sliding pill replaces the active background of the default (segmented) look; the line variant keeps its underline.
+  const indicator = variant === "default" ? box : null;
   return (
     <TabsPrimitive.List
+      ref={listRef}
       data-slot="tabs-list"
       data-variant={variant}
-      className={cn(tabsListVariants({ variant }), className)}
+      data-indicator={indicator ? "ready" : undefined}
+      className={cn(tabsListVariants({ variant }), "relative", className)}
       {...props}
-    />
+    >
+      {indicator ? (
+        <span
+          aria-hidden
+          data-slot="tabs-indicator"
+          className={cn(
+            "pointer-events-none absolute top-0 left-0 rounded-md border border-transparent bg-background shadow-sm dark:border-input dark:bg-input/30",
+            settled && "transition-[translate,width,height] duration-450 ease-spring",
+          )}
+          style={{
+            width: indicator.width,
+            height: indicator.height,
+            translate: `${indicator.x}px ${indicator.y}px`,
+          }}
+        />
+      ) : null}
+      {children}
+    </TabsPrimitive.List>
   );
 }
 
@@ -55,6 +125,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
         "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 group-data-[variant=default]/tabs-list:data-[state=active]:shadow-sm group-data-[variant=line]/tabs-list:data-[state=active]:shadow-none dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:border-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent",
         "data-[state=active]:bg-background data-[state=active]:text-foreground dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:data-[state=active]:text-foreground",
+        "group-data-[indicator=ready]/tabs-list:data-[state=active]:border-transparent group-data-[indicator=ready]/tabs-list:data-[state=active]:bg-transparent group-data-[indicator=ready]/tabs-list:data-[state=active]:shadow-none! dark:group-data-[indicator=ready]/tabs-list:data-[state=active]:border-transparent dark:group-data-[indicator=ready]/tabs-list:data-[state=active]:bg-transparent",
         "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-[state=active]:after:opacity-100",
         className,
       )}
