@@ -94,3 +94,172 @@ export function barPercent(value: number, max: number): number {
   if (max <= 0 || value <= 0) return 0;
   return Math.min(100, Math.max(2, Math.round((value / max) * 100))); // a tiny value stays visible
 }
+
+const DAY_MS = 86_400_000;
+/** Longest axis `alignDaily` will fill (the server sends at most 90 days), so a stray date cannot blow it up. */
+const MAX_AXIS_DAYS = 366;
+
+/** Days since the epoch of a `YYYY-MM-DD` UTC day, or null when it is not one. */
+function dayNumber(day: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const time = Date.parse(`${day}T00:00:00Z`);
+  return Number.isNaN(time) ? null : Math.round(time / DAY_MS);
+}
+
+const dayString = (n: number) => new Date(n * DAY_MS).toISOString().slice(0, 10);
+
+/** The three daily series as parallel arrays on one day axis (index i of every array is `days[i]`). */
+export interface DailySeries {
+  days: string[];
+  reads: number[];
+  votes: number[];
+  comments: number[];
+}
+
+/**
+ * Puts the daily points on one gap-free, oldest-first UTC day axis so the small multiples can share a cursor by index:
+ * points are sorted, a day sent twice is added up, a missing day between the first and the last is a zero, and a point
+ * whose day is not a `YYYY-MM-DD` date is dropped. The server already zero-fills, so this normally changes nothing.
+ */
+export function alignDaily(points: readonly DailyPoint[]): DailySeries {
+  const byDay = new Map<number, Totals>();
+  for (const point of points) {
+    const n = dayNumber(point.day);
+    if (n === null) continue;
+    const sum = byDay.get(n) ?? { reads: 0, votes: 0, comments: 0 };
+    byDay.set(n, {
+      reads: sum.reads + point.reads,
+      votes: sum.votes + point.votes,
+      comments: sum.comments + point.comments,
+    });
+  }
+  const series: DailySeries = { days: [], reads: [], votes: [], comments: [] };
+  if (byDay.size === 0) return series;
+  const last = Math.max(...byDay.keys());
+  const first = Math.max(Math.min(...byDay.keys()), last - MAX_AXIS_DAYS + 1);
+  for (let n = first; n <= last; n += 1) {
+    const day = byDay.get(n);
+    series.days.push(dayString(n));
+    series.reads.push(day?.reads ?? 0);
+    series.votes.push(day?.votes ?? 0);
+    series.comments.push(day?.comments ?? 0);
+  }
+  return series;
+}
+
+/** A published chapter as the story's chapter list gives it (`first_published_at`). */
+export interface PublishedChapter {
+  number: number;
+  publishedAt: string | null;
+}
+
+/**
+ * The chapters first published on each day of the axis, keyed by UTC day (the series' days are UTC days too), numbers
+ * in order. Chapters published outside the axis, or never, are left out. A chapter that was unpublished and published
+ * again keeps its first date (`first_published_at`).
+ */
+export function publishedByDay(
+  days: readonly string[],
+  chapters: readonly PublishedChapter[],
+): Record<string, number[]> {
+  const onAxis = new Set(days);
+  const result: Record<string, number[]> = {};
+  for (const chapter of chapters) {
+    if (!chapter.publishedAt) continue;
+    const time = Date.parse(chapter.publishedAt);
+    if (Number.isNaN(time)) continue;
+    const day = new Date(time).toISOString().slice(0, 10);
+    if (!onAxis.has(day)) continue;
+    (result[day] ??= []).push(chapter.number);
+  }
+  for (const numbers of Object.values(result)) numbers.sort((a, b) => a - b);
+  return result;
+}
+
+/** A UTC day for people: "T5, 5 thg 11" / "Thu, Nov 5" (long) or "5/11" / "11/5" (short). */
+export function formatDay(day: string, locale: string, style: "long" | "short"): string {
+  const n = dayNumber(day);
+  if (n === null) return day;
+  const options: Intl.DateTimeFormatOptions =
+    style === "long"
+      ? { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }
+      : { day: "numeric", month: "numeric", timeZone: "UTC" };
+  return new Intl.DateTimeFormat(locale, options).format(new Date(n * DAY_MS));
+}
+
+/** One chapter of the read-through funnel. */
+export interface FunnelStepStat {
+  chapterId: string;
+  number: number;
+  title: string;
+  /** All-time reads of the chapter (one reader × one chapter × one UTC day), not distinct readers. */
+  reads: number;
+  /** Reads ÷ reads of the first chapter; null when the first chapter has no reads. */
+  ofFirst: number | null;
+  /** Reads ÷ reads of the chapter before (the same ratio as BR-STAT-003 retention); null for the first step or after 0. */
+  fromPrevious: number | null;
+  /** 1 − fromPrevious: share of the previous chapter's reads that did not reach this one (negative = more reads). */
+  dropOff: number | null;
+  /** Bar width relative to the most-read chapter, 0 to 100. */
+  widthPercent: number;
+}
+
+export interface ReadThroughFunnel {
+  steps: FunnelStepStat[];
+  /** Index (in `steps`) of the largest positive drop-off; the earliest on a tie; null when no step loses reads. */
+  biggestDrop: number | null;
+  /** Reads of the last chapter ÷ reads of the first; null with fewer than two chapters or no reads in the first. */
+  overall: number | null;
+  totalReads: number;
+}
+
+/**
+ * Chapter-by-chapter read-through from the per-chapter counters (BR-STAT-011). Steps follow reading order and every
+ * ratio is derived from `reads` alone, so nothing is estimated: a later chapter may have more reads than the one before
+ * (a reader who comes back on another day counts again), which shows as a negative drop-off instead of being clamped.
+ */
+export function readThroughFunnel(chapters: readonly ChapterStat[]): ReadThroughFunnel {
+  const ordered = [...chapters].sort((a, b) => a.number - b.number);
+  const firstReads = ordered[0]?.reads ?? 0;
+  const maxReads = Math.max(0, ...ordered.map((chapter) => chapter.reads));
+  const steps = ordered.map((chapter, index): FunnelStepStat => {
+    const previous = index > 0 ? ordered[index - 1] : undefined;
+    const fromPrevious = previous && previous.reads > 0 ? chapter.reads / previous.reads : null;
+    return {
+      chapterId: chapter.chapterId,
+      number: chapter.number,
+      title: chapter.title,
+      reads: chapter.reads,
+      ofFirst: firstReads > 0 ? chapter.reads / firstReads : null,
+      fromPrevious,
+      dropOff: fromPrevious === null ? null : 1 - fromPrevious,
+      widthPercent: barPercent(chapter.reads, maxReads),
+    };
+  });
+  let biggestDrop: number | null = null;
+  let biggest = 0;
+  steps.forEach((step, index) => {
+    if (step.dropOff !== null && step.dropOff > biggest) {
+      biggest = step.dropOff;
+      biggestDrop = index;
+    }
+  });
+  return {
+    steps,
+    biggestDrop,
+    overall: steps.length >= 2 ? (steps.at(-1)?.ofFirst ?? null) : null,
+    totalReads: ordered.reduce((sum, chapter) => sum + chapter.reads, 0),
+  };
+}
+
+/** A ratio as a whole percent: 0.684 -> "68%". */
+export function formatPercent(ratio: number): string {
+  return `${Math.round(ratio * 100)}%`;
+}
+
+/** A drop-off as a signed change: 0.18 -> "−18%", −0.05 (more reads) -> "+5%", anything that rounds to 0 -> "0%". */
+export function formatChange(dropOff: number): string {
+  const percent = Math.round(Math.abs(dropOff) * 100);
+  if (percent === 0) return "0%";
+  return `${dropOff > 0 ? "−" : "+"}${percent}%`;
+}

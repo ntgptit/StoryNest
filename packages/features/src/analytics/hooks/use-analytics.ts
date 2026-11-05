@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
@@ -32,5 +32,7 @@ export function useDailyStats(storyId: string, days: number) {
     queryFn: () => getDailyStats(getClient(), storyId, days).catch((e: unknown) => Promise.reject(toAppError(e))),
     enabled: userId !== null,
     retry: false,
+    // Keep the previous range on screen while the next one loads, so the chart morphs instead of blinking out.
+    placeholderData: keepPreviousData,
   });
 }

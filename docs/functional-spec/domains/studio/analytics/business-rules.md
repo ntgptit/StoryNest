@@ -25,6 +25,8 @@
 | BR-STAT-008 | Entry point visibility | Verified |
 | BR-STAT-009 | Chart drawing | Verified |
 | BR-STAT-010 | Figures never cross accounts | Verified |
+| BR-STAT-011 | Read-through funnel | Verified |
+| BR-STAT-012 | Publish-day flags | Verified |
 
 ## 2. Rules
 
@@ -127,13 +129,13 @@
 ### BR-STAT-009 — Chart drawing
 | Field | Value |
 | --- | --- |
-| Description | One bar per day, height = reads relative to the busiest day; a non-zero value is at least 2% tall; zero is empty; the whole chart is one `role="img"` with a text summary ("30-day chart: n reads, n likes, n comments"); per-day value only in a `title` tooltip |
+| Description | Three small multiples (Reads, Likes, Comments: the three series `author_story_daily` returns) on one day axis. Before drawing, `alignDaily` puts the points on one sorted, gap-free UTC axis (a duplicate day is added up, a missing day is 0, a malformed day is dropped), so index i is the same day in every chart. Each chart has its own scale: bar height = value ÷ that series' busiest day, a non-zero value at least 2% tall, zero empty; a dashed line marks the series' mean over the range. A shared cursor (pointer, touch, ←/→/Home/End/Esc on a focused chart) shows that day's value and the change from the day before in every chart and announces the day in a polite live region; with no cursor the latest day is shown. The figure's caption is the text summary ("30-day chart: n reads, n likes, n comments"); a "Show as table" toggle lists the same numbers |
 | Preconditions | Daily series loaded |
-| Conditions | All-zero range → "No activity in this range yet." instead of a chart |
-| Expected behavior | No chart library |
-| Exceptions | Per-day values not reachable by keyboard/touch/screen reader (U-STAT-02) |
+| Conditions | All-zero range → "No activity in this range yet." instead of a chart. Each chart keeps 90 bar slots (the longest range) counted back from the latest day, so switching ranges morphs the bars that stay instead of replacing them; the previous range stays on screen while the next loads (`placeholderData`). Colours `--chart-1..3` only |
+| Expected behavior | No chart library; motion only on a range change, never on first render; reduced motion clamps it |
+| Exceptions | — (U-STAT-02 resolved) |
 | Related screens | SCR-STAT-01 |
-| Evidence | `packages/features/src/analytics/components/daily-chart.tsx:10-33`; `packages/features/src/analytics/model/stats.ts:92-96`; `packages/features/src/analytics/analytics.test.tsx:100,131,263` |
+| Evidence | `packages/features/src/analytics/components/daily-chart.tsx`; `packages/ui/src/widgets/synced-small-multiples.tsx`; `packages/features/src/analytics/model/stats.ts` (`alignDaily`, `formatDay`); `packages/features/src/analytics/analytics.test.tsx`; `packages/ui/src/widgets/stats-widgets.test.tsx` |
 | Status | Verified |
 
 ### BR-STAT-010 — Figures never cross accounts
@@ -146,4 +148,28 @@
 | Exceptions | — |
 | Related screens | SCR-STAT-01 |
 | Evidence | `packages/features/src/analytics/keys.ts:1-7`; `packages/features/src/analytics/analytics.test.tsx:109` |
+| Status | Verified |
+
+### BR-STAT-011 — Read-through funnel
+| Field | Value |
+| --- | --- |
+| Description | "Read-through by chapter" answers "where do readers stop?" from the per-chapter rows of BR-STAT-002 only (`readThroughFunnel`, pure). One step per published chapter in reading order (`sort_order`). For step i with reads `r_i` (all-time, one reader × chapter × UTC day): **of first** = `r_i ÷ r_1` (null when `r_1 = 0`); **from previous** = `r_i ÷ r_(i−1)` (the BR-STAT-003 retention; null for step 1 or when `r_(i−1) = 0`); **drop-off** = `1 − from previous` (null when from previous is null; negative = more reads than the chapter before, shown as "+x%", never clamped); **overall** = of first of the last step (null with fewer than 2 chapters or `r_1 = 0`); **biggest drop** = the step with the largest positive drop-off, the earliest on a tie, none when no step loses reads; bar width = `r_i ÷ max r` (≥ 2% when non-zero) |
+| Preconditions | BR-STAT-001; chapters loaded |
+| Conditions | No published chapter → section hidden; every chapter 0 reads → "No reads yet to draw the funnel."; one chapter → one step and "Only one chapter so far…"; `r_1 = 0` → "Chapter 1 has no reads yet, so there is nothing to compare with." |
+| Expected behavior | Steps are labelled as reads, never as readers: the note says a reader counts once per day and that recently published chapters have had less time to collect reads (so a low last step may be recency, not drop-off). Percentages are whole numbers. First 8 steps shown, "Show all n chapters" for the rest |
+| Exceptions | Reads, not distinct readers: a reader who reads chapter 1 on two days counts twice, so the funnel is not a cohort and can widen. A unique-reader funnel needs a new RPC (out of scope) |
+| Related screens | SCR-STAT-01 |
+| Evidence | `packages/features/src/analytics/model/stats.ts` (`readThroughFunnel`, `formatChange`, `formatPercent`); `packages/features/src/analytics/components/read-through-funnel.tsx`; `packages/ui/src/widgets/funnel-steps.tsx`; `packages/features/src/analytics/analytics.test.tsx` ("read-through funnel") |
+| Status | Verified |
+
+### BR-STAT-012 — Publish-day flags
+| Field | Value |
+| --- | --- |
+| Description | The daily charts flag the UTC day each published chapter was **first** published (`chapters.first_published_at`, through the existing story chapter list `listStoryChapters` / `useStoryChapters`, which RLS `chapters_read` lets the owner and co-authors read via `story_role`). Several chapters on one day share one flag ("Chapters 3, 4 published") |
+| Preconditions | Chapter list loaded |
+| Conditions | Only days inside the range; drafts, scheduled and deleted chapters are not in the list; a chapter unpublished and published again keeps its first date |
+| Expected behavior | If the chapter list fails, the chart is drawn without flags (no error shown) |
+| Exceptions | The chapter list is cached per story, not per viewer (it is the public list of the story page) |
+| Related screens | SCR-STAT-01 |
+| Evidence | `packages/features/src/analytics/model/stats.ts` (`publishedByDay`); `packages/features/src/analytics/screens/story-stats-screen.tsx`; `packages/features/src/story/api/story.api.ts` (`listStoryChapters`); `supabase/migrations/20261103000100_auth_and_rls.sql:103-112,232` |
 | Status | Verified |

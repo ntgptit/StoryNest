@@ -4,13 +4,16 @@ import { ArrowLeft, FileQuestion, Lock } from "lucide-react";
 import { useState } from "react";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@storynest/ui/components/tabs";
+import { cn } from "@storynest/ui/lib/utils";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { formatCount } from "@storynest/utils";
 import { useAuth } from "../../_shared/auth.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
+import { useStoryChapters } from "../../story/index.ts";
 import { DailyChart } from "../components/daily-chart.tsx";
+import { ReadThroughFunnel } from "../components/read-through-funnel.tsx";
 import { useChapterStats, useDailyStats } from "../hooks/use-analytics.ts";
 import {
   barPercent,
@@ -50,6 +53,9 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
   const [days, setDays] = useState<RangeDays>(DEFAULT_RANGE);
   const chapters = useChapterStats(storyId);
   const daily = useDailyStats(storyId, days);
+  // Only for the publish-day flags: the story's published chapters with first_published_at (RLS lets the owner and
+  // co-authors read them). If this request fails, the chart is simply drawn without flags.
+  const published = useStoryChapters(storyId);
 
   const failure = chapters.error ?? daily.error;
   if (failure?.kind === "forbidden") {
@@ -108,7 +114,10 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
             {daily.isPending ? (
               <Skeleton className="h-20 w-full rounded-xl" aria-busy />
             ) : (
-              <dl className="grid grid-cols-3 gap-3">
+              <dl
+                className={cn("grid grid-cols-3 gap-3 transition-opacity", daily.isPlaceholderData && "opacity-60")}
+                aria-busy={daily.isPlaceholderData || undefined}
+              >
                 {(
                   [
                     [t.totals.reads, totals.reads],
@@ -128,12 +137,31 @@ function Stats({ storyId, locale }: { storyId: string; locale: string }) {
           <section aria-label={t.daily.title} className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">{t.daily.title}</h2>
             {daily.data ? (
-              <DailyChart points={daily.data} locale={locale} />
+              <DailyChart
+                points={daily.data}
+                published={published.data?.map((chapter) => ({
+                  number: chapter.number,
+                  publishedAt: chapter.publishedAt,
+                }))}
+                locale={locale}
+              />
             ) : (
               <Skeleton className="h-32 w-full rounded-lg" aria-busy />
             )}
             <p className="text-xs text-muted-foreground">{t.daily.note}</p>
           </section>
+
+          {chapters.isPending || rows.length > 0 ? (
+            <section aria-label={t.funnel.title} className="flex flex-col gap-2">
+              <h2 className="text-lg font-semibold">{t.funnel.title}</h2>
+              {chapters.isPending ? (
+                <Skeleton className="h-40 w-full rounded-xl" aria-busy />
+              ) : (
+                <ReadThroughFunnel chapters={rows} locale={locale} />
+              )}
+              <p className="text-xs text-muted-foreground">{t.funnel.note}</p>
+            </section>
+          ) : null}
 
           <section aria-label={t.chapters.title} className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">{t.chapters.title}</h2>

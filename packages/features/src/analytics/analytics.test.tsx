@@ -10,17 +10,25 @@ import { getChapterStats, getDailyStats } from "./api/analytics.api.ts";
 import { useChapterStats } from "./hooks/use-analytics.ts";
 import { analyticsKeys } from "./keys.ts";
 import {
+  alignDaily,
   barPercent,
   DEFAULT_RANGE,
+  formatChange,
+  formatDay,
+  formatPercent,
   formatRetention,
   isRangeDays,
+  publishedByDay,
+  readThroughFunnel,
   sumDaily,
   toChapterStat,
   toDailyPoint,
+  type ChapterStat,
   type ChapterStatRow,
   type DailyRow,
 } from "./model/stats.ts";
 import { DailyChart } from "./components/daily-chart.tsx";
+import { ReadThroughFunnel } from "./components/read-through-funnel.tsx";
 import { StoryStatsScreen } from "./index.ts";
 import { analyticsText } from "./strings.ts";
 
@@ -116,33 +124,250 @@ describe("stats model", () => {
   });
 });
 
+describe("daily series alignment", () => {
+  const point = (day: string, reads: number, votes = 0, comments = 0) => ({ day, reads, votes, comments });
+
+  it("puts every series on one sorted, gap-free day axis, adding up a day sent twice and dropping a bad day", () => {
+    const series = alignDaily([
+      point("2026-11-03", 3, 1, 0),
+      point("2026-11-01", 1, 0, 2),
+      point("2026-11-03", 2, 0, 1),
+      point("not-a-day", 99, 99, 99),
+    ]);
+    expect(series).toEqual({
+      days: ["2026-11-01", "2026-11-02", "2026-11-03"],
+      reads: [1, 0, 5],
+      votes: [0, 0, 1],
+      comments: [2, 0, 1],
+    });
+  });
+
+  it("crosses month ends, keeps a zero-filled series as it is and handles nothing", () => {
+    expect(alignDaily([point("2026-10-31", 1), point("2026-11-01", 0)]).days).toEqual(["2026-10-31", "2026-11-01"]);
+    const zeros = alignDaily([point("2026-11-01", 0), point("2026-11-02", 0)]);
+    expect(zeros.reads).toEqual([0, 0]);
+    expect(alignDaily([])).toEqual({ days: [], reads: [], votes: [], comments: [] });
+  });
+
+  it("flags the UTC day each chapter was first published, only inside the axis", () => {
+    expect(
+      publishedByDay(
+        ["2026-11-01", "2026-11-02"],
+        [
+          { number: 3, publishedAt: "2026-11-02T23:30:00+00:00" },
+          { number: 2, publishedAt: "2026-11-02T01:00:00Z" },
+          { number: 1, publishedAt: "2026-10-01T00:00:00Z" },
+          { number: 4, publishedAt: null },
+          { number: 5, publishedAt: "2026-11-01T23:30:00-02:00" }, // 01:30 UTC on 2 Nov
+          { number: 6, publishedAt: "garbage" },
+        ],
+      ),
+    ).toEqual({ "2026-11-02": [2, 3, 5] });
+  });
+
+  it("formats a UTC day for people and leaves anything else as it is", () => {
+    expect(formatDay("2026-11-05", "en", "short")).toBe("11/5");
+    expect(formatDay("2026-11-05", "en", "long")).toBe("Thu, Nov 5");
+    expect(formatDay("2026-11-05", "vi", "short")).toBe("5/11");
+    expect(formatDay("later", "en", "long")).toBe("later");
+  });
+});
+
+describe("read-through funnel", () => {
+  const stat = (number: number, reads: number): ChapterStat => ({
+    chapterId: `c${number}`,
+    slug: `chuong-${number}`,
+    number,
+    title: `Chương ${number}`,
+    reads,
+    votes: 0,
+    comments: 0,
+    retention: null,
+  });
+  const funnelOf = (...reads: number[]) => readThroughFunnel(reads.map((r, i) => stat(i + 1, r)));
+
+  it("compares each chapter with the first and the one before, and finds the biggest drop", () => {
+    const funnel = funnelOf(100, 80, 20, 18);
+    expect(funnel.steps.map((s) => s.ofFirst)).toEqual([1, 0.8, 0.2, 0.18]);
+    expect(funnel.steps.map((s) => s.fromPrevious)).toEqual([null, 0.8, 0.25, 0.9]);
+    expect(funnel.steps.map((s) => (s.dropOff === null ? null : Math.round(s.dropOff * 100)))).toEqual([
+      null,
+      20,
+      75,
+      10,
+    ]);
+    expect(funnel.steps.map((s) => s.widthPercent)).toEqual([100, 80, 20, 18]);
+    expect(funnel.biggestDrop).toBe(2);
+    expect(funnel.overall).toBe(0.18);
+    expect(funnel.totalReads).toBe(218);
+  });
+
+  it("follows reading order whatever order the rows come in, and matches the server's retention", () => {
+    const funnel = readThroughFunnel([stat(3, 40), stat(1, 80), stat(2, 60)]);
+    expect(funnel.steps.map((s) => s.number)).toEqual([1, 2, 3]);
+    expect(funnel.steps[1]?.fromPrevious).toBe(0.75); // = retention of chapter 2 in BR-STAT-003
+  });
+
+  it("shows more reads than the chapter before as a negative drop, not a drop", () => {
+    const funnel = funnelOf(10, 12);
+    expect(funnel.steps[1]?.dropOff).toBeCloseTo(-0.2);
+    expect(funnel.biggestDrop).toBeNull();
+    expect(funnel.overall).toBe(1.2);
+  });
+
+  it("has no basis after a chapter with no reads, and counts a fall to zero as a full drop", () => {
+    const fromZero = funnelOf(0, 5, 2);
+    expect(fromZero.steps.map((s) => s.ofFirst)).toEqual([null, null, null]);
+    expect(fromZero.steps.map((s) => s.fromPrevious)).toEqual([null, null, 0.4]);
+    expect(fromZero.biggestDrop).toBe(2);
+    expect(fromZero.overall).toBeNull();
+
+    const toZero = funnelOf(5, 0);
+    expect(toZero.steps[1]?.dropOff).toBe(1);
+    expect(toZero.biggestDrop).toBe(1);
+    expect(toZero.overall).toBe(0);
+    expect(toZero.steps[1]?.widthPercent).toBe(0);
+  });
+
+  it("handles no reads at all, a single chapter, no chapter and a tie", () => {
+    const silent = funnelOf(0, 0);
+    expect(silent.totalReads).toBe(0);
+    expect(silent.biggestDrop).toBeNull();
+    expect(silent.overall).toBeNull();
+    expect(silent.steps.map((s) => s.widthPercent)).toEqual([0, 0]);
+
+    const single = funnelOf(7);
+    expect(single.steps).toHaveLength(1);
+    expect(single.steps[0]).toMatchObject({ ofFirst: 1, fromPrevious: null, dropOff: null, widthPercent: 100 });
+    expect(single.biggestDrop).toBeNull();
+    expect(single.overall).toBeNull();
+
+    expect(readThroughFunnel([])).toEqual({ steps: [], biggestDrop: null, overall: null, totalReads: 0 });
+    expect(funnelOf(100, 50, 25).biggestDrop).toBe(1); // 50% twice: the earliest wins
+  });
+
+  it("writes ratios and changes as whole percents", () => {
+    expect(formatPercent(0.684)).toBe("68%");
+    expect(formatChange(0.18)).toBe("−18%");
+    expect(formatChange(1)).toBe("−100%");
+    expect(formatChange(-0.05)).toBe("+5%");
+    expect(formatChange(0.004)).toBe("0%");
+  });
+});
+
 type RpcResult = { data: unknown; error: unknown };
 
-function fakeClient(handlers: Record<string, (args: Record<string, unknown>) => RpcResult> = {}) {
+/** Fake client: RPCs by name, and `from("chapters")` (the story's published chapter list) answering `chapterRows`. */
+function fakeClient(
+  handlers: Record<string, (args: Record<string, unknown>) => RpcResult> = {},
+  chapterRows: unknown[] = [],
+) {
   const calls: { name: string; args: Record<string, unknown> }[] = [];
   const rpc = vi.fn(async (name: string, args: Record<string, unknown> = {}) => {
     calls.push({ name, args });
     return handlers[name]?.(args) ?? { data: [], error: null };
   });
-  return { rpc, calls, of: (name: string) => calls.filter((c) => c.name === name) };
+  const builder: Record<string, unknown> = {};
+  for (const method of ["select", "eq", "is", "order"]) builder[method] = () => builder;
+  builder.returns = () => Promise.resolve({ data: chapterRows, error: null });
+  const from = vi.fn(() => builder);
+  return { rpc, from, calls, of: (name: string) => calls.filter((c) => c.name === name) };
 }
 
+const dayPoints = [
+  { day: "2026-11-01", reads: 10, votes: 1, comments: 0 },
+  { day: "2026-11-02", reads: 5, votes: 0, comments: 2 },
+  { day: "2026-11-03", reads: 0, votes: 3, comments: 1 },
+];
+const chartOf = (series: string) => screen.getByRole("group", { name: t.daily.seriesChart(series) });
+const valueIn = (series: string) => chartOf(series).querySelector('[data-slot="value"]')?.textContent;
+const liveReadout = () => document.querySelector('[data-slot="readout"]');
+
 describe("DailyChart", () => {
-  it("draws the busiest day full height and the others in proportion", () => {
-    render(
-      <DailyChart
-        points={[
-          { day: "2026-11-01", reads: 10, votes: 0, comments: 0 },
-          { day: "2026-11-02", reads: 5, votes: 0, comments: 0 },
-          { day: "2026-11-03", reads: 0, votes: 0, comments: 0 },
-        ]}
-      />,
+  it("scrubbing one chart with ←/→ moves the cursor in every chart and announces the day", () => {
+    render(<DailyChart points={dayPoints} published={[{ number: 2, publishedAt: "2026-11-02T08:00:00Z" }]} />);
+    expect(screen.getByRole("figure", { name: t.daily.chartLabel(3, 15, 4, 3) })).toBeTruthy();
+    // Latest day before anything is picked; nothing is announced.
+    expect([t.daily.series.reads, t.daily.series.votes, t.daily.series.comments].map(valueIn)).toEqual(["0", "3", "1"]);
+    expect(liveReadout()?.textContent).toBe("");
+    expect(liveReadout()?.getAttribute("aria-live")).toBe("polite");
+
+    fireEvent.keyDown(chartOf(t.daily.series.reads), { key: "ArrowLeft" });
+    expect([t.daily.series.reads, t.daily.series.votes, t.daily.series.comments].map(valueIn)).toEqual(["5", "0", "2"]);
+    expect(liveReadout()?.textContent).toBe(
+      t.daily.readout(formatDay("2026-11-02", "vi", "long"), 5, 0, 2, t.daily.published([2])),
     );
-    const bars = screen.getByRole("img").children;
-    expect((bars[0] as HTMLElement).style.height).toBe("100%");
-    expect((bars[1] as HTMLElement).style.height).toBe("50%");
-    expect((bars[2] as HTMLElement).style.height).toBe("0%");
-    expect(bars[0]?.getAttribute("title")).toBe(t.daily.barTitle("2026-11-01", "10"));
+
+    fireEvent.keyDown(chartOf(t.daily.series.comments), { key: "ArrowLeft" });
+    expect([t.daily.series.reads, t.daily.series.votes, t.daily.series.comments].map(valueIn)).toEqual([
+      "10",
+      "1",
+      "0",
+    ]);
+    expect(liveReadout()?.textContent).toBe(t.daily.readout(formatDay("2026-11-01", "vi", "long"), 10, 1, 0, null));
+  });
+
+  it("keeps one bar slot per day of the longest range and colours each series with its own chart token", () => {
+    render(<DailyChart points={dayPoints} />);
+    const bars = chartOf(t.daily.series.reads).querySelectorAll<HTMLElement>('[data-slot="bar"]');
+    expect(bars).toHaveLength(90);
+    expect([...bars].slice(-3).map((bar) => bar.style.height)).toEqual(["100%", "50%", "0%"]);
+    expect(bars[0]?.className).toContain("bg-chart-1");
+    expect(chartOf(t.daily.series.votes).querySelector('[data-slot="bar"]')?.className).toContain("bg-chart-2");
+    expect(chartOf(t.daily.series.comments).querySelector('[data-slot="bar"]')?.className).toContain("bg-chart-3");
+  });
+
+  it("lists the same numbers, and the publish days, in a table", () => {
+    render(<DailyChart points={dayPoints} published={[{ number: 2, publishedAt: "2026-11-02T08:00:00Z" }]} />);
+    fireEvent.click(screen.getByRole("button", { name: t.daily.showTable }));
+    const table = within(screen.getByRole("table"));
+    const row = table.getByRole("rowheader", { name: formatDay("2026-11-02", "vi", "long") }).closest("tr");
+    expect(
+      within(row as HTMLElement)
+        .getAllByRole("cell")
+        .map((cell) => cell.textContent),
+    ).toEqual(["5", "0", "2", t.daily.published([2])]);
+  });
+
+  it("says so when the range is empty", () => {
+    render(<DailyChart points={[{ day: "2026-11-01", reads: 0, votes: 0, comments: 0 }]} />);
+    expect(screen.getByText(t.daily.empty)).toBeTruthy();
+    expect(screen.queryByRole("figure")).toBeNull();
+  });
+});
+
+describe("ReadThroughFunnel", () => {
+  const rows = (...reads: number[]) =>
+    reads.flatMap((r, i) => toChapterStat(chapterRow(i + 1, { reads: r, retention: null })) ?? []);
+  const status = () => document.querySelector('[data-slot="funnel-status"]')?.textContent;
+
+  it("sums up the read-through, highlights the biggest drop and explains a pressed chapter", () => {
+    render(<ReadThroughFunnel chapters={rows(100, 80, 20)} />);
+    expect(status()).toBe(`${t.funnel.summary(3, 1, "20%")} ${t.funnel.biggestDrop(3, formatChange(0.75))}`);
+    const third = screen.getByRole("button", { name: new RegExp(t.chapters.chapterLabel(3)) });
+    expect(third.textContent).toContain(t.funnel.highlight);
+    expect(third.textContent).toContain(formatChange(0.75));
+    fireEvent.click(third);
+    expect(status()).toBe(
+      t.funnel.detail({
+        number: 3,
+        title: "Tựa chương 3",
+        reads: "20",
+        first: 1,
+        ofFirst: "20%",
+        previous: 2,
+        change: formatChange(0.75),
+      }),
+    );
+  });
+
+  it("says when there is nothing to compare: one chapter, or no reads at all", () => {
+    render(<ReadThroughFunnel chapters={rows(7)} />);
+    expect(status()).toBe(t.funnel.single);
+    cleanup();
+    render(<ReadThroughFunnel chapters={rows(0, 0)} />);
+    expect(screen.getByText(t.funnel.empty)).toBeTruthy();
+    expect(screen.queryByRole("list")).toBeNull();
   });
 });
 
@@ -238,7 +463,14 @@ describe("StoryStatsScreen", () => {
     await waitFor(() => expect(totals.getByText("15")).toBeTruthy()); // 5 + 0 + 10 reads
     expect(totals.getByText("3")).toBeTruthy(); // votes
     expect(totals.getByText("4")).toBeTruthy(); // comments
-    expect(screen.getByRole("img", { name: t.daily.chartLabel(3, 15, 3, 4) })).toBeTruthy();
+    expect(screen.getByRole("figure", { name: t.daily.chartLabel(3, 15, 3, 4) })).toBeTruthy();
+
+    // Read-through funnel from the per-chapter reads (80, 60, 40): 50% overall, the biggest drop into chapter 3.
+    const funnel = within(screen.getByRole("region", { name: t.funnel.title }));
+    expect(funnel.getAllByRole("listitem")).toHaveLength(3);
+    expect(
+      funnel.getByText(`${t.funnel.summary(3, 1, "50%")} ${t.funnel.biggestDrop(3, formatChange(1 - 40 / 60))}`),
+    ).toBeTruthy();
 
     const table = within(screen.getByRole("table"));
     const rowOf = (title: string) => table.getByText(title).closest("tr")!;
@@ -252,12 +484,32 @@ describe("StoryStatsScreen", () => {
   it("asks again for the window the author picks", async () => {
     const c = full();
     renderScreen(c);
-    await screen.findByRole("img");
+    const chart = await screen.findByRole("figure");
     const tab = screen.getByRole("tab", { name: t.range.options[7] });
     fireEvent.mouseDown(tab, { button: 0 });
     fireEvent.click(tab);
     await waitFor(() => expect(c.of("author_story_daily").at(-1)?.args.p_days).toBe(7));
     expect(screen.getByRole("tab", { name: t.range.options[30] }).getAttribute("aria-selected")).toBe("false");
+    // The chart stays mounted across the switch (previous range kept while loading), so its bars can morph.
+    expect(screen.getByRole("figure")).toBe(chart);
+  });
+
+  it("flags the days chapters were published, from the story's chapter list", async () => {
+    const c = fakeClient(
+      {
+        author_chapter_stats: () => ({ data: [chapterRow(1), chapterRow(2)], error: null }),
+        author_story_daily: () => ({ data: [dayRow(1, { reads: 5 }), dayRow(2, { reads: 3 })], error: null }),
+      },
+      [
+        { id: "c1", slug: "chuong-1", sort_order: 1, first_published_at: "2026-10-01T08:00:00Z", version: null },
+        { id: "c2", slug: "chuong-2", sort_order: 2, first_published_at: "2026-11-02T08:00:00Z", version: null },
+      ],
+    );
+    renderScreen(c);
+    await screen.findByRole("figure");
+    fireEvent.click(screen.getByRole("button", { name: t.daily.showTable }));
+    await waitFor(() => expect(screen.getAllByText(t.daily.published([2])).length).toBeGreaterThan(0));
+    expect(c.from).toHaveBeenCalledWith("chapters");
   });
 
   it("says so when there is no activity or no chapter yet", async () => {
@@ -270,7 +522,8 @@ describe("StoryStatsScreen", () => {
     expect(await screen.findByText(t.daily.empty)).toBeTruthy();
     expect(await screen.findByText(t.chapters.empty)).toBeTruthy();
     expect(screen.queryByRole("table")).toBeNull();
-    expect(screen.queryByRole("img")).toBeNull();
+    expect(screen.queryByRole("figure")).toBeNull();
+    expect(screen.queryByRole("region", { name: t.funnel.title })).toBeNull();
   });
 
   it("tells someone who may not see the figures, and someone asking about a story that is not theirs", async () => {
