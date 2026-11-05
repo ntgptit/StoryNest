@@ -61,8 +61,8 @@
 | User goal | Give the story a cover picture |
 | Trigger | "Add a cover" / "Change cover" / "Remove cover" in the Cover block of SCR-STM-03 |
 | Preconditions | Story saved (edit mode); owner or co-author; active account |
-| Main flow | 1. "Add a cover" opens the file picker (JPG/PNG/WebP). 2. Client checks type and ≤ 10 MB, crops 2:3, resizes ≤ 600 px, encodes. 3. Button shows "Uploading…", both buttons disabled. 4. Upload to `covers/<story_id>/<random>` → story key updated → old object deleted. 5. Toast "Cover updated."; preview updates |
-| Alternative flows | A1 Remove: key cleared then object deleted; toast "Cover removed.". A2 Picking the same file again re-triggers upload |
+| Main flow | 1. "Add a cover" opens the file picker (JPG/PNG/WebP). 2. Client checks type and ≤ 10 MB, opens the 2:3 crop dialog (drag, zoom by slider/wheel/pinch, arrows/+/−); on "Use photo" it crops the chosen part, resizes ≤ 600 px, encodes. 3. Button shows "Uploading…", both buttons disabled. 4. Upload to `covers/<story_id>/<random>` → story key updated → old object deleted. 5. Toast "Cover updated."; preview updates |
+| Alternative flows | A1 Remove: key cleared then object deleted; toast "Cover removed.". A2 Picking the same file again reopens the crop dialog. A3 "Cancel"/Escape in the crop dialog: nothing uploaded |
 | Exception flows | E1 Wrong type / too large / unreadable → inline alert, nothing uploaded. E2 Server rejects (400/413/415) → "The server did not accept this picture…". E3 Not allowed → "You are not allowed to change this story's cover.". E4 Key save fails → new object removed, old cover kept |
 | Success criteria | `cover_storage_key` points at an object in the story's folder; only one cover object remains (best effort) |
 | Postconditions | Cover shown on Studio row, story page, story cards |

@@ -131,6 +131,14 @@
 | Navigation | — |
 | Evidence | `discover-screen.tsx:79-82`, `discovery.test.tsx:340` |
 
+### C.x Browse interactions (Lucian batch 2 · browse)
+
+- **Featured row** (Lucian 057): on the unfiltered Home, above "For you", the week's top 5 from the ranking (`useTopStories("week")`, no separate featured data) as a carousel: one slide at a time, auto-advance every 5.2 s with a timer bar in the active dot; pauses on hover, focus inside, hidden tab and the Pause button; never moves by itself under reduced motion; swipe or dots to jump. Hidden while loading fails or when the ranking is empty.
+- **Filters on phones** (Lucian 305): below `sm` the category and tag chip rows are replaced by a "Filters" button (with the number of active filters) and the active filters as removable chips. The button opens a bottom sheet to pick a category and a tag; its main button says "Show N stories" from a head-only exact count on the feed's own query (`countLatestStories`, same filters, no RPC) and applies the choice by navigating to `homeHref(...)`. A choice that lists nothing cannot be applied. From `sm` up nothing changes.
+- **Empty filtered feed** (Lucian 092): the empty state offers one link per active filter ("Remove tag #x · N stories", "Remove category y · N stories"), counts from the same head-only query.
+- **Grid / list** (Lucian 308): a toggle switches the story grid to rows (StoryCard `list` variant); remembered in this browser (`localStorage storynest.story-view`); covers FLIP between layouts on a change only.
+- **Story cards everywhere** (Lucian 328, 358): opening a card morphs its cover into the story page cover with the View Transitions API where supported (plain navigation otherwise and under reduced motion); a long-press (touch) or the context menu opens a quick-look sheet with cover, synopsis, counters, the story page's own Follow / Save / Add to list and "Open story".
+
 ## D. UI states
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |

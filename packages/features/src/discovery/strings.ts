@@ -29,6 +29,30 @@ const vi = {
     votes: "Lượt bình chọn",
     updated: (relative: string) => `Cập nhật ${relative}`,
   },
+  view: { label: "Kiểu hiển thị", grid: "Dạng lưới", list: "Dạng danh sách" },
+  filters: {
+    open: "Bộ lọc",
+    close: "Đóng bộ lọc",
+    active: (n: number) => `${n} bộ lọc đang bật`,
+    title: "Lọc truyện",
+    description: "Chọn thể loại và thẻ; số truyện phù hợp cập nhật ngay.",
+    category: "Thể loại",
+    tag: "Thẻ",
+    anyTag: "Mọi thẻ",
+    reset: "Bỏ chọn",
+    show: (n: number) => `Xem ${n} truyện`,
+    none: "Không có truyện phù hợp",
+    counting: "Đang đếm…",
+    removeCategory: (name: string) => `Bỏ lọc thể loại ${name}`,
+    removeTag: (name: string) => `Bỏ lọc thẻ #${name}`,
+  },
+  loosen: {
+    label: "Nới bộ lọc",
+    hint: "Thử bỏ bớt một bộ lọc:",
+    withoutTag: (name: string) => `Bỏ thẻ #${name}`,
+    withoutCategory: (name: string) => `Bỏ thể loại ${name}`,
+    count: (n: string) => `${n} truyện`,
+  },
 } as const;
 
 export const discoveryText = defineText("discovery", vi, en);

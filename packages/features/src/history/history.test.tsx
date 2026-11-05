@@ -11,10 +11,12 @@ import { ToastProvider } from "../_shared/toast.tsx";
 import { readBackup, writeBackup } from "../editor/model/local-backup.ts";
 import { getVersionBlocks, listChapterVersions } from "./api/history.api.ts";
 import { HistoryScreen, PreviewScreen } from "./index.ts";
+import { PREVIEW_DEVICE_WIDTHS } from "./screens/preview-screen.tsx";
 import {
   DIFF_STATUS,
   bodyToReaderBlocks,
   diffBlocks,
+  groupDiff,
   hasDifferences,
   historyErrorMessage,
   readerBlocksToBody,
@@ -388,6 +390,77 @@ describe("HistoryScreen", () => {
   });
 });
 
+describe("compare: differences only and change steps", () => {
+  it("cuts the diff into unchanged runs and numbered changes, keeping the order", () => {
+    const before = [para(1, "A"), para(2, "B"), para(3, "C"), para(4, "D"), para(5, "E")];
+    const after = [para(1, "A sửa"), para(2, "B"), para(3, "C"), para(5, "E"), para(6, "F")];
+    const segments = groupDiff(diffBlocks(before, after));
+    expect(segments.map((s) => [s.kind, s.entries.length, s.kind === "change" ? s.index : null])).toEqual([
+      ["change", 1, 0],
+      ["same", 2, null],
+      ["change", 1, 1], // D removed
+      ["same", 1, null],
+      ["change", 1, 2], // F added
+    ]);
+    expect(segments.flatMap((s) => s.entries)).toEqual(diffBlocks(before, after));
+    expect(groupDiff([])).toEqual([]);
+  });
+
+  async function openCompareWithVersion1() {
+    renderWith(twoVersions(), <HistoryScreen storyId={STORY_ID} chapterId={CHAPTER_ID} />);
+    const viewer = await screen.findByRole("region", { name: t.viewerLabel(2) });
+    fireEvent.click(within(viewer).getByRole("button", { name: t.view.compare }));
+    fireEvent.click(within(viewer).getByRole("combobox", { name: t.compare.against }));
+    fireEvent.click(await screen.findByRole("option", { name: t.compare.version(1) }));
+    await within(viewer).findByText(t.compare.summary(1, 0, 1));
+    return viewer;
+  }
+
+  it("folds unchanged paragraphs into one row that opens on its own", async () => {
+    // v1 [b1 cũ, b2]  ->  v2 [b1 mới, b2, b3]: change, one unchanged paragraph, change
+    const viewer = await openCompareWithVersion1();
+    const unchanged = () => within(viewer).getByText("Đoạn hai").closest("li") as HTMLElement;
+    expect(unchanged().hasAttribute("inert")).toBe(false);
+    expect(within(viewer).queryByRole("button", { name: t.compare.unchanged(1) })).toBeNull();
+
+    fireEvent.click(within(viewer).getByRole("switch", { name: t.compare.onlyChanges }));
+    const fold = within(viewer).getByRole("button", { name: t.compare.unchanged(1) });
+    expect(fold.getAttribute("aria-expanded")).toBe("false");
+    expect(unchanged().hasAttribute("inert")).toBe(true);
+    expect(fold.getAttribute("aria-controls")).toBe(unchanged().id);
+
+    fireEvent.click(fold);
+    expect(unchanged().hasAttribute("inert")).toBe(false);
+    expect(
+      within(viewer)
+        .getByRole("button", { name: t.compare.hideUnchanged(1) })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+
+    fireEvent.click(within(viewer).getByRole("switch", { name: t.compare.onlyChanges }));
+    expect(within(viewer).queryByRole("button", { name: t.compare.hideUnchanged(1) })).toBeNull();
+    expect(unchanged().hasAttribute("inert")).toBe(false);
+  });
+
+  it("steps through the changes, moving focus to each", async () => {
+    const viewer = await openCompareWithVersion1();
+    expect(within(viewer).getByText(t.compare.changeCount(2))).toBeTruthy();
+    const previous = within(viewer).getByRole("button", { name: t.compare.previousChange }) as HTMLButtonElement;
+    const next = within(viewer).getByRole("button", { name: t.compare.nextChange }) as HTMLButtonElement;
+    expect(previous.disabled).toBe(true);
+    fireEvent.click(next);
+    expect(within(viewer).getByText(t.compare.changePosition(1, 2))).toBeTruthy();
+    expect(document.activeElement?.textContent).toContain("Đoạn một mới");
+    fireEvent.click(next);
+    expect(within(viewer).getByText(t.compare.changePosition(2, 2))).toBeTruthy();
+    expect(document.activeElement?.textContent).toContain("Đoạn ba");
+    expect(document.activeElement?.getAttribute("data-current")).toBe("true");
+    expect(next.disabled).toBe(true);
+    fireEvent.click(previous);
+    expect(document.activeElement?.textContent).toContain("Đoạn một mới");
+  });
+});
+
 describe("PreviewScreen", () => {
   it("draws the saved draft with the reader's blocks and says it is not published", async () => {
     const c = fakeClient({
@@ -406,6 +479,25 @@ describe("PreviewScreen", () => {
     expect(screen.getByRole("link", { name: t.preview.backToEditor }).getAttribute("href")).toBe(
       `/studio/story/${STORY_ID}/chapter/${CHAPTER_ID}`,
     );
+  });
+
+  it("frames the draft at phone, tablet or desktop width, with a handle to drag or move with the keys", async () => {
+    renderWith(fakeClient({}), <PreviewScreen storyId={STORY_ID} chapterId={CHAPTER_ID} />);
+    await screen.findByRole("heading", { level: 1 });
+    const devices = screen.getByRole("group", { name: t.preview.devices.group });
+    const names = within(devices)
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+    expect(names).toEqual([t.preview.devices.phone, t.preview.devices.tablet, t.preview.devices.desktop]);
+    expect(within(devices).getByRole("button", { name: t.preview.devices.desktop }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    const handle = screen.getByRole("slider", { name: t.preview.devices.handle });
+    fireEvent.click(within(devices).getByRole("button", { name: t.preview.devices.phone }));
+    expect(handle.getAttribute("aria-valuenow")).toBe(String(PREVIEW_DEVICE_WIDTHS.phone));
+    expect(handle.getAttribute("aria-valuetext")).toBe(t.preview.devices.width(PREVIEW_DEVICE_WIDTHS.phone));
+    // the article sits in the frame, which is a size container
+    expect(document.querySelector('[data-part="frame"] article.reader-text')).toBeTruthy();
   });
 
   it("shows an empty note for a draft nobody has written and not found for another story", async () => {

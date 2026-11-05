@@ -12,7 +12,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(fileURLToPath(import.meta.url), "../..");
-const SKIP_DIRS = new Set(["node_modules", ".next", "dist", "out"]);
+const SKIP_DIRS = new Set(["node_modules", ".next", "dist", "out", ".claude"]);
 const SKIP_FILE = /(\.test\.tsx?|strings(\.en)?\.ts|\.generated\.\w+|database\.types\.ts)$/;
 // The component gallery is a developer-only page (404 in production) with throwaway demo text.
 const SKIP_PATH = /apps\/web\/src\/app\/dev\//;

@@ -22,7 +22,7 @@ import type { StudioStory } from "../model/studio-story.ts";
 import { studioText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
-const VISIBILITY_ICON: Record<Visibility, ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
+export const VISIBILITY_ICON: Record<Visibility, ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
   private: Lock,
   unlisted: Link2,
   public: Globe,

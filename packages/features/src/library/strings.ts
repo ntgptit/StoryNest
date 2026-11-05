@@ -24,6 +24,8 @@ const vi = {
   followedAt: (relative: string) => `Theo dõi ${relative}`,
   remove: { reading: "Xóa khỏi đang đọc", saved: "Bỏ lưu", following: "Bỏ theo dõi" },
   removed: { reading: "Đã xóa khỏi danh sách đang đọc.", saved: "Đã bỏ lưu.", following: "Đã bỏ theo dõi." },
+  undo: "Hoàn tác",
+  restored: { saved: "Đã lưu lại.", following: "Đã theo dõi lại." },
   unavailable: {
     title: "Truyện không còn khả dụng",
     description: "Truyện đã bị xóa, đã chuyển sang riêng tư hoặc bạn không còn quyền xem.",

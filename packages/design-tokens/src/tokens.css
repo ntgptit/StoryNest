@@ -191,6 +191,931 @@
   --font-reader: ui-serif, Georgia, Cambria, "Times New Roman", serif;
 }
 
+/*
+ * Motion. Easing curves and named animations live here, like colours: components use `ease-spring`,
+ * `animate-ribbon-drop`... never inline cubic-bezier() or ad-hoc @keyframes. Decorative motion (bursts, confetti)
+ * goes behind `motion-safe:`; everything else is clamped by the reduced-motion rule in the base layer below.
+ * The ribbon-* set is adapted from Lucian UX/UI Prompt #012 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt/#012).
+ */
+@theme {
+  --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --ease-pour: cubic-bezier(0.6, 0, 0.3, 1);
+
+  /* Save toggle (SaveRibbonIcon): fill pours down, the icon dips and bounces, a ring and a small burst fly out. */
+  --animate-ribbon-fill: ribbon-fill 0.55s var(--ease-pour) both;
+  --animate-ribbon-drop: ribbon-drop 0.7s var(--ease-soft);
+  --animate-ribbon-ring: ribbon-ring 0.6s var(--ease-soft) forwards;
+  --animate-ribbon-burst: ribbon-burst 0.8s var(--ease-soft) forwards;
+
+  @keyframes ribbon-fill {
+    from {
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @keyframes ribbon-drop {
+    0% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(12%) scaleY(0.9);
+    }
+    60% {
+      transform: translateY(-9%);
+    }
+    100% {
+      transform: none;
+    }
+  }
+  @keyframes ribbon-ring {
+    from {
+      opacity: 1;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.35);
+    }
+  }
+  /* Each particle sets --burst-angle; it starts near the icon and drifts outwards while fading. */
+  @keyframes ribbon-burst {
+    0% {
+      opacity: 1;
+      transform: rotate(var(--burst-angle)) translateY(-0.5rem) scale(0.6);
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(var(--burst-angle)) translateY(-1.5rem) scale(1.1) rotate(160deg);
+    }
+  }
+
+  /* Vote heart (HeartBurstIcon, Lucian #022): crouch, fill and leap; a ring and two rings of dots fly out. */
+  --animate-heart-beat: heart-beat 0.7s var(--ease-soft);
+  --animate-heart-fill: heart-fill 0.7s var(--ease-soft);
+  --animate-heart-ring: heart-ring 0.6s var(--ease-soft) 0.1s both;
+  --animate-heart-fly: heart-fly 0.7s var(--ease-soft) 0.18s both;
+  --animate-heart-fly-near: heart-fly-near 0.7s var(--ease-soft) 0.18s both;
+  @keyframes heart-beat {
+    0% {
+      transform: scale(1);
+    }
+    18% {
+      transform: scale(0.72);
+    }
+    48% {
+      transform: scale(1.24);
+    }
+    70% {
+      transform: scale(0.94);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes heart-fill {
+    0%,
+    18% {
+      transform: scale(0);
+    }
+    48% {
+      transform: scale(1);
+    }
+  }
+  @keyframes heart-ring {
+    0% {
+      opacity: 1;
+      transform: scale(0.3);
+      border-width: 0.4rem;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1);
+      border-width: 0;
+    }
+  }
+  /* Dots: each holder is rotated by --burst-angle; the dot itself moves outwards along that direction. */
+  @keyframes heart-fly {
+    0% {
+      opacity: 1;
+      transform: translate(0, -0.875rem) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(0, -1.625rem) scale(0.2);
+    }
+  }
+  @keyframes heart-fly-near {
+    0% {
+      opacity: 1;
+      transform: translate(0.175rem, -0.75rem) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(0.3rem, -1.4rem) scale(0.2);
+    }
+  }
+
+  /* Bell (RingingBellIcon, Lucian #006 / #074): a damped swing; the unread badge pops when the count goes up. */
+  --animate-bell-ring: bell-ring 0.9s var(--ease-soft);
+  --animate-badge-pop: badge-pop 0.45s var(--ease-spring);
+  @keyframes bell-ring {
+    0% {
+      transform: rotate(0);
+    }
+    15% {
+      transform: rotate(18deg);
+    }
+    30% {
+      transform: rotate(-15deg);
+    }
+    45% {
+      transform: rotate(11deg);
+    }
+    60% {
+      transform: rotate(-7deg);
+    }
+    75% {
+      transform: rotate(3deg);
+    }
+    100% {
+      transform: rotate(0);
+    }
+  }
+  @keyframes badge-pop {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.5);
+    }
+  }
+
+  /* Error head-shake (FormError, Lucian #062). */
+  --animate-shake: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  @keyframes shake {
+    15% {
+      transform: translateX(-9px) rotate(-0.6deg);
+    }
+    30% {
+      transform: translateX(8px) rotate(0.5deg);
+    }
+    45% {
+      transform: translateX(-6px);
+    }
+    60% {
+      transform: translateX(4px);
+    }
+    75% {
+      transform: translateX(-2px);
+    }
+  }
+
+  /* Invalid field after a submit (FormControl, Lucian #244): a short side-to-side shake. */
+  --animate-field-shake: field-shake 0.4s;
+  @keyframes field-shake {
+    20%,
+    60% {
+      transform: translateX(-5px);
+    }
+    40%,
+    80% {
+      transform: translateX(5px);
+    }
+  }
+
+  /* Loading skeleton (Lucian #079): one streak of light sweeps across every block at once (see .skeleton-shine). */
+  --animate-skeleton-shine: skeleton-shine 1.6s linear infinite;
+  @keyframes skeleton-shine {
+    from {
+      background-position:
+        -100vw 0,
+        0 0;
+    }
+    to {
+      background-position:
+        100vw 0,
+        0 0;
+    }
+  }
+
+  /* Autosave (AutosaveIcon, Lucian #355): dots bob while saving, the check draws itself when saved. */
+  --animate-autosave-bob: autosave-bob 0.9s ease-in-out infinite;
+  --animate-draw-in: draw-in 0.35s var(--ease-soft) both;
+  @keyframes autosave-bob {
+    50% {
+      transform: translateY(-2.5px);
+    }
+  }
+  /* Paths that use it set pathLength="1" so one dash covers the whole stroke. */
+  @keyframes draw-in {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
+/*
+ * Skeleton streak: the highlight is fixed to the viewport, so all blocks on screen show one shared streak instead of
+ * each block flashing on its own (browsers without fixed backgrounds, e.g. iOS Safari, fall back to one per block).
+ * Pair it with `animate-skeleton-shine`.
+ */
+@utility skeleton-shine {
+  background-color: var(--accent);
+  background-image:
+    linear-gradient(
+      100deg,
+      transparent 35%,
+      color-mix(in oklab, var(--accent), var(--foreground) 7%) 50%,
+      transparent 65%
+    ),
+    linear-gradient(var(--accent), var(--accent));
+  background-size:
+    100vw 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed, scroll;
+}
+
+/*
+ * Crop batch (ImageCropDialog, adapted from Lucian UX/UI Prompt #069, MIT (c) 2026 Seokwoooo,
+ * lucianlabs.dev/uxui-prompt/#069). The frame ring and the rule-of-thirds guides are drawn on top of the photo, so
+ * they stay light in both schemes (like the element's white ring); the dim outside the round mask is `--scrim`.
+ */
+:root {
+  --crop-guide: oklch(1 0 0 / 85%);
+}
+@theme inline {
+  --color-crop-guide: var(--crop-guide);
+}
+
+/*
+ * Shell batch: app header and desktop navigation.
+ * - Hide-on-scroll header (AppShell, Lucian #212, MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt/#212): on pages
+ *   that ask for it (the reader) the header slides up on scroll-down and back on scroll-up. `header-tucked` moves it up
+ *   but keeps the status-bar strip (safe-area top) covered. AppShell publishes the space the header currently takes as
+ *   --app-header-offset; sticky bars below it use `top-below-header` so the header never covers them.
+ * - Morphing navigation menu (MegaNav, Lucian #354, MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt/#354): one
+ *   dropdown surface glides between top-level items (`ease-glide`); the new panel's content slides in from the side it
+ *   came from, the first open only fades in.
+ */
+@theme {
+  --ease-glide: cubic-bezier(0.3, 1.1, 0.4, 1);
+
+  --animate-mega-fade: mega-fade 0.25s ease-out;
+  --animate-mega-from-start: mega-from-start 0.45s var(--ease-glide);
+  --animate-mega-from-end: mega-from-end 0.45s var(--ease-glide);
+  @keyframes mega-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes mega-from-start {
+    from {
+      opacity: 0;
+      transform: translateX(-2.5rem);
+    }
+  }
+  @keyframes mega-from-end {
+    from {
+      opacity: 0;
+      transform: translateX(2.5rem);
+    }
+  }
+}
+@utility header-tucked {
+  translate: 0 calc(env(safe-area-inset-top) - 100%);
+}
+@utility top-below-header {
+  top: var(--app-header-offset, 0px);
+}
+/* Reader anchors (paragraph links, resume position, #comments): clear the header and the 3rem reader toolbar. */
+@utility scroll-mt-below-reader-bar {
+  scroll-margin-top: calc(var(--app-header-offset, 0px) + 4rem);
+}
+
+/*
+ * Batch "editor" (chapter editor and chapter manager), adapted from Lucian UX/UI Prompt #128, #149 and #190
+ * (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt). Every one plays only after the author did something.
+ */
+@theme {
+  /* Find and replace (#128): the text a replace just wrote fades in from a highlight. */
+  --animate-replace-flash: replace-flash 0.6s var(--ease-soft);
+  @keyframes replace-flash {
+    from {
+      opacity: 0.65;
+      background-color: color-mix(in oklab, var(--primary) 30%, transparent);
+    }
+  }
+
+  /* Conflict merge (MergeChoice, #149): the version the author keeps dips in. */
+  --animate-merge-pick: merge-pick 0.22s var(--ease-soft);
+  @keyframes merge-pick {
+    from {
+      transform: translateY(3px);
+    }
+  }
+
+  /* Scheduled outbox (ScheduledOutboxItem, #190): a rescheduled time drops into place. */
+  --animate-outbox-moved: outbox-moved 0.45s var(--ease-soft);
+  @keyframes outbox-moved {
+    from {
+      transform: translateY(-6px);
+    }
+  }
+}
+
+/*
+ * Story batch: share a story, a reading list or an author page, the sticky reading bar and read-more. Adapted from
+ * Lucian UX/UI Prompt #008, #254, #221 and #288 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their
+ * durations and curves: CopyLinkButton, ShareDialog, StickyActionBar and ExpandableText in packages/ui.
+ */
+@theme {
+  /* Access icon swap (#254) and the bar rising from below (#221) overshoot a little; read-more unfolds without. */
+  --ease-pop: cubic-bezier(0.3, 1.5, 0.5, 1);
+  --ease-rise: cubic-bezier(0.3, 1.2, 0.5, 1);
+  --ease-unfold: cubic-bezier(0.3, 0.8, 0.25, 1);
+
+  /* Share dialog: the new access icon spins in; a layer over the link field flashes once when the link is copied. */
+  --animate-access-icon-in: access-icon-in 0.45s var(--ease-pop);
+  --animate-link-flash: link-flash 0.8s ease;
+  @keyframes access-icon-in {
+    from {
+      opacity: 0;
+      transform: rotate(-120deg) scale(0.4);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes link-flash {
+    25% {
+      background-color: color-mix(in oklab, var(--primary) 12%, transparent);
+      box-shadow: inset 0 0 0 2px var(--primary);
+    }
+  }
+}
+
+:root {
+  /* Height of the mobile BottomNav row (without the home-indicator inset); bars that sit above it use it too. */
+  --size-bottom-nav: 3.5rem;
+}
+
+/* Fixed bars that must clear the mobile BottomNav and the home indicator (pair with md:bottom-0 where it hides). */
+@utility bottom-above-nav {
+  bottom: calc(var(--size-bottom-nav) + env(safe-area-inset-bottom));
+}
+
+/*
+ * Batch 2 "manage" (chapter manager, reading list order, version compare, moderation console), adapted from Lucian
+ * UX/UI Prompt #038, #178, #255, #317, #127, #217 and #273 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt),
+ * keeping their durations and curves. Each plays only after the user did something. Drag-to-move and the flying rows
+ * (SortableList) reuse --ease-glide and --ease-rise from the blocks above.
+ */
+@theme {
+  /* Differences only (#217): unchanged paragraphs fold away (grid rows 1fr -> 0fr) on this curve, in 0.45 s. */
+  --ease-fold: cubic-bezier(0.3, 0.8, 0.3, 1);
+
+  /* Context menu (#038): blooms from the point that was pressed (origin set by Radix). */
+  --animate-menu-bloom: menu-bloom 0.4s var(--ease-spring);
+  @keyframes menu-bloom {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
+
+  /* Bulk selection dock (#178): rises into place when the first row is selected. */
+  --animate-dock-in: dock-in 0.35s ease;
+  @keyframes dock-in {
+    from {
+      opacity: 0.55;
+      transform: translateY(7px);
+    }
+  }
+
+  /* Change hunk (#127): the change navigated to gives a small nudge. */
+  --animate-hunk-nudge: hunk-nudge 0.22s var(--ease-soft);
+  @keyframes hunk-nudge {
+    from {
+      transform: translateX(-4px);
+    }
+  }
+
+  /* Detail side panel (#273): the next item comes up from below, the previous one down from above. */
+  --animate-detail-next: detail-next 0.4s var(--ease-glide);
+  --animate-detail-prev: detail-prev 0.4s var(--ease-glide);
+  @keyframes detail-next {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+  }
+  @keyframes detail-prev {
+    from {
+      opacity: 0;
+      transform: translateY(-40px);
+    }
+  }
+}
+
+/*
+ * Batch 2 · browse: discover, search, library, author and story cards. Adapted from Lucian UX/UI Prompt 027, 048,
+ * 054, 057, 071, 092, 098, 305, 308, 328 and 358 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their
+ * durations and curves: RollingNumber, the swipe-linked tab underline, FeaturedCarousel, SwipeToRemove, the story
+ * view toggle (FLIP), the card-to-story cover transition and the story peek in packages/ui.
+ */
+@theme {
+  /* Rolling digits (098): each column overshoots a little and settles; columns start 45ms apart. */
+  --ease-roll: cubic-bezier(0.3, 1.25, 0.5, 1);
+  /* Grid/list morph (308) and the cover that grows into the story page (328). */
+  --ease-morph: cubic-bezier(0.3, 1.15, 0.4, 1);
+  --ease-expand: cubic-bezier(0.3, 1.05, 0.35, 1);
+
+  /* A swiped tab panel slides in from the side it came from (048). */
+  --animate-panel-from-start: panel-from-start 0.35s var(--ease-soft);
+  --animate-panel-from-end: panel-from-end 0.35s var(--ease-soft);
+  /* Featured carousel (057): the new slide's text rises in; the timer bar fills over --featured-interval. */
+  --animate-featured-in: featured-in 0.6s var(--ease-spring);
+  --animate-featured-timer: featured-timer var(--featured-interval, 6s) linear forwards;
+  /* Header search on a phone (027): the field opens out of the search icon at the right edge of the header. */
+  --animate-search-expand: search-expand 0.6s var(--ease-spring);
+  /* Story peek (358): the card grows out of the pressed cover. */
+  --animate-peek-in: peek-in 0.44s var(--ease-rise);
+  /* Text of a card that changed layout fades back in after the covers have moved (308). */
+  --animate-morph-fade: morph-fade 0.4s var(--ease-soft) both;
+
+  @keyframes panel-from-start {
+    from {
+      opacity: 0;
+      transform: translateX(-12%);
+    }
+  }
+  @keyframes panel-from-end {
+    from {
+      opacity: 0;
+      transform: translateX(12%);
+    }
+  }
+  @keyframes featured-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+      filter: blur(4px);
+    }
+  }
+  @keyframes featured-timer {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  /* --search-from-left / --search-from-right: where the icon sat inside the header row (set by SearchBox). */
+  @keyframes search-expand {
+    from {
+      clip-path: inset(
+        0.375rem var(--search-from-right, 0) 0.375rem var(--search-from-left, calc(100% - 2.75rem)) round 0.75rem
+      );
+    }
+    to {
+      clip-path: inset(0 0 0 0 round 0);
+    }
+  }
+  @keyframes peek-in {
+    from {
+      opacity: 0.6;
+      transform: translateY(24px) scale(0.92);
+    }
+  }
+  @keyframes morph-fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+/*
+ * Batch 2 · account (auth, settings, shell, uploads, team, connectivity), adapted from Lucian UX/UI Prompt #021, #032,
+ * #034, #036, #045, #064, #085, #091 and #264 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their
+ * durations and curves (their --ux-ease / --ux-spring are our ease-soft / ease-spring). Every movement answers
+ * something the person did (a toggle, a drag, typing, sending, a pull, the network dropping); none plays on load.
+ * - SkySwitch (#021): the day/night illustration is drawn on its own small sky, so its colours stay the same in both
+ *   schemes, like the crop guides.
+ * - DropZone (#032): the dashed frame marches while a file is dragged over it.
+ * - AutocompleteInput (#034): suggestions rise in one after the other.
+ * - PasswordStrengthMeter (#036): the four bars fill one after the other (transitions only).
+ * - FullScreenMenu (#045): the menu spreads as a circle from its button (--menu-x / --menu-y); the links rise in.
+ * - EnvelopeSent (#064): the letter tucks into the envelope, the flap closes and a check pops on it.
+ * - PullToRefresh (#085): the arrow circle spins while the page reloads its data.
+ * - ConnectionBanner (#091): the Wi-Fi arcs blink in turn while offline.
+ * - EmailTypoHint (#264): the suggestion drops down; the field flashes once when it is accepted.
+ */
+:root {
+  --sky-day: oklch(0.75 0.12 240);
+  --sky-day-2: oklch(0.86 0.07 230);
+  --sky-night: oklch(0.24 0.06 275);
+  --sky-night-2: oklch(0.31 0.08 275);
+  --sky-sun: oklch(0.87 0.16 90);
+  --sky-sun-glow: oklch(0.96 0.09 100);
+  --sky-sun-edge: oklch(0.79 0.16 70);
+  --sky-moon: oklch(0.85 0.02 265);
+  --sky-moon-glow: oklch(0.97 0.01 265);
+  --sky-crater: oklch(0.74 0.03 265);
+  --sky-cloud: oklch(1 0 0);
+  --sky-cloud-2: oklch(0.95 0.03 240);
+}
+@theme inline {
+  --color-sky-day: var(--sky-day);
+  --color-sky-day-2: var(--sky-day-2);
+  --color-sky-night: var(--sky-night);
+  --color-sky-night-2: var(--sky-night-2);
+  --color-sky-sun: var(--sky-sun);
+  --color-sky-sun-glow: var(--sky-sun-glow);
+  --color-sky-sun-edge: var(--sky-sun-edge);
+  --color-sky-moon: var(--sky-moon);
+  --color-sky-moon-glow: var(--sky-moon-glow);
+  --color-sky-crater: var(--sky-crater);
+  --color-sky-cloud: var(--sky-cloud);
+  --color-sky-cloud-2: var(--sky-cloud-2);
+}
+@theme {
+  --ease-launch: cubic-bezier(0.5, -0.3, 0.6, 1);
+  --ease-drop: cubic-bezier(0.3, 1.4, 0.5, 1);
+
+  --animate-twinkle: twinkle 2.4s ease-in-out infinite;
+  @keyframes twinkle {
+    50% {
+      opacity: 0.3;
+      transform: scale(0.6);
+    }
+  }
+
+  --animate-dash-march: dash-march 0.9s linear infinite;
+  @keyframes dash-march {
+    to {
+      stroke-dashoffset: -30;
+    }
+  }
+
+  --animate-option-rise: option-rise 0.35s var(--ease-spring) backwards;
+  @keyframes option-rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  --animate-menu-reveal: menu-reveal 0.8s var(--ease-soft);
+  --animate-menu-conceal: menu-conceal 0.7s var(--ease-soft) forwards;
+  --animate-menu-link-rise: menu-link-rise 0.7s var(--ease-spring) backwards;
+  --animate-menu-fade-up: menu-fade-up 0.6s var(--ease-spring) 0.5s backwards;
+  --animate-burger-top: burger-top 0.55s var(--ease-spring);
+  --animate-burger-bottom: burger-bottom 0.55s var(--ease-spring);
+  @keyframes menu-reveal {
+    from {
+      clip-path: circle(0 at var(--menu-x, 100%) var(--menu-y, 0));
+    }
+    to {
+      clip-path: circle(150vmax at var(--menu-x, 100%) var(--menu-y, 0));
+    }
+  }
+  @keyframes menu-conceal {
+    from {
+      clip-path: circle(150vmax at var(--menu-x, 100%) var(--menu-y, 0));
+    }
+    to {
+      clip-path: circle(0 at var(--menu-x, 100%) var(--menu-y, 0));
+    }
+  }
+  /* Each link sets --i; the element's 0.22s + 60ms per line. */
+  @keyframes menu-link-rise {
+    from {
+      opacity: 0;
+      transform: translateY(26px);
+    }
+  }
+  @keyframes menu-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  /* The lines of the open menu's × start where the burger's outer lines were (rotate/translate, like Tailwind's). */
+  @keyframes burger-top {
+    from {
+      translate: 0 -6px;
+      rotate: 0deg;
+    }
+  }
+  @keyframes burger-bottom {
+    from {
+      translate: 0 6px;
+      rotate: 0deg;
+    }
+  }
+
+  --animate-letter-tuck: letter-tuck 0.6s var(--ease-soft) both;
+  --animate-flap-close: flap-close 0.5s var(--ease-soft) 0.45s both;
+  --animate-envelope-hop: envelope-hop 0.7s var(--ease-spring) 0.95s both;
+  --animate-check-badge: check-badge 0.5s var(--ease-spring) 1.25s both;
+  @keyframes letter-tuck {
+    from {
+      transform: translateY(-3.5rem);
+    }
+  }
+  @keyframes flap-close {
+    from {
+      transform: rotateX(180deg);
+    }
+  }
+  @keyframes envelope-hop {
+    40% {
+      transform: translateY(-0.5rem) rotate(-4deg);
+    }
+  }
+  @keyframes check-badge {
+    from {
+      transform: scale(0);
+    }
+  }
+
+  --animate-ptr-spin: ptr-spin 0.8s linear infinite;
+  @keyframes ptr-spin {
+    to {
+      transform: rotate(270deg);
+    }
+  }
+
+  --animate-wifi-scan: wifi-scan 1.8s ease-in-out infinite;
+  @keyframes wifi-scan {
+    30% {
+      opacity: 1;
+    }
+    70%,
+    100% {
+      opacity: 0.25;
+    }
+  }
+
+  --animate-hint-drop: hint-drop 0.35s var(--ease-drop);
+  --animate-fix-flash: fix-flash 0.5s ease;
+  @keyframes hint-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scaleY(0.6);
+    }
+  }
+  @keyframes fix-flash {
+    30% {
+      background-color: color-mix(in oklab, var(--chart-2) 16%, transparent);
+    }
+  }
+}
+
+/*
+ * The cover the reader tapped grows into the story page's cover; the rest of the page cross-fades (328). The page's
+ * cover is marked `data-morph-target` (StoryCover `morphTarget`); the tapped card gets the same name for the moment
+ * the transition starts (packages/ui/src/lib/view-transition.ts). Nothing here runs without a view transition.
+ */
+[data-morph-target] {
+  view-transition-name: story-cover;
+}
+::view-transition-group(story-cover) {
+  animation-duration: 0.56s;
+  animation-timing-function: var(--ease-expand);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+/*
+ * RollingNumber's digit column (098): the ten digits are drawn as generated content, one per line, so they are
+ * neither read out nor copied with the text (the widget keeps the real number in a screen-reader-only span).
+ * "\A " is a line break; the space ends the escape so the next digit is not read as part of it.
+ */
+@utility digit-strip {
+  &::before {
+    content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9";
+    white-space: pre;
+  }
+}
+
+/*
+ * Batch 2 "reader": the chapter reader and its comments. Adapted from Lucian UX/UI Prompt #058, #061, #220, #281,
+ * #343, #368, #336, #396 and #138 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their durations and
+ * curves: ReadingTimeLeft, ImageLightbox, SelectionToolbar, HighlightSweep, BackToTopButton, DetentSheetContent and
+ * SpoilerText in packages/ui; the reading focus dim is plain opacity in the reader.
+ * - The lightbox sits on a near-black layer with light controls in both schemes (like the element's photo viewer).
+ * - The highlighter is a translucent marker yellow; `highlight-sweep` paints it under a paragraph from left to right,
+ *   holds it and fades it out once. Under reduced motion it is a static tint (the component removes it after a while).
+ * - The spoiler cover is a block of foreground colour with drifting grains of the background colour.
+ */
+:root {
+  --lightbox: oklch(0.12 0.01 60 / 94%);
+  --lightbox-foreground: oklch(0.98 0.005 85);
+  --highlighter: light-dark(oklch(0.9 0.16 95 / 60%), oklch(0.82 0.15 88 / 38%));
+}
+@theme inline {
+  --color-lightbox: var(--lightbox);
+  --color-lightbox-foreground: var(--lightbox-foreground);
+  --color-highlighter: var(--highlighter);
+}
+@property --highlight-alpha {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@theme {
+  /* Highlighter stroke (#281): starts slow, speeds through the middle and settles at the end of the line. */
+  --ease-marker: cubic-bezier(0.55, 0.1, 0.3, 1);
+  /* Back-to-top arrow (#343): slow take-off, then gone. */
+  --ease-launch: cubic-bezier(0.6, 0, 0.8, 0.4);
+
+  /* No fill mode: after the sweep the utility's own (faded, or static under reduced motion) state shows. */
+  --animate-highlight-sweep: highlight-sweep 2.8s ease;
+  /* Selection tools (#220) pop up from the selection; the back-to-top arrow (#343) launches and comes back. */
+  --animate-selection-tools-in: selection-tools-in 0.25s var(--ease-pop) both;
+  --animate-back-to-top-launch: back-to-top-launch 0.9s var(--ease-launch);
+  /* Spoiler cover (#396): the grains drift so the cover reads as "something is under here". */
+  --animate-spoiler-grain: spoiler-grain 1.6s linear infinite;
+
+  @keyframes highlight-sweep {
+    0% {
+      background-size: 0% 62%;
+      --highlight-alpha: 100%;
+      animation-timing-function: var(--ease-marker);
+    }
+    32% {
+      background-size: 100% 62%;
+    }
+    68% {
+      --highlight-alpha: 100%;
+    }
+    100% {
+      background-size: 100% 62%;
+      --highlight-alpha: 0%;
+    }
+  }
+  @keyframes selection-tools-in {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
+  @keyframes back-to-top-launch {
+    15% {
+      transform: translateY(2px);
+    }
+    55% {
+      transform: translateY(-160%);
+      opacity: 0;
+    }
+    56% {
+      transform: translateY(160%);
+      opacity: 0;
+    }
+    100% {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  @keyframes spoiler-grain {
+    to {
+      background-position:
+        4px 3px,
+        -3px 4px;
+    }
+  }
+}
+
+/* A paragraph's text under the highlighter: the stroke follows every line (box-decoration-break), not the box. */
+@utility highlight-sweep {
+  --highlight-alpha: 0%;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0.15em,
+    color-mix(in oklab, var(--highlighter) var(--highlight-alpha), transparent) 0.3em,
+    color-mix(in oklab, var(--highlighter) var(--highlight-alpha), transparent) calc(100% - 0.3em),
+    transparent calc(100% - 0.1em)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 72%;
+  background-size: 100% 62%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: var(--animate-highlight-sweep);
+  @media (prefers-reduced-motion: reduce) {
+    --highlight-alpha: 100%;
+  }
+}
+
+/* Covered spoiler: text invisible, a foreground block with two layers of grains in the background colour. */
+@utility spoiler-cover {
+  color: transparent;
+  background-color: var(--foreground);
+  background-image:
+    radial-gradient(color-mix(in oklab, var(--background) 45%, transparent) 0.6px, transparent 1px),
+    radial-gradient(color-mix(in oklab, var(--background) 30%, transparent) 0.6px, transparent 1px);
+  background-size:
+    4px 3px,
+    3px 4px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  user-select: none;
+}
+
+/*
+ * Batch 2 · authoring: story form and chapter editor. Adapted from Lucian UX/UI Prompt 010, 014, 015, 197, 249, 250
+ * and 257 (MIT (c) 2026 Seokwoooo, lucianlabs.dev/uxui-prompt), keeping their durations and curves: SplitButton,
+ * ReadinessChecklist, RadioCards, SpotlightTour, SearchResultPreview, UnsavedChangesBar and ResponsivePreview in
+ * packages/ui. The frame width (257) and the tour bubble (197) glide on the existing --ease-glide.
+ */
+@theme {
+  /* Split button: the progress bar fills inside the main action while it runs. */
+  --ease-fill: cubic-bezier(0.4, 0.1, 0.3, 1);
+  --animate-split-fill: split-fill 1.5s var(--ease-fill) forwards;
+  /* A changed label (split button, unsaved count) rolls in from below. */
+  --animate-label-roll: label-roll 0.5s var(--ease-spring);
+  /* A checklist item that just became ready, the picked radio card's dot: the disc pops in. */
+  --animate-check-pop: check-pop 0.45s var(--ease-spring);
+  /* Search / share preview: the other card rises in when its tab is picked. */
+  --animate-preview-swap: preview-swap 0.4s var(--ease-rise);
+  /* Spotlight tour: the ring around the hole pulses (decorative, motion-safe only); each step's text fades up. */
+  --animate-spotlight-pulse: spotlight-pulse 1.5s ease-out infinite;
+  --animate-tour-step-in: tour-step-in 0.35s ease;
+  /* Responsive preview: a breakpoint tick flashes when the width crosses it. */
+  --animate-ruler-flash: ruler-flash 0.7s ease;
+  @keyframes split-fill {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes label-roll {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes check-pop {
+    from {
+      transform: scale(0);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+  @keyframes preview-swap {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes spotlight-pulse {
+    from {
+      opacity: 0.9;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.25);
+    }
+  }
+  @keyframes tour-step-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+  @keyframes ruler-flash {
+    30% {
+      color: var(--primary);
+      border-color: var(--primary);
+      transform: scaleY(1.3);
+    }
+  }
+}
+
 /* Mobile: respect notches and home indicators (the viewport must use viewport-fit=cover). */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
@@ -220,5 +1145,19 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+  /*
+   * Reduced motion: animations and transitions jump to their end state instead of playing (WCAG 2.3.3). A tiny
+   * duration rather than `none` keeps animationend/transitionend firing, which Radix dialogs and sheets wait for.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

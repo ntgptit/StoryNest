@@ -131,6 +131,12 @@
 | Navigation | — |
 | Evidence | `search-screen.tsx:142,172,214`, `search.test.tsx:302` |
 
+### C.x Browse interactions (Lucian batch 2 · browse)
+
+- Result tabs use the underline style; on touch the results can be swiped sideways to the neighbouring tab, the underline following the finger (Lucian 048). The tab still lives in the address (`navigation.replace(searchHref(term, tab))`), exactly as a click.
+- The stories tab has the grid / list toggle (Lucian 308) and the shared story-card behaviours (cover transition, long-press quick look; see home-discover).
+- Header SearchBox on phones (Lucian 027): the search icon opens the same combobox over the header row (growing out of the icon), focused; Escape (when no suggestions are open), the close button, leaving the field or submitting folds it back and focus returns to the icon. Desktop unchanged.
+
 ## D. UI states
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |

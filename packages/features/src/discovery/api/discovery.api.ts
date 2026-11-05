@@ -54,16 +54,18 @@ function readCursor(cursor: string): { updatedAt: string; id: string } {
  * mature stories are hidden unless asked for. `categories` must be the full category list so a root category can
  * include its sub-categories.
  */
-export async function listLatestStories(
-  client: DataClient,
-  options: LatestStoriesFilter & { cursor?: string | null | undefined; categories?: readonly Category[] | undefined },
-): Promise<StoryPage> {
-  const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
+type StoryFilterOptions = LatestStoriesFilter & { categories?: readonly Category[] | undefined };
 
-  const columns = options.tagSlug ? `${STORY_COLUMNS}, ${TAG_FILTER_COLUMN}` : STORY_COLUMNS;
+/**
+ * The stories query with every discovery filter applied: rows (`STORY_COLUMNS`) or, with `countOnly`, a head-only
+ * exact count of the same rows. Null when the filter can match nothing (an unknown category), so it is not sent.
+ */
+function filteredStories(client: DataClient, options: StoryFilterOptions, countOnly = false) {
+  const base = countOnly ? "id" : STORY_COLUMNS;
+  const columns = options.tagSlug ? `${base}, ${TAG_FILTER_COLUMN}` : base;
   let query = client
     .from("stories")
-    .select(columns)
+    .select(columns, countOnly ? { count: "exact", head: true } : undefined)
     .eq("visibility", VISIBILITY.PUBLIC)
     .is("deleted_at", null)
     .neq("status", STORY_STATUS.DRAFT);
@@ -74,12 +76,35 @@ export async function listLatestStories(
   if (options.categorySlug) {
     const ids = categoryIdsFor(options.categorySlug, options.categories ?? []);
     // An unknown category lists nothing (rather than silently listing everything).
-    if (ids.length === 0) return { items: [], nextCursor: null };
+    if (ids.length === 0) return null;
     query = query.in("category_id", ids);
   }
 
   if (options.tagSlug) query = query.eq(TAG_FILTER_PATH, options.tagSlug);
   if (options.authorId) query = query.eq("owner_id", options.authorId);
+  return query;
+}
+
+/**
+ * How many stories the home feed would list for this filter: one head-only request (no rows), for the "Show N
+ * stories" button of the filter sheet and the counts on the "loosen the filters" chips.
+ */
+export async function countLatestStories(client: DataClient, options: StoryFilterOptions): Promise<number> {
+  const query = filteredStories(client, options, true);
+  if (!query) return 0;
+  const result = await query;
+  unwrap(result);
+  return result.count ?? 0;
+}
+
+export async function listLatestStories(
+  client: DataClient,
+  options: StoryFilterOptions & { cursor?: string | null | undefined },
+): Promise<StoryPage> {
+  const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
+
+  let query = filteredStories(client, options);
+  if (!query) return { items: [], nextCursor: null };
 
   if (options.cursor) {
     const { updatedAt, id } = readCursor(options.cursor);

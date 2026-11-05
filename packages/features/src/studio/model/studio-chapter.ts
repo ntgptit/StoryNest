@@ -47,6 +47,16 @@ export function sortChapters(chapters: readonly StudioChapter[]): StudioChapter[
   );
 }
 
+/** Live chapters waiting for their publish time, soonest first (then in reading order). */
+export function scheduledChapters(chapters: readonly StudioChapter[]): (StudioChapter & { scheduledFor: string })[] {
+  return chapters
+    .filter(
+      (c): c is StudioChapter & { scheduledFor: string } =>
+        !c.deleted && c.status === CHAPTER_STATUS.SCHEDULED && c.scheduledFor !== null,
+    )
+    .sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime() || a.position - b.position);
+}
+
 export function liveChapterIds(chapters: readonly StudioChapter[]): string[] {
   return sortChapters(chapters)
     .filter((c) => !c.deleted)
@@ -79,6 +89,66 @@ export function applyOrder(chapters: readonly StudioChapter[], orderedIds: reado
       return { ...chapter, position: after };
     }),
   );
+}
+
+// ---- archive / delete, for one row or a selection ---------------------------------------------------------------
+
+/** The state changes a chapter row offers besides writing, moving and renaming. */
+export const CHAPTER_STATE_ACTION = {
+  ARCHIVE: "archive",
+  UNARCHIVE: "unarchive",
+  DELETE: "delete",
+  RESTORE: "restore",
+} as const;
+export type ChapterStateAction = (typeof CHAPTER_STATE_ACTION)[keyof typeof CHAPTER_STATE_ACTION];
+export const CHAPTER_STATE_ACTIONS: readonly ChapterStateAction[] = Object.values(CHAPTER_STATE_ACTION);
+
+/**
+ * What a chapter row offers, in the order of its buttons. Only owners and co-authors (`canManage`) archive and delete;
+ * a deleted chapter can only be restored, an archived one unarchived instead of archived. A bulk selection applies
+ * exactly the same rule to each chapter (`chaptersFor`), so it can never do more than the rows themselves.
+ */
+export function chapterStateActions(chapter: StudioChapter, canManage: boolean): ChapterStateAction[] {
+  if (!canManage) return [];
+  if (chapter.deleted) return [CHAPTER_STATE_ACTION.RESTORE];
+  return [
+    chapter.status === CHAPTER_STATUS.ARCHIVED ? CHAPTER_STATE_ACTION.UNARCHIVE : CHAPTER_STATE_ACTION.ARCHIVE,
+    CHAPTER_STATE_ACTION.DELETE,
+  ];
+}
+
+/** The selected chapters that `action` applies to, in list order. */
+export function chaptersFor(
+  chapters: readonly StudioChapter[],
+  selected: ReadonlySet<string>,
+  action: ChapterStateAction,
+  canManage: boolean,
+): StudioChapter[] {
+  return sortChapters(chapters).filter(
+    (chapter) => selected.has(chapter.id) && chapterStateActions(chapter, canManage).includes(action),
+  );
+}
+
+/**
+ * The selection after ticking (`checked`) or unticking `target`. With an `anchor` (the row ticked before, while Shift
+ * is held) every row between the two, in `order`, takes the same state; without one only `target` changes.
+ */
+export function selectRange(
+  order: readonly string[],
+  selected: ReadonlySet<string>,
+  target: string,
+  checked: boolean,
+  anchor: string | null = null,
+): Set<string> {
+  const next = new Set(selected);
+  const to = order.indexOf(target);
+  const from = anchor === null ? -1 : order.indexOf(anchor);
+  const ids = from === -1 || to === -1 ? [target] : order.slice(Math.min(from, to), Math.max(from, to) + 1);
+  for (const id of ids) {
+    if (checked) next.add(id);
+    else next.delete(id);
+  }
+  return next;
 }
 
 // A function, not a constant: the text is read when it is needed, so it follows the language.

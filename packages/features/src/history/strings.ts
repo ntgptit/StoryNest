@@ -31,6 +31,13 @@ const vi = {
     changed: "Sửa",
     before: "Trước đó:",
     caption: (n: number, base: string) => `So với ${base}, phiên bản ${n} có những thay đổi sau.`,
+    onlyChanges: "Chỉ hiện thay đổi",
+    unchanged: (count: number) => `${count} đoạn không đổi`,
+    hideUnchanged: (count: number) => `Ẩn ${count} đoạn không đổi`,
+    previousChange: "Thay đổi trước",
+    nextChange: "Thay đổi tiếp theo",
+    changeCount: (count: number) => `${count} chỗ thay đổi`,
+    changePosition: (n: number, count: number) => `Thay đổi ${n}/${count}`,
   },
   restore: {
     action: "Khôi phục vào bản nháp",
@@ -58,6 +65,14 @@ const vi = {
     banner: "Đây là bản nháp, đúng như độc giả sẽ thấy khi bạn đăng. Chưa ai nhìn thấy nó.",
     empty: "Bản nháp chưa có nội dung.",
     backToEditor: "Về trình soạn",
+    devices: {
+      group: "Khổ màn hình xem trước",
+      phone: "Điện thoại",
+      tablet: "Máy tính bảng",
+      desktop: "Máy tính",
+      handle: "Độ rộng khung xem trước",
+      width: (px: number) => `${px} px`,
+    },
   },
   links: { history: "Lịch sử phiên bản", preview: "Xem trước" },
 } as const;

@@ -17,6 +17,7 @@ const vi = {
   },
   signUp: {
     title: "Tạo tài khoản",
+    errorSummary: (count: number) => `${count} mục cần sửa`,
     description: "Đọc, viết và chia sẻ truyện của bạn.",
     email: "Email",
     password: "Mật khẩu",
@@ -30,6 +31,9 @@ const vi = {
     toSignIn: "Đăng nhập",
     checkEmailTitle: "Kiểm tra email của bạn",
     checkEmailBody: "Chúng tôi đã gửi liên kết xác nhận. Mở email và nhấn vào liên kết để hoàn tất đăng ký.",
+    checkEmailHint:
+      "Không thấy email? Hãy xem thư mục Spam hoặc Quảng cáo. Nếu nhập nhầm địa chỉ, hãy dùng email khác.",
+    differentEmail: "Dùng email khác",
   },
   forgot: {
     title: "Quên mật khẩu",
@@ -41,6 +45,11 @@ const vi = {
     sentTitle: "Đã gửi hướng dẫn",
     // Same text whether or not the address has an account: never reveal which emails are registered.
     sentBody: "Nếu email này có tài khoản, bạn sẽ nhận được liên kết đặt lại mật khẩu trong ít phút.",
+    spamHint: "Không thấy email? Hãy xem thư mục Spam hoặc Quảng cáo.",
+    resend: "Gửi lại email",
+    resendIn: (seconds: number) => `Gửi lại sau ${seconds} giây`,
+    resent: "Đã gửi lại email.",
+    differentEmail: "Dùng email khác",
   },
   reset: {
     title: "Đặt mật khẩu mới",
@@ -57,6 +66,27 @@ const vi = {
   notices: {
     callbackFailed: "Liên kết đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.",
   },
+  // Advisory meter under a new password: information only, the only rule is the minimum length.
+  strength: {
+    title: "Độ mạnh",
+    note: "chỉ để tham khảo",
+    levels: { none: "", weak: "Yếu", fair: "Tạm được", good: "Khá", strong: "Mạnh" },
+    checks: {
+      length: (min: number) => `Ít nhất ${min} ký tự`,
+      mixedCase: "Chữ hoa và chữ thường",
+      number: "Có chữ số",
+      symbol: "Có ký hiệu",
+    },
+    met: "đã đạt",
+    hints: {
+      common: "Đây là mật khẩu phổ biến, dễ bị đoán.",
+      sequence: "Tránh chuỗi liền như 1234 hay abcd.",
+      repeat: "Tránh lặp một ký tự nhiều lần.",
+      longer: "Từ 12 ký tự trở lên sẽ mạnh hơn.",
+    },
+  },
+  // Suggestion under an email field when the domain looks mistyped (never applied without a press).
+  emailTypo: { before: "Có phải ý bạn là", after: "?" },
   showPassword: "Hiện mật khẩu",
   hidePassword: "Ẩn mật khẩu",
   validation: {

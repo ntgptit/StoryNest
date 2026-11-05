@@ -8,6 +8,7 @@ const vi = {
   placeholder: "Tìm truyện, tác giả, thẻ…",
   submit: "Tìm",
   openSearch: "Mở tìm kiếm",
+  closeSearch: "Đóng tìm kiếm",
   hint: (min: number) => `Nhập ít nhất ${min} ký tự để tìm. Có dấu hay không dấu đều được.`,
   tooLong: (max: number) => `Từ khóa dài tối đa ${max} ký tự.`,
   tabs: { stories: "Truyện", authors: "Tác giả", tags: "Thẻ" },

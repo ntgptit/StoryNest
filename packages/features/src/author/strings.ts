@@ -7,6 +7,8 @@ const vi = {
   stories: (n: string) => `${n} truyện`,
   storiesTitle: "Truyện của tác giả",
   noBio: "Tác giả chưa viết giới thiệu.",
+  readMore: "Xem thêm",
+  readLess: "Thu gọn",
   follow: "Theo dõi",
   following: "Đang theo dõi",
   followedToast: "Đã theo dõi tác giả.",

@@ -98,6 +98,12 @@
 | Navigation | `/lists/{id}` |
 | Evidence | `my-lists.tsx:37-100` |
 
+### C.x Browse interactions (Lucian batch 2 · browse)
+
+- Tabs use the underline style; on touch the shelf can be swiped sideways to switch tabs (Lucian 048); the tab row scrolls on narrow screens instead of the page.
+- Saved and Following: a story can be swiped left on touch to remove it (Lucian 071); it disappears at once and the same API runs as the remove button. After a removal from either tab (swipe or button) the toast offers **Undo**, which saves / follows again through `set_story_save` / `set_story_follow` (the saved/follow time becomes now). Reading has no swipe and no undo: removing deletes the progress pointer, which cannot be restored as it was.
+- Cards have the shared behaviours (cover transition, long-press quick look).
+
 ## D. UI states
 
 | State | Status | Behaviour / evidence |

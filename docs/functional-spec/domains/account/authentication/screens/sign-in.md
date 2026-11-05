@@ -25,6 +25,7 @@
 | SCR-AUTH-01-C07 | "Forgot password?" link → `/forgot-password` | `signIn.forgot` (does not carry `next`) |
 | SCR-AUTH-01-C08 | Submit button | "Sign in" / pending "Signing in…" |
 | SCR-AUTH-01-C09 | Footer | "Don't have an account?" + "Sign up" → `/register[?next]` |
+| SCR-AUTH-01-C10 | Email typo suggestion (Lucian 264) | Under the email field, `aria-live="polite"`: button "Did you mean {address}?" with the corrected letters marked; one press fills the field (BR-AUTH-001) |
 
 ## C. User actions & system responses
 

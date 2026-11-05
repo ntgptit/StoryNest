@@ -40,6 +40,7 @@ export function CommentComposer({
   const [sending, setSending] = useState(false);
   const id = useRef(newId());
   const inputId = useRef(`comment-${newId()}`).current;
+  const hintId = `${inputId}-hint`;
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -73,18 +74,20 @@ export function CommentComposer({
         autoFocus={autoFocus}
         placeholder={t.placeholder}
         aria-invalid={error !== null}
+        aria-describedby={hintId}
         disabled={sending}
         onChange={(event) => setText(event.target.value)}
       />
       <div className="flex items-center justify-between gap-2">
         <p
+          id={hintId}
           role={error ? "alert" : undefined}
           className={error ? "text-sm text-destructive" : "text-xs text-muted-foreground"}
         >
           {error ??
             (text.length >= SHOW_COUNTER_FROM
               ? t.count(formatCount(text.length, currentLocale()), formatCount(DB_LIMITS.commentBody, currentLocale()))
-              : "")}
+              : t.spoilerHint)}
         </p>
         <div className="flex gap-2">
           {onCancel ? (

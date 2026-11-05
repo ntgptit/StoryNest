@@ -10,6 +10,9 @@ const vi = {
   chapterLabel: (number: number) => `Chương ${number}`,
   words: (count: string) => `${count} từ`,
   synopsisTitle: "Giới thiệu",
+  readMore: "Xem thêm",
+  readLess: "Thu gọn",
+  readingBar: { label: "Đọc tiếp nhanh", chapters: "Chọn chương" },
   noSynopsis: "Tác giả chưa viết phần giới thiệu.",
   byAuthor: "Tác giả",
   tagsLabel: "Thẻ",
@@ -37,6 +40,7 @@ const vi = {
   },
   error: { title: "Không tải được truyện", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   chaptersError: { title: "Không tải được danh sách chương", retry: "Thử lại" },
+  peek: { open: "Mở truyện", close: "Đóng xem nhanh" },
 } as const;
 
 export const storyText = defineText("story", vi, en);

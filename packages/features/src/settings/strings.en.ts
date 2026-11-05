@@ -16,6 +16,13 @@ export const en = {
     description: "Choose the interface language. Anything not translated yet is shown in Vietnamese.",
     options: { vi: "Tiếng Việt", en: "English" },
   },
+  theme: {
+    title: "Appearance",
+    description: "Saved on this device. While a chapter is open, the background chosen in the reading settings wins.",
+    label: "Theme",
+    options: { system: "Follow device", light: "Light", dark: "Dark" },
+    darkSwitch: "Dark theme",
+  },
   reading: {
     title: "Reading",
     description: "Font size, line spacing, font and background of the reading page.",

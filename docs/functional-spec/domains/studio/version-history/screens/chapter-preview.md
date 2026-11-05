@@ -23,7 +23,8 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | --- | --- | --- | --- |
 | SCR-HIST-02-C01 | Sticky bar | "Back to editor" (arrow icon) + `ReaderSettingsSheet` (same as reader) | `preview-screen.tsx:48-59` |
 | SCR-HIST-02-C02 | Draft note | `role="note"`: "This is a draft, exactly as readers will see it when you publish. No one can see it yet." | `preview-screen.tsx:60-65` |
-| SCR-HIST-02-C03 | Article | `reader-text`, `max-w-[var(--reader-measure)]`, H1 draft title, `BlockView` per block, or "The draft has no content yet." | `preview-screen.tsx:66-77` |
+| SCR-HIST-02-C03 | Article | `reader-text`, `max-w-[var(--reader-measure)]`, H1 draft title, `BlockView` per block, or "The draft has no content yet." (shared `ChapterPreviewArticle`, also used by the editor's live preview) | `_shared/chapter-preview.tsx` |
+| SCR-HIST-02-C04 | Responsive frame (Lucian 257) | Presets Phone (375 px) / Tablet (768 px) / Desktop (all the room there is), `aria-pressed`; width readout "375 px" (polite); ruler with sm / md / lg ticks (a tick flashes when crossed); drag handle `role="slider"` "Preview width" (←/→ 40 px, Home/End). Never wider than the space available; starts at Desktop; the frame is a size container so the heading scale follows it | `preview-screen.tsx`, `packages/ui/src/widgets/responsive-preview.tsx` |
 
 ## C. User actions & system responses
 

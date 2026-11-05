@@ -27,7 +27,8 @@
 | SCR-STM-02-C07 | "Category" select ("Not selected" + roots and "Parent › Child") | `story-form-screen.tsx:273-300`, `model/story-form.ts:69-81` |
 | SCR-STM-02-C08 | Tag editor: label "Tags", counter "n/10 tags", chips with remove buttons, input (placeholder "E.g. Romance, Adventure"), hint, alert, popular suggestions | `components/tag-editor.tsx:28-152` |
 | SCR-STM-02-C09 | "Language" select (Tiếng Việt / English) and "Status" select | `story-form-screen.tsx:304-353` |
-| SCR-STM-02-C10 | "Visibility" select + per-value hint | `story-form-screen.tsx:355-379` |
+| SCR-STM-02-C06b | Search / share preview (Lucian 249): tabs "Search result" / "Link share"; title, address `/story/{id}/{slug}` on the share origin, synopsis cut exactly as the story page's meta description (`storyMetaDescription`, 160 chars), cover once there is one; length bar "Synopsis: n/160 characters shown" (warning colour when it will be cut); note "This story will not show up in search engines…" when `isIndexable` is false (not public, or 18+) | `story-form-screen.tsx` (StoryLinkPreview), `packages/ui/src/widgets/search-result-preview.tsx` |
+| SCR-STM-02-C10 | "Visibility" radio cards (Lucian 015): Private / Link only / Public with the Lock / Link2 / Globe icons and the existing per-value hints as descriptions; real radio group (arrow keys move and choose), the frame slides to the chosen card | `story-form-screen.tsx`, `packages/ui/src/widgets/radio-cards.tsx` |
 | SCR-STM-02-C11 | "Mature content (18+)" switch + hint | `story-form-screen.tsx:381-395` |
 | SCR-STM-02-C12 | "Create story" submit ("Saving…" while busy), "Cancel" link → `/studio` | `story-form-screen.tsx:397-403` |
 

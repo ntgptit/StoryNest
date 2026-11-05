@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@storynest/ui/components/button";
+import { DropZone } from "@storynest/ui/widgets/drop-zone";
+import { ImageCropDialog } from "@storynest/ui/widgets/image-crop-dialog";
 import { StoryCover } from "@storynest/ui/widgets/story-cover";
 import { useRef } from "react";
 import { usePublicUrl } from "../../_shared/avatar.tsx";
@@ -12,6 +14,7 @@ import {
 } from "../../_shared/image-prepare.ts";
 import { AppError } from "../../_shared/errors.ts";
 import { useAppToast } from "../../_shared/toast.tsx";
+import { useCropSource } from "../../_shared/use-crop-source.ts";
 import { COVERS_BUCKET } from "../api/story-write.api.ts";
 import { useRemoveCover, useUploadCover } from "../hooks/use-story-editing.ts";
 import { studioText } from "../strings.ts";
@@ -33,7 +36,11 @@ function coverErrorMessage(error: Error): string {
   return t.errors.generic;
 }
 
-/** The story's cover with "change" and "remove". A new picture is cropped to 2:3 and uploaded at once. */
+/**
+ * The story's cover with "change" and "remove". A new picture, picked or dropped onto the cover row (Lucian 032),
+ * opens the crop editor (2:3 frame); "Use photo" uploads the chosen part, "Cancel" uploads nothing. Authors decide
+ * how their cover looks.
+ */
 export function CoverEditor({
   story,
   title,
@@ -48,58 +55,79 @@ export function CoverEditor({
   const upload = useUploadCover(story, render);
   const remove = useRemoveCover(story);
   const url = usePublicUrl(COVERS_BUCKET, story.coverStorageKey);
+  const crop = useCropSource();
   const busy = upload.isPending || remove.isPending;
-  const error = upload.error ?? remove.error;
+  const error = crop.error ?? upload.error ?? remove.error;
 
   const pick = (file: File | undefined) => {
     if (file === undefined) return;
     upload.reset();
     remove.reset();
-    upload.mutate(file, { onSuccess: () => toast.success(t.saved) });
+    crop.open(file);
   };
 
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm leading-none font-medium">{t.label}</p>
-      <div className="flex items-end gap-4" aria-busy={busy}>
-        <StoryCover title={title} coverUrl={url} className="w-24 shrink-0" />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
-            {upload.isPending ? t.uploading : story.coverStorageKey === null ? t.add : t.change}
-          </Button>
-          {story.coverStorageKey === null ? null : (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={busy}
-              onClick={() => {
-                upload.reset();
-                remove.mutate(undefined, { onSuccess: () => toast.success(t.removed) });
-              }}
-            >
-              {t.remove}
+      <DropZone label={t.drop} disabled={busy} onFiles={(files) => pick(files[0])} className="self-start pr-2">
+        <div className="flex items-end gap-4" aria-busy={busy}>
+          <StoryCover title={title} coverUrl={url} className="w-24 shrink-0" />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
+              {upload.isPending ? t.uploading : story.coverStorageKey === null ? t.add : t.change}
             </Button>
-          )}
-          <input
-            ref={input}
-            type="file"
-            accept={IMAGE_ACCEPTED_TYPES.join(",")}
-            aria-label={t.inputLabel}
-            className="sr-only"
-            tabIndex={-1}
-            onChange={(event) => {
-              pick(event.target.files?.[0]);
-              event.target.value = ""; // picking the same file again must still fire
-            }}
-          />
+            {story.coverStorageKey === null ? null : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  upload.reset();
+                  crop.clearError();
+                  remove.mutate(undefined, { onSuccess: () => toast.success(t.removed) });
+                }}
+              >
+                {t.remove}
+              </Button>
+            )}
+            <input
+              ref={input}
+              type="file"
+              accept={IMAGE_ACCEPTED_TYPES.join(",")}
+              aria-label={t.inputLabel}
+              className="sr-only"
+              tabIndex={-1}
+              onChange={(event) => {
+                pick(event.target.files?.[0]);
+                event.target.value = ""; // picking the same file again must still fire
+              }}
+            />
+          </div>
         </div>
-      </div>
-      <p className="text-xs text-muted-foreground">{t.hint}</p>
+      </DropZone>
+      <p className="text-xs text-muted-foreground">
+        {t.hint} <span className="pointer-coarse:hidden">{t.dropHint}</span>
+      </p>
       {error === null ? null : (
         <p role="alert" className="text-sm text-destructive">
           {coverErrorMessage(error)}
         </p>
+      )}
+      {crop.source === null ? null : (
+        <ImageCropDialog
+          imageUrl={crop.source.url}
+          imageWidth={crop.source.width}
+          imageHeight={crop.source.height}
+          aspect={COVER_ASPECT}
+          labels={t.crop}
+          onCancel={crop.close}
+          onConfirm={(area) => {
+            const file = crop.source?.file;
+            crop.close();
+            if (file !== undefined) upload.mutate({ file, crop: area }, { onSuccess: () => toast.success(t.saved) });
+          }}
+        />
       )}
     </div>
   );

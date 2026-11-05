@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, createEvent, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isValidStorageKey } from "@storynest/utils";
 import type { Profile } from "../_shared/auth.tsx";
 import { useAvatarUrl } from "../_shared/avatar.tsx";
@@ -196,6 +196,23 @@ describe("useAvatarUrl", () => {
 });
 
 describe("AvatarEditor", () => {
+  /** jsdom has no image decoder nor object URLs: a picked file decodes as a 1200 x 600 picture. */
+  let decode: ReturnType<typeof vi.fn>;
+  let revoke: ReturnType<typeof vi.fn>;
+  beforeEach(() => {
+    decode = vi.fn(async () => ({ width: 1200, height: 600, close: () => {} }));
+    revoke = vi.fn();
+    vi.stubGlobal("createImageBitmap", decode);
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:picked");
+    URL.revokeObjectURL = revoke as unknown as typeof URL.revokeObjectURL;
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+  const c = profileText.avatar.crop;
+  const confirmCrop = async () => fireEvent.click(await screen.findByRole("button", { name: c.confirm }));
+
   function setup(profile: Profile, renderer: AvatarRenderer, client: DataClient) {
     const toast = vi.fn();
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
@@ -213,12 +230,68 @@ describe("AvatarEditor", () => {
   const choose = (file: File) =>
     fireEvent.change(screen.getByLabelText(profileText.avatar.inputLabel), { target: { files: [file] } });
 
-  it("uploads the chosen picture and says so", async () => {
+  it("opens the crop editor on pick, then uploads the chosen square and says so", async () => {
     const { client, calls } = fakeClient();
-    const { toast } = setup(profileOf(null), async () => prepared, client);
+    const renderer = vi.fn<AvatarRenderer>(async () => prepared);
+    const { toast } = setup(profileOf(null), renderer, client);
     choose(new File(["x"], "me.png", { type: "image/png" }));
+    const frame = await screen.findByRole("application", { name: c.frame });
+    expect(calls).toEqual([]); // nothing is uploaded before "Use photo"
+    fireEvent.keyDown(frame, { key: "ArrowRight" }); // move a little: the moved square is what gets encoded
+    await confirmCrop();
     await waitFor(() => expect(toast).toHaveBeenCalled());
     expect(calls.map((c) => c.split(" ")[0])).toEqual(["upload", "save"]);
+    expect(renderer).toHaveBeenCalledWith(expect.any(File), { x: 312, y: 0, width: 600, height: 600 });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(revoke).toHaveBeenCalledWith("blob:picked");
+  });
+
+  /** Drops `file` onto the avatar row the way a browser does (a drag that carries files). */
+  const drop = (file: File) => {
+    const target = screen.getByRole("button", { name: profileText.avatar.add });
+    for (const type of ["dragEnter", "drop"] as const) {
+      const event = createEvent[type](target);
+      Object.defineProperty(event, "dataTransfer", { value: { types: ["Files"], files: [file] } });
+      fireEvent(target, event);
+    }
+  };
+
+  it("a dropped picture goes through the same crop editor as a picked one", async () => {
+    const { client, calls } = fakeClient();
+    setup(profileOf(null), async () => prepared, client);
+    drop(new File(["x"], "me.png", { type: "image/png" }));
+    expect(await screen.findByRole("application", { name: c.frame })).toBeTruthy();
+    expect(calls).toEqual([]);
+  });
+
+  it("a dropped wrong file gets the same refusal as a picked one", async () => {
+    const { client } = fakeClient();
+    setup(profileOf(null), async () => prepared, client);
+    drop(new File(["x"], "me.gif", { type: "image/gif" }));
+    expect((await screen.findByRole("alert")).textContent).toBe(profileText.avatar.errors.type);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("uploads nothing when the crop is cancelled, and frees the picture", async () => {
+    const { client, calls } = fakeClient();
+    const renderer = vi.fn<AvatarRenderer>(async () => prepared);
+    setup(profileOf(null), renderer, client);
+    choose(new File(["x"], "me.png", { type: "image/png" }));
+    fireEvent.click(await screen.findByRole("button", { name: c.cancel }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(revoke).toHaveBeenCalledWith("blob:picked");
+    expect(renderer).not.toHaveBeenCalled();
+    expect(calls).toEqual([]);
+  });
+
+  it("says a picture that cannot be decoded is unreadable, without opening the editor", async () => {
+    decode.mockRejectedValueOnce(new Error("decode"));
+    const { client, calls } = fakeClient();
+    setup(profileOf(null), async () => prepared, client);
+    choose(new File(["x"], "me.png", { type: "image/png" }));
+    expect((await screen.findByRole("alert")).textContent).toBe(profileText.avatar.errors.unreadable);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(calls).toEqual([]);
   });
 
   it("shows why a wrong file was refused, and uploads nothing", async () => {
@@ -226,6 +299,8 @@ describe("AvatarEditor", () => {
     setup(profileOf(null), async () => prepared, client);
     choose(new File(["x"], "me.gif", { type: "image/gif" }));
     expect((await screen.findByRole("alert")).textContent).toBe(profileText.avatar.errors.type);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(decode).not.toHaveBeenCalled();
     expect(calls).toEqual([]);
   });
 
@@ -247,6 +322,7 @@ describe("AvatarEditor", () => {
     const { client } = fakeClient({ uploadError: { message: "mime type not allowed", statusCode: "415" } });
     setup(profileOf(null), async () => prepared, client);
     choose(new File(["x"], "me.png", { type: "image/png" }));
+    await confirmCrop();
     expect((await screen.findByRole("alert")).textContent).toBe(profileText.avatar.errors.rejected);
   });
 });

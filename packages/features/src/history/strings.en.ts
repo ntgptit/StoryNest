@@ -30,6 +30,13 @@ export const en = {
     changed: "Changed",
     before: "Before:",
     caption: (n: number, base: string) => `Compared with ${base}, version ${n} has the following changes.`,
+    onlyChanges: "Only show changes",
+    unchanged: (count: number) => `${count} unchanged paragraph${count === 1 ? "" : "s"}`,
+    hideUnchanged: (count: number) => `Hide ${count} unchanged paragraph${count === 1 ? "" : "s"}`,
+    previousChange: "Previous change",
+    nextChange: "Next change",
+    changeCount: (count: number) => `${count} change${count === 1 ? "" : "s"}`,
+    changePosition: (n: number, count: number) => `Change ${n} of ${count}`,
   },
   restore: {
     action: "Restore to draft",
@@ -61,6 +68,14 @@ export const en = {
     banner: "This is a draft, exactly as readers will see it when you publish. No one can see it yet.",
     empty: "The draft has no content yet.",
     backToEditor: "Back to editor",
+    devices: {
+      group: "Preview screen size",
+      phone: "Phone",
+      tablet: "Tablet",
+      desktop: "Desktop",
+      handle: "Preview width",
+      width: (px: number) => `${px} px`,
+    },
   },
   links: { history: "Version history", preview: "Preview" },
 };

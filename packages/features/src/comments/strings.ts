@@ -22,6 +22,7 @@ const vi = {
     posted: "Đã đăng bình luận.",
     count: (used: string, max: string) => `${used}/${max}`,
     guest: "Đăng nhập để bình luận",
+    spoilerHint: "Viết ||nội dung|| để che đoạn tiết lộ.",
   },
   item: {
     anonymous: "Người dùng",
@@ -53,11 +54,14 @@ const vi = {
     confirmDeleteDescription: "Bình luận sẽ biến mất khỏi trang. Các trả lời của nó vẫn được giữ.",
     cancel: "Hủy",
     menu: "Tùy chọn bình luận",
+    spoiler: "Tiết lộ nội dung, chạm để xem",
   },
   inline: {
     open: (count: number) => (count > 0 ? `Bình luận đoạn này (${count})` : "Bình luận đoạn này"),
     title: "Bình luận đoạn này",
     description: "Những người đọc khác thấy bình luận này ngay cạnh đoạn văn.",
+    sheetHeight: (height: "peek" | "half" | "full") =>
+      `Đổi chiều cao bảng, hiện tại: ${{ peek: "thu gọn", half: "một nửa", full: "toàn màn hình" }[height]}`,
   },
   validation: { empty: "Vui lòng nhập nội dung.", tooLong: "Bình luận quá dài (tối đa 10.000 ký tự)." },
   errors: {

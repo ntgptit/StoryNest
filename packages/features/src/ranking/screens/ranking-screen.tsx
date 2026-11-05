@@ -8,16 +8,14 @@ import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
-import { StoryCard } from "@storynest/ui/widgets/story-card";
-import { AppLink, useNavigation } from "../../_shared/platform.tsx";
-import { discoveryText, toStoryCardData } from "../../discovery/index.ts";
+import { useNavigation } from "../../_shared/platform.tsx";
+import { STORY_GRID as GRID, StoryTile } from "../../discovery/index.ts";
 import { useRankingFreshness, useTopStories } from "../hooks/use-ranking.ts";
 import { RANKING_PERIODS, rankingHref, type RankedStory, type RankingPeriod } from "../model/ranking.ts";
 import { rankingText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
 const t = rankingText;
-const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4";
 
 /** Top stories of a period. The period comes from the address, so each tab has its own link. */
 export function RankingScreen({
@@ -33,11 +31,6 @@ export function RankingScreen({
   const ranking = useTopStories(period);
   const freshness = useRankingFreshness();
   const items = ranking.data?.pages.flatMap((page) => page.items) ?? [];
-  const labels = {
-    reads: discoveryText.card.reads,
-    votes: discoveryText.card.votes,
-    updated: discoveryText.card.updated,
-  };
 
   return (
     <section aria-label={t.title} className="flex flex-col gap-4">
@@ -77,7 +70,7 @@ export function RankingScreen({
           items={items}
           getKey={(item) => item.story.id}
           listClassName={GRID}
-          renderItem={(item) => <RankedCard item={item} labels={labels} locale={locale} coverUrlFor={coverUrlFor} />}
+          renderItem={(item) => <RankedCard item={item} locale={locale} coverUrlFor={coverUrlFor} />}
           hasMore={ranking.hasNextPage}
           isLoadingMore={ranking.isFetchingNextPage}
           onLoadMore={() => void ranking.fetchNextPage()}
@@ -92,12 +85,10 @@ export function RankingScreen({
 
 function RankedCard({
   item,
-  labels,
   locale,
   coverUrlFor,
 }: {
   item: RankedStory;
-  labels: { reads: string; votes: string; updated: (relative: string) => string };
   locale: string;
   coverUrlFor?: ((key: string) => string) | undefined;
 }) {
@@ -109,12 +100,7 @@ function RankedCard({
       >
         {item.rank}
       </span>
-      <StoryCard
-        story={toStoryCardData(item.story, coverUrlFor)}
-        labels={labels}
-        LinkComponent={AppLink}
-        locale={locale}
-      />
+      <StoryTile story={item.story} locale={locale} coverUrlFor={coverUrlFor} />
       <p className="px-1 text-xs text-muted-foreground">
         {t.inPeriod(formatCount(item.reads, locale), formatCount(item.votes, locale))}
       </p>

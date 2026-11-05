@@ -21,6 +21,36 @@ const vi = {
     names: { vi: "Tiếng Việt", en: "English" },
   },
   nav: { home: "Trang chủ", library: "Thư viện", studio: "Viết", me: "Tôi" },
+  // Desktop navigation row (from md up): the bottom-nav items plus browsing, ranking and following.
+  desktopNav: {
+    browse: "Khám phá",
+    ranking: "Xếp hạng",
+    following: "Theo dõi",
+    categories: "Thể loại",
+    allStories: "Tất cả truyện",
+    popularTags: "Thẻ phổ biến",
+    periods: "Khoảng thời gian",
+  },
+  // Mobile full-screen menu (below md): what the bottom nav has no room for.
+  mobileMenu: {
+    open: "Mở menu",
+    close: "Đóng menu",
+    title: "Menu",
+    browse: "Thể loại",
+  },
+  // Strip under the header when the device loses its connection.
+  connection: {
+    offlineTitle: "Bạn đang ngoại tuyến",
+    offlineBody: "Nội dung mới sẽ tải lại khi có mạng.",
+    backTitle: "Đã có mạng trở lại",
+    backBody: "Đang tải lại phần bị lỗi.",
+  },
+  // Pull-to-refresh in the installed app.
+  pullRefresh: {
+    pull: "Kéo xuống để tải lại",
+    release: "Thả ra để tải lại",
+    refreshing: "Đang tải lại…",
+  },
   me: {
     title: "Hồ sơ của bạn",
     edit: "Chỉnh sửa hồ sơ",

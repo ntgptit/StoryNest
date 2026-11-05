@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
 import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
@@ -22,6 +22,9 @@ import {
   type ChapterContentRow,
 } from "./model/chapter.ts";
 import { ReaderScreen } from "./index.ts";
+import { setReaderFocus } from "./hooks/use-reader-focus.ts";
+import { READER_FOCUS_STORAGE_KEY, blockAtLine, stepFocus } from "./model/focus-mode.ts";
+import { READING_WORDS_PER_MINUTE, timeLeft } from "./model/reading-time.ts";
 import { readerText } from "./strings.ts";
 
 afterEach(cleanup);
@@ -382,5 +385,189 @@ describe("server/client boundary", () => {
   it('queries.ts (called from a Server Component) must not be a "use client" module', () => {
     expect(readFileSync("src/reader/queries.ts", "utf8")).not.toMatch(/^\s*["']use client["']/m);
     expect(readFileSync("src/reader/hooks/use-chapter.ts", "utf8")).toMatch(/^"use client"/);
+  });
+});
+
+describe("timeLeft", () => {
+  it("is the unread words at the reading speed, rounded up, at least a minute until the end", () => {
+    expect(timeLeft(READING_WORDS_PER_MINUTE * 10, 0)).toEqual({ minutes: 10, done: false });
+    expect(timeLeft(READING_WORDS_PER_MINUTE * 10, 0.5)).toEqual({ minutes: 5, done: false });
+    expect(timeLeft(READING_WORDS_PER_MINUTE * 10, 0.95)).toEqual({ minutes: 1, done: false });
+    expect(timeLeft(45, 0)).toEqual({ minutes: 1, done: false });
+  });
+
+  it("is done at the end of the text, for a chapter without words, and ignores bad ratios", () => {
+    expect(timeLeft(5000, 1)).toEqual({ minutes: 0, done: true });
+    expect(timeLeft(5000, 0.99)).toEqual({ minutes: 0, done: true });
+    expect(timeLeft(0, 0)).toEqual({ minutes: 0, done: true });
+    expect(timeLeft(400, Number.NaN)).toEqual({ minutes: 2, done: false });
+    expect(timeLeft(400, -3)).toEqual({ minutes: 2, done: false });
+  });
+});
+
+describe("focus mode model", () => {
+  it("picks the block crossing the reading line, or the nearest one across a gap", () => {
+    const boxes = [
+      { top: 0, bottom: 100 },
+      { top: 120, bottom: 300 },
+      { top: 320, bottom: 400 },
+    ];
+    expect(blockAtLine(boxes, 150)).toBe(1);
+    expect(blockAtLine(boxes, 105)).toBe(0);
+    expect(blockAtLine(boxes, 315)).toBe(2);
+    expect(blockAtLine(boxes, 5000)).toBe(2);
+    expect(blockAtLine(boxes, -50)).toBe(0);
+    expect(blockAtLine([], 10)).toBe(-1);
+  });
+
+  it("steps one block at a time and stops at the ends", () => {
+    expect(stepFocus(0, 1, 3)).toBe(1);
+    expect(stepFocus(2, 1, 3)).toBe(2);
+    expect(stepFocus(0, -1, 3)).toBe(0);
+    expect(stepFocus(-1, 1, 3)).toBe(1);
+    expect(stepFocus(0, 1, 0)).toBe(-1);
+  });
+});
+
+describe("ReaderScreen: reading tools", () => {
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+    Element.prototype.hasPointerCapture = vi.fn(() => false);
+    Element.prototype.releasePointerCapture = vi.fn();
+    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+    setStoredAdultContent(NO_ADULT_CONTENT);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+    window.history.replaceState(null, "", "/");
+    setReaderFocus(false);
+  });
+
+  const twoParagraphs = () =>
+    chapterRow({
+      version: {
+        title: "Tấm bản đồ",
+        word_count: READING_WORDS_PER_MINUTE * 3,
+        blocks: [
+          block(1, { text_content: "Sương phủ kín khu rừng." }),
+          block(2, { text_content: "Cô mở tấm bản đồ ra." }),
+          block(3, { block_type: "image", text_content: null, image_storage_key: "x.png" }),
+        ],
+      },
+    });
+
+  const select = (node: Node, from: number, to: number) => {
+    const range = document.createRange();
+    range.setStart(node, from);
+    range.setEnd(node, to);
+    document.getSelection()!.removeAllRanges();
+    document.getSelection()!.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+  };
+
+  it("shows the minutes left in the chapter text next to the progress bar, and a back-to-top button", async () => {
+    // The text runs far below the first screen.
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ top: 0, bottom: 5000 } as DOMRect);
+    renderReader(screenClient(() => ({ data: twoParagraphs(), error: null })));
+    await screen.findByRole("heading", { level: 1, name: "Tấm bản đồ" });
+    expect(screen.getByText(readerText.timeLeft.long(3))).toBeTruthy();
+    expect(screen.getByText(readerText.timeLeft.short(3))).toBeTruthy();
+    expect(document.querySelector("[data-slot=back-to-top]")?.getAttribute("aria-label")).toBe(readerText.backToTop);
+  });
+
+  it("opens a chapter image full screen", async () => {
+    renderReader(
+      screenClient(() => ({ data: twoParagraphs(), error: null })),
+      (key) => `https://cdn.test/${key}`,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: readerText.image.open }));
+    const dialog = await screen.findByRole("dialog", { name: readerText.image.title });
+    expect(dialog.querySelector("img")?.getAttribute("src")).toBe("https://cdn.test/x.png");
+  });
+
+  it("copies a quote selected in one paragraph with the story, chapter and a link to that paragraph", async () => {
+    const writeText = vi.fn((_text: string) => Promise.resolve());
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    Object.defineProperty(window, "isSecureContext", { configurable: true, value: true });
+    Range.prototype.getBoundingClientRect = () => ({ top: 300, bottom: 320, left: 20, width: 100 }) as DOMRect;
+    renderReader(screenClient(() => ({ data: twoParagraphs(), error: null })));
+    const paragraph = await screen.findByText("Cô mở tấm bản đồ ra.");
+    select(paragraph.firstChild!, 0, 5);
+
+    const toolbar = await screen.findByRole("toolbar", { name: readerText.quote.toolbar });
+    fireEvent.click(within(toolbar).getByRole("button", { name: readerText.quote.copy }));
+    await waitFor(() => expect(writeText).toHaveBeenCalled());
+    expect(writeText.mock.calls[0]?.[0]).toBe(
+      readerText.quote.text(
+        "Cô mở",
+        readerText.quote.source("Rừng sương mù", readerText.chapterLabel(2)),
+        `https://app.test/story/${STORY_ID}/rung-suong-mu/chuong-2#${blockAnchor(bid(2))}`,
+      ),
+    );
+  });
+
+  it("opens the selected paragraph's comments from the quote tools, in a sheet at half height", async () => {
+    Range.prototype.getBoundingClientRect = () => ({ top: 300, bottom: 320, left: 20, width: 100 }) as DOMRect;
+    renderReader(screenClient(() => ({ data: twoParagraphs(), error: null })));
+    const paragraph = await screen.findByText("Sương phủ kín khu rừng.");
+    select(paragraph.firstChild!, 0, 6);
+    const toolbar = await screen.findByRole("toolbar", { name: readerText.quote.toolbar });
+    fireEvent.click(within(toolbar).getByRole("button", { name: readerText.quote.comment }));
+    const sheet = await screen.findByRole("dialog");
+    expect(within(sheet).getByText("Sương phủ kín khu rừng.")).toBeTruthy();
+    expect(sheet.getAttribute("data-detent")).toBe("half");
+  });
+
+  it("shows no quote tools for a selection across two paragraphs", async () => {
+    Range.prototype.getBoundingClientRect = () => ({ top: 300, bottom: 320, left: 20, width: 100 }) as DOMRect;
+    renderReader(screenClient(() => ({ data: twoParagraphs(), error: null })));
+    const first = await screen.findByText("Sương phủ kín khu rừng.");
+    const second = screen.getByText("Cô mở tấm bản đồ ra.");
+    const range = document.createRange();
+    range.setStart(first.firstChild!, 2);
+    range.setEnd(second.firstChild!, 3);
+    document.getSelection()!.removeAllRanges();
+    document.getSelection()!.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(screen.queryByRole("toolbar")).toBeNull();
+  });
+
+  it("sweeps a highlighter over the paragraph a deep link lands on", async () => {
+    window.history.replaceState(null, "", `/#${blockAnchor(bid(2))}`);
+    renderReader(screenClient(() => ({ data: twoParagraphs(), error: null })));
+    await screen.findByRole("heading", { level: 1, name: "Tấm bản đồ" });
+    await waitFor(() =>
+      expect(document.querySelector(`#${blockAnchor(bid(2))} .highlight-sweep`)?.textContent).toBe(
+        "Cô mở tấm bản đồ ra.",
+      ),
+    );
+    expect(document.querySelector(`#${blockAnchor(bid(1))} .highlight-sweep`)).toBeNull();
+  });
+
+  it("focus mode is off by default, is turned on in the settings on this device, and dims all but one block", async () => {
+    renderReader(screenClient(() => ({ data: twoParagraphs(), error: null })));
+    await screen.findByRole("heading", { level: 1, name: "Tấm bản đồ" });
+    expect(document.querySelector("[data-dimmed=true]")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: readerText.settings.open }));
+    const toggle = await screen.findByRole("switch", { name: readerText.settings.focus });
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    expect(window.localStorage.getItem(READER_FOCUS_STORAGE_KEY)).toBe("1");
+    fireEvent.keyDown(toggle, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("switch")).toBeNull());
+
+    // jsdom lays nothing out, so the first block is the nearest to the reading line.
+    const first = document.getElementById(blockAnchor(bid(1)))!;
+    const second = document.getElementById(blockAnchor(bid(2)))!;
+    await waitFor(() => expect(second.getAttribute("data-dimmed")).toBe("true"));
+    expect(first.hasAttribute("data-dimmed")).toBe(false);
+
+    fireEvent.keyDown(document.body, { key: "ArrowDown" });
+    expect(first.getAttribute("data-dimmed")).toBe("true");
+    expect(second.hasAttribute("data-dimmed")).toBe(false);
+    expect(window.scrollTo).toHaveBeenCalled();
   });
 });

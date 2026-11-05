@@ -7,6 +7,7 @@ export function StoryCover({
   title,
   coverUrl,
   eager = false,
+  morphTarget = false,
   className,
   children,
 }: {
@@ -14,12 +15,17 @@ export function StoryCover({
   coverUrl?: string | null;
   /** Set for the main cover of a page (above the fold); list tiles stay lazy. */
   eager?: boolean;
+  /** The cover a tapped story card grows into (view transition, see lib/view-transition.ts). One per page. */
+  morphTarget?: boolean;
   className?: string;
   /** Overlay content, e.g. an age badge. */
   children?: ReactNode;
 }) {
   return (
-    <div className={cn("relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-muted", className)}>
+    <div
+      data-morph-target={morphTarget ? "" : undefined}
+      className={cn("relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-muted", className)}
+    >
       {coverUrl ? (
         <img src={coverUrl} alt="" loading={eager ? "eager" : "lazy"} className="size-full object-cover" />
       ) : (

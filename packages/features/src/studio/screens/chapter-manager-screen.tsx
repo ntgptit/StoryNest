@@ -1,24 +1,28 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowDown, ArrowUp, FileQuestion, ListOrdered } from "lucide-react";
+import { FileQuestion, ListOrdered } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { newId } from "@storynest/utils";
-import { CHAPTER_STATUS, chapterFormSchema, type ChapterForm } from "@storynest/validation";
-import { Badge } from "@storynest/ui/components/badge";
+import { chapterFormSchema, type ChapterForm } from "@storynest/validation";
 import { Button } from "@storynest/ui/components/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@storynest/ui/components/form";
 import { Input } from "@storynest/ui/components/input";
 import { Skeleton } from "@storynest/ui/components/skeleton";
+import { BulkActionDock } from "@storynest/ui/widgets/bulk-action-dock";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
+import { useSortableList } from "@storynest/ui/widgets/sortable-list";
 import { translateErrors } from "../../_shared/form-resolver.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
+import { currentLocale } from "../../_shared/i18n.ts";
+import { ChapterRow } from "../components/chapter-row.tsx";
 import { RenameSlugDialog } from "../components/rename-slug-dialog.tsx";
+import { ScheduledChapters } from "../components/scheduled-chapters.tsx";
 import {
   useArchiveChapter,
   useCreateChapter,
@@ -28,22 +32,36 @@ import {
 } from "../hooks/use-chapter-management.ts";
 import { useStoryForEdit } from "../hooks/use-story-editing.ts";
 import { slugFromTitle } from "../model/story-form.ts";
+import type { StudioRole } from "../model/studio-story.ts";
 import {
+  CHAPTER_STATE_ACTION,
+  CHAPTER_STATE_ACTIONS,
   chapterErrorMessage,
+  chaptersFor,
   chapterValidationMessage,
   isChapterSlugTaken,
   liveChapterIds,
   moveChapter,
+  selectRange,
+  sortChapters,
+  type ChapterStateAction,
   type StudioChapter,
 } from "../model/studio-chapter.ts";
 import { studioText } from "../strings.ts";
 
 const t = studioText.chapters;
 
-type Pending = { kind: "archive" | "delete"; chapter: StudioChapter };
+/** Archive and delete ask first; for one row or for every selected chapter they apply to. */
+type Pending = {
+  kind: typeof CHAPTER_STATE_ACTION.ARCHIVE | typeof CHAPTER_STATE_ACTION.DELETE;
+  chapters: StudioChapter[];
+};
 
-/** Chapter list of one story: add, reorder, rename the slug, archive and delete/restore. */
-export function ChapterManagerScreen({ storyId }: { storyId: string }) {
+/**
+ * Chapter list of one story: add, reorder (move buttons or drag), rename the slug, archive and delete/restore (one row,
+ * from its context menu, or several selected ones at once), and the scheduled ones.
+ */
+export function ChapterManagerScreen({ storyId, locale = currentLocale() }: { storyId: string; locale?: string }) {
   const story = useStoryForEdit(storyId);
   const chapters = useStudioChapters(storyId);
 
@@ -76,6 +94,8 @@ export function ChapterManagerScreen({ storyId }: { storyId: string }) {
       storyId={storyId}
       storyTitle={story.data.form.title}
       canManage={story.data.role !== "editor"}
+      role={story.data.role}
+      locale={locale}
       chapters={chapters.data}
     />
   );
@@ -85,12 +105,17 @@ function ChapterManager({
   storyId,
   storyTitle,
   canManage,
+  role,
+  locale,
   chapters,
 }: {
   storyId: string;
   storyTitle: string;
   /** Owners and co-authors may archive and delete; editors only add, reorder and rename. */
   canManage: boolean;
+  /** For the scheduled list, which follows the publish panel's rules. */
+  role: StudioRole;
+  locale: string;
   chapters: StudioChapter[];
 }) {
   const toast = useAppToast();
@@ -99,13 +124,26 @@ function ChapterManager({
   const setDeleted = useSetChapterDeleted(storyId);
   const [pending, setPending] = useState<Pending | null>(null);
   const [renaming, setRenaming] = useState<StudioChapter | null>(null);
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
+  const anchor = useRef<string | null>(null);
+  const [rowErrors, setRowErrors] = useState<ReadonlyMap<string, string>>(() => new Map());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const live = liveChapterIds(chapters);
+  const sorted = sortChapters(chapters);
+  const byId = new Map(sorted.map((chapter) => [chapter.id, chapter]));
+  const reorderTo = (next: string[]) =>
+    reorder.mutate(next, { onError: (error) => toast.error(chapterErrorMessage(error)) });
+  const sortable = useSortableList({ ids: live, onReorder: reorderTo, disabled: reorder.isPending });
+  const shown = [...sortable.order.flatMap((id) => byId.get(id) ?? []), ...sorted.filter((chapter) => chapter.deleted)];
+
+  // A chapter that is gone (reloaded away) cannot stay selected.
+  const present = [...selected].filter((id) => byId.has(id));
+  if (present.length !== selected.size) setSelected(new Set(present));
 
   const move = (chapterId: string, direction: 1 | -1) => {
     const next = moveChapter(live, chapterId, direction);
-    if (next === null) return;
-    reorder.mutate(next, { onError: (error) => toast.error(chapterErrorMessage(error)) });
+    if (next !== null) reorderTo(next);
   };
 
   const run = (action: Promise<unknown>, message: string) =>
@@ -117,6 +155,76 @@ function ChapterManager({
       },
     );
 
+  /** One chapter, through the same mutation as its row button. */
+  const apply = (action: ChapterStateAction, chapterId: string) => {
+    switch (action) {
+      case CHAPTER_STATE_ACTION.ARCHIVE:
+      case CHAPTER_STATE_ACTION.UNARCHIVE:
+        return archive.mutateAsync({ chapterId, archived: action === CHAPTER_STATE_ACTION.ARCHIVE });
+      case CHAPTER_STATE_ACTION.DELETE:
+      case CHAPTER_STATE_ACTION.RESTORE:
+        return setDeleted.mutateAsync({ chapterId, deleted: action === CHAPTER_STATE_ACTION.DELETE });
+    }
+  };
+
+  /**
+   * Every selected chapter the action applies to, one after the other (the same calls and rules as its row). The ones
+   * that failed stay selected with the reason on their row; the others are unticked.
+   */
+  const runBulk = async (action: ChapterStateAction, targets: readonly StudioChapter[]) => {
+    setBulkBusy(true);
+    setRowErrors(new Map());
+    const failed = new Map<string, string>();
+    for (const chapter of targets) {
+      try {
+        await apply(action, chapter.id);
+      } catch (error) {
+        failed.set(chapter.id, chapterErrorMessage(error as Parameters<typeof chapterErrorMessage>[0]));
+      }
+    }
+    setBulkBusy(false);
+    setRowErrors(failed);
+    const handled = new Set(targets.map((chapter) => chapter.id));
+    setSelected((current) => new Set([...current].filter((id) => failed.has(id) || !handled.has(id))));
+    const done = targets.length - failed.size;
+    if (failed.size === 0) toast.success(t.bulk.done[action](done));
+    else toast.error(t.bulk.partial(done, failed.size));
+  };
+
+  const onStateAction = (chapter: StudioChapter, action: ChapterStateAction) => {
+    if (action === CHAPTER_STATE_ACTION.ARCHIVE || action === CHAPTER_STATE_ACTION.DELETE) {
+      setPending({ kind: action, chapters: [chapter] });
+      return;
+    }
+    void run(apply(action, chapter.id), SINGLE_DONE[action]()).catch(() => undefined);
+  };
+
+  const onBulk = (action: ChapterStateAction) => {
+    const targets = chaptersFor(chapters, selected, action, canManage);
+    if (targets.length === 0) return;
+    if (action === CHAPTER_STATE_ACTION.ARCHIVE || action === CHAPTER_STATE_ACTION.DELETE) {
+      setPending({ kind: action, chapters: targets });
+      return;
+    }
+    void runBulk(action, targets);
+  };
+
+  const select = (chapterId: string, checked: boolean, range: boolean) => {
+    const order = shown.map((chapter) => chapter.id);
+    const from = range ? anchor.current : null;
+    setSelected((current) => selectRange(order, current, chapterId, checked, from));
+    anchor.current = chapterId;
+  };
+
+  const clearSelection = () => {
+    setSelected(new Set());
+    setRowErrors(new Map());
+    anchor.current = null;
+  };
+
+  const many = (pending?.chapters.length ?? 0) > 1;
+  const deleting = pending?.kind === CHAPTER_STATE_ACTION.DELETE;
+
   return (
     <div className="flex max-w-2xl flex-col gap-6">
       <PageHeader title={t.title} description={t.description(storyTitle)} />
@@ -127,126 +235,73 @@ function ChapterManager({
         {t.backToStory}
       </AppLink>
 
+      <ScheduledChapters chapters={chapters} role={role} locale={locale} />
+
       {chapters.length === 0 ? (
         <EmptyState icon={ListOrdered} title={t.empty.title} description={t.empty.description} />
       ) : (
-        <>
-          <ol aria-label={t.listLabel} className="flex flex-col gap-2">
-            {chapters.map((chapter) => {
-              const index = live.indexOf(chapter.id);
-              return (
-                <li
-                  key={chapter.id}
-                  className="flex flex-col gap-2 rounded-xl border bg-card p-3 text-card-foreground sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">{t.position(chapter.position)}</p>
-                    <p
-                      className={
-                        chapter.deleted ? "truncate text-sm font-medium line-through" : "truncate text-sm font-medium"
-                      }
-                    >
-                      {chapter.title || t.untitled}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                      <Badge variant="outline">{t.status[chapter.status]}</Badge>
-                      {chapter.deleted ? <Badge variant="destructive">{t.deletedBadge}</Badge> : null}
-                      <span className="truncate text-xs text-muted-foreground">/{chapter.slug}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {chapter.deleted ? (
-                      canManage ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={setDeleted.isPending}
-                          onClick={() =>
-                            void run(
-                              setDeleted.mutateAsync({ chapterId: chapter.id, deleted: false }),
-                              t.restored,
-                            ).catch(() => undefined)
-                          }
-                        >
-                          {t.restore}
-                        </Button>
-                      ) : null
-                    ) : (
-                      <>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="outline"
-                          aria-label={`${t.moveUp}: ${chapter.title || chapter.slug}`}
-                          disabled={reorder.isPending || index <= 0}
-                          onClick={() => move(chapter.id, -1)}
-                        >
-                          <ArrowUp aria-hidden className="size-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="outline"
-                          aria-label={`${t.moveDown}: ${chapter.title || chapter.slug}`}
-                          disabled={reorder.isPending || index === live.length - 1}
-                          onClick={() => move(chapter.id, 1)}
-                        >
-                          <ArrowDown aria-hidden className="size-4" />
-                        </Button>
-                        <Button asChild size="sm" variant="outline">
-                          <AppLink href={`/studio/story/${storyId}/chapter/${chapter.id}`}>{t.write}</AppLink>
-                        </Button>
-                        <Button type="button" size="sm" variant="ghost" onClick={() => setRenaming(chapter)}>
-                          {t.rename}
-                        </Button>
-                        {canManage ? (
-                          <>
-                            {chapter.status === CHAPTER_STATUS.ARCHIVED ? (
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                disabled={archive.isPending}
-                                onClick={() =>
-                                  void run(
-                                    archive.mutateAsync({ chapterId: chapter.id, archived: false }),
-                                    t.unarchived,
-                                  ).catch(() => undefined)
-                                }
-                              >
-                                {t.unarchive}
-                              </Button>
-                            ) : (
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setPending({ kind: "archive", chapter })}
-                              >
-                                {t.archive}
-                              </Button>
-                            )}
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              className="text-destructive"
-                              onClick={() => setPending({ kind: "delete", chapter })}
-                            >
-                              {t.delete}
-                            </Button>
-                          </>
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
+        <div className="flex flex-col gap-2">
+          <ol ref={sortable.listRef} aria-label={t.listLabel} className="relative flex flex-col gap-2">
+            {shown.map((chapter) => (
+              <ChapterRow
+                key={chapter.id}
+                storyId={storyId}
+                chapter={chapter}
+                index={live.indexOf(chapter.id)}
+                liveCount={live.length}
+                canManage={canManage}
+                sortable={sortable}
+                selected={selected.has(chapter.id)}
+                onSelect={(checked, range) => select(chapter.id, checked, range)}
+                error={rowErrors.get(chapter.id)}
+                moving={reorder.isPending}
+                busy={{ unarchive: archive.isPending, restore: setDeleted.isPending }}
+                onMove={(direction) => move(chapter.id, direction)}
+                onRename={() => setRenaming(chapter)}
+                onStateAction={(action) => onStateAction(chapter, action)}
+              />
+            ))}
           </ol>
           <p className="text-xs text-muted-foreground">{t.numbering}</p>
-        </>
+          {live.length > 1 ? <p className="text-xs text-muted-foreground">{t.reorderHint}</p> : null}
+          {canManage ? (
+            <BulkActionDock
+              count={selected.size}
+              summary={t.bulk.selected(selected.size)}
+              label={t.bulk.label}
+              clearLabel={t.bulk.clear}
+              onClear={clearSelection}
+            >
+              {selected.size < chapters.length ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-background hover:bg-background/15 hover:text-background"
+                  onClick={() => setSelected(new Set(shown.map((chapter) => chapter.id)))}
+                >
+                  {t.bulk.selectAll}
+                </Button>
+              ) : null}
+              {CHAPTER_STATE_ACTIONS.map((action) => {
+                const count = chaptersFor(chapters, selected, action, canManage).length;
+                return count === 0 ? null : (
+                  <Button
+                    key={action}
+                    type="button"
+                    size="sm"
+                    variant={action === CHAPTER_STATE_ACTION.DELETE ? "destructive" : "secondary"}
+                    disabled={bulkBusy}
+                    onClick={() => onBulk(action)}
+                  >
+                    {t.bulk[action](count)}
+                  </Button>
+                );
+              })}
+              {bulkBusy ? <span className="text-xs">{t.bulk.working}</span> : null}
+            </BulkActionDock>
+          ) : null}
+        </div>
       )}
 
       <AddChapterForm storyId={storyId} />
@@ -269,21 +324,38 @@ function ChapterManager({
         onOpenChange={(open) => {
           if (!open) setPending(null);
         }}
-        title={pending?.kind === "delete" ? t.deleteTitle : t.archiveTitle}
-        description={pending?.kind === "delete" ? t.deleteDescription : t.archiveDescription}
-        confirmLabel={pending?.kind === "delete" ? t.delete : t.archive}
+        title={
+          deleting
+            ? many
+              ? t.bulk.deleteTitle(pending.chapters.length)
+              : t.deleteTitle
+            : many && pending
+              ? t.bulk.archiveTitle(pending.chapters.length)
+              : t.archiveTitle
+        }
+        description={deleting ? t.deleteDescription : t.archiveDescription}
+        confirmLabel={deleting ? t.delete : t.archive}
         cancelLabel={t.cancel}
-        destructive={pending?.kind === "delete"}
+        destructive={deleting}
         onConfirm={async () => {
           if (!pending) return;
-          const { kind, chapter } = pending;
-          if (kind === "delete") await run(setDeleted.mutateAsync({ chapterId: chapter.id, deleted: true }), t.deleted);
-          else await run(archive.mutateAsync({ chapterId: chapter.id, archived: true }), t.archived);
+          const { kind, chapters: targets } = pending;
+          const [only] = targets;
+          if (targets.length === 1 && only) await run(apply(kind, only.id), SINGLE_DONE[kind]());
+          else await runBulk(kind, targets);
         }}
       />
     </div>
   );
 }
+
+/** The toast after a single row's action (the bulk dock has its own counts). */
+const SINGLE_DONE: Record<ChapterStateAction, () => string> = {
+  archive: () => t.archived,
+  unarchive: () => t.unarchived,
+  delete: () => t.deleted,
+  restore: () => t.restored,
+};
 
 function AddChapterForm({ storyId }: { storyId: string }) {
   const toast = useAppToast();

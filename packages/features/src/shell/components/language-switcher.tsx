@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@storynest/ui/components/button";
+import { cn } from "@storynest/ui/lib/utils";
 import { LANGUAGES, setLanguage, useLanguage } from "../../_shared/index.ts";
 import { shellText } from "../strings.ts";
 
 /** Header control that moves to the next language (there are two). The whole page re-reads its text at once. */
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ className }: { className?: string }) {
   const language = useLanguage();
   const next = LANGUAGES[(LANGUAGES.indexOf(language) + 1) % LANGUAGES.length] ?? language;
   return (
@@ -13,7 +14,7 @@ export function LanguageSwitcher() {
       type="button"
       variant="ghost"
       size="sm"
-      className="px-2 text-xs font-semibold"
+      className={cn("px-2 text-xs font-semibold", className)}
       aria-label={shellText.language.switchTo(shellText.language.names[next])}
       onClick={() => setLanguage(next)}
     >

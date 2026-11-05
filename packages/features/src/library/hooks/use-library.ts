@@ -24,6 +24,35 @@ export function useLibraryList(tab: LibraryTab) {
   });
 }
 
+/** Tabs whose removal can be undone: saving and following again is the same call with `true`. */
+export type UndoableLibraryTab = Exclude<LibraryTab, "reading">;
+export const isUndoable = (tab: LibraryTab): tab is UndoableLibraryTab => tab !== "reading";
+
+/**
+ * Undo of a removal from the saved or followed tab: saves / follows the story again through the same API as the story
+ * page's buttons, then refreshes the library and the story page. (Taking a story off "reading" deletes its progress
+ * pointer, which cannot be put back as it was, so that tab has no undo.)
+ */
+export function useRestoreToLibrary(tab: UndoableLibraryTab) {
+  const getClient = useDataClientGetter();
+  const queryClient = useQueryClient();
+  return useMutation<void, AppError, string>({
+    mutationFn: async (storyId) => {
+      try {
+        if (tab === "saved") await setStorySave(getClient(), storyId, true);
+        else await setStoryFollow(getClient(), storyId, true);
+      } catch (error) {
+        throw toAppError(error);
+      }
+    },
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: libraryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: storyKeys.all }),
+      ]),
+  });
+}
+
 /** Removes a story from one tab. Unsaving and unfollowing also refresh the story page's buttons and count. */
 export function useRemoveFromLibrary(tab: LibraryTab) {
   const getClient = useDataClientGetter();

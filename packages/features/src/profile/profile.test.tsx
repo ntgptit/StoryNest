@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, authKeys } from "../_shared/auth.tsx";
@@ -183,6 +183,43 @@ describe("EditProfileScreen", () => {
     setup(<EditProfileScreen onSaved={vi.fn()} />, client);
     await screen.findByRole("heading", { name: profileText.edit.title });
     expect(screen.getByText(profileText.edit.cancel).closest("a")?.getAttribute("href")).toBe("/me");
+  });
+
+  it("shows an unsaved-changes bar while the form differs, with Save and Discard", async () => {
+    const saved = { ...profile, display_name: "Tên mới" };
+    const { client, update } = fakeClient({ update: { data: saved } });
+    const onSaved = vi.fn();
+    setup(<EditProfileScreen onSaved={onSaved} />, client);
+    await screen.findByRole("heading", { name: profileText.edit.title });
+    const u = profileText.edit.unsaved;
+    expect(screen.queryByRole("region", { name: u.region })).toBeNull();
+    type(profileText.edit.displayName, "Tên khác");
+    const bar = await screen.findByRole("region", { name: u.region });
+    expect(within(bar).getByRole("status").textContent).toBe(u.count(1));
+    fireEvent.click(within(bar).getByRole("button", { name: u.discard }));
+    await waitFor(() => expect(field(profileText.edit.displayName).value).toBe("Người Đọc"));
+    expect(screen.queryByRole("region", { name: u.region })).toBeNull();
+
+    type(profileText.edit.displayName, "Tên mới");
+    fireEvent.click(
+      within(await screen.findByRole("region", { name: u.region })).getByRole("button", { name: u.save }),
+    );
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    expect(update).toHaveBeenCalledWith({ username: "reader", display_name: "Tên mới", bio: "xin chào" });
+  });
+
+  it("asks before the tab is closed with unsaved changes, not when clean", async () => {
+    const { client } = fakeClient();
+    setup(<EditProfileScreen onSaved={vi.fn()} />, client);
+    await screen.findByRole("heading", { name: profileText.edit.title });
+    const clean = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(clean);
+    expect(clean.defaultPrevented).toBe(false);
+    type(profileText.edit.bio, "mới");
+    await screen.findByRole("region", { name: profileText.edit.unsaved.region });
+    const dirty = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(dirty);
+    expect(dirty.defaultPrevented).toBe(true);
   });
 });
 

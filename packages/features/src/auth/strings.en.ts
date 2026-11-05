@@ -14,6 +14,7 @@ export const en = {
   },
   signUp: {
     title: "Create an account",
+    errorSummary: (count: number) => `${count} field${count === 1 ? " needs" : "s need"} attention`,
     description: "Read, write and share your stories.",
     email: "Email",
     password: "Password",
@@ -27,6 +28,9 @@ export const en = {
     toSignIn: "Sign in",
     checkEmailTitle: "Check your email",
     checkEmailBody: "We've sent a confirmation link. Open the email and click the link to finish signing up.",
+    checkEmailHint:
+      "No email? Look in your spam or promotions folder. If the address was wrong, use a different email.",
+    differentEmail: "Use a different email",
   },
   forgot: {
     title: "Forgot password",
@@ -38,6 +42,11 @@ export const en = {
     sentTitle: "Instructions sent",
     // Same text whether or not the address has an account: never reveal which emails are registered.
     sentBody: "If this email has an account, you'll get a password reset link within a few minutes.",
+    spamHint: "No email? Look in your spam or promotions folder.",
+    resend: "Resend email",
+    resendIn: (seconds: number) => `Resend in ${seconds} s`,
+    resent: "Email sent again.",
+    differentEmail: "Use a different email",
   },
   reset: {
     title: "Set a new password",
@@ -54,6 +63,25 @@ export const en = {
   notices: {
     callbackFailed: "The sign-in link is invalid or has expired. Please try again.",
   },
+  strength: {
+    title: "Strength",
+    note: "advice only",
+    levels: { none: "", weak: "Weak", fair: "Fair", good: "Good", strong: "Strong" },
+    checks: {
+      length: (min: number) => `At least ${min} characters`,
+      mixedCase: "Upper and lower case letters",
+      number: "A number",
+      symbol: "A symbol",
+    },
+    met: "done",
+    hints: {
+      common: "This is a common password, easy to guess.",
+      sequence: "Avoid runs like 1234 or abcd.",
+      repeat: "Avoid repeating one character.",
+      longer: "12 characters or more is stronger.",
+    },
+  },
+  emailTypo: { before: "Did you mean", after: "?" },
   showPassword: "Show password",
   hidePassword: "Hide password",
   validation: {

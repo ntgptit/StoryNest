@@ -5,15 +5,23 @@ import { useState } from "react";
 import { COLLABORATOR_ROLES } from "@storynest/validation";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
-import { Input } from "@storynest/ui/components/input";
 import { Label } from "@storynest/ui/components/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@storynest/ui/components/select";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { AutocompleteInput, type AutocompleteOption } from "@storynest/ui/widgets/autocomplete-input";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
+import { UserAvatar, firstLetter } from "../../_shared/avatar.tsx";
 import { AppLink } from "../../_shared/platform.tsx";
+import {
+  SUGGESTION_COUNT,
+  SUGGESTION_DELAY_MS,
+  isSearchable,
+  useDebouncedValue,
+  useSearchAuthors,
+} from "../../search/index.ts";
 import { useAppToast } from "../../_shared/toast.tsx";
 import {
   useCancelInvitation,
@@ -208,6 +216,7 @@ function InviteForm({ storyId }: { storyId: string }) {
   const [username, setUsername] = useState("");
   const [role, setRole] = useState<CollaboratorRole>("editor");
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const suggestions = useAuthorSuggestions(username);
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -238,15 +247,19 @@ function InviteForm({ storyId }: { storyId: string }) {
       <h2 className="text-base font-semibold">{t.invite.title}</h2>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="invite-username">{t.invite.username}</Label>
-        <Input
+        <AutocompleteInput
           id="invite-username"
           value={username}
+          onValueChange={setUsername}
+          options={suggestions.options}
+          loading={suggestions.loading}
+          loadingText={t.invite.searching}
+          emptyText={suggestions.searched ? t.invite.noSuggestions : undefined}
+          listLabel={t.invite.suggestions}
           autoCapitalize="none"
-          autoComplete="off"
           spellCheck={false}
           aria-invalid={fieldError !== null}
           aria-describedby="invite-username-hint"
-          onChange={(event) => setUsername(event.target.value)}
         />
         <p
           id="invite-username-hint"
@@ -276,4 +289,35 @@ function InviteForm({ storyId }: { storyId: string }) {
       </Button>
     </form>
   );
+}
+
+/**
+ * Authors matching what is typed in the invite field (Lucian 034 combobox), from the same author search as the
+ * search page (search_authors: people with at least one public story; 3+ characters, after a short pause). A
+ * leading "@" is ignored. Anyone else can still be invited by typing the exact username.
+ */
+function useAuthorSuggestions(typed: string): { options: AutocompleteOption[]; loading: boolean; searched: boolean } {
+  const term = typed.trim().replace(/^@/, "");
+  const debounced = useDebouncedValue(term, SUGGESTION_DELAY_MS);
+  const authors = useSearchAuthors(debounced);
+  if (!isSearchable(term)) return { options: [], loading: false, searched: false };
+  const settled = debounced === term && !authors.isPending;
+  const hits = settled ? (authors.data?.pages[0]?.items ?? []).slice(0, SUGGESTION_COUNT) : [];
+  return {
+    options: hits.map((author) => ({
+      id: author.userId,
+      value: author.username,
+      primary: author.displayName,
+      secondary: `@${author.username}`,
+      leading: (
+        <UserAvatar
+          storageKey={author.avatarStorageKey}
+          fallback={firstLetter(author.displayName)}
+          className="size-8"
+        />
+      ),
+    })),
+    loading: !settled,
+    searched: settled && !authors.isError,
+  };
 }

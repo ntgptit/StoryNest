@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileQuestion } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { newId } from "@storynest/utils";
 import { STORY_LANGUAGES, STORY_STATUSES, VISIBILITIES, storyFormSchema, type StoryForm } from "@storynest/validation";
@@ -16,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@storynest/ui/components/form";
+import { FormErrorSummary } from "@storynest/ui/components/form-error-summary";
 import { Input } from "@storynest/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@storynest/ui/components/select";
 import { Skeleton } from "@storynest/ui/components/skeleton";
@@ -25,12 +26,19 @@ import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
+import { RadioCards } from "@storynest/ui/widgets/radio-cards";
+import { SearchResultPreview } from "@storynest/ui/widgets/search-result-preview";
+import { UnsavedChangesBar, useLeaveGuard } from "@storynest/ui/widgets/unsaved-changes-bar";
+import { usePublicUrl } from "../../_shared/avatar.tsx";
 import { toAppError } from "../../_shared/errors.ts";
 import { translateErrors } from "../../_shared/form-resolver.ts";
-import { AppLink, useNavigation } from "../../_shared/platform.tsx";
+import { AppLink, useNavigation, usePlatform } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
-import { statusLabel, useCategories } from "../../discovery/index.ts";
-import type { StoryForEdit } from "../api/story-write.api.ts";
+import { statusLabel, storyHref, useCategories } from "../../discovery/index.ts";
+import { shareUrl } from "../../share/index.ts";
+import { shellText } from "../../shell/index.ts";
+import { isIndexable, STORY_META_DESCRIPTION_LENGTH, storyMetaDescription } from "../../story/index.ts";
+import { COVERS_BUCKET, type StoryForEdit } from "../api/story-write.api.ts";
 import { CoverEditor } from "../components/cover-editor.tsx";
 import { TagEditor } from "../components/tag-editor.tsx";
 import {
@@ -51,6 +59,7 @@ import {
 } from "../model/story-form.ts";
 import { sameTags, tagsErrorMessage, type TagChip } from "../model/tags.ts";
 import { studioText } from "../strings.ts";
+import { VISIBILITY_ICON } from "./studio-screen.tsx";
 
 const t = studioText.form;
 
@@ -137,6 +146,7 @@ function StoryFields({
     resolver: translateErrors(zodResolver(storyFormSchema), validationMessage),
     defaultValues: initial,
   });
+  const formRef = useRef<HTMLFormElement>(null);
 
   const save = mode === "create" ? create : update;
   const onFailure = (error: Parameters<typeof storyErrorMessage>[0]) => {
@@ -187,13 +197,29 @@ function StoryFields({
   });
 
   const busy = save.isPending || setTagsMutation.isPending;
+
+  // Editing: unsaved changes get a Save / Discard bar, and leaving the page asks first (Lucian 250).
+  const changedFields = Object.keys(form.formState.dirtyFields).length + (tagsChanged ? 1 : 0);
+  const unsaved = mode === "edit" && (form.formState.isDirty || tagsChanged);
+  const [leaveWarning, setLeaveWarning] = useState(0);
+  useLeaveGuard({
+    dirty: unsaved,
+    message: t.unsaved.leave,
+    onBlocked: () => setLeaveWarning((count) => count + 1),
+    allowInside: formRef,
+  });
+  const discard = () => {
+    form.reset();
+    setTags(savedTags);
+    setTagsError(null);
+  };
   const bannerError = save.error && !isSlugTaken(save.error) ? storyErrorMessage(save.error) : null;
   const options = categoryOptions(categories.data ?? []);
   const deleted = edit?.deletedAt != null;
 
   return (
     <Form {...form}>
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={busy}>
+      <form ref={formRef} onSubmit={submit} noValidate className="flex flex-col gap-4" aria-busy={busy}>
         {bannerError ? (
           <p
             role="alert"
@@ -202,6 +228,8 @@ function StoryFields({
             {bannerError}
           </p>
         ) : null}
+
+        <FormErrorSummary title={t.errorSummary} />
 
         {edit ? (
           <CoverEditor story={{ id: storyId, coverStorageKey: edit.coverStorageKey }} title={form.watch("title")} />
@@ -269,6 +297,8 @@ function StoryFields({
             </FormItem>
           )}
         />
+
+        <StoryLinkPreview form={form} storyId={storyId} coverStorageKey={edit?.coverStorageKey ?? null} />
 
         <FormField
           control={form.control}
@@ -358,21 +388,20 @@ function StoryFields({
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t.visibility}</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {VISIBILITIES.map((visibility) => (
-                    <SelectItem key={visibility} value={visibility}>
-                      {studioText.visibility[visibility]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>{t.visibilityHints[field.value]}</FormDescription>
+              <FormControl>
+                <RadioCards
+                  aria-label={t.visibility}
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  options={VISIBILITIES.map((visibility) => ({
+                    value: visibility,
+                    label: studioText.visibility[visibility],
+                    description: t.visibilityHints[visibility],
+                    icon: VISIBILITY_ICON[visibility],
+                  }))}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -448,6 +477,79 @@ function StoryFields({
           navigation.push("/studio");
         }}
       />
+
+      {mode === "edit" ? (
+        <UnsavedChangesBar
+          dirty={unsaved}
+          message={t.unsaved.count(changedFields)}
+          warning={leaveWarning}
+          warningText={t.unsaved.warning}
+          saveLabel={t.unsaved.save}
+          savingLabel={t.submitting}
+          discardLabel={t.unsaved.discard}
+          label={t.unsaved.region}
+          saving={busy}
+          onSave={() => void submit()}
+          onDiscard={discard}
+        />
+      ) : null}
     </Form>
+  );
+}
+
+/**
+ * How the story will look as a search result and as a shared link, from the form as it is typed: the same
+ * description cut (storyMetaDescription) and public address (storyHref) as the story page's metadata, the cover once
+ * there is one, and a note when the story will not be indexed (isIndexable: unlisted, private or 18+).
+ */
+function StoryLinkPreview({
+  form,
+  storyId,
+  coverStorageKey,
+}: {
+  form: ReturnType<typeof useForm<StoryForm>>;
+  storyId: string;
+  coverStorageKey: string | null;
+}) {
+  const platform = usePlatform();
+  const p = t.seoPreview;
+  const [title, slug, synopsis, visibility, isMature] = form.watch([
+    "title",
+    "slug",
+    "synopsis",
+    "visibility",
+    "isMature",
+  ]);
+  const coverUrl = usePublicUrl(COVERS_BUCKET, coverStorageKey);
+  // The origin is only known in the browser (and the share origin may differ from the page's): until then, the path.
+  const [origin, setOrigin] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      setOrigin(platform.shareOrigin ? platform.shareOrigin() : platform.appOrigin());
+    } catch {
+      setOrigin(null);
+    }
+  }, [platform]);
+  const path = storyHref({ id: storyId, slug: slug || "…" });
+  const url = origin ? shareUrl(origin, path) : path;
+  const text = (synopsis ?? "").replace(/\s+/g, " ").trim();
+
+  return (
+    <SearchResultPreview
+      siteName={shellText.appName}
+      url={url}
+      title={title.trim() || p.untitled}
+      description={text === "" ? p.noSynopsis : storyMetaDescription(text)}
+      sourceLength={text.length}
+      limit={STORY_META_DESCRIPTION_LENGTH}
+      imageUrl={coverUrl}
+      note={isIndexable({ visibility, isMature }) ? null : p.notIndexed}
+      labels={{
+        region: p.region,
+        searchTab: p.searchTab,
+        shareTab: p.shareTab,
+        descriptionLength: p.descriptionLength,
+      }}
+    />
   );
 }

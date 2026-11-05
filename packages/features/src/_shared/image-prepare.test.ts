@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { cropAreaOf, initialCropView, panCropView, zoomCropView, type CropImage } from "@storynest/ui/lib/crop-math";
 import {
   IMAGE_MAX_INPUT_BYTES,
   ImageError,
+  checkImageFile,
   cropBox,
   outputSize,
   prepareImage,
@@ -50,6 +52,70 @@ describe("cropBox", () => {
   });
 });
 
+describe("cropBox with a crop from the editor", () => {
+  const SIZES = [
+    [1200, 600],
+    [300, 900],
+    [400, 600],
+    [1201, 601],
+    [601, 1201],
+    [4032, 3024],
+    [3024, 4032],
+    [333, 500],
+    [7, 1000],
+    [1000, 7],
+    [1, 1],
+  ] as const;
+
+  it("the editor's untouched starting view gives exactly today's centred crop", () => {
+    const sweep: (readonly [number, number])[] = [...SIZES];
+    for (let w = 1; w <= 90; w += 1) for (let h = 1; h <= 90; h += 1) sweep.push([w * 17, h * 13]);
+    for (const [w, h] of sweep) {
+      for (const aspect of [1, 2 / 3]) {
+        const image: CropImage = { width: w, height: h, aspect };
+        const today = cropBox(w, h, aspect);
+        const edited = cropBox(w, h, aspect, cropAreaOf(initialCropView(image), image));
+        // A 1 x 1 picture has no 2:3 box today (width 0); the editor path keeps at least one pixel instead.
+        if (today.sw === 0) expect(edited.sw).toBe(1);
+        else expect(edited).toEqual(today);
+      }
+    }
+  });
+
+  it("maps a zoomed and moved crop of a landscape picture to source pixels", () => {
+    const image: CropImage = { width: 1200, height: 600, aspect: 1 };
+    const view = panCropView(zoomCropView(initialCropView(image), image, 2), image, 0.5, 0); // move the picture right
+    expect(cropBox(1200, 600, 1, cropAreaOf(view, image))).toEqual({ sx: 300, sy: 150, sw: 300, sh: 300 });
+  });
+
+  it("maps a crop of a portrait picture to a 2:3 cover box", () => {
+    const image: CropImage = { width: 600, height: 1200, aspect: 2 / 3 };
+    const view = panCropView(zoomCropView(initialCropView(image), image, 1.5), image, 0, 9); // all the way to the top
+    expect(cropBox(600, 1200, 2 / 3, cropAreaOf(view, image))).toEqual({ sx: 100, sy: 0, sw: 400, sh: 600 });
+  });
+
+  it("rounds a fractional crop, keeps an avatar square and stays inside the picture", () => {
+    expect(cropBox(1000, 800, 1, { x: 100.4, y: 50.6, width: 333.3, height: 333.3 })).toEqual({
+      sx: 100,
+      sy: 50,
+      sw: 333,
+      sh: 333,
+    });
+    expect(cropBox(1000, 800, 1, { x: 900, y: 700, width: 300, height: 300 })).toEqual({
+      sx: 700,
+      sy: 500,
+      sw: 300,
+      sh: 300,
+    });
+    expect(cropBox(1000, 800, 1, { x: -50, y: -50, width: 5000, height: 5000 })).toEqual({
+      sx: 200, // its centre is far right: kept at the right edge
+      sy: 0,
+      sw: 800,
+      sh: 800,
+    });
+  });
+});
+
 describe("outputSize", () => {
   it("shrinks to the maximum width and keeps the shape", () => {
     expect(outputSize(1200, 1800, 600)).toEqual({ width: 600, height: 900 });
@@ -78,6 +144,21 @@ describe("prepareImage", () => {
       problem: "tooLarge",
     });
     await expect(prepareImage(file("image/png", IMAGE_MAX_INPUT_BYTES), renderOk)).resolves.toBe(prepared);
+  });
+
+  it("passes the chosen crop to the renderer, and nothing without one", async () => {
+    const render = vi.fn(renderOk);
+    const crop = { x: 1, y: 2, width: 30, height: 30 };
+    await prepareImage(file("image/png"), render, crop);
+    expect(render).toHaveBeenLastCalledWith(expect.any(Blob), crop);
+    await prepareImage(file("image/png"), render);
+    expect(render.mock.lastCall).toHaveLength(1);
+  });
+
+  it("checkImageFile names the problem without decoding", () => {
+    expect(checkImageFile(file("image/webp"))).toBeNull();
+    expect(checkImageFile(file("image/gif"))).toBe("type");
+    expect(checkImageFile(file("image/jpeg", IMAGE_MAX_INPUT_BYTES + 1))).toBe("tooLarge");
   });
 
   it("reports a file the browser cannot decode as unreadable", async () => {

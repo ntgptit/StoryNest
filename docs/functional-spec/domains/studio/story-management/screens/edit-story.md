@@ -22,12 +22,14 @@
 | SCR-STM-03-C02 | Link "Manage chapters" → `/studio/story/{id}/chapters` (all roles) | `story-form-screen.tsx:93-98` |
 | SCR-STM-03-C03 | Notice "This story is deleted." (when deleted) | `story-form-screen.tsx:99` |
 | SCR-STM-03-C04 | Editor notice "You're an editor of this story, so you can't change its details." (replaces the form) | `story-form-screen.tsx:100-102` |
-| SCR-STM-03-C05 | Cover block: label "Cover", preview (2:3), "Add a cover"/"Change cover" ("Uploading…"), "Remove cover", hidden file input "Choose a cover", hint, alert | `components/cover-editor.tsx:61-105` |
+| SCR-STM-03-C05 | Cover block: label "Cover", preview (2:3), "Add a cover"/"Change cover" ("Uploading…"), "Remove cover", hidden file input "Choose a cover", hint, alert; after a valid pick the crop dialog "Adjust the cover" (2:3 frame, "Zoom" slider, "Use photo"/"Cancel") | `components/cover-editor.tsx`, `packages/ui/src/widgets/image-crop-dialog.tsx` |
 | SCR-STM-03-C06..C13 | Same fields as SCR-STM-02-C04..C11 (title, slug, synopsis, category, tags, language, status, visibility, 18+) pre-filled | `story-form-screen.tsx:212-395` |
 | SCR-STM-03-C14 | "Save changes" (disabled until something changed; "Saving…"), "Cancel" → `/studio` | `story-form-screen.tsx:397-403` |
 | SCR-STM-03-C15 | Owner only: "Delete story" (destructive outline) or "Restore story" when deleted | `story-form-screen.tsx:404-433` |
 | SCR-STM-03-C16 | Confirm dialog "Delete this story?" | `story-form-screen.tsx:437-450` |
 | SCR-STM-03-C17 | Skeleton; error state (retry); empty state "Story not found" | `story-form-screen.tsx:76-89` |
+| SCR-STM-03-C18 | Cover drop zone (Lucian 032) | As SCR-PRF-02-C14 for the cover row: same checks, crop dialog (2:3) and errors as the picker | `components/cover-editor.tsx`, `packages/ui/src/widgets/drop-zone.tsx` |
+| SCR-STM-03-C19 | Unsaved changes bar (Lucian 250): rises from the bottom while the form is dirty or the tags changed, "N unsaved changes", "Discard" (resets fields and tags) / "Save" (the same submit as C14). While dirty, closing the tab asks the browser's leave question and a click on an in-app link outside the form is stopped: the bar shakes, turns red, says "Save or discard your changes before leaving" and focuses Save. The form's own Cancel link is not stopped. Not shown when creating | `story-form-screen.tsx`, `packages/ui/src/widgets/unsaved-changes-bar.tsx` |
 
 ## C. User actions & system responses
 
@@ -112,7 +114,7 @@ Tag actions: as SCR-STM-02-A03.
 - SCR-STM-03-AC07 Given I confirm "Delete story", Then the story is soft-deleted, "Story deleted." is shown And I land on `/studio`.
 - SCR-STM-03-AC08 Given the story is deleted, Then "This story is deleted." and "Restore story" are shown; When I click it, Then "Story restored." is shown.
 - SCR-STM-03-AC09 Given I pick a GIF as cover, Then "Only JPG, PNG or WebP pictures can be used." is shown And nothing is uploaded.
-- SCR-STM-03-AC10 Given a 1200×600 PNG, When uploaded, Then the stored cover is 2:3 (400×600) And the old cover object is removed.
+- SCR-STM-03-AC10 Given a 1200×600 PNG, When picked, Then the crop dialog opens; When "Use photo" is pressed without changes, Then the stored cover is the centred 2:3 part (400×600) And the old cover object is removed; When "Cancel" is pressed, Then nothing is uploaded.
 - SCR-STM-03-AC11 Given deleting fails, Then an error message is shown in or under the dialog `[Proposed]` (F-STM-03).
 - SCR-STM-03-AC12 Given the story was removed by a moderator, Then "Restore story" is not offered and the reason is explained `[Proposed]` (F-STM-02).
 - SCR-STM-03-AC13 Given I change the slug of a story with readers, Then the hint tells me old links will redirect `[Proposed]` (U-STM-02).

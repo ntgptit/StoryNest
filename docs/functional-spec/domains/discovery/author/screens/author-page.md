@@ -19,9 +19,10 @@
 | ID | Component | Description | Evidence |
 | --- | --- | --- | --- |
 | SCR-AUTHOR-01-C01 | Profile skeleton | `h-40` block `aria-busy` while session/profile load | `author-screen.tsx:35` |
-| SCR-AUTHOR-01-C02 | Header | Avatar (size-16), `h1` display name, "@username · N followers · M stories", bio or "This author hasn't written a bio yet." | `author-screen.tsx:71-86`, `strings.en.ts:2-5` |
+| SCR-AUTHOR-01-C02 | Header | Avatar (size-16), `h1` display name, "@username · N followers · M stories", bio or "This author hasn't written a bio yet." A long bio is clamped to 4 lines with a fade and "Show more / Show less" (`ExpandableText`, Lucian #288): toggle only when it really overflows, `aria-expanded`, full text always in the DOM | `author-screen.tsx`, `strings.en.ts`, `ui/widgets/expandable-text.tsx` |
 | SCR-AUTHOR-01-C03 | Follow button | "Follow"/"Following" with icon, `aria-pressed`, hidden on own page | `follow-author-button.tsx:18-44` |
 | SCR-AUTHOR-01-C04 | Report button | Report this person (OBJ-MOD) | `author-screen.tsx:89` |
+| SCR-AUTHOR-01-C08 | Share button | "Share" under Follow: dialog with the absolute author link `https://<site>/author/<username>` (canonical origin), "Copy" that turns into a check (Lucian #008 / #254) and "Share with another app" where `navigator.share` exists | `author-screen.tsx`, `features/share/components/share-button.tsx` |
 | SCR-AUTHOR-01-C05 | Stories section | `h2` "Author's stories"; card grid + infinite list; end "No more stories." | `author-screen.tsx:93-131`, `strings.en.ts:4,23-24` |
 | SCR-AUTHOR-01-C06 | Not found | Empty state "Author not found" | `author-screen.tsx:46-48` |
 | SCR-AUTHOR-01-C07 | Error states | Profile error and stories error, both "Couldn't load the author page" + "Try again" | `author-screen.tsx:36-45,95-101` |
@@ -105,6 +106,22 @@
 | Navigation | — |
 | Evidence | `author-screen.tsx:42,100`, `author.test.tsx:317` |
 
+| Field | SCR-AUTHOR-01-A08 — Share the author page / read the whole bio |
+| --- | --- |
+| Trigger | "Share" (C08) → "Copy" / "Share with another app"; "Show more" under a long bio |
+| Preconditions | — |
+| Expected behavior | Copy: link on the clipboard, check + "Copied" for 1.8 s (announced politely). Show more: the bio grows to its full height; Show less clamps it again and scrolls its start back into view if needed |
+| State change | — |
+| Validation | — |
+| Error behavior | Clipboard blocked → toast "Couldn't copy. Select the link and copy it yourself." |
+| Navigation | — |
+| Evidence | `author.test.tsx` (share, bio), `share/share.test.tsx` |
+
+### C.x Browse interactions (Lucian batch 2 · browse)
+
+- The follower count next to Follow is a RollingNumber (Lucian 054 / 098): after a follow or unfollow the changed digits roll to the count the database answered; nothing rolls on load; screen readers get the phrase once in a polite live region.
+- The author's stories have the grid / list toggle and the shared story-card behaviours (see home-discover).
+
 ## D. UI states
 | State | Status | Behaviour / evidence |
 | --- | --- | --- |
@@ -128,6 +145,8 @@
 - SCR-AUTHOR-01-AC05 — Given the member already follows 1000 authors, When they press "Follow" on a new author, Then the limit toast appears and the button stays "Follow".
 - SCR-AUTHOR-01-AC06 — Given the viewer is the author, Then no Follow button is shown.
 - SCR-AUTHOR-01-AC07 — Given a suspended follower, Then they are not counted in "N followers".
+- SCR-AUTHOR-01-AC11 — Given an author page, When the reader presses "Share", Then the dialog shows the absolute author link and "Copy" turns into a check.
+- SCR-AUTHOR-01-AC12 — Given a bio longer than 4 lines, Then it is clamped with "Show more"; a shorter bio shows no toggle; the full bio is always in the HTML.
 - SCR-AUTHOR-01-AC08 [Proposed] — Given the reader shows mature content, Then the header story count equals the number of stories listed (U-AUTHOR-02).
 - SCR-AUTHOR-01-AC09 [Proposed] — Given `/author/<username>`, Then the document title contains the author's display name and an unknown author returns HTTP 404 (F-AUTHOR-02).
 - SCR-AUTHOR-01-AC10 [Proposed] — Given a member, Then they can open the list of authors they follow and unfollow from it (F-AUTHOR-01).

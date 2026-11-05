@@ -8,6 +8,27 @@ const vi = {
   toc: { open: "Mục lục", title: "Mục lục", description: "Chọn chương để đọc." },
   nav: { label: "Chuyển chương", previous: "Chương trước", next: "Chương sau", none: "Hết" },
   progress: "Tiến độ đọc chương",
+  timeLeft: {
+    long: (minutes: number) => `${minutes} phút còn lại`,
+    short: (minutes: number) => `${minutes} phút`,
+    done: "Đã đọc hết",
+  },
+  backToTop: "Lên đầu trang",
+  image: {
+    open: "Xem ảnh toàn màn hình",
+    title: "Ảnh trong chương",
+    hint: "Chụm hai ngón, chạm đúp hoặc nhấn + và − để phóng to. Kéo xuống hoặc nhấn Esc để đóng.",
+    close: "Đóng ảnh",
+  },
+  quote: {
+    toolbar: "Công cụ trích dẫn",
+    copy: "Chép trích dẫn",
+    copied: "Đã chép",
+    copyFailed: "Không chép được trích dẫn.",
+    comment: "Bình luận đoạn này",
+    text: (quote: string, source: string, url: string) => `“${quote}”\n— ${source}\n${url}`,
+    source: (story: string, chapter: string) => `${story}, ${chapter}`,
+  },
   settings: {
     open: "Hiển thị",
     title: "Tùy chọn đọc",
@@ -22,6 +43,8 @@ const vi = {
     fonts: { sans: "Không chân", serif: "Có chân" },
     themes: { site: "Theo giao diện", light: "Sáng", sepia: "Sepia", dark: "Tối" },
     sizeNames: { s: "Nhỏ", m: "Vừa", l: "Lớn", xl: "Rất lớn" },
+    focus: "Chế độ tập trung",
+    focusHint: "Làm mờ các đoạn khác, chỉ giữ rõ đoạn đang đọc. Dùng ↑/↓ để chuyển đoạn. Chỉ lưu trên thiết bị này.",
   },
   vote: {
     add: "Bình chọn cho chương này",

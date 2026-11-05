@@ -15,4 +15,12 @@ export const en = {
     description: "Check your connection and try again.",
     retry: "Try again",
   },
+  featured: {
+    title: "Featured this week",
+    seeAll: "See the ranking",
+    pause: "Pause auto-advance",
+    play: "Resume auto-advance",
+    dots: "Choose a featured story",
+    slide: (position: number, count: number, title: string) => `Story ${position} of ${count}: ${title}`,
+  },
 };

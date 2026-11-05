@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
+import { formatRelativeTime } from "@storynest/utils";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@storynest/ui/components/dialog";
 import { Label } from "@storynest/ui/components/label";
 import { Textarea } from "@storynest/ui/components/textarea";
 import { MODERATION_ACTION, REPORT_STATUS, type ModerationAction } from "@storynest/validation";
+import { cn } from "@storynest/ui/lib/utils";
+import { currentLocale } from "../../_shared/i18n.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useModerate, useResolveReport } from "../hooks/use-moderation.ts";
@@ -28,8 +31,24 @@ type Pending =
   | { kind: "content"; action: ModerationAction }
   | { kind: "report"; status: "reviewing" | "resolved" | "dismissed"; action: ModerationAction };
 
-/** One report with its context and what the moderator can do. Every action asks for a written reason first. */
-export function ReportCard({ report }: { report: ModerationReport }) {
+/**
+ * One report with its context and what the moderator can do. Every action asks for a written reason first.
+ * - `card` (the queue): with `onOpen`, its title (or a click on the card outside its controls) opens the detail panel,
+ *   and `selected` keeps it highlighted while the panel shows it;
+ * - `panel` (inside the detail panel, which shows the title itself): the same content and actions, plus when it was
+ *   reported, without the card frame.
+ */
+export function ReportCard({
+  report,
+  variant = "card",
+  selected = false,
+  onOpen,
+}: {
+  report: ModerationReport;
+  variant?: "card" | "panel";
+  selected?: boolean;
+  onOpen?: () => void;
+}) {
   const toast = useAppToast();
   const moderate = useModerate();
   const resolve = useResolveReport();
@@ -63,9 +82,30 @@ export function ReportCard({ report }: { report: ModerationReport }) {
   };
 
   const error = moderate.error ?? resolve.error;
+  const panel = variant === "panel";
+
+  // A click on the card itself (not on one of its buttons or links, nor inside its dialog, which is portalled out of
+  // the card's DOM but still bubbles through React) opens the detail; the title button is the keyboard route.
+  const openFromCard = (event: MouseEvent<HTMLElement>) => {
+    if (!onOpen || !(event.target instanceof Element) || !event.currentTarget.contains(event.target)) return;
+    if (event.target.closest("button, a, input, textarea, [role=dialog]")) return;
+    onOpen();
+  };
+
+  const Root = panel ? "div" : "article";
 
   return (
-    <article aria-label={report.title} className="flex flex-col gap-3 rounded-xl border p-4">
+    <Root
+      aria-label={panel ? undefined : report.title}
+      aria-current={selected || undefined}
+      onClick={panel ? undefined : openFromCard}
+      className={cn(
+        "flex flex-col gap-3",
+        !panel && "rounded-xl border p-4 transition-colors",
+        !panel && onOpen && "cursor-pointer hover:bg-accent/40",
+        selected && "border-primary bg-accent/60 shadow-[inset_3px_0_0_var(--primary)]",
+      )}
+    >
       <header className="flex flex-wrap items-center gap-2">
         <Badge variant="secondary">{t.kinds[report.target]}</Badge>
         <Badge variant="outline">{t.statuses[report.status]}</Badge>
@@ -78,7 +118,18 @@ export function ReportCard({ report }: { report: ModerationReport }) {
       </header>
 
       <div className="flex flex-col gap-1">
-        <p className="whitespace-pre-line break-words text-sm font-medium">{report.title}</p>
+        {panel ? null : onOpen ? (
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={onOpen}
+            className="w-fit rounded-sm text-left text-sm font-medium break-words whitespace-pre-line underline-offset-4 outline-none hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            {report.title}
+          </button>
+        ) : (
+          <p className="whitespace-pre-line break-words text-sm font-medium">{report.title}</p>
+        )}
         <p className="text-xs text-muted-foreground">
           {t.stateLabel}: {t.states[report.state as keyof typeof t.states] ?? report.state}
           {href ? (
@@ -95,7 +146,10 @@ export function ReportCard({ report }: { report: ModerationReport }) {
       {report.description ? (
         <p className="whitespace-pre-line break-words text-sm text-muted-foreground">{report.description}</p>
       ) : null}
-      <p className="text-xs text-muted-foreground">{t.reportedBy(report.reporterName)}</p>
+      <p className="text-xs text-muted-foreground">
+        {t.reportedBy(report.reporterName)}
+        {panel ? ` · ${t.panel.reportedAt(formatRelativeTime(report.createdAt, currentLocale()))}` : null}
+      </p>
 
       <div className="flex flex-wrap gap-2">
         {contentActions(report).map((action) => (
@@ -186,6 +240,6 @@ export function ReportCard({ report }: { report: ModerationReport }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </article>
+    </Root>
   );
 }

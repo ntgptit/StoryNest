@@ -33,6 +33,7 @@ import {
   withLike,
   type CommentCardRow,
 } from "./model/comment.ts";
+import { splitSpoilers } from "./model/spoiler.ts";
 import { commentText } from "./strings.ts";
 
 afterEach(cleanup);
@@ -698,5 +699,50 @@ describe("moderation by the story's author", () => {
     const list = await listOf();
     await waitFor(() => expect(reader.of("can_moderate_comments")).toHaveLength(1));
     expect(list.queryByRole("button", { name: commentText.item.menu })).toBeNull();
+  });
+});
+
+describe("spoilers in comments", () => {
+  it("cuts ||spoiler|| parts out of a body and leaves everything else as typed", () => {
+    expect(splitSpoilers("Hay quá ||nhân vật chính chết|| thật sao")).toEqual([
+      { text: "Hay quá ", spoiler: false },
+      { text: "nhân vật chính chết", spoiler: true },
+      { text: " thật sao", spoiler: false },
+    ]);
+    expect(splitSpoilers("||a|| và ||b||")).toEqual([
+      { text: "a", spoiler: true },
+      { text: " và ", spoiler: false },
+      { text: "b", spoiler: true },
+    ]);
+    expect(splitSpoilers("không có gì")).toEqual([{ text: "không có gì", spoiler: false }]);
+    expect(splitSpoilers("mở || mà không đóng")).toEqual([{ text: "mở || mà không đóng", spoiler: false }]);
+    expect(splitSpoilers("trống |||| thôi")).toEqual([{ text: "trống |||| thôi", spoiler: false }]);
+    expect(splitSpoilers("|| ||")).toEqual([{ text: "|| ||", spoiler: false }]);
+    expect(splitSpoilers("|| ||x||")).toEqual([
+      { text: "|| ", spoiler: false },
+      { text: "x", spoiler: true },
+    ]);
+    expect(splitSpoilers("")).toEqual([]);
+  });
+
+  it("covers a spoiler in a comment until it is pressed, and keeps the stored text unchanged", async () => {
+    const c = fakeClient({
+      list_comments: () => ({ data: [row(1, { body: "Cuối truyện ||hung thủ là quản gia||!" })], error: null }),
+    });
+    renderUi(c, thread());
+    const list = await listOf();
+    const spoiler = list.getByRole("button", { name: commentText.item.spoiler });
+    expect(spoiler.textContent).toBe("hung thủ là quản gia");
+    expect(spoiler.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.keyDown(spoiler, { key: "Enter" });
+    expect(spoiler.getAttribute("aria-expanded")).toBe("true");
+    expect(spoiler.closest("p")?.textContent).toBe("Cuối truyện hung thủ là quản gia!");
+  });
+
+  it("tells the writer how to hide a spoiler under the comment box", async () => {
+    renderUi(fakeClient(), thread());
+    const box = await screen.findByLabelText(commentText.composer.label);
+    const hint = screen.getByText(commentText.composer.spoilerHint);
+    expect(box.getAttribute("aria-describedby")).toBe(hint.id);
   });
 });

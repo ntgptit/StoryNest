@@ -13,8 +13,17 @@ export {
   type StorySummary,
 } from "./model/story-card.ts";
 export { useCategories, useLatestStories } from "./hooks/use-latest-stories.ts";
-export { type Category } from "./model/categories.ts";
+export { rootCategories, type Category } from "./model/categories.ts";
 export { discoveryKeys } from "./keys.ts";
 export { homeHref } from "./model/home-href.ts";
 export { usePopularTags } from "./hooks/use-latest-stories.ts";
 export { orderByIds } from "./model/order-by-ids.ts";
+export {
+  STORY_GRID,
+  STORY_LIST,
+  STORY_VIEW_STORAGE_KEY,
+  StoryListFrame,
+  StoryTile,
+  storyListClassName,
+  useStoryView,
+} from "./components/story-tile.tsx";

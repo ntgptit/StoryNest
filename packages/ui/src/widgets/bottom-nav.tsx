@@ -19,7 +19,7 @@ export interface BottomNavItem {
   match?: (pathname: string) => boolean;
 }
 
-export function isNavItemActive(item: BottomNavItem, pathname: string): boolean {
+export function isNavItemActive(item: Pick<BottomNavItem, "href" | "match">, pathname: string): boolean {
   if (item.match) return item.match(pathname);
   if (item.href === "/") return pathname === "/";
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -48,7 +48,8 @@ export function BottomNav({
         className,
       )}
     >
-      <ul className="mx-auto flex max-w-xl items-stretch justify-around">
+      {/* Fixed row height (--size-bottom-nav), so bars that sit above the nav (StickyActionBar) line up with it. */}
+      <ul className="mx-auto flex min-h-(--size-bottom-nav) max-w-xl items-stretch justify-around">
         {items.map((item) => {
           const active = isNavItemActive(item, pathname);
           const Icon = item.icon;

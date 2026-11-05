@@ -22,7 +22,7 @@
 | --- | --- | --- | --- |
 | SCR-CMT-01-C01 | Section heading | "Comments" `h2`, section `aria-label` "Comments", anchor `#comments`, `scroll-mt-20` | `reader-screen.tsx:117-124` |
 | SCR-CMT-01-C02 | Paragraph comment button | Trailing icon button on paragraph/heading, count when > 0, name "Comment on this paragraph (N)"; 50% opacity until hover/focus | `reader-blocks.tsx:42-59` |
-| SCR-CMT-01-C03 | Paragraph sheet | Bottom sheet, max 85vh, title "Comment on this paragraph", description = excerpt | `reader-blocks.tsx:64-76` |
+| SCR-CMT-01-C03 | Paragraph sheet | Bottom sheet with three heights (peek / half / full, opens at half, drag the top or use the grabber button, pulled down closes), title "Comment on this paragraph", description = excerpt; also opened from the reader's quote tools | `reader-blocks.tsx`, `packages/ui/src/widgets/detent-sheet.tsx` |
 | SCR-CMT-01-C04 | Composer | Textarea (sr-only label "Write a comment"/"Write a reply"), placeholder "Share your thoughts…", counter from 8,000 chars, inline error `role="alert"`, "Post"/"Posting…", optional "Cancel" | `comment-composer.tsx:21-102` |
 | SCR-CMT-01-C05 | Guest sign-in link | Outline button "Sign in to comment" → `/login?next=` | `comment-thread.tsx:57-61` |
 | SCR-CMT-01-C06 | Comment list | `ul` "Comment list"; skeleton ×2 while loading; empty text; ErrorState | `comment-thread.tsx:63-86` |
@@ -35,6 +35,7 @@
 | SCR-CMT-01-C13 | Placeholder | "This comment was deleted." | `comment-item.tsx:101-102` |
 | SCR-CMT-01-C14 | Delete confirm dialog | "Delete this comment?" destructive confirm | `comment-item.tsx:220-237` |
 | SCR-CMT-01-C15 | Load more | "Load more comments"/"Loading…" | `comment-thread.tsx:88-99` |
+| SCR-CMT-01-C16 | Spoiler cover | `||text||` in a body renders covered until pressed (BR-CMT-022); the composer's helper line shows the hint | `comment-item.tsx` (`CommentBody`), `comment-composer.tsx`, `packages/ui/src/widgets/spoiler-text.tsx` |
 
 ## C. User actions & system responses
 
@@ -197,6 +198,7 @@
 - SCR-CMT-01-AC17 [Proposed] Given a comment that was hidden and unhidden without a text change, when listed, then it is not marked "(edited)" (F-CMT-01).
 - SCR-CMT-01-AC18 [Proposed] Given a reply notification for a paragraph thread, when opened, then the paragraph sheet opens with the parent's replies expanded and the reply highlighted (U-NOTI-01).
 - SCR-CMT-01-AC19 [Proposed] Given a guest presses "Sign in to comment" in a paragraph sheet, when they return after sign-in, then the reader is at the same paragraph/thread (U-CMT-02).
+- SCR-CMT-01-AC21 Given a comment "End: ||the butler did it||", when listed, then "the butler did it" is covered by a button "Spoiler, tap to show" and is shown after a press or Enter; the stored body keeps the bars.
 - SCR-CMT-01-AC20 [Proposed] Given a touch device, when the paragraph comment button is tapped, then its target is at least 24×24 CSS px (U-CMT-01).
 
 ## F. Findings referenced

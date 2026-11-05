@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Editor } from "@tiptap/core";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { StrictMode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -192,7 +192,7 @@ describe("ChapterEditorScreen", () => {
     expect(screen.getByText(new RegExp(t.words("5")))).toBeTruthy(); // "Mở đầu" (2 words) + "Một hai ba" (3)
   });
 
-  it("offers formatting for bold, italic, underline, strike, heading, divider, a picture, undo and redo only", async () => {
+  it("offers formatting for bold, italic, underline, strike, heading, divider, a picture, find, undo and redo only", async () => {
     setup(fakeClient({}));
     const toolbar = await screen.findByRole("toolbar", { name: t.toolbar.label });
     const labels = Array.from(toolbar.querySelectorAll("button")).map((b) => b.getAttribute("aria-label"));
@@ -204,6 +204,7 @@ describe("ChapterEditorScreen", () => {
       t.toolbar.strike,
       t.toolbar.divider,
       t.toolbar.image,
+      t.toolbar.find,
       t.toolbar.undo,
       t.toolbar.redo,
     ]);
@@ -475,6 +476,228 @@ describe("autosave and recovery", () => {
 
     fireEvent.click(screen.getByRole("button", { name: t.conflict.reload }));
     expect(await screen.findByText(t.backup.title)).toBeTruthy(); // my version is offered on top of the fresh draft
+  });
+});
+
+describe("find and replace", () => {
+  const LONG = [
+    { block_id: bid(1), type: "heading", text: "Lan" },
+    { block_id: bid(2), type: "paragraph", text: "Lan gặp lan ở vườn." },
+  ];
+  const findField = () => screen.getByLabelText(t.find.find) as HTMLInputElement;
+
+  it("Ctrl+F in the text opens the panel with the cursor in the find field; Esc closes it", async () => {
+    const editor = setup(
+      fakeClient({
+        draft: { chapter_id: CHAPTER_ID, title: "C", body: LONG, revision: 3, chapter: { story_id: STORY_ID } },
+      }),
+    );
+    await editorReady(editor);
+    expect(screen.queryByRole("search")).toBeNull();
+    fireEvent.keyDown(editor.current!.view.dom, { key: "f", ctrlKey: true });
+    const panel = await screen.findByRole("search", { name: t.find.region });
+    await waitFor(() => expect(document.activeElement).toBe(findField()));
+    expect(screen.getByRole("button", { name: t.toolbar.find }).getAttribute("aria-expanded")).toBe("true");
+
+    fireEvent.change(findField(), { target: { value: "lan" } });
+    expect(panel.textContent).toContain("1/3");
+    expect(screen.getByText(t.find.position(1, 3))).toBeTruthy(); // announced politely
+    fireEvent.keyDown(findField(), { key: "Enter" });
+    expect(panel.textContent).toContain("2/3");
+    fireEvent.keyDown(findField(), { key: "Enter", shiftKey: true });
+    expect(panel.textContent).toContain("1/3");
+    fireEvent.click(screen.getByRole("button", { name: t.find.caseSensitive }));
+    expect(panel.textContent).toContain("1/1"); // only the lower-case "lan"
+    fireEvent.change(findField(), { target: { value: "LAN" } });
+    expect(panel.textContent).toContain("0/0");
+    expect(screen.getByText(t.find.noMatches)).toBeTruthy();
+
+    fireEvent.keyDown(findField(), { key: "Escape" });
+    expect(screen.queryByRole("search")).toBeNull();
+    expect(editor.current?.view.dom.querySelectorAll(".find-match")).toHaveLength(0);
+  });
+
+  it("replace all is one edit: one undo brings everything back, and it saves like any other change", async () => {
+    const t1 = fakeClient({
+      draft: { chapter_id: CHAPTER_ID, title: "C", body: LONG, revision: 3, chapter: { story_id: STORY_ID } },
+    });
+    const editor = setup(t1);
+    await editorReady(editor);
+    fireEvent.click(screen.getByRole("button", { name: t.toolbar.find }));
+    fireEvent.change(await screen.findByLabelText(t.find.find), { target: { value: "lan" } });
+    fireEvent.change(screen.getByLabelText(t.find.replace), { target: { value: "Mai" } });
+    fireEvent.click(screen.getByRole("button", { name: t.find.replaceAll }));
+    expect(editor.current?.getText()).not.toMatch(/lan/i);
+    expect(screen.getByText(t.find.replaced(3))).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: t.toolbar.undo }));
+    expect(editor.current?.getText()).toContain("Lan gặp lan");
+    fireEvent.click(screen.getByRole("button", { name: t.toolbar.redo }));
+    expect(editor.current?.getText()).toContain("Mai gặp Mai");
+
+    clickSave();
+    await waitFor(() => expect(t1.updates).toHaveLength(1));
+    const body = (t1.updates[0]?.values as { body: { block_id: string; text?: string }[] }).body;
+    expect(body).toEqual([
+      { block_id: bid(1), type: "heading", text: "Mai" },
+      { block_id: bid(2), type: "paragraph", text: "Mai gặp Mai ở vườn." },
+    ]);
+    expect(t1.updates[0]?.calls).toContainEqual(["eq", ["revision", 3]]);
+  });
+
+  it("replace replaces only the current match and moves on", async () => {
+    const editor = setup(
+      fakeClient({
+        draft: { chapter_id: CHAPTER_ID, title: "C", body: LONG, revision: 3, chapter: { story_id: STORY_ID } },
+      }),
+    );
+    await editorReady(editor);
+    act(() => void editor.current?.commands.setTextSelection(1)); // start of the document
+    fireEvent.click(screen.getByRole("button", { name: t.toolbar.find }));
+    fireEvent.change(await screen.findByLabelText(t.find.find), { target: { value: "lan" } });
+    fireEvent.change(screen.getByLabelText(t.find.replace), { target: { value: "Mai" } });
+    fireEvent.click(screen.getByRole("button", { name: t.find.replaceOne }));
+    expect(editor.current?.getText()).toContain("Mai");
+    expect(editor.current?.getText()).toContain("Lan gặp lan");
+    expect(screen.getByRole("search").textContent).toContain("1/2");
+  });
+});
+
+describe("merging an unsaved copy with the server draft", () => {
+  const backupKey = `storynest.draftBackup.${CHAPTER_ID}`;
+  const SERVER_BODY = [
+    { block_id: bid(1), type: "heading", text: "Mở đầu" },
+    { block_id: bid(2), type: "paragraph", text: "Câu họ viết" },
+    { block_id: bid(3), type: "paragraph", text: "Đoạn họ thêm" },
+  ];
+  const MINE_BODY = [
+    { block_id: bid(1), type: "heading", text: "Mở đầu" },
+    { block_id: bid(2), type: "paragraph", text: "Câu tôi viết" },
+    { block_id: bid(4), type: "paragraph", text: "Đoạn tôi thêm" },
+  ];
+  const groups = () => screen.getAllByRole("group");
+
+  it("decides block by block, then loads the merge as an edit saved against the server's revision", async () => {
+    window.localStorage.setItem(
+      backupKey,
+      JSON.stringify({ baseRevision: 2, title: "Chương một", body: MINE_BODY, savedAt: new Date().toISOString() }),
+    );
+    const t1 = fakeClient({
+      draft: {
+        chapter_id: CHAPTER_ID,
+        title: "Chương một",
+        body: SERVER_BODY,
+        revision: 7,
+        chapter: { story_id: STORY_ID },
+      },
+    });
+    const editor = setup(t1);
+    await editorReady(editor);
+    fireEvent.click(await screen.findByRole("button", { name: t.merge.open }));
+    expect(screen.getByRole("heading", { name: t.merge.title })).toBeTruthy();
+    // Paragraph 2 edited on both sides, 3 only the server's, 4 only mine; the heading agrees and is not asked.
+    expect(groups().map((g) => g.getAttribute("aria-label"))).toEqual([
+      t.merge.block(1),
+      t.merge.block(2),
+      t.merge.block(3),
+    ]);
+    expect(screen.getByText(t.merge.remaining(3))).toBeTruthy();
+    const apply = screen.getByRole("button", { name: t.merge.apply }) as HTMLButtonElement;
+    expect(apply.disabled).toBe(true);
+
+    // The server-only paragraph is listed where it stands on the server (after paragraph 2), then mine.
+    const [edited, onlyServer, onlyMine] = groups() as [HTMLElement, HTMLElement, HTMLElement];
+    fireEvent.click(within(edited).getByRole("button", { name: `${t.merge.mine}: Câu tôi viết` }));
+    expect(within(edited).getAllByRole("button")).toHaveLength(1); // the other side folds away
+    fireEvent.click(within(onlyMine).getByRole("button", { name: `${t.merge.mine}: Đoạn tôi thêm` }));
+    fireEvent.click(within(onlyServer).getByRole("button", { name: `${t.merge.server}: Đoạn họ thêm` }));
+    expect(screen.getByText(t.merge.resolved)).toBeTruthy();
+    fireEvent.click(apply);
+
+    expect(screen.queryByRole("heading", { name: t.merge.title })).toBeNull();
+    expect(editor.current?.getText()).toContain("Câu tôi viết");
+    expect(editor.current?.getText()).toContain("Đoạn tôi thêm");
+    expect(editor.current?.getText()).toContain("Đoạn họ thêm");
+    expect(toasts.show).toHaveBeenCalledWith("success", t.merge.applied);
+    clickSave();
+    await waitFor(() => expect(t1.updates).toHaveLength(1));
+    expect(t1.updates[0]?.calls).toContainEqual(["eq", ["revision", 7]]); // the optimistic lock is still there
+    const saved = (t1.updates[0]?.values as { body: { block_id: string }[] }).body;
+    expect(saved.map((b) => b.block_id)).toEqual([bid(1), bid(2), bid(3), bid(4)]);
+  });
+
+  it("take all theirs, or leave it for later without changing anything", async () => {
+    window.localStorage.setItem(
+      backupKey,
+      JSON.stringify({ baseRevision: 2, title: "Tên của tôi", body: MINE_BODY, savedAt: new Date().toISOString() }),
+    );
+    const editor = setup(
+      fakeClient({
+        draft: {
+          chapter_id: CHAPTER_ID,
+          title: "Chương một",
+          body: SERVER_BODY,
+          revision: 7,
+          chapter: { story_id: STORY_ID },
+        },
+      }),
+    );
+    await editorReady(editor);
+    fireEvent.click(await screen.findByRole("button", { name: t.merge.open }));
+    expect(groups()[0]?.getAttribute("aria-label")).toBe(t.merge.titleGroup); // the titles differ too
+    fireEvent.click(screen.getByRole("button", { name: t.merge.cancel }));
+    expect(screen.getByText(t.backup.title)).toBeTruthy(); // back to the banner, nothing loaded
+    expect(editor.current?.getText()).toContain("Câu họ viết");
+
+    fireEvent.click(screen.getByRole("button", { name: t.merge.open }));
+    fireEvent.click(screen.getByRole("button", { name: t.merge.allServer }));
+    fireEvent.click(screen.getByRole("button", { name: t.merge.apply }));
+    expect((screen.getByLabelText(t.chapterTitle) as HTMLInputElement).value).toBe("Chương một");
+    expect(editor.current?.getText()).not.toContain("Đoạn tôi thêm");
+  });
+
+  it("after a save conflict, 'load latest and merge' opens the merge of my text with the new server draft", async () => {
+    const row = {
+      chapter_id: CHAPTER_ID,
+      title: "Chương một",
+      body: BODY,
+      revision: 3,
+      chapter: { story_id: STORY_ID },
+    };
+    let conflictOnce = true;
+    const t1 = fakeClient({
+      draft: row,
+      updateRows: () => {
+        if (!conflictOnce) return { data: [{ revision: 6 }], error: null };
+        conflictOnce = false;
+        return { data: [], error: null };
+      },
+    });
+    const editor = setup(t1);
+    await editorReady(editor);
+    act(() => {
+      editor.current?.commands.setTextSelection(editor.current.state.doc.content.size - 1);
+      editor.current?.commands.insertContent(" của tôi");
+    });
+    clickSave();
+    expect(await screen.findByText(t.conflict.title)).toBeTruthy();
+    // Meanwhile on the server: someone rewrote paragraph 2 (revision 5).
+    Object.assign(row, {
+      revision: 5,
+      body: [BODY[0], { block_id: bid(2), type: "paragraph", text: "Một hai ba (người khác)" }],
+    });
+    fireEvent.click(screen.getByRole("button", { name: t.merge.conflictOpen }));
+    expect(await screen.findByRole("heading", { name: t.merge.title })).toBeTruthy();
+    await editorReady(editor);
+    const [only] = groups() as [HTMLElement];
+    expect(within(only).getByRole("button", { name: `${t.merge.mine}: Một hai ba của tôi` })).toBeTruthy();
+    expect(within(only).getByRole("button", { name: `${t.merge.server}: Một hai ba (người khác)` })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: t.merge.allMine }));
+    fireEvent.click(screen.getByRole("button", { name: t.merge.apply }));
+    await waitFor(() => expect(editor.current?.getText()).toContain("Một hai ba của tôi"));
+    clickSave();
+    await waitFor(() => expect(t1.updates).toHaveLength(2));
+    expect(t1.updates[1]?.calls).toContainEqual(["eq", ["revision", 5]]); // against the version it was merged with
   });
 });
 

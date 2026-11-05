@@ -17,6 +17,7 @@ improvements. Baseline: commit `204a1ea`, analysed 2026-11-04; Phase 2 product d
 | Follow a user journey across screens | [workflow-map.md](workflow-map.md) |
 | See what is broken or missing | [audits/functional-gap-analysis.md](audits/functional-gap-analysis.md), [audits/ux-ui-gap-analysis.md](audits/ux-ui-gap-analysis.md) |
 | Know how much is verified | [audits/coverage-report.md](audits/coverage-report.md) |
+| See which Lucian UX/UI elements are used (all 400 checked) | [audits/lucian-uxui-mapping.md](audits/lucian-uxui-mapping.md) |
 | Understand what the product still needs (journeys, capability gaps, benchmark) | [proposals/product-discovery.md](proposals/product-discovery.md) |
 | See how each screen should improve (mobile / tablet / desktop) | [proposals/screen-enhancements.md](proposals/screen-enhancements.md) |
 | See which decisions are approved, recommended or open | [proposals/product-decisions.md](proposals/product-decisions.md) |

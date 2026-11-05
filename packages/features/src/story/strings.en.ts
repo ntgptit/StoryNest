@@ -7,6 +7,9 @@ export const en = {
   chapterLabel: (number: number) => `Chapter ${number}`,
   words: (count: string) => `${count} words`,
   synopsisTitle: "Synopsis",
+  readMore: "Show more",
+  readLess: "Show less",
+  readingBar: { label: "Quick reading bar", chapters: "Chapters" },
   noSynopsis: "The author hasn't written a synopsis yet.",
   byAuthor: "Author",
   tagsLabel: "Tags",
@@ -34,4 +37,5 @@ export const en = {
   },
   error: { title: "Couldn't load the story", description: "Check your connection and try again.", retry: "Try again" },
   chaptersError: { title: "Couldn't load the chapter list", retry: "Try again" },
+  peek: { open: "Open story", close: "Close quick look" },
 };

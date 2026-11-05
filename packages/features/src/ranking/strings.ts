@@ -15,6 +15,14 @@ const vi = {
   endOfList: "Đã hết bảng xếp hạng.",
   empty: { title: "Chưa có xếp hạng", description: "Khi có người đọc và bình chọn, truyện sẽ xuất hiện ở đây." },
   error: { title: "Không tải được bảng xếp hạng", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
+  featured: {
+    title: "Nổi bật tuần này",
+    seeAll: "Xem bảng xếp hạng",
+    pause: "Tạm dừng tự chuyển",
+    play: "Tiếp tục tự chuyển",
+    dots: "Chọn truyện nổi bật",
+    slide: (position: number, count: number, title: string) => `Truyện ${position}/${count}: ${title}`,
+  },
 } as const;
 
 export const rankingText = defineText("ranking", vi, en);

@@ -31,12 +31,14 @@
 | SCR-STORY-01-C07 | Primary CTA | "Start reading" or "Continue reading · Chapter N" (large button-styled link) | `story-screen.tsx:105-109` |
 | SCR-STORY-01-C08 | Library actions | `StoryActions`: Follow / Following, Save to library / Saved (toggle buttons with `aria-pressed`), plus `AddToListButton`. Group label = "Sign in to follow or save stories" | `story/components/story-actions.tsx` (rules `BR-LIB-*`, `BR-LIST-*`) |
 | SCR-STORY-01-C09 | Report button | `ReportButton kind="story"`, opens the flag dialog SCR-MOD-02 (`BR-MOD-004…006`) | `story-screen.tsx:112-114` |
-| SCR-STORY-01-C10 | Synopsis | h2 "Synopsis". Text keeps line breaks; empty → "The author hasn't written a synopsis yet." | `story-screen.tsx:118-124` |
+| SCR-STORY-01-C10 | Synopsis | h2 "Synopsis". Text keeps line breaks; empty → "The author hasn't written a synopsis yet." Clamped to 6 lines with a fade and "Show more / Show less" (`ExpandableText`, Lucian #288): the toggle appears only when the text really overflows (measured), carries `aria-expanded`/`aria-controls`, and the full text stays in the DOM (SEO) | `story-screen.tsx`, `ui/widgets/expandable-text.tsx` |
 | SCR-STORY-01-C11 | Tag list | `#tag` badges linking to the home feed filtered by tag; aria-label "View stories tagged {name}" (`BR-TAX-*`) | `story-screen.tsx:125-135` |
 | SCR-STORY-01-C12 | Chapter list | h2 "Chapters" + "N chapters". Ordered list of rows: "Chapter N", title (truncated), "N words" | `story-screen.tsx:138-184` |
 | SCR-STORY-01-C13 | Similar stories | `SimilarStories` ("you may also like" with a reason) (`BR-REC-*`) | `story-screen.tsx:186` |
 | SCR-STORY-01-C14 | Skeletons | Page skeleton (cover + 3 lines) and chapter-list skeleton (3 rows), `aria-busy` | `story-screen.tsx:148-153,192-203` |
 | SCR-STORY-01-C15 | JSON-LD + metadata | `Book` structured data, canonical, robots, OG (server only) | `page.tsx:18-39,55-63` |
+| SCR-STORY-01-C16 | Share button | "Share" next to Report; not shown for a private story. Opens the share dialog (`ShareDialog`, Lucian #254): the absolute story link (canonical origin via `PlatformAdapter.shareOrigin`) in a read-only field, "Copy" that turns into a check (`CopyLinkButton`, Lucian #008, announced politely), and "Share with another app" where `navigator.share` exists | `story-screen.tsx`, `features/share/components/share-button.tsx` |
+| SCR-STORY-01-C17 | Sticky reading bar | Once C07 has scrolled up out of view a compact bar rises at the bottom (above the mobile bottom nav, safe-area aware; `StickyActionBar`, Lucian #221): title, "Chapter N · title", a "Chapters" button that opens the TOC as a bottom sheet (`TocSheet`, continue chapter marked `aria-current="step"`) and the same Start/Continue link. It slips away when C07 is visible again; while hidden it is `inert` and `aria-hidden`. Not shown without published chapters | `story-screen.tsx`, `ui/widgets/sticky-action-bar.tsx`, `reader/components/toc-sheet.tsx` |
 
 ## C. User actions & system responses
 
@@ -148,6 +150,30 @@
 | Navigation | — |
 | Evidence | `story-screen.tsx:42-51,154-159`, `story.test.tsx:310` |
 
+#### SCR-STORY-01-A11 — Share the story
+| Field | Value |
+| --- | --- |
+| Trigger | "Share" (C16), then "Copy" or "Share with another app" |
+| Preconditions | Story is not private |
+| Expected behavior | Dialog with the absolute link `https://<site>/story/{id}/{slug}`. Copy puts it on the clipboard (Clipboard API, fallback to the copy command); the button shows a check and "Copied" for 1.8 s. The share sheet gets title + link |
+| State change | None |
+| Validation | — |
+| Error behavior | Clipboard blocked → toast "Couldn't copy. Select the link and copy it yourself." (the field selects itself on focus). Share sheet dismissed → nothing; other failure → toast |
+| Navigation | — |
+| Evidence | `share-button.tsx`, `story.test.tsx` (StoryScreen sharing), `share/share.test.tsx` |
+
+#### SCR-STORY-01-A12 — Read from the sticky bar
+| Field | Value |
+| --- | --- |
+| Trigger | Scroll past C07, then press the bar's Start/Continue link or "Chapters" |
+| Preconditions | ≥ 1 published chapter; IntersectionObserver available (otherwise the bar never shows) |
+| Expected behavior | Same target as A02; "Chapters" opens the chapter list as a bottom sheet |
+| State change | None |
+| Validation | — |
+| Error behavior | — |
+| Navigation | → SCR-READ-01 |
+| Evidence | `story.test.tsx` (sticky reading bar), `ui/widgets/share-widgets.test.tsx` |
+
 #### SCR-STORY-01-A10 — Confirm age (mature story)
 | Field | Value |
 | --- | --- |
@@ -194,6 +220,9 @@
 | SCR-STORY-01-AC11 | **Given** a member **When** they press Follow **Then** the button and follower count change at once, the button is disabled until the server answers, the count then equals the server's value, and the toast confirms. **When** the server refuses **Then** both revert and an error toast explains why. |
 | SCR-STORY-01-AC12 | **Given** the story query fails **Then** "Couldn't load the story" with "Try again" is shown, and retry refetches. **Given** only the chapter list fails **Then** the story stays visible and the chapters section shows its own retry. |
 | SCR-STORY-01-AC13 | **Given** the owner's account is hidden **Then** the author line reads "Anonymous author" without a link. |
+| SCR-STORY-01-AC18 | **Given** a public or unlisted story **When** the reader presses Share **Then** the dialog shows the story's absolute canonical link and Copy turns into a check. A private story has no Share button. |
+| SCR-STORY-01-AC19 | **Given** a story with published chapters **When** the Start/Continue button scrolls up out of view **Then** a bar with the same action and a chapter picker rises above the bottom nav, and it hides again once the button is back on screen. Nothing animates on page load. |
+| SCR-STORY-01-AC20 | **Given** a synopsis longer than 6 lines **Then** it is clamped with "Show more"; a shorter one shows no toggle; the full text is always in the HTML. |
 | SCR-STORY-01-AC14 [Proposed] | **Given** the signed-in user owns the story **Then** no Report button is shown (F-STORY-01). |
 | SCR-STORY-01-AC15 [Proposed] | **Given** the follow/save state fails to load **Then** the buttons still render (default state) or offer a retry, instead of disappearing (U-STORY-01). |
 | SCR-STORY-01-AC16 [Proposed] | **Given** a story with published chapters **Then** the header shows "Updated <date>" and each chapter row shows its publish date (U-STORY-02). |

@@ -2,6 +2,7 @@ import { mergeAttributes, Node, type AnyExtension } from "@tiptap/core";
 import { UniqueID } from "@tiptap/extension-unique-id";
 import StarterKit from "@tiptap/starter-kit";
 import { BLOCK_ID_ATTRIBUTE, HEADING_LEVEL, NODE, STORAGE_KEY_ATTRIBUTE } from "./body-converter.ts";
+import { FindReplace } from "./find-replace.ts";
 
 /**
  * An uploaded picture as a block of its own. It is an atom (not editable text) holding only the storage key. When
@@ -63,5 +64,7 @@ export function editorExtensions(options: { imageUrl?: (key: string) => string |
       types: [NODE.paragraph, NODE.heading, NODE.divider, NODE.image],
       generateID: () => crypto.randomUUID(),
     }),
+    // Find and replace: decorations only, it never adds anything to the document a body would have to store.
+    FindReplace,
   ];
 }

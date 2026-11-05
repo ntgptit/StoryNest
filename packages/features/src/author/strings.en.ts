@@ -3,6 +3,8 @@ export const en = {
   stories: (n: string) => `${n} stor${n === "1" ? "y" : "ies"}`,
   storiesTitle: "Author's stories",
   noBio: "This author hasn't written a bio yet.",
+  readMore: "Show more",
+  readLess: "Show less",
   follow: "Follow",
   following: "Following",
   followedToast: "You're now following this author.",

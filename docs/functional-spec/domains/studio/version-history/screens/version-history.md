@@ -32,6 +32,7 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | SCR-HIST-01-C09 | Content view | `<article class="reader-text">` H2 title + `BlockView`s; empty note | `history-screen.tsx:260-269` |
 | SCR-HIST-01-C10 | Compare base select | Label "Compare with": "Current draft" + other versions | `history-screen.tsx:236-253` |
 | SCR-HIST-01-C11 | Diff view | Caption, summary (`aria-live`), list with Added/Removed/Changed badges, "Before:" text | `history-screen.tsx:300-338` |
+| SCR-HIST-01-C13 | Differences only and change steps (Lucian #217 / #127) | Switch "Only show changes" folds each run of unchanged paragraphs into one "N unchanged paragraphs" row (opens on its own; folded rows are `inert`); "Previous change" / "Next change" with "Change i of n" (`aria-live`) scroll to and focus each change (consecutive changed blocks count as one). No restore per change: restore still takes the whole version (`BR-HIST-006`) | `history-screen.tsx` (`DiffView`), `model/history.ts` (`groupDiff`), `packages/ui/src/widgets/diff-folds.tsx` |
 | SCR-HIST-01-C12 | Restore confirm dialog | "Restore this version to the draft?" Restore / Cancel | `history-screen.tsx:271-288` |
 
 ## C. User actions & system responses
@@ -121,6 +122,8 @@ Rules: [../business-rules.md](../business-rules.md) · Workflows: [../workflows.
 | SCR-HIST-01-AC09 | Given the restore dialog, when "Cancel" is pressed, then the draft is unchanged. | Navigation |
 | SCR-HIST-01-AC10 `[Proposed]` | Given a version whose title differs from the base, when compared, then the title change is shown. | Edge (U-HIST-01) |
 | SCR-HIST-01-AC11 `[Proposed]` | Given a restore replaced an unpublished draft, when the author regrets it, then the previous draft can be recovered (undo or automatic snapshot). | Edge (F-HIST-01) |
+| SCR-HIST-01-AC13 | Given a comparison with unchanged paragraphs, when "Only show changes" is on, then each unchanged run is one "N unchanged paragraphs" row that opens on click, and turning it off shows everything again. | Happy |
+| SCR-HIST-01-AC14 | Given two changes, when "Next change" is pressed twice, then focus moves to the first and then the second change, "Change 2 of 2" is announced and "Next change" is disabled. | Happy |
 | SCR-HIST-01-AC12 `[Proposed]` | Given the base version cannot be loaded in Compare, when the request fails, then an error with retry is shown instead of a permanent skeleton. | Error |
 
 ## F. Findings referenced

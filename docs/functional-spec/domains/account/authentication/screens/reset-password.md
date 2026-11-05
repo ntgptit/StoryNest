@@ -23,6 +23,7 @@
 | SCR-AUTH-04-C05 | New password + toggle | "New password", `autocomplete=new-password` |
 | SCR-AUTH-04-C06 | Confirm password + toggle | "Confirm password" |
 | SCR-AUTH-04-C07 | Submit | "Change password" / "Saving…" |
+| SCR-AUTH-04-C08 | Password strength meter (Lucian 036) | As SCR-AUTH-02-C11, under "New password"; advisory only (BR-AUTH-002) |
 
 ## C. User actions & system responses
 

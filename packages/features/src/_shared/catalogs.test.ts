@@ -26,6 +26,7 @@ const TRANSLATED = [
   "recommendations",
   "search",
   "settings",
+  "share",
   "shell",
   "story",
   "studio",

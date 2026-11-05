@@ -60,12 +60,19 @@ const vi = {
     deleteTitle: "Xóa danh sách này?",
     deleteDescription: "Danh sách sẽ biến mất. Các truyện trong đó không bị ảnh hưởng.",
     deleted: "Đã xóa danh sách.",
+    reorderHint: "Kéo tay nắm bên dưới mỗi truyện để đổi thứ tự, hoặc dùng nút lên/xuống.",
     moveUp: "Chuyển lên",
     moveDown: "Chuyển xuống",
     remove: "Bỏ khỏi danh sách",
     removed: "Đã bỏ khỏi danh sách.",
     cancel: "Hủy",
     backToLibrary: "Về thư viện",
+  },
+  share: {
+    access: "Ai mở được liên kết",
+    ownerDescription: "Chọn ai mở được danh sách, rồi gửi liên kết.",
+    visitorDescription: "Ai có liên kết đều mở được danh sách này.",
+    changed: (label: string) => `Đã đổi thành "${label}".`,
   },
   addTo: {
     open: "Thêm vào danh sách",
@@ -79,6 +86,8 @@ const vi = {
     removed: (name: string) => `Đã bỏ khỏi "${name}".`,
     guest: "Đăng nhập để dùng danh sách",
     error: { title: "Không tải được danh sách của bạn", retry: "Thử lại" },
+    sheetHeight: (height: "peek" | "half" | "full") =>
+      `Đổi chiều cao bảng, hiện tại: ${{ peek: "thu gọn", half: "một nửa", full: "toàn màn hình" }[height]}`,
   },
   errors: {
     forbidden: "Bạn không thể thực hiện thao tác này.",

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataClient } from "../_shared/client.ts";
 import { AuthProvider } from "../_shared/auth.tsx";
 import { DataProvider } from "../_shared/data.tsx";
@@ -23,6 +23,8 @@ import { progressText } from "../progress/index.ts";
 import { StoryScreen } from "./index.ts";
 import { recommendationText } from "../recommendations/index.ts";
 import { storyText } from "./strings.ts";
+import { readerText } from "../reader/index.ts";
+import { shareText } from "../share/index.ts";
 
 afterEach(cleanup);
 
@@ -373,5 +375,149 @@ describe("server/client boundary", () => {
     const source = readFileSync("src/story/queries.ts", "utf8");
     expect(source).not.toMatch(/^\s*["']use client["']/m);
     expect(readFileSync("src/story/hooks/use-story.ts", "utf8")).toMatch(/^"use client"/);
+  });
+});
+
+describe("StoryScreen sharing", () => {
+  it("shares the story page by its absolute link", async () => {
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: [chapterRow(1)], error: null }),
+    );
+    renderScreen(client);
+    fireEvent.click(await screen.findByRole("button", { name: shareText.open }));
+    const dialog = await screen.findByRole("dialog", { name: shareText.title("Rừng sương mù") });
+    expect((within(dialog).getByRole("textbox", { name: shareText.linkLabel }) as HTMLInputElement).value).toBe(
+      `https://app.test/story/${STORY_ID}/rung-suong-mu`,
+    );
+    expect(within(dialog).getByRole("button", { name: shareText.copy })).toBeTruthy();
+  });
+
+  it("offers no share link for a private story (only its owner and co-authors could open it)", async () => {
+    const { client } = clientFor(
+      () => ({ data: storyRow({ visibility: "private" }), error: null }),
+      () => ({ data: [chapterRow(1)], error: null }),
+    );
+    renderScreen(client);
+    await screen.findByRole("heading", { level: 1, name: "Rừng sương mù" });
+    expect(screen.queryByRole("button", { name: shareText.open })).toBeNull();
+  });
+});
+
+describe("StoryScreen synopsis", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("clamps a long synopsis with 'show more', keeping the full text in the page", async () => {
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(500);
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(120);
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: [chapterRow(1)], error: null }),
+    );
+    renderScreen(client);
+    const toggle = await screen.findByRole("button", { name: storyText.readMore });
+    const box = document.getElementById(toggle.getAttribute("aria-controls") ?? "");
+    expect(box?.textContent).toContain("Một bí mật.");
+    fireEvent.click(toggle);
+    expect(screen.getByRole("button", { name: storyText.readLess }).getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("shows a short synopsis without a toggle", async () => {
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: [chapterRow(1)], error: null }),
+    );
+    renderScreen(client);
+    expect(await screen.findByText(/Một bí mật\./)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: storyText.readMore })).toBeNull();
+  });
+});
+
+describe("StoryScreen sticky reading bar", () => {
+  /** IntersectionObserver double: lets the test say the page's own Read button scrolled away or came back. */
+  function fakeObserver() {
+    const watched: { target: Element; callback: IntersectionObserverCallback }[] = [];
+    class FakeObserver {
+      private readonly callback: IntersectionObserverCallback;
+      constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+      }
+      observe(target: Element) {
+        watched.push({ target, callback: this.callback });
+      }
+      unobserve() {}
+      disconnect() {}
+      takeRecords() {
+        return [];
+      }
+    }
+    vi.stubGlobal("IntersectionObserver", FakeObserver);
+    return (target: Element, scrolledAway: boolean) =>
+      act(() => {
+        for (const w of watched.filter((entry) => entry.target === target)) {
+          w.callback(
+            [
+              {
+                target,
+                isIntersecting: !scrolledAway,
+                boundingClientRect: { top: scrolledAway ? -120 : 300, bottom: scrolledAway ? -80 : 340 },
+                rootBounds: { top: 56 },
+              } as unknown as IntersectionObserverEntry,
+            ],
+            {} as IntersectionObserver,
+          );
+        }
+      });
+  }
+  const bar = () => document.querySelector<HTMLElement>(`[role=region][aria-label="${storyText.readingBar.label}"]`);
+
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("repeats the read button once it scrolls away, with a chapter picker, and hides again when it is back", async () => {
+    const report = fakeObserver();
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: [chapterRow(1), chapterRow(2)], error: null }),
+    );
+    renderScreen(client);
+    const start = await screen.findByRole("link", { name: storyText.startReading });
+    expect(bar()?.getAttribute("data-state")).toBe("hidden");
+    expect(bar()?.hasAttribute("inert")).toBe(true);
+
+    report(start.parentElement!, true);
+    const region = screen.getByRole("region", { name: storyText.readingBar.label });
+    expect(region.getAttribute("data-state")).toBe("visible");
+    expect(within(region).getByRole("link", { name: storyText.startReading }).getAttribute("href")).toBe(
+      `/story/${STORY_ID}/rung-suong-mu/chuong-1`,
+    );
+    expect(within(region).getByText("Rừng sương mù")).toBeTruthy();
+
+    fireEvent.click(within(region).getByRole("button", { name: storyText.readingBar.chapters }));
+    const sheet = await screen.findByRole("dialog", { name: readerText.toc.title });
+    expect(
+      within(sheet)
+        .getAllByRole("link")
+        .map((a) => a.getAttribute("href")),
+    ).toEqual([`/story/${STORY_ID}/rung-suong-mu/chuong-1`, `/story/${STORY_ID}/rung-suong-mu/chuong-2`]);
+    fireEvent.keyDown(sheet, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+    report(start.parentElement!, false);
+    expect(bar()?.getAttribute("data-state")).toBe("hidden");
+    expect(screen.getAllByRole("link", { name: storyText.startReading })).toHaveLength(1);
+  });
+
+  it("offers no bar for a story without published chapters", async () => {
+    fakeObserver();
+    const { client } = clientFor(
+      () => ({ data: storyRow(), error: null }),
+      () => ({ data: [], error: null }),
+    );
+    renderScreen(client);
+    await screen.findByText(storyText.noChaptersYet);
+    expect(bar()).toBeNull();
   });
 });

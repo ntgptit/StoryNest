@@ -38,9 +38,9 @@ Rules: [business-rules.md](business-rules.md).
 | User goal | Show a picture next to their name |
 | Trigger | "Add a profile picture" / "Change picture" on SCR-PRF-02 |
 | Preconditions | Signed in, account active (BR-PRF-008) |
-| Main flow | 1. Hidden file input opens the picker (JPEG/PNG/WebP). 2. Prepare (BR-PRF-007). 3. Upload to own folder (BR-PRF-008/009). 4. Save key, delete old (BR-PRF-010). 5. Toast "Profile picture updated."; header avatar updates |
-| Alternative flows | A1. Same file picked twice still triggers (input value reset) |
-| Exception flows | E1. Wrong type / too large / unreadable → inline error, nothing uploaded. E2. Server refuses → "The server did not accept this picture. Try another one." E3. Profile save fails → uploaded object removed, old picture kept |
+| Main flow | 1. Hidden file input opens the picker (JPEG/PNG/WebP). 2. Type and size are checked, then the crop dialog opens (round mask): drag, zoom (slider, wheel, pinch), arrows/+/−; "Use photo". 3. Prepare the chosen square (BR-PRF-007). 4. Upload to own folder (BR-PRF-008/009). 5. Save key, delete old (BR-PRF-010). 6. Toast "Profile picture updated."; header avatar updates |
+| Alternative flows | A1. Same file picked twice still triggers (input value reset). A2. "Cancel" (or Escape) in the crop dialog closes it and uploads nothing |
+| Exception flows | E1. Wrong type / too large / unreadable → inline error, no crop dialog, nothing uploaded. E2. Server refuses → "The server did not accept this picture. Try another one." E3. Profile save fails → uploaded object removed, old picture kept |
 | Success criteria | New picture shown everywhere `UserAvatar` is used |
 | Postconditions | Exactly one avatar object referenced |
 | Affected objects | OBJ-PRF |

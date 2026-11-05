@@ -12,7 +12,7 @@ import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
 import { useCreateList, useMyLists } from "../hooks/use-lists.ts";
-import { listErrorMessage } from "../model/list.ts";
+import { listErrorMessage, listHref } from "../model/list.ts";
 import { listText } from "../strings.ts";
 import { ListFormDialog } from "./list-form-dialog.tsx";
 import { currentLocale } from "../../_shared/i18n.ts";
@@ -61,7 +61,7 @@ export function MyLists({ locale = currentLocale() }: { locale?: string }) {
             return (
               <li key={list.id}>
                 <AppLink
-                  href={`/lists/${list.id}`}
+                  href={listHref(list.id)}
                   className="flex items-center justify-between gap-3 rounded-xl border bg-card p-3 text-card-foreground hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
                   <span className="min-w-0">

@@ -57,12 +57,19 @@ export const en = {
     deleteTitle: "Delete this list?",
     deleteDescription: "The list will be gone. The stories in it are not affected.",
     deleted: "List deleted.",
+    reorderHint: "Drag the handle under a story to reorder, or use the up and down buttons.",
     moveUp: "Move up",
     moveDown: "Move down",
     remove: "Remove from list",
     removed: "Removed from the list.",
     cancel: "Cancel",
     backToLibrary: "Back to library",
+  },
+  share: {
+    access: "Who can open the link",
+    ownerDescription: "Choose who can open the list, then send the link.",
+    visitorDescription: "Anyone with the link can open this list.",
+    changed: (label: string) => `Changed to "${label}".`,
   },
   addTo: {
     open: "Add to list",
@@ -76,6 +83,8 @@ export const en = {
     removed: (name: string) => `Removed from "${name}".`,
     guest: "Sign in to use lists",
     error: { title: "Couldn't load your lists", retry: "Try again" },
+    sheetHeight: (height: "peek" | "half" | "full") =>
+      `Change sheet height, now ${{ peek: "collapsed", half: "half", full: "full screen" }[height]}`,
   },
   errors: {
     forbidden: "You can't do this.",

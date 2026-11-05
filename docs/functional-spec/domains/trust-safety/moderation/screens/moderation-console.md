@@ -23,12 +23,13 @@
 | SCR-MOD-01-C01 | Page header | Title "Moderation"; description "The report queue. Every action is logged along with its reason." (`moderationText.console.title/description`) | `moderation-screen.tsx:51`, `strings.en.ts:40-41` |
 | SCR-MOD-01-C02 | Queue tabs | "Pending" (open = pending + reviewing, oldest first) / "Resolved" (resolved + dismissed, newest first) (`console.tabs.open/closed`) | `moderation-screen.tsx:52-60`, `api/moderation.api.ts:33-47` |
 | SCR-MOD-01-C03 | Report list | `InfiniteList` of cards, gap 3, "Load more" button + auto load; 20 per page | `moderation-screen.tsx:74-83`, `model/report.ts:34` |
-| SCR-MOD-01-C04 | Card header badges | Kind ("Story/Chapter/Comment/Account"), status ("Pending/Under review/Resolved/Dismissed"), reason label; "N pending reports about this item" when N > 1 | `report-card.tsx:69-78`, `strings.en.ts:54,58,68-73` |
-| SCR-MOD-01-C05 | Target preview | Title / comment excerpt (≤ 300 chars, line breaks kept); "Status: <state>" ("Visible/Hidden/Removed/Deleted/Active/Suspended/Deactivated"); "Open content" link when a target URL exists | `report-card.tsx:80-93`, `model/report.ts:121-127` |
-| SCR-MOD-01-C06 | Report details | Reporter's description (if any); "Reported by <name>" | `report-card.tsx:95-98` |
-| SCR-MOD-01-C07 | Content action buttons | One button by target + state: "Hide comment" / "Unhide comment", "Remove story" / "Restore story", "Suspend account" / "Reinstate account"; take-down buttons use the destructive variant; shown on open **and** closed reports | `report-card.tsx:100-118`, `model/report.ts:130-146` |
-| SCR-MOD-01-C08 | Report action buttons | "Under review" (pending only), "Mark as resolved", "Dismiss report" (ghost) — open reports only | `report-card.tsx:119-155` |
-| SCR-MOD-01-C09 | Reason dialog | Title = action label; label "Reason (required, will be logged)"; placeholder "Example: violates the harassment policy"; inline length error; `role="alert"` request error; "Cancel" / "Confirm" ("Working…") | `report-card.tsx:158-188`, `strings.en.ts:85-93` |
+| SCR-MOD-01-C04 | Card header badges | Kind ("Story/Chapter/Comment/Account"), status ("Pending/Under review/Resolved/Dismissed"), reason label; "N pending reports about this item" when N > 1 | `report-card.tsx:156-165`, `strings.en.ts:54,58,68-73` |
+| SCR-MOD-01-C05 | Target preview | Title / comment excerpt (≤ 300 chars, line breaks kept); "Status: <state>" ("Visible/Hidden/Removed/Deleted/Active/Suspended/Deactivated"); "Open content" link when a target URL exists | `report-card.tsx:167-180`, `model/report.ts:121-127` |
+| SCR-MOD-01-C06 | Report details | Reporter's description (if any); "Reported by <name>" | `report-card.tsx:182-185` |
+| SCR-MOD-01-C07 | Content action buttons | One button by target + state: "Hide comment" / "Unhide comment", "Remove story" / "Restore story", "Suspend account" / "Reinstate account"; take-down buttons use the destructive variant; shown on open **and** closed reports | `report-card.tsx:187-205`, `model/report.ts:130-146` |
+| SCR-MOD-01-C08 | Report action buttons | "Under review" (pending only), "Mark as resolved", "Dismiss report" (ghost) — open reports only | `report-card.tsx:206-242` |
+| SCR-MOD-01-C09 | Reason dialog | Title = action label; label "Reason (required, will be logged)"; placeholder "Example: violates the harassment policy"; inline length error; `role="alert"` request error; "Cancel" / "Confirm" ("Working…") | `report-card.tsx:245-275`, `strings.en.ts:85-93` |
+| SCR-MOD-01-C11 | Detail side panel (Lucian #273) | The report title is a button (a click on the card outside its controls too) that opens a right-hand panel (full width on phones) with the report's content, when it was reported and the same actions and reason dialog as the card; the card stays highlighted (`aria-current`). Arrows or J / K step to the next / previous loaded report ("i of n"), Esc or the close button closes. J/K are ignored while typing or in the reason dialog. A report that leaves the queue after an action is replaced by the one that took its place | `moderation-screen.tsx`, `components/report-card.tsx` (`variant="panel"`), `packages/ui/src/widgets/detail-panel.tsx` |
 | SCR-MOD-01-C10 | Status views | Skeleton (`aria-busy`), error state, empty text, client-only sign-in prompt / "no access" empty state | `moderation-screen.tsx:24-40,62-73` |
 
 ## C. User actions & system responses
@@ -177,6 +178,8 @@
 - **SCR-MOD-01-AC13** `[Proposed]` Given any card, then it shows when the report was filed and, for comments, who wrote the comment; closed cards show who closed them and when (U-MOD-01).
 - **SCR-MOD-01-AC14** `[Proposed]` Given a destructive action dialog, then it states the consequence (e.g. "The account will no longer be able to post, comment or report") before Confirm (U-MOD-01).
 - **SCR-MOD-01-AC15** `[Proposed]` Given the console, when the moderator filters by status (pending / under review / resolved / dismissed) or target kind, then only matching reports are listed and the filter is kept in the URL (U-MOD-02).
+- **SCR-MOD-01-AC17** Given three open reports, when I open the second, then the panel shows "2 of 3" with its actions; J shows the third, K twice the first, Esc closes the panel and no card is highlighted any more.
+- **SCR-MOD-01-AC18** Given the panel is open, when I resolve the report (with a reason), then the panel moves on to the report now at its place in the queue.
 - **SCR-MOD-01-AC16** `[Proposed]` Given a target, when the moderator opens its history, then the audit rows for that target are listed with actor, action, reason and time (F-MOD-07).
 
 ## F. Findings referenced

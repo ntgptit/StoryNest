@@ -1,14 +1,17 @@
 "use client";
 
-import { BookOpen, FileQuestion, Heart, MessageCircle, Users } from "lucide-react";
+import { BookOpen, FileQuestion, Heart, List, MessageCircle, Users } from "lucide-react";
+import { useRef } from "react";
+import { VISIBILITY } from "@storynest/validation";
 import { Badge } from "@storynest/ui/components/badge";
-import { buttonVariants } from "@storynest/ui/components/button";
+import { Button, buttonVariants } from "@storynest/ui/components/button";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
+import { ExpandableText } from "@storynest/ui/widgets/expandable-text";
+import { StickyActionBar } from "@storynest/ui/widgets/sticky-action-bar";
 import { StatPill } from "@storynest/ui/widgets/stat-pill";
 import { StoryCover } from "@storynest/ui/widgets/story-cover";
-import { cn } from "@storynest/ui/lib/utils";
 import { formatCount } from "@storynest/utils";
 import { AppLink } from "../../_shared/platform.tsx";
 import { progressText, resolveContinueChapter, useStoryProgress } from "../../progress/index.ts";
@@ -16,14 +19,19 @@ import { AdultGate } from "../../adult-content/index.ts";
 import { authorHref } from "../../author/index.ts";
 import { SimilarStories } from "../../recommendations/index.ts";
 import { ReportButton } from "../../moderation/index.ts";
-import { discoveryText, homeHref, statusLabel } from "../../discovery/index.ts";
+import { discoveryText, homeHref, statusLabel, storyHref } from "../../discovery/index.ts";
+import { TocSheet } from "../../reader/index.ts";
+import { ShareButton, shareText } from "../../share/index.ts";
 import { useStory, useStoryChapters } from "../hooks/use-story.ts";
 import { StoryActions } from "../components/story-actions.tsx";
 import { chapterHref } from "../model/story-detail.ts";
 import { storyText } from "../strings.ts";
 import { currentLocale } from "../../_shared/i18n.ts";
 
-/** Story page: cover, facts, synopsis, tags and the list of published chapters with a "start reading" button. */
+/**
+ * Story page: cover, facts, synopsis (clamped, with read more), tags and the list of published chapters with a
+ * "start reading" button. Once that button scrolls away a sticky bar repeats it, with a chapter picker beside it.
+ */
 export function StoryScreen({
   storyId,
   locale = currentLocale(),
@@ -37,6 +45,7 @@ export function StoryScreen({
   const story = useStory(storyId);
   const chapters = useStoryChapters(storyId);
   const progress = useStoryProgress(storyId);
+  const readRef = useRef<HTMLDivElement>(null);
 
   if (story.isPending) return <StorySkeleton />;
   if (story.isError) {
@@ -61,12 +70,13 @@ export function StoryScreen({
   const continueChapter = resolveContinueChapter(chapterItems, progress.data);
   const readFrom = continueChapter ?? firstChapter;
   const coverUrl = data.coverStorageKey && coverUrlFor ? coverUrlFor(data.coverStorageKey) : null;
+  const readLabel = continueChapter ? progressText.continueReading(continueChapter.number) : storyText.startReading;
 
   return (
     <AdultGate isMature={data.isMature}>
       <article className="flex flex-col gap-8">
         <header className="grid gap-6 sm:grid-cols-[12rem_1fr]">
-          <StoryCover title={data.title} coverUrl={coverUrl} eager className="mx-auto w-40 sm:w-full" />
+          <StoryCover title={data.title} coverUrl={coverUrl} eager morphTarget className="mx-auto w-40 sm:w-full" />
 
           <div className="flex flex-col gap-3">
             <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{data.title}</h1>
@@ -103,13 +113,19 @@ export function StoryScreen({
             </div>
 
             {readFrom ? (
-              <AppLink href={chapterHref(data, readFrom)} className={cn(buttonVariants({ size: "lg" }), "w-fit")}>
-                {continueChapter ? progressText.continueReading(continueChapter.number) : storyText.startReading}
-              </AppLink>
+              <div ref={readRef} className="w-fit">
+                <AppLink href={chapterHref(data, readFrom)} className={buttonVariants({ size: "lg" })}>
+                  {readLabel}
+                </AppLink>
+              </div>
             ) : null}
 
             <StoryActions storyId={data.id} />
-            <div>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* A private story only opens for its owner and co-authors: a link to it is no use to anyone else. */}
+              {data.visibility === VISIBILITY.PRIVATE ? null : (
+                <ShareButton path={storyHref(data)} name={data.title} description={shareText.story.description} />
+              )}
               <ReportButton kind="story" targetId={data.id} />
             </div>
           </div>
@@ -119,9 +135,17 @@ export function StoryScreen({
           <h2 id="synopsis-title" className="text-lg font-semibold">
             {storyText.synopsisTitle}
           </h2>
-          <p className="max-w-prose text-sm leading-relaxed whitespace-pre-line text-foreground/90">
-            {data.synopsis.trim() === "" ? storyText.noSynopsis : data.synopsis}
-          </p>
+          {data.synopsis.trim() === "" ? (
+            <p className="max-w-prose text-sm leading-relaxed text-foreground/90">{storyText.noSynopsis}</p>
+          ) : (
+            <ExpandableText
+              moreLabel={storyText.readMore}
+              lessLabel={storyText.readLess}
+              className="max-w-prose text-sm leading-relaxed whitespace-pre-line text-foreground/90"
+            >
+              {data.synopsis}
+            </ExpandableText>
+          )}
           {data.tags.length > 0 ? (
             <ul aria-label={storyText.tagsLabel} className="flex flex-wrap gap-1.5 pt-1">
               {data.tags.map((tag) => (
@@ -184,6 +208,34 @@ export function StoryScreen({
         </section>
 
         <SimilarStories storyId={storyId} locale={locale} coverUrlFor={coverUrlFor} />
+
+        {readFrom ? (
+          <StickyActionBar anchorRef={readRef} label={storyText.readingBar.label}>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate text-sm font-semibold">{data.title}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {storyText.chapterLabel(readFrom.number)}
+                {readFrom.title ? ` · ${readFrom.title}` : ""}
+              </span>
+            </div>
+            <TocSheet
+              story={data}
+              chapters={chapterItems}
+              currentSlug={continueChapter?.slug}
+              currentKind="step"
+              side="bottom"
+              trigger={
+                <Button type="button" variant="outline" className="px-3">
+                  <List aria-hidden />
+                  <span className="sr-only sm:not-sr-only">{storyText.readingBar.chapters}</span>
+                </Button>
+              }
+            />
+            <AppLink href={chapterHref(data, readFrom)} className={buttonVariants()}>
+              {readLabel}
+            </AppLink>
+          </StickyActionBar>
+        ) : null}
       </article>
     </AdultGate>
   );
