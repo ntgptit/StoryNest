@@ -2513,6 +2513,7 @@ export type Database = {
         Args: { p_event_type: string; p_user_id: string }
         Returns: boolean
       }
+      ping: { Args: Record<PropertyKey, never>; Returns: string }
       popular_tags: {
         Args: { p_limit?: number }
         Returns: {
