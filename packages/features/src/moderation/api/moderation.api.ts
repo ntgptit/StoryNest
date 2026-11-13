@@ -10,6 +10,7 @@ import {
   type ReportRow,
   type ReportTarget,
 } from "../model/report.ts";
+import { MY_REPORTS_LIMIT, toMyReport, type MyReport, type MyReportRow } from "../model/my-reports.ts";
 
 /** Sends a report. Reporting the same open thing again returns the first report, so a retry cannot double up. */
 export async function submitReport(
@@ -71,4 +72,19 @@ export async function resolveReport(
       p_reason: input.reason.trim(),
     }),
   );
+}
+
+/** The reports this account sent, newest first. Row level security already limits the table to the reporter's own. */
+export async function listMyReports(client: DataClient, userId: string): Promise<MyReport[]> {
+  const rows =
+    unwrap(
+      await client
+        .from("content_reports")
+        .select("id, status, reason, created_at, story_id, chapter_id, comment_id, reported_user_id")
+        .eq("reporter_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(MY_REPORTS_LIMIT)
+        .returns<MyReportRow[]>(),
+    ) ?? [];
+  return rows.flatMap((row) => toMyReport(row) ?? []);
 }

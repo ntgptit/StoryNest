@@ -298,7 +298,11 @@ describe("ReportButton", () => {
         p_description: "lăng mạ",
       }),
     );
-    await waitFor(() => expect(toasts.show).toHaveBeenCalledWith("success", t.report.sent));
+    await waitFor(() =>
+      expect(toasts.show).toHaveBeenCalledWith("success", t.report.sent, {
+        action: { label: t.report.viewMine, onClick: expect.any(Function) },
+      }),
+    );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 

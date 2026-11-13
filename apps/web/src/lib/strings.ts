@@ -20,6 +20,7 @@ export const appText = {
     ranking: "Xếp hạng",
     author: "Tác giả",
     following: "Từ tác giả bạn theo dõi",
+    myReports: "Báo cáo của tôi",
     notifications: "Thông báo",
     settings: "Cài đặt",
     moderation: "Kiểm duyệt",

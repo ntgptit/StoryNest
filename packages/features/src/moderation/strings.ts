@@ -46,6 +46,8 @@ const vi = {
     submitting: "Đang gửi…",
     cancel: "Hủy",
     sent: "Đã gửi báo cáo. Cảm ơn bạn.",
+    viewMine: "Xem báo cáo của tôi",
+    reported: "Đã báo cáo",
     kinds: {
       story: "truyện",
       chapter: "chương",
@@ -69,6 +71,20 @@ const vi = {
       rateLimited: "Bạn đã gửi quá nhiều báo cáo hôm nay. Hãy thử lại sau.",
       network: "Không có kết nối. Kiểm tra mạng và thử lại.",
       generic: "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    },
+  },
+  mine: {
+    title: "Báo cáo của tôi",
+    description: "Các báo cáo bạn đã gửi và kết quả. Chúng tôi không nêu tên người xử lý.",
+    error: { title: "Không tải được báo cáo", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
+    empty: { title: "Bạn chưa gửi báo cáo nào", description: "Báo cáo bạn gửi sẽ hiện ở đây cùng trạng thái xử lý." },
+    listLabel: "Danh sách báo cáo của tôi",
+    sentAt: (relative: string) => `Gửi ${relative}`,
+    status: {
+      pending: "Đang chờ xử lý",
+      reviewing: "Đang được xem xét",
+      resolved: "Đã đóng: đã xử lý",
+      dismissed: "Đã đóng: không phát hiện vi phạm",
     },
   },
   console: {

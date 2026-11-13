@@ -1,12 +1,13 @@
 "use client";
 
-import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import type { ModerationAction, ReportReason, ReportStatus } from "@storynest/validation";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
-import { listReports, moderate, resolveReport, submitReport } from "../api/moderation.api.ts";
+import { listMyReports, listReports, moderate, resolveReport, submitReport } from "../api/moderation.api.ts";
 import { moderationKeys } from "../keys.ts";
+import { isOpenReport, type MyReport } from "../model/my-reports.ts";
 import { reportCursorAfter, type QueueFilter, type ReportPage, type ReportTarget } from "../model/report.ts";
 
 type Pages = InfiniteData<ReportPage, { createdAt: string; id: string } | undefined>;
@@ -17,8 +18,29 @@ export function useIsModerator(): boolean {
   return auth.status === "authenticated" && auth.user.app_metadata?.role === "moderator";
 }
 
+/** The signed-in account's own reports, for the "Reported" state and the My reports page. Idle for guests. */
+export function useMyReports() {
+  const getClient = useDataClientGetter();
+  const auth = useAuth();
+  const userId = auth.status === "authenticated" ? auth.user.id : null;
+  return useQuery<MyReport[], AppError>({
+    queryKey: moderationKeys.mine(userId ?? "none"),
+    queryFn: () => listMyReports(getClient(), userId ?? "").catch((e: unknown) => Promise.reject(toAppError(e))),
+    enabled: userId !== null,
+  });
+}
+
+/** Whether the account already has an open report of this thing (then the button says so). */
+export function useHasOpenReport(kind: ReportTarget, targetId: string): boolean {
+  const reports = useMyReports();
+  return (reports.data ?? []).some(
+    (report) => report.kind === kind && report.targetId === targetId && isOpenReport(report),
+  );
+}
+
 export function useSubmitReport() {
   const getClient = useDataClientGetter();
+  const queryClient = useQueryClient();
   return useMutation<
     string,
     AppError,
@@ -31,6 +53,7 @@ export function useSubmitReport() {
         throw toAppError(error);
       }
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [...moderationKeys.all, "mine"] }),
   });
 }
 
