@@ -19,7 +19,7 @@ import { cn } from "@storynest/ui/lib/utils";
 import { currentLocale } from "../../_shared/i18n.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
-import { useModerate, useResolveReport } from "../hooks/use-moderation.ts";
+import { useModerate, useResolveReport, useTargetHistory } from "../hooks/use-moderation.ts";
 import {
   actionErrorMessage,
   actionTargetId,
@@ -158,6 +158,8 @@ export function ReportCard({
         {panel ? ` · ${t.panel.reportedAt(formatRelativeTime(report.createdAt, currentLocale()))}` : null}
       </p>
 
+      {panel ? <TargetHistory targetId={actionTargetId(report)} /> : null}
+
       <div className="flex flex-wrap gap-2">
         {contentActions(report).map((action) => (
           <Button
@@ -249,5 +251,47 @@ export function ReportCard({
         </DialogContent>
       </Dialog>
     </Root>
+  );
+}
+
+/** What moderators already did about this item, so a reversal or an appeal can be judged (loaded on request). */
+function TargetHistory({ targetId }: { targetId: string }) {
+  const [open, setOpen] = useState(false);
+  const history = useTargetHistory(targetId, open);
+  return (
+    <div className="flex flex-col gap-2">
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        className="w-fit"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        {open ? t.history.hide : t.history.show}
+      </Button>
+      {open ? (
+        history.isError ? (
+          <p role="alert" className="text-xs text-destructive">
+            {t.history.error}
+          </p>
+        ) : history.isPending ? null : history.data.length === 0 ? (
+          <p className="text-xs text-muted-foreground">{t.history.empty}</p>
+        ) : (
+          <ul aria-label={t.history.title} className="flex flex-col gap-1.5 text-xs">
+            {history.data.map((entry) => (
+              <li key={entry.id} className="rounded-md border p-2">
+                <span className="font-medium">{t.actions[entry.action]}</span>
+                <span className="text-muted-foreground">
+                  {" · "}
+                  {t.history.moderator} · {formatRelativeTime(entry.createdAt, currentLocale())}
+                </span>
+                <p className="whitespace-pre-line break-words text-muted-foreground">{entry.reason}</p>
+              </li>
+            ))}
+          </ul>
+        )
+      ) : null}
+    </div>
   );
 }

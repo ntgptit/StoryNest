@@ -5,9 +5,17 @@ import type { ModerationAction, ReportReason, ReportStatus } from "@storynest/va
 import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
-import { listMyReports, listReports, moderate, resolveReport, submitReport } from "../api/moderation.api.ts";
+import {
+  listMyReports,
+  listTargetHistory,
+  listReports,
+  moderate,
+  resolveReport,
+  submitReport,
+} from "../api/moderation.api.ts";
 import { moderationKeys } from "../keys.ts";
 import { isOpenReport, type MyReport } from "../model/my-reports.ts";
+import type { TargetAction } from "../model/target-history.ts";
 import { reportCursorAfter, type QueueFilter, type ReportPage, type ReportTarget } from "../model/report.ts";
 
 type Pages = InfiniteData<ReportPage, { createdAt: string; id: string } | undefined>;
@@ -31,6 +39,17 @@ export function useMyReports() {
 }
 
 /** Whether the account already has an open report of this thing (then the button says so). */
+/** The moderation history of one target. Loaded only when asked for (the panel's "show history"). */
+export function useTargetHistory(targetId: string, enabled: boolean) {
+  const getClient = useDataClientGetter();
+  return useQuery<TargetAction[], AppError>({
+    queryKey: moderationKeys.history(targetId),
+    queryFn: () => listTargetHistory(getClient(), targetId).catch((e: unknown) => Promise.reject(toAppError(e))),
+    enabled,
+    staleTime: 0,
+  });
+}
+
 export function useHasOpenReport(kind: ReportTarget, targetId: string): boolean {
   const reports = useMyReports();
   return (reports.data ?? []).some(
