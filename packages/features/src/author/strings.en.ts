@@ -5,9 +5,9 @@ export const en = {
   noBio: "This author hasn't written a bio yet.",
   readMore: "Show more",
   readLess: "Show less",
-  follow: "Follow",
-  following: "Following",
-  followedToast: "You're now following this author.",
+  follow: "Follow author",
+  following: "Following author",
+  followedToast: "New stories from this author will appear under From authors you follow.",
   unfollowedToast: "Unfollowed.",
   emptyStories: {
     title: "No public stories yet",

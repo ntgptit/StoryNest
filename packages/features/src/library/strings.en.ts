@@ -1,8 +1,8 @@
 export const en = {
   title: "Library",
-  description: "Stories you're reading, have saved and are following.",
+  description: "Stories you're reading, have saved and get new-chapter notifications for.",
   tabsLabel: "Library sections",
-  tabs: { reading: "Reading", saved: "Saved", following: "Following", lists: "Lists" },
+  tabs: { reading: "Reading", saved: "Saved", following: "Notifications", lists: "Lists" },
   listLabel: (tab: string) => `${tab} stories`,
   empty: {
     reading: {
@@ -11,8 +11,8 @@ export const en = {
     },
     saved: { title: "No saved stories yet", description: 'Tap "Save to library" on a story page to keep it.' },
     following: {
-      title: "You aren't following any stories yet",
-      description: "Follow a story to get notified when there's a new chapter.",
+      title: "No stories with notifications on",
+      description: 'Tap "Get new chapters" on a story page to be told about new chapters.',
     },
   },
   error: {
@@ -25,11 +25,11 @@ export const en = {
   loadMore: "Load more",
   readAt: (relative: string) => `Read ${relative}`,
   savedAt: (relative: string) => `Saved ${relative}`,
-  followedAt: (relative: string) => `Followed ${relative}`,
-  remove: { reading: "Remove from reading", saved: "Unsave", following: "Unfollow" },
-  removed: { reading: "Removed from your reading list.", saved: "Unsaved.", following: "Unfollowed." },
+  followedAt: (relative: string) => `Notifications on ${relative}`,
+  remove: { reading: "Remove from reading", saved: "Unsave", following: "Turn off notifications" },
+  removed: { reading: "Removed from Reading.", saved: "Unsaved.", following: "Notifications turned off." },
   undo: "Undo",
-  restored: { saved: "Saved again.", following: "Following again." },
+  restored: { saved: "Saved again.", following: "Notifications on again." },
   unavailable: {
     title: "Story no longer available",
     description: "The story was deleted, made private, or you no longer have permission to view it.",

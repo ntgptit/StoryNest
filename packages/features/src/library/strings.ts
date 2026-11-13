@@ -4,16 +4,16 @@ import { en } from "./strings.en.ts";
 
 const vi = {
   title: "Thư viện",
-  description: "Truyện bạn đang đọc, đã lưu và đang theo dõi.",
+  description: "Truyện bạn đang đọc, đã lưu và đang nhận thông báo chương mới.",
   tabsLabel: "Các phần của thư viện",
-  tabs: { reading: "Đang đọc", saved: "Đã lưu", following: "Đang theo dõi", lists: "Danh sách" },
+  tabs: { reading: "Đang đọc", saved: "Đã lưu", following: "Thông báo", lists: "Danh sách" },
   listLabel: (tab: string) => `Truyện ${tab.toLowerCase()}`,
   empty: {
     reading: { title: "Bạn chưa đọc truyện nào", description: "Truyện bạn mở đọc sẽ xuất hiện ở đây để đọc tiếp." },
     saved: { title: "Chưa có truyện nào được lưu", description: 'Bấm "Lưu vào thư viện" ở trang truyện để giữ lại.' },
     following: {
-      title: "Bạn chưa theo dõi truyện nào",
-      description: "Theo dõi một truyện để nhận thông báo khi có chương mới.",
+      title: "Chưa có truyện nào bật thông báo",
+      description: 'Bấm "Nhận chương mới" ở trang truyện để được báo khi có chương mới.',
     },
   },
   error: { title: "Không tải được thư viện", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
@@ -22,11 +22,11 @@ const vi = {
   loadMore: "Tải thêm",
   readAt: (relative: string) => `Đọc ${relative}`,
   savedAt: (relative: string) => `Lưu ${relative}`,
-  followedAt: (relative: string) => `Theo dõi ${relative}`,
-  remove: { reading: "Xóa khỏi đang đọc", saved: "Bỏ lưu", following: "Bỏ theo dõi" },
-  removed: { reading: "Đã xóa khỏi danh sách đang đọc.", saved: "Đã bỏ lưu.", following: "Đã bỏ theo dõi." },
+  followedAt: (relative: string) => `Bật thông báo ${relative}`,
+  remove: { reading: "Xóa khỏi đang đọc", saved: "Bỏ lưu", following: "Tắt thông báo" },
+  removed: { reading: "Đã xóa khỏi mục Đang đọc.", saved: "Đã bỏ lưu.", following: "Đã tắt thông báo." },
   undo: "Hoàn tác",
-  restored: { saved: "Đã lưu lại.", following: "Đã theo dõi lại." },
+  restored: { saved: "Đã lưu lại.", following: "Đã bật lại thông báo." },
   unavailable: {
     title: "Truyện không còn khả dụng",
     description: "Truyện đã bị xóa, đã chuyển sang riêng tư hoặc bạn không còn quyền xem.",
