@@ -102,8 +102,17 @@ BEGIN
   PERFORM tests.ok('a co-author sees it too, to be able to show it again', (SELECT status = 'author_hidden' AND body = 'Bình luận một' FROM public.list_comments(ch) WHERE id = k1));
   RESET ROLE; PERFORM tests.act_as(e);
   PERFORM tests.ok('an editor sees only the placeholder', (SELECT status = 'deleted' AND body IS NULL FROM public.list_comments(ch) WHERE id = k1));
-  RESET ROLE; PERFORM tests.act_as(NULL, 'authenticated', 'moderator');
-  PERFORM tests.ok('the margin counts do not include it for others', true);
+  -- the margin (per-paragraph) counts: a comment anchored to a paragraph that the author hid is not counted for others
+  RESET ROLE; PERFORM tests.act_as(r);
+  PERFORM public.post_comment('f6000000-0000-4000-8000-0000000000c1', ch, '36000000-0000-0000-0000-000000000001', NULL, 'Ở đoạn một');
+  RESET ROLE; PERFORM tests.act_as(x);
+  PERFORM tests.ok('the margin count shows the paragraph comment while it is visible',
+    (SELECT comment_count = 1 FROM public.comment_counts_by_block(ch) WHERE block_id = '36000000-0000-0000-0000-000000000001'));
+  RESET ROLE; PERFORM tests.act_as(o);
+  PERFORM tests.ok('the author hides it', public.set_comment_hidden('f6000000-0000-4000-8000-0000000000c1', true) = 'author_hidden');
+  RESET ROLE; PERFORM tests.act_as(x);
+  PERFORM tests.ok('the margin counts do not include it for others',
+    NOT EXISTS (SELECT 1 FROM public.comment_counts_by_block(ch) WHERE block_id = '36000000-0000-0000-0000-000000000001'));
 
   -- 4. a co-author shows it again ------------------------------------------------------------------------------------------
   RESET ROLE; PERFORM tests.act_as(c);

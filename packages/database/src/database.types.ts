@@ -794,6 +794,7 @@ export type Database = {
           chapter_id: string
           created_at: string
           deleted_at: string | null
+          edited_at: string | null
           id: string
           parent_comment_id: string | null
           status: string
@@ -811,6 +812,7 @@ export type Database = {
           chapter_id: string
           created_at?: string
           deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           parent_comment_id?: string | null
           status?: string
@@ -823,6 +825,7 @@ export type Database = {
           chapter_id?: string
           created_at?: string
           deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           parent_comment_id?: string | null
           status?: string
