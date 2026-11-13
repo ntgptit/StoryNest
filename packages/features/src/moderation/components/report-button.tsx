@@ -19,7 +19,8 @@ import { REPORT_REASONS, type ReportReason } from "@storynest/validation";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useNavigation } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
-import { useSubmitReport } from "../hooks/use-moderation.ts";
+import { useHasOpenReport, useSubmitReport } from "../hooks/use-moderation.ts";
+import { MY_REPORTS_HREF } from "../model/my-reports.ts";
 import { REPORT_DETAILS_MAX_LENGTH, reportErrorMessage, type ReportTarget } from "../model/report.ts";
 import { moderationText } from "../strings.ts";
 
@@ -50,6 +51,7 @@ export function ReportButton({
   const navigation = useNavigation();
   const toast = useAppToast();
   const submit = useSubmitReport();
+  const alreadyReported = useHasOpenReport(kind, targetId);
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason | "">("");
   const [details, setDetails] = useState("");
@@ -72,12 +74,22 @@ export function ReportButton({
       { kind, targetId, reason, description: details },
       {
         onSuccess: () => {
-          toast.success(t.sent);
+          toast.success(t.sent, { action: { label: t.viewMine, onClick: () => navigation.push(MY_REPORTS_HREF) } });
           close();
         },
       },
     );
   };
+
+  // An open report of this thing already exists: say so instead of offering the form again.
+  if (alreadyReported) {
+    return (
+      <Button type="button" variant={variant} size="sm" aria-label={`${t.reported} ${t.kinds[kind]}`} disabled>
+        <Flag aria-hidden className="size-4 fill-current" />
+        {t.reported}
+      </Button>
+    );
+  }
 
   return (
     <>

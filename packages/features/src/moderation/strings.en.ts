@@ -41,6 +41,8 @@ export const en = {
     submitting: "Sending…",
     cancel: "Cancel",
     sent: "Report sent. Thank you.",
+    viewMine: "View my reports",
+    reported: "Reported",
     kinds: {
       story: "story",
       chapter: "chapter",
@@ -64,6 +66,20 @@ export const en = {
       rateLimited: "You've sent too many reports today. Please try again later.",
       network: "No connection. Check your network and try again.",
       generic: "Something went wrong. Please try again.",
+    },
+  },
+  mine: {
+    title: "My reports",
+    description: "The reports you sent and what became of them. The moderator's name is never shown.",
+    error: { title: "Couldn't load your reports", description: "Check your connection and try again.", retry: "Retry" },
+    empty: { title: "You haven't sent any reports", description: "Reports you send appear here with their status." },
+    listLabel: "My reports",
+    sentAt: (relative: string) => `Sent ${relative}`,
+    status: {
+      pending: "Waiting for review",
+      reviewing: "Being reviewed",
+      resolved: "Closed: action taken",
+      dismissed: "Closed: no violation found",
     },
   },
   console: {
