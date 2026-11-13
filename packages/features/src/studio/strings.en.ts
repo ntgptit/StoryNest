@@ -290,6 +290,7 @@ export const en = {
     },
   },
   edit: "Edit",
+  continueWriting: "Continue writing",
   deleted: {
     title: "Deleted stories",
     toggleShow: (count: number) => `Show deleted stories (${count})`,

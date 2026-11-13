@@ -64,8 +64,16 @@ function StudioStoryRow({
           {studioText.updated(formatRelativeTime(story.updatedAt, locale))}
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
-          {story.role !== "editor" ? (
+          {story.lastChapterId ? (
             <Button asChild size="sm">
+              <AppLink href={`/studio/story/${story.id}/chapter/${story.lastChapterId}`}>
+                <PenLine aria-hidden className="size-4" />
+                {studioText.continueWriting}
+              </AppLink>
+            </Button>
+          ) : null}
+          {story.role !== "editor" ? (
+            <Button asChild size="sm" variant={story.lastChapterId ? "outline" : "default"}>
               <AppLink href={`/studio/story/${story.id}`}>
                 <PenLine aria-hidden className="size-4" />
                 {studioText.edit}

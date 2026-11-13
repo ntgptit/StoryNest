@@ -146,7 +146,7 @@ function fakeClient(options: {
     const calls: Call[] = [];
     let updateValues: unknown;
     const builder: Record<string, unknown> = {};
-    for (const method of ["select", "eq", "is", "order", "returns"]) {
+    for (const method of ["select", "eq", "is", "order", "limit", "returns"]) {
       builder[method] = (...args: unknown[]) => {
         calls.push([method, args]);
         return builder;

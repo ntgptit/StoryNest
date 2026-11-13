@@ -10,7 +10,7 @@ import {
 } from "../model/studio-story.ts";
 
 const STORY_COLUMNS =
-  "id, slug, title, status, visibility, is_mature, cover_storage_key, updated_at, published:chapters(count)";
+  "id, slug, title, status, visibility, is_mature, cover_storage_key, updated_at, published:chapters(count), latest:chapters(id)";
 
 /**
  * The `published` embed counts only chapters readers can open (published and not deleted), not every chapter the
@@ -29,6 +29,9 @@ export async function listMyStories(client: DataClient, userId: string): Promise
       .is("deleted_at", null)
       .eq("published.status", CHAPTER_STATUS.PUBLISHED)
       .is("published.deleted_at", null)
+      .is("latest.deleted_at", null)
+      .order("updated_at", { referencedTable: "latest", ascending: false })
+      .limit(1, { referencedTable: "latest" })
       .returns<StudioStoryRow[]>(),
     client
       .from("story_collaborators")
@@ -37,6 +40,9 @@ export async function listMyStories(client: DataClient, userId: string): Promise
       .is("story.deleted_at", null)
       .eq("story.published.status", CHAPTER_STATUS.PUBLISHED)
       .is("story.published.deleted_at", null)
+      .is("story.latest.deleted_at", null)
+      .order("updated_at", { referencedTable: "story.latest", ascending: false })
+      .limit(1, { referencedTable: "story.latest" })
       .returns<{ collaborator_role: string; story: StudioStoryRow }[]>(),
   ]);
 

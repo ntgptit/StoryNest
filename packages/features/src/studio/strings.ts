@@ -281,6 +281,7 @@ const vi = {
     },
   },
   edit: "Chỉnh sửa",
+  continueWriting: "Viết tiếp",
   deleted: {
     title: "Truyện đã xóa",
     toggleShow: (count: number) => `Hiện truyện đã xóa (${count})`,
