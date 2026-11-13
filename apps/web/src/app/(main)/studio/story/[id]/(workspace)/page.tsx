@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { requireUuidParams } from "@/lib/route-params";
 import { appText } from "@/lib/strings";
 
-import { StoryFormView } from "../../story-form-view";
+import { StoryFormView } from "../../../story-form-view";
 
 export const metadata: Metadata = { title: appText.pageTitle.editStory, robots: { index: false } };
 

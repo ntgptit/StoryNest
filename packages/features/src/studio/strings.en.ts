@@ -17,6 +17,10 @@ export const en = {
   },
   listLabel: "My stories",
   create: "Write a new story",
+  workspace: {
+    label: "Story workspace",
+    tabs: { details: "Details", chapters: "Chapters", team: "Team", stats: "Stats" },
+  },
   crumbs: {
     label: "Location in Studio",
     switchStory: "Switch to another story",
