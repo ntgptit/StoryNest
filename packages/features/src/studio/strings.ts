@@ -14,6 +14,10 @@ const vi = {
   error: { title: "Không tải được danh sách truyện", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   listLabel: "Truyện của tôi",
   create: "Viết truyện mới",
+  workspace: {
+    label: "Không gian làm việc của truyện",
+    tabs: { details: "Thông tin", chapters: "Chương", team: "Nhóm", stats: "Thống kê" },
+  },
   crumbs: {
     label: "Vị trí trong Studio",
     switchStory: "Chuyển sang truyện khác",

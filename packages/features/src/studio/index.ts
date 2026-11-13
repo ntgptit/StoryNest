@@ -3,4 +3,5 @@ export { StudioScreen } from "./screens/studio-screen.tsx";
 export { StoryFormScreen } from "./screens/story-form-screen.tsx";
 export { ChapterManagerScreen } from "./screens/chapter-manager-screen.tsx";
 export { studioText } from "./strings.ts";
+export { StoryWorkspaceNav } from "./components/story-workspace-nav.tsx";
 export { TeamScreen } from "./screens/team-screen.tsx";
