@@ -164,6 +164,23 @@ describe("story write api", () => {
     expect(error).toBeDefined();
   });
 
+  it("treats a retry of an insert that already succeeded as success, but a real duplicate slug as a conflict", async () => {
+    const duplicate = { data: null, error: { code: "23505", message: "duplicate key", status: 409 } };
+    const retried = fakeClient((_table, calls) =>
+      calls.some(([m]) => m === "maybeSingle") ? { data: { id: STORY_ID }, error: null } : duplicate,
+    );
+    expect(await createStory(retried as unknown as DataClient, TEST_USER_ID, STORY_ID, FORM)).toBe(STORY_ID);
+    expect(retried.callsOf("stories", "eq")).toContainEqual(["owner_id", TEST_USER_ID]);
+
+    const realDuplicate = fakeClient((_table, calls) =>
+      calls.some(([m]) => m === "maybeSingle") ? { data: null, error: null } : duplicate,
+    );
+    const error = await createStory(realDuplicate as unknown as DataClient, TEST_USER_ID, STORY_ID, FORM).catch(
+      (e: unknown) => e,
+    );
+    expect(isSlugTaken(error as AppError)).toBe(true);
+  });
+
   it("updates by id and treats zero matched rows as not found (not editable)", async () => {
     const ok = fakeClient(() => ({ data: [{ id: STORY_ID }], error: null }));
     await updateStory(ok as unknown as DataClient, STORY_ID, FORM);

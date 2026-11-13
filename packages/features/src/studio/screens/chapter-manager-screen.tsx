@@ -95,6 +95,7 @@ export function ChapterManagerScreen({ storyId, locale = currentLocale() }: { st
       storyId={storyId}
       storyTitle={story.data.form.title}
       canManage={story.data.role !== "editor"}
+      storyDeleted={story.data.deletedAt !== null}
       role={story.data.role}
       locale={locale}
       chapters={chapters.data}
@@ -106,6 +107,7 @@ function ChapterManager({
   storyId,
   storyTitle,
   canManage,
+  storyDeleted,
   role,
   locale,
   chapters,
@@ -114,6 +116,8 @@ function ChapterManager({
   storyTitle: string;
   /** Owners and co-authors may archive and delete; editors only add, reorder and rename. */
   canManage: boolean;
+  /** A deleted story's chapters cannot be changed: say so instead of failing on every action. */
+  storyDeleted: boolean;
   /** For the scheduled list, which follows the publish panel's rules. */
   role: StudioRole;
   locale: string;
@@ -231,6 +235,11 @@ function ChapterManager({
       <div className="flex flex-col gap-2">
         <StudioCrumbs storyId={storyId} storyTitle={storyTitle} page="chapters" />
         <PageHeader title={t.title} description={t.description(storyTitle)} />
+        {storyDeleted ? (
+          <p role="note" className="text-sm text-muted-foreground">
+            {studioText.form.deletedNotice}
+          </p>
+        ) : null}
       </div>
 
       <ScheduledChapters chapters={chapters} role={role} locale={locale} />
