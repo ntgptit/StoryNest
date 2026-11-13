@@ -161,6 +161,22 @@ node docs/functional-spec/verification/check-citations.mjs --base e17014b --head
   --written-with-head "e17014b..origin/main,8ab3b3d"
 ```
 
+## Catalog parity, local PostgreSQL vs `storynest-dev` (2026-11-13)
+
+Method: the same read-only query on both databases lists every function in `public` (`SECURITY DEFINER`, fixed
+`search_path`, `EXECUTE` for `anon`, `authenticated`, `service_role`) and every table (RLS on, table grants for `anon`
+and `authenticated`, policy count). The local side is the throwaway database of `pnpm db:verify` (shim + all migrations);
+the lines were compared in 24 groups by an MD5 of the sorted lines of each group.
+
+| Result | Detail |
+| --- | --- |
+| 197 lines compared (143 functions, 54 tables) | 23 of 24 groups identical, including every function and table added by batch 4 (edit locks, read sources, per-type notifications, announcements, author stats, role matrix) |
+| Only difference | `blank_notification_excerpt()` (WP 9.24) exists locally, not yet on dev: the migration is merged but not applied |
+| What this proves | Privileges, definer/invoker, `search_path` and RLS shape match what the SQL tests assume |
+| What it does not prove | Behaviour with real session tokens through the REST API (VER-* style cases); only the 9.1 and 9.40 flows were exercised with real roles (self-rolling-back blocks) |
+
+No parity defect found; no finding opened. Behavioural QA-session runs for the batch 4 functions remain open.
+
 ## Cleanup
 
 Kept for repeatable runs until the Product Owner asks for removal. [cleanup.sql](cleanup.sql) removes only rows tied
