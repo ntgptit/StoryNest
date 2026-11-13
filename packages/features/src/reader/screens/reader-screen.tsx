@@ -177,7 +177,7 @@ export function ReaderScreen({
           ) : null}
           <VoteButton chapterId={data.id} />
           <div className="flex justify-center">
-            <ReportButton kind="chapter" targetId={data.id} />
+            <ReportButton kind="chapter" targetId={data.id} ownerId={storyData?.ownerId ?? undefined} />
           </div>
           <section
             id={COMMENTS_ANCHOR}

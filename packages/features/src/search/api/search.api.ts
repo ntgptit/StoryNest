@@ -25,6 +25,8 @@ export interface OffsetPage<T> {
   items: T[];
   /** Offset of the next page, or null when there is none. */
   nextOffset: number | null;
+  /** True when more results exist but the database's paging cap stops the list here. */
+  capped: boolean;
 }
 
 /**
@@ -53,10 +55,15 @@ export async function searchStories(
     ) ?? [];
   const hasMore = scored.length > pageSize;
   const ids = scored.slice(0, pageSize).map((row) => row.story_id);
-  if (ids.length === 0) return { items: [], nextOffset: null };
+  if (ids.length === 0) return { items: [], nextOffset: null, capped: false };
 
   const rows = unwrap(await client.from("stories").select(STORY_COLUMNS).in("id", ids).returns<StoryListRow[]>()) ?? [];
-  return { items: orderByIds(ids, rows).map(toStorySummary), nextOffset: nextOffset(offset, hasMore, pageSize) };
+  const next = nextOffset(offset, hasMore, pageSize);
+  return {
+    items: orderByIds(ids, rows).map(toStorySummary),
+    nextOffset: next,
+    capped: hasMore && next === null,
+  };
 }
 
 /** Authors (with at least one public story) whose name or username matches `term`. */
@@ -78,10 +85,9 @@ export async function searchAuthors(
         })
         .returns<AuthorRow[]>(),
     ) ?? [];
-  return {
-    items: rows.slice(0, pageSize).map(toAuthorHit),
-    nextOffset: nextOffset(offset, rows.length > pageSize, pageSize),
-  };
+  const hasMore = rows.length > pageSize;
+  const next = nextOffset(offset, hasMore, pageSize);
+  return { items: rows.slice(0, pageSize).map(toAuthorHit), nextOffset: next, capped: hasMore && next === null };
 }
 
 /** Tags that name `term` and are used by at least one public story. Short list, no paging. */

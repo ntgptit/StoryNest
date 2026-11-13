@@ -156,7 +156,7 @@ export function StoryScreen({
               {data.visibility === VISIBILITY.PRIVATE ? null : (
                 <ShareButton path={storyHref(data)} name={data.title} description={shareText.story.description} />
               )}
-              <ReportButton kind="story" targetId={data.id} />
+              <ReportButton kind="story" targetId={data.id} ownerId={data.ownerId ?? undefined} />
             </div>
           </div>
         </header>

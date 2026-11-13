@@ -233,7 +233,11 @@ function StoryResults({
         loadMoreLabel={t.loadMore}
         loadError={results.isError ? { title: t.error.title, retryLabel: t.error.retry } : undefined}
         loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
-        endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfResults}</p>}
+        endMessage={
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            {results.data?.pages.at(-1)?.capped ? t.capReached : t.endOfResults}
+          </p>
+        }
       />
     </StoryListFrame>
   );

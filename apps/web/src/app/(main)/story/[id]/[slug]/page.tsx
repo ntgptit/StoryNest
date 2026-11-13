@@ -55,7 +55,7 @@ export default async function StoryPage({ params }: { params: Params }) {
         <JsonLd
           data={bookJsonLd(story, {
             storyUrl: absoluteUrl(`/story/${story.id}/${story.slug}`),
-            authorUrl: absoluteUrl(authorHref(story.author.username)),
+            authorUrl: story.author.username ? absoluteUrl(authorHref(story.author.username)) : undefined,
             coverUrl,
           })}
         />
