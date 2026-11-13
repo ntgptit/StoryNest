@@ -25,7 +25,7 @@ const row = (n: number, overrides: Partial<StudioStoryRow> = {}): StudioStoryRow
   is_mature: false,
   cover_storage_key: null,
   updated_at: `2026-11-04T00:00:0${n}.123456+00:00`,
-  chapters: [{ count: n }],
+  published: [{ count: n }],
   ...overrides,
 });
 
@@ -118,9 +118,9 @@ describe("model", () => {
   });
 
   it("counts chapters from the embed and shows an unknown visibility as private", () => {
-    expect(toStudioStory(row(1, { chapters: [{ count: 7 }] }), "owner").chapterCount).toBe(7);
-    expect(toStudioStory(row(1, { chapters: null }), "owner").chapterCount).toBe(0);
-    expect(toStudioStory(row(1, { chapters: [] }), "owner").chapterCount).toBe(0);
+    expect(toStudioStory(row(1, { published: [{ count: 7 }] }), "owner").chapterCount).toBe(7);
+    expect(toStudioStory(row(1, { published: null }), "owner").chapterCount).toBe(0);
+    expect(toStudioStory(row(1, { published: [] }), "owner").chapterCount).toBe(0);
     expect(toStudioStory(row(1, { visibility: "weird" }), "owner").visibility).toBe("private");
   });
 });

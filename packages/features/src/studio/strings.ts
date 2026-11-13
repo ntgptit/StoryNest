@@ -6,7 +6,7 @@ const vi = {
   title: "Studio",
   description: "Truyện bạn đang viết và truyện bạn được mời cộng tác.",
   view: "Xem trang truyện",
-  chapterCount: (count: number) => `${count} chương`,
+  chapterCount: (count: number) => `${count} chương đã đăng`,
   updated: (relative: string) => `Cập nhật ${relative}`,
   visibility: { private: "Riêng tư", unlisted: "Chỉ người có liên kết", public: "Công khai" },
   role: { owner: "Chủ sở hữu", co_author: "Đồng tác giả", editor: "Biên tập viên" },

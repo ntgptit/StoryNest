@@ -17,6 +17,7 @@ import { discoveryText, statusLabel, storyHref } from "../../discovery/index.ts"
 import { MyInvitations } from "../components/my-invitations.tsx";
 import { useMyStories } from "../hooks/use-my-stories.ts";
 import { useDeletedStories, useSetStoryDeleted } from "../hooks/use-story-editing.ts";
+import { readerAccess } from "../model/reader-access.ts";
 import { storyErrorMessage } from "../model/story-form.ts";
 import type { StudioStory } from "../model/studio-story.ts";
 import { studioText } from "../strings.ts";
@@ -38,6 +39,8 @@ function StudioStoryRow({
   coverUrlFor?: ((key: string) => string) | undefined;
 }) {
   const VisibilityIcon = VISIBILITY_ICON[story.visibility];
+  // The count is of published chapters, so it is what decides whether readers have anything to read.
+  const access = readerAccess({ ...story, deleted: false }, story.chapterCount);
   const coverUrl = story.coverStorageKey && coverUrlFor ? coverUrlFor(story.coverStorageKey) : null;
   return (
     <li className="flex gap-4 rounded-xl border bg-card p-3 text-card-foreground sm:p-4">
@@ -49,6 +52,9 @@ function StudioStoryRow({
           <Badge variant="secondary" className="gap-1">
             <VisibilityIcon aria-hidden className="size-3" />
             {studioText.visibility[story.visibility]}
+          </Badge>
+          <Badge variant={access.state === "live" ? "default" : "outline"}>
+            {studioText.access.state[access.state]}
           </Badge>
           {story.isMature ? <Badge variant="destructive">{discoveryText.mature}</Badge> : null}
           {story.role !== "owner" ? <Badge>{studioText.role[story.role]}</Badge> : null}
