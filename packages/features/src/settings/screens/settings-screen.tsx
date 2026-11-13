@@ -11,6 +11,7 @@ import { ExpandingSettings } from "@storynest/ui/widgets/expanding-settings";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { useAuth } from "../../_shared/auth.tsx";
+import { authText, ChangePasswordForm } from "../../auth/index.ts";
 import { isLanguage, LANGUAGES, setLanguage, useLanguage } from "../../_shared/index.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
@@ -209,6 +210,9 @@ export function SettingsScreen() {
 }
 
 function SettingsForm() {
+  const auth = useAuth();
+  // Only an account that signs in with a password has one to change.
+  const canChangePassword = auth.status === "authenticated" && auth.user.app_metadata?.provider === "email";
   const settings = useAccountSettings();
   const save = useSaveSettings();
   const toast = useAppToast();
@@ -272,6 +276,12 @@ function SettingsForm() {
       <Section title={readingHabitsText.goal.title} description={readingHabitsText.goal.description}>
         <DailyGoalSetting />
       </Section>
+
+      {canChangePassword ? (
+        <Section title={authText.change.title} description={authText.change.description}>
+          <ChangePasswordForm />
+        </Section>
+      ) : null}
 
       <Section title={t.adult.title}>
         <SwitchRow

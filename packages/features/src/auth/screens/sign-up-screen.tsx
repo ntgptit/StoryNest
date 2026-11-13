@@ -17,7 +17,8 @@ import { Input } from "@storynest/ui/components/input";
 import { PasswordInput } from "@storynest/ui/components/password-input";
 import { useState } from "react";
 import { AvailabilityHint } from "@storynest/ui/widgets/availability-hint";
-import { EnvelopeSent } from "@storynest/ui/widgets/envelope-sent";
+import { useCountdown } from "@storynest/ui/lib/use-countdown";
+import { EnvelopeSent, ResendButton } from "@storynest/ui/widgets/envelope-sent";
 import { useForm } from "react-hook-form";
 import { AuthCard, FormError } from "../components/auth-card.tsx";
 import { EmailTypoFix } from "../components/email-typo-fix.tsx";
@@ -25,11 +26,12 @@ import { PasswordStrength } from "../components/password-strength.tsx";
 import { TextLink } from "../components/auth-links.tsx";
 import { LockoutNotice, useLockout } from "../components/lockout.tsx";
 import { useUsernameAvailability } from "../../profile/index.ts";
-import { useSignUp } from "../hooks/use-auth-actions.ts";
+import { useResendConfirmation, useSignUp } from "../hooks/use-auth-actions.ts";
 import { withNext } from "../model/auth-urls.ts";
+import { RESEND_COOLDOWN_SECONDS } from "../model/resend.ts";
 import { markFirstRunDue } from "../model/first-run.ts";
 import { translateErrors } from "../../_shared/form-resolver.ts";
-import { authErrorMessage, validationMessage } from "../model/messages.ts";
+import { authErrorMessage, retryAfterSeconds, validationMessage } from "../model/messages.ts";
 import { authText } from "../strings.ts";
 
 const t = authText.signUp;
@@ -53,6 +55,26 @@ export function SignUpScreen({
   const lockout = useLockout();
   const username = form.watch("username");
   const availability = useUsernameAvailability(typeof username === "string" ? username : "");
+  const resendConfirmation = useResendConfirmation(next);
+  const cooldown = useCountdown(RESEND_COOLDOWN_SECONDS);
+  // Bumped by every successful resend: replays the envelope and says "sent again".
+  const [resent, setResent] = useState(0);
+  const [resendWait, setResendWait] = useState(RESEND_COOLDOWN_SECONDS);
+  const resend = (email: string) =>
+    resendConfirmation.mutate(email, {
+      onSuccess: () => {
+        setResent((count) => count + 1);
+        setResendWait(RESEND_COOLDOWN_SECONDS);
+        cooldown.restart();
+      },
+      onError: (error) => {
+        // Use the server's own wait when it names one.
+        const seconds = retryAfterSeconds(error);
+        if (seconds === null) return;
+        setResendWait(seconds);
+        cooldown.restart(seconds);
+      },
+    });
   const submit = form.handleSubmit((values: SignUp) => {
     if (lockout.locked) return;
     lockout.clear();
@@ -60,25 +82,45 @@ export function SignUpScreen({
       onSuccess: (result) => {
         // The app frame shows a short intro the first time this account is signed in here (Lucian 383).
         markFirstRunDue();
-        if (result.needsEmailConfirmation) setConfirmationSentTo(values.email);
-        else onSignedUp();
+        if (result.needsEmailConfirmation) {
+          setConfirmationSentTo(values.email);
+          setResendWait(RESEND_COOLDOWN_SECONDS);
+          cooldown.restart();
+        } else onSignedUp();
       },
       onError: lockout.start,
     });
   });
 
   if (confirmationSentTo) {
-    // No resend here: the app has no "resend confirmation" call. The hint and "use a different email" cover a typo.
     return (
       <AuthCard title={t.checkEmailTitle} footer={<TextLink href={withNext("/login", next)}>{t.toSignIn}</TextLink>}>
         <div className="flex flex-col gap-3 text-center">
-          <EnvelopeSent />
+          <EnvelopeSent key={resent} />
           <p role="status" className="text-sm text-muted-foreground">
+            {resent > 0 ? `${t.resent} ` : ""}
             {t.checkEmailBody}
             <span className="mt-2 block font-medium break-all text-foreground">{confirmationSentTo}</span>
           </p>
           <p className="text-xs text-muted-foreground">{t.checkEmailHint}</p>
-          <Button type="button" variant="ghost" className="self-center" onClick={() => setConfirmationSentTo(null)}>
+          <FormError message={resendConfirmation.error ? authErrorMessage(resendConfirmation.error) : null} />
+          <ResendButton
+            secondsLeft={cooldown.left}
+            total={resendWait}
+            label={t.resend}
+            waitingLabel={t.resendIn}
+            pending={resendConfirmation.isPending}
+            onResend={() => resend(confirmationSentTo)}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            className="self-center"
+            onClick={() => {
+              resendConfirmation.reset();
+              setConfirmationSentTo(null);
+            }}
+          >
             {t.differentEmail}
           </Button>
         </div>
