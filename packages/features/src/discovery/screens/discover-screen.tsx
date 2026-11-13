@@ -146,19 +146,14 @@ export function DiscoverScreen({
                 isLoadingMore={feed.isFetchingNextPage}
                 onLoadMore={() => void feed.fetchNextPage()}
                 loadMoreLabel={discoveryText.loadMore}
+                loadError={
+                  feed.isError ? { title: discoveryText.error.title, retryLabel: discoveryText.error.retry } : undefined
+                }
                 loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
                 endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{discoveryText.endOfList}</p>}
               />
             </StoryListFrame>
           </div>
-          {feed.isError ? (
-            <ErrorState
-              title={discoveryText.error.title}
-              retryLabel={discoveryText.error.retry}
-              onRetry={() => void feed.fetchNextPage()}
-              className="py-4"
-            />
-          ) : null}
         </>
       )}
     </section>

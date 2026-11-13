@@ -98,7 +98,7 @@ function Queue() {
 
       {queue.isPending ? (
         <Skeleton className="h-40 w-full rounded-xl" aria-busy />
-      ) : queue.isError ? (
+      ) : queue.isError && items.length === 0 ? (
         <ErrorState
           title={t.error.title}
           description={t.error.description}
@@ -118,6 +118,7 @@ function Queue() {
           isLoadingMore={queue.isFetchingNextPage}
           onLoadMore={() => void queue.fetchNextPage()}
           loadMoreLabel={t.loadMore}
+          loadError={queue.isError ? { title: t.error.title, retryLabel: t.error.retry } : undefined}
           listClassName="gap-3"
         />
       )}
