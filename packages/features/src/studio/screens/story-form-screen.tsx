@@ -508,7 +508,13 @@ function StoryFields({
         cancelLabel={t.cancel}
         destructive
         onConfirm={async () => {
-          await setDeleted.mutateAsync({ storyId, deleted: true });
+          try {
+            await setDeleted.mutateAsync({ storyId, deleted: true });
+          } catch (error) {
+            // The dialog stays open on a throw; say why, so the failure is never silent.
+            toast.error(storyErrorMessage(toAppError(error)));
+            throw error;
+          }
           toast.success(t.deleted);
           navigation.push("/studio");
         }}
