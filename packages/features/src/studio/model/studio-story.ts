@@ -12,8 +12,8 @@ export interface StudioStoryRow {
   is_mature: boolean;
   cover_storage_key: string | null;
   updated_at: string;
-  /** `chapters(count)` embed: PostgREST returns one row holding the count. */
-  chapters: { count: number }[] | null;
+  /** `published:chapters(count)` embed (published, not deleted): PostgREST returns one row holding the count. */
+  published: { count: number }[] | null;
 }
 
 export interface StudioStory {
@@ -26,6 +26,7 @@ export interface StudioStory {
   coverStorageKey: string | null;
   /** Exact timestamp string from the database (sortable, and the same format everywhere). */
   updatedAt: string;
+  /** Chapters readers can open. */
   chapterCount: number;
   role: StudioRole;
 }
@@ -41,7 +42,7 @@ export function toStudioStory(row: StudioStoryRow, role: StudioRole): StudioStor
     isMature: row.is_mature,
     coverStorageKey: row.cover_storage_key,
     updatedAt: row.updated_at,
-    chapterCount: row.chapters?.[0]?.count ?? 0,
+    chapterCount: row.published?.[0]?.count ?? 0,
     role,
   };
 }

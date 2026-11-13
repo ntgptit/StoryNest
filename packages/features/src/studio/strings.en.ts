@@ -2,7 +2,7 @@ export const en = {
   title: "Studio",
   description: "Stories you're writing and stories you've been invited to collaborate on.",
   view: "View story page",
-  chapterCount: (count: number) => `${count} chapter${count === 1 ? "" : "s"}`,
+  chapterCount: (count: number) => `${count} published chapter${count === 1 ? "" : "s"}`,
   updated: (relative: string) => `Updated ${relative}`,
   visibility: { private: "Private", unlisted: "Anyone with the link", public: "Public" },
   role: { owner: "Owner", co_author: "Co-author", editor: "Editor" },
