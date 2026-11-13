@@ -54,7 +54,7 @@ export default async function ChapterPage({ params }: { params: Params }) {
           data={chapterJsonLd(story, chapter, {
             storyUrl: absoluteUrl(`/story/${story.id}/${story.slug}`),
             chapterUrl: absoluteUrl(`/story/${story.id}/${story.slug}/${chapter.slug}`),
-            authorUrl: absoluteUrl(authorHref(story.author.username)),
+            authorUrl: story.author.username ? absoluteUrl(authorHref(story.author.username)) : undefined,
             coverUrl,
           })}
         />

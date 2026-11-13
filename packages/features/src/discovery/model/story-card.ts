@@ -5,6 +5,8 @@ import { discoveryText } from "../strings.ts";
 export interface StoryListRow {
   id: string;
   slug: string;
+  /** The owner account (the rest of the owner comes from the embed). */
+  owner_id?: string;
   title: string;
   synopsis: string;
   cover_storage_key: string | null;
@@ -29,6 +31,8 @@ export interface StorySummary {
   languageCode: string;
   /** Exact timestamp string from the database: it is also the cursor, so it must not lose precision. */
   updatedAt: string;
+  /** The owner's account id (never shown a Report button for their own work); null when the row did not carry it. */
+  ownerId: string | null;
   author: { username: string; displayName: string };
   category: { slug: string; name: string } | null;
   tags: { slug: string; name: string }[];
@@ -48,6 +52,7 @@ export function toStorySummary(row: StoryListRow): StorySummary {
     isMature: row.is_mature,
     languageCode: row.language_code,
     updatedAt: row.updated_at,
+    ownerId: row.owner_id ?? null,
     // The owner is always readable for a public story; the fallback only covers a deactivated author.
     author: row.owner
       ? { username: row.owner.username, displayName: row.owner.display_name }

@@ -143,8 +143,15 @@ describe("search api", () => {
   it("has no next page when the extra row is missing, and skips the second request when nothing matched", async () => {
     const last = fakeClient({ rpc: () => ({ data: scored([1]), error: null }), stories: [storyRow(1)] });
     expect((await searchStories(last.client, "abc", { pageSize: 2 })).nextOffset).toBeNull();
+    // More results exist but the paging cap stops the list: the page says so (the screen shows "capReached").
+    const capped = fakeClient({
+      rpc: () => ({ data: scored([1, 2, 3]), error: null }),
+      stories: [storyRow(1), storyRow(2)],
+    });
+    const atCap = await searchStories(capped.client, "abc", { pageSize: 2, offset: SEARCH_MAX_OFFSET });
+    expect(atCap).toMatchObject({ nextOffset: null, capped: true });
     const none = fakeClient({});
-    expect(await searchStories(none.client, "abc")).toEqual({ items: [], nextOffset: null });
+    expect(await searchStories(none.client, "abc")).toEqual({ items: [], nextOffset: null, capped: false });
     expect(none.inQueries).toEqual([]);
   });
 
@@ -206,6 +213,7 @@ describe("search api", () => {
     expect(await searchAuthors(authors.client, "an")).toEqual({
       items: [{ userId: "u1", username: "demo_an", displayName: "An", avatarStorageKey: null, storiesCount: 4 }],
       nextOffset: null,
+      capped: false,
     });
     const tags = fakeClient({
       rpc: () => ({

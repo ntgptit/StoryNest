@@ -31,6 +31,11 @@ const links = {
 };
 
 describe("bookJsonLd", () => {
+  it("leaves the author url out when the author has no public page", () => {
+    const data = bookJsonLd(story, { ...links, authorUrl: undefined }) as { author: Record<string, unknown> };
+    expect(data.author).toEqual({ "@type": "Person", name: "An Nhiên" });
+  });
+
   it("describes the story as a schema.org Book with its author", () => {
     const data = bookJsonLd(story, links);
     expect(data).toMatchObject({

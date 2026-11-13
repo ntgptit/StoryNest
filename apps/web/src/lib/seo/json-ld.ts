@@ -14,7 +14,8 @@ function compact(value: JsonLd): JsonLd {
 
 interface Links {
   storyUrl: string;
-  authorUrl: string;
+  /** Omitted when the author has no public page (no username). */
+  authorUrl?: string | undefined;
   coverUrl?: string | undefined;
 }
 
@@ -33,7 +34,7 @@ export function bookJsonLd(story: StoryDetail, links: Links): JsonLd {
     keywords: story.tags.map((tag) => tag.name).join(", "),
     dateModified: story.updatedAt,
     isAccessibleForFree: true,
-    author: { "@type": "Person", name: story.author.displayName, url: links.authorUrl },
+    author: compact({ "@type": "Person", name: story.author.displayName, url: links.authorUrl }),
   });
 }
 
@@ -52,7 +53,7 @@ export function chapterJsonLd(
     position: chapter.number,
     inLanguage: story.languageCode,
     isAccessibleForFree: true,
-    author: { "@type": "Person", name: story.author.displayName, url: links.authorUrl },
+    author: compact({ "@type": "Person", name: story.author.displayName, url: links.authorUrl }),
     isPartOf: compact({
       "@type": "Book",
       "@id": links.storyUrl,
