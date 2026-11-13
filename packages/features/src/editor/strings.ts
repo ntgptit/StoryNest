@@ -191,6 +191,14 @@ const vi = {
     cancelSchedule: "Hủy hẹn giờ",
     more: "Cách đăng khác",
     scheduleDescription: "Tự đăng vào ngày giờ bạn chọn",
+    preview: {
+      notifies: (followers: number, first: boolean) =>
+        `${first ? "Đây là lần đăng đầu tiên. " : ""}${
+          followers > 0 ? `Khoảng ${followers} người theo dõi sẽ được báo.` : "Chưa có ai theo dõi để báo."
+        }`,
+      silent:
+        "Truyện đang riêng tư hoặc đã xóa: người theo dõi sẽ không được báo về chương này, cả bây giờ lẫn sau này.",
+    },
     changeVisibility: "Đổi hiển thị",
     readiness: {
       title: "Trước khi đăng",

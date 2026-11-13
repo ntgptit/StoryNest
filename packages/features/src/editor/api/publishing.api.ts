@@ -38,6 +38,22 @@ export async function getChapterPublishState(
   };
 }
 
+/** What publishing a chapter will do (from `publish_preview`; only the story's team may ask). */
+export interface PublishPreview {
+  isFirstPublish: boolean;
+  /** Followers are told when it is published (public or unlisted story). */
+  notifies: boolean;
+  /** About how many followers would be told now (the follower's own notification switches are not counted). */
+  followers: number;
+}
+
+export async function getPublishPreview(client: DataClient, chapterId: string): Promise<PublishPreview | null> {
+  const rows = unwrap(await client.rpc("publish_preview", { p_chapter_id: chapterId })) ?? [];
+  const row = rows[0];
+  if (!row) return null;
+  return { isFirstPublish: row.is_first_publish, notifies: row.notifies, followers: row.follower_count };
+}
+
 /** Publishes the draft as it was at `expectedRevision` (a newer draft is refused, PT409). Resolves to the version id. */
 export async function publishChapter(client: DataClient, chapterId: string, expectedRevision: number): Promise<string> {
   const args = publishChapterArgsSchema.parse({ p_chapter_id: chapterId, p_expected_revision: expectedRevision });

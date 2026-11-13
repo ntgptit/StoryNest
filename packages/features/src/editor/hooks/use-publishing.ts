@@ -12,10 +12,12 @@ import { discoveryKeys } from "../../discovery/index.ts";
 import { storyKeys } from "../../story/index.ts";
 import {
   getChapterPublishState,
+  getPublishPreview,
   publishChapter,
   scheduleChapter,
   unpublishChapter,
   type ChapterPublishState,
+  type PublishPreview,
 } from "../api/publishing.api.ts";
 
 const publishStateKey = (chapterId: string) => ["editor", "publish-state", chapterId] as const;
@@ -29,6 +31,19 @@ export function useChapterPublishState(chapterId: string) {
     queryFn: () =>
       getChapterPublishState(getClient(), chapterId).catch((error: unknown) => Promise.reject(toAppError(error))),
     enabled: auth.status === "authenticated",
+    staleTime: 0,
+  });
+}
+
+/** What publishing will do (first publish, who is told). Quiet when it cannot be read: the panel then says nothing. */
+export function usePublishPreview(chapterId: string, enabled: boolean) {
+  const getClient = useDataClientGetter();
+  const auth = useAuth();
+  return useQuery<PublishPreview | null, AppError>({
+    queryKey: ["editor", "publish-preview", chapterId] as const,
+    queryFn: () =>
+      getPublishPreview(getClient(), chapterId).catch((error: unknown) => Promise.reject(toAppError(error))),
+    enabled: enabled && auth.status === "authenticated",
     staleTime: 0,
   });
 }

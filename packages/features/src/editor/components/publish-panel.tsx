@@ -21,7 +21,7 @@ import { ReadinessChecklist } from "@storynest/ui/widgets/readiness-checklist";
 import { SplitButton } from "@storynest/ui/widgets/split-button";
 import { AppLink } from "../../_shared/platform.tsx";
 import { studioStrings, useStoryReaderAccess } from "../../studio/index.ts";
-import { useChapterPublishState, usePublishFlow } from "../hooks/use-publishing.ts";
+import { useChapterPublishState, usePublishFlow, usePublishPreview } from "../hooks/use-publishing.ts";
 import {
   canPublish,
   canUnpublishChapter,
@@ -78,6 +78,7 @@ export function PublishPanel({
   draft: Parameters<typeof publishReadiness>[0];
 }) {
   const state = useChapterPublishState(chapterId);
+  const preview = usePublishPreview(chapterId, state.data?.status !== CHAPTER_STATUS.PUBLISHED);
   // Who can read the story once this chapter is out: a chapter is no use to readers in a private or draft story.
   const reach = useStoryReaderAccess(storyId, state.data?.status === CHAPTER_STATUS.PUBLISHED ? 0 : 1);
   const flow = usePublishFlow(chapterId, ensureSaved);
@@ -139,6 +140,13 @@ export function PublishPanel({
         >
           {error}
         </InlineAlert>
+      ) : null}
+      {preview.data ? (
+        <p role="note" className="text-sm text-muted-foreground">
+          {preview.data.notifies
+            ? t.preview.notifies(preview.data.followers, preview.data.isFirstPublish)
+            : t.preview.silent}
+        </p>
       ) : null}
       {reach ? (
         <p

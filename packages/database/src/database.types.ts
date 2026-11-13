@@ -2568,6 +2568,18 @@ export type Database = {
         Returns: string
       }
       publish_due_chapters: { Args: { p_limit?: number }; Returns: number }
+      publish_preview: {
+        Args: { p_chapter_id: string }
+        Returns: {
+          chapter_status: string
+          follower_count: number
+          is_first_publish: boolean
+          notifies: boolean
+          story_id: string
+          story_status: string
+          visibility: string
+        }[]
+      }
       purge_outbox: { Args: { p_retention?: string }; Returns: number }
       purge_read_events: { Args: { p_retention?: string }; Returns: number }
       purge_search_log: { Args: Record<PropertyKey, never>; Returns: number }

@@ -188,6 +188,15 @@ export const en = {
     cancelSchedule: "Cancel schedule",
     more: "More ways to publish",
     scheduleDescription: "Publish automatically at the time you pick",
+    preview: {
+      notifies: (followers: number, first: boolean) =>
+        `${first ? "This is the first publish. " : ""}${
+          followers > 0
+            ? `About ${followers} follower${followers === 1 ? "" : "s"} will be notified.`
+            : "Nobody follows yet, so nobody will be notified."
+        }`,
+      silent: "The story is private or deleted: followers will not be told about this chapter, now or later.",
+    },
     changeVisibility: "Change visibility",
     readiness: {
       title: "Before you publish",
