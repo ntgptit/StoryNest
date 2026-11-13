@@ -14,6 +14,8 @@ export interface StudioStoryRow {
   updated_at: string;
   /** `published:chapters(count)` embed (published, not deleted): PostgREST returns one row holding the count. */
   published: { count: number }[] | null;
+  /** `latest:chapters(id)` embed, newest edit first, one row: where "continue writing" goes. */
+  latest?: { id: string }[] | null;
 }
 
 export interface StudioStory {
@@ -28,6 +30,8 @@ export interface StudioStory {
   updatedAt: string;
   /** Chapters readers can open. */
   chapterCount: number;
+  /** The chapter edited last (not deleted), or null when the story has none. */
+  lastChapterId: string | null;
   role: StudioRole;
 }
 
@@ -43,6 +47,7 @@ export function toStudioStory(row: StudioStoryRow, role: StudioRole): StudioStor
     coverStorageKey: row.cover_storage_key,
     updatedAt: row.updated_at,
     chapterCount: row.published?.[0]?.count ?? 0,
+    lastChapterId: row.latest?.[0]?.id ?? null,
     role,
   };
 }

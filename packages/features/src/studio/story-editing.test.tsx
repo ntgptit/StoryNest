@@ -76,7 +76,7 @@ function fakeClient(
         ? { data: (options.tags ?? []).map((tag) => ({ tag })), error: null }
         : respond(table, calls);
     const builder: Record<string, unknown> = {};
-    for (const method of ["select", "insert", "update", "eq", "is", "not", "order", "returns"]) {
+    for (const method of ["select", "insert", "update", "eq", "is", "not", "order", "limit", "returns"]) {
       builder[method] = (...args: unknown[]) => {
         entry.calls.push([method, args]);
         return builder;

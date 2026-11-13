@@ -26,6 +26,7 @@ const row = (n: number, overrides: Partial<StudioStoryRow> = {}): StudioStoryRow
   cover_storage_key: null,
   updated_at: `2026-11-04T00:00:0${n}.123456+00:00`,
   published: [{ count: n }],
+  latest: [{ id: `chapter-${n}` }],
   ...overrides,
 });
 
@@ -33,7 +34,7 @@ type Call = [string, unknown[]];
 function table(respond: () => { data: unknown; error: unknown }) {
   const calls: Call[] = [];
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "is", "returns"]) {
+  for (const method of ["select", "eq", "is", "order", "limit", "returns"]) {
     builder[method] = (...args: unknown[]) => {
       calls.push([method, args]);
       return builder;
@@ -121,6 +122,9 @@ describe("model", () => {
     expect(toStudioStory(row(1, { published: [{ count: 7 }] }), "owner").chapterCount).toBe(7);
     expect(toStudioStory(row(1, { published: null }), "owner").chapterCount).toBe(0);
     expect(toStudioStory(row(1, { published: [] }), "owner").chapterCount).toBe(0);
+    expect(toStudioStory(row(1), "owner").lastChapterId).toBe("chapter-1");
+    expect(toStudioStory(row(1, { latest: [] }), "owner").lastChapterId).toBeNull();
+    expect(toStudioStory(row(1, { latest: null }), "owner").lastChapterId).toBeNull();
     expect(toStudioStory(row(1, { visibility: "weird" }), "owner").visibility).toBe("private");
   });
 });
