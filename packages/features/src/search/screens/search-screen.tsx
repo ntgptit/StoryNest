@@ -231,6 +231,7 @@ function StoryResults({
         isLoadingMore={results.isFetchingNextPage}
         onLoadMore={() => void results.fetchNextPage()}
         loadMoreLabel={t.loadMore}
+        loadError={results.isError ? { title: t.error.title, retryLabel: t.error.retry } : undefined}
         loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
         endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfResults}</p>}
       />

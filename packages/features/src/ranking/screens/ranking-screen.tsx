@@ -81,6 +81,7 @@ export function RankingScreen({
             isLoadingMore={ranking.isFetchingNextPage}
             onLoadMore={() => void ranking.fetchNextPage()}
             loadMoreLabel={t.loadMore}
+            loadError={ranking.isError ? { title: t.error.title, retryLabel: t.error.retry } : undefined}
             loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
             endMessage={<p className="py-6 text-center text-sm text-muted-foreground">{t.endOfList}</p>}
           />

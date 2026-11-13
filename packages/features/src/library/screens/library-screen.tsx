@@ -123,7 +123,7 @@ function LibraryList({
       return next;
     });
 
-  if (list.isError) {
+  if (list.isError && !list.data) {
     return (
       <ErrorState
         title={t.error.title}
@@ -166,6 +166,7 @@ function LibraryList({
       isLoadingMore={list.isFetchingNextPage}
       onLoadMore={() => void list.fetchNextPage()}
       loadMoreLabel={t.loadMore}
+      loadError={list.isError ? { title: t.error.title, retryLabel: t.error.retry } : undefined}
       loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
     />
   );

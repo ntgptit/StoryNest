@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 import { Button } from "../components/button.tsx";
+import { ErrorState } from "./error-state.tsx";
 import { cn } from "../lib/utils.ts";
 
 /**
@@ -26,6 +27,7 @@ export function InfiniteList<T>({
   onLoadMore,
   loadingFallback,
   loadMoreLabel,
+  loadError,
   endMessage,
   className,
   listClassName,
@@ -40,6 +42,11 @@ export function InfiniteList<T>({
   onLoadMore: () => void;
   loadingFallback?: ReactNode;
   loadMoreLabel?: string;
+  /**
+   * Set when loading the next page failed: the items already shown stay, and an inline error with a retry button
+   * (which calls `onLoadMore`) replaces the sentinel, so nothing retries on its own.
+   */
+  loadError?: { title: string; retryLabel: string } | undefined;
   endMessage?: ReactNode;
   className?: string;
   /** Classes of the <ul>; defaults to a vertical stack. Pass grid classes for a card grid. */
@@ -56,8 +63,9 @@ export function InfiniteList<T>({
     setAsked(true);
     onLoadMore();
   };
-  const latest = useRef({ hasMore, isLoadingMore, onLoadMore: loadMore });
-  latest.current = { hasMore, isLoadingMore, onLoadMore: loadMore };
+  const failed = loadError !== undefined;
+  const latest = useRef({ hasMore, isLoadingMore, onLoadMore: loadMore, failed });
+  latest.current = { hasMore, isLoadingMore, onLoadMore: loadMore, failed };
 
   // "Adjust state while rendering": the keys of the items that came in with a later page, each with its place in the
   // stagger. They keep it while mounted (the animation only runs on mount, so it never replays), and the map starts
@@ -82,7 +90,7 @@ export function InfiniteList<T>({
     const observer = new IntersectionObserver(
       (entries) => {
         const { hasMore: more, isLoadingMore: loading, onLoadMore: load } = latest.current;
-        if (entries.some((e) => e.isIntersecting) && more && !loading) load();
+        if (entries.some((e) => e.isIntersecting) && more && !loading && !latest.current.failed) load();
       },
       { rootMargin: "240px" },
     );
@@ -107,7 +115,10 @@ export function InfiniteList<T>({
         })}
       </ul>
       {isLoadingMore ? loadingFallback : null}
-      {hasMore ? (
+      {loadError && !isLoadingMore ? (
+        <ErrorState title={loadError.title} retryLabel={loadError.retryLabel} onRetry={loadMore} className="py-4" />
+      ) : null}
+      {hasMore && !loadError ? (
         <div ref={sentinel} className="flex justify-center py-4">
           {loadMoreLabel && !isLoadingMore ? (
             <Button variant="outline" onClick={loadMore}>

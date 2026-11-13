@@ -141,6 +141,17 @@ describe("InfiniteList", () => {
     expect(props.onLoadMore).toHaveBeenCalledTimes(1);
   });
 
+  it("shows the items with an inline retry when the next page failed, and retries only on the button", () => {
+    const props = base({ loadError: { title: "Không tải được", retryLabel: "Thử lại" } });
+    render(<InfiniteList {...props} />);
+    expect(screen.getByText("a")).toBeTruthy();
+    expect(screen.getByText("Không tải được")).toBeTruthy();
+    // No sentinel while failed: a fast scroll cannot retry on its own.
+    expect(callbacks).toHaveLength(0);
+    fireEvent.click(screen.getByRole("button", { name: "Thử lại" }));
+    expect(props.onLoadMore).toHaveBeenCalledTimes(1);
+  });
+
   it("never loads while a page is loading or when there is nothing left", () => {
     const loading = base({ isLoadingMore: true, loadingFallback: <span>spinner</span> });
     const { unmount } = render(<InfiniteList {...loading} />);
