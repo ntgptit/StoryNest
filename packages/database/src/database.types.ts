@@ -2789,6 +2789,10 @@ export type Database = {
           rating_count: number
         }[]
       }
+      story_removed_by_moderator: {
+        Args: { p_story_id: string }
+        Returns: boolean
+      }
       story_role: { Args: { p_story_id: string }; Returns: string }
       story_role_rights: {
         Args: Record<PropertyKey, never>
