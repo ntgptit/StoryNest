@@ -188,6 +188,7 @@ export const en = {
     cancelSchedule: "Cancel schedule",
     more: "More ways to publish",
     scheduleDescription: "Publish automatically at the time you pick",
+    changeVisibility: "Change visibility",
     readiness: {
       title: "Before you publish",
       summary: (done: number, total: number) => `${done} of ${total} met, not ready to publish yet`,

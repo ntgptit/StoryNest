@@ -549,6 +549,7 @@ function DraftEditor({
       <div data-tour="publish">
         <PublishPanel
           chapterId={draft.chapterId}
+          storyId={storyId}
           locale={locale}
           ensureSaved={ensureSaved}
           draft={{ title: checkTitle(title), body: bodyCheck }}
