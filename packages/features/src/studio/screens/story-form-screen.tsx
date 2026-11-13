@@ -42,7 +42,9 @@ import { useAppToast } from "../../_shared/toast.tsx";
 import { statusLabel, storyHref, useCategories } from "../../discovery/index.ts";
 import { shareUrl } from "../../share/index.ts";
 import { shellText } from "../../shell/index.ts";
-import { isIndexable, STORY_META_DESCRIPTION_LENGTH, storyMetaDescription } from "../../story/index.ts";
+import { isIndexable, STORY_META_DESCRIPTION_LENGTH, storyMetaDescription, useStory } from "../../story/index.ts";
+import { useStudioChapters } from "../hooks/use-chapter-management.ts";
+import { countPublished, readerAccess, removesReaderAccess } from "../model/reader-access.ts";
 import { COVERS_BUCKET, type StoryForEdit } from "../api/story-write.api.ts";
 import { CoverEditor } from "../components/cover-editor.tsx";
 import { TagEditor } from "../components/tag-editor.tsx";
@@ -139,6 +141,10 @@ function StoryFields({
   const setDeleted = useSetStoryDeleted();
   const setTagsMutation = useSetStoryTags();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // A save that would take readers away waits here until the author confirms (with the number of followers it affects).
+  const [pendingSave, setPendingSave] = useState<StoryForm | null>(null);
+  const chapters = useStudioChapters(storyId);
+  const followers = useStory(storyId).data?.stats.followers ?? 0;
   // Bumped after every successful save of an existing story: the Save button draws its check (Lucian 001).
   const [savedCount, setSavedCount] = useState(0);
   // Tags are saved with the story but are not part of the story form (they live in their own table, behind an RPC).
@@ -196,6 +202,16 @@ function StoryFields({
       }
       return;
     }
+    // Until the chapters are known nothing can be said about readers, so the save is not held back.
+    if (!edit || !chapters.data || !losesReaders(values, edit, countPublished(chapters.data))) {
+      saveEdit(values);
+      return;
+    }
+    // Readers would lose a story they can read now: say so first, and save only when the author confirms.
+    setPendingSave(values);
+  });
+
+  const saveEdit = (values: StoryForm) =>
     update.mutate(values, {
       onSuccess: async () => {
         form.reset(values);
@@ -205,7 +221,6 @@ function StoryFields({
       },
       onError: onFailure,
     });
-  });
 
   const busy = save.isPending || setTagsMutation.isPending;
 
@@ -500,6 +515,21 @@ function StoryFields({
       </form>
 
       <ConfirmDialog
+        open={pendingSave !== null}
+        onOpenChange={(open) => !open && setPendingSave(null)}
+        title={studioText.access.lose.title}
+        description={studioText.access.lose.description(followers)}
+        confirmLabel={studioText.access.lose.confirm}
+        cancelLabel={t.cancel}
+        destructive
+        onConfirm={() => {
+          const values = pendingSave;
+          setPendingSave(null);
+          if (values) saveEdit(values);
+        }}
+      />
+
+      <ConfirmDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title={t.deleteTitle}
@@ -594,4 +624,12 @@ function StoryLinkPreview({
       }}
     />
   );
+}
+
+/** Whether saving these values would take readers away from a story they can read now. */
+function losesReaders(values: StoryForm, saved: StoryForEdit, published: number): boolean {
+  const deleted = saved.deletedAt !== null;
+  const before = readerAccess({ ...saved.form, deleted }, published);
+  const after = readerAccess({ ...values, deleted }, published);
+  return removesReaderAccess(before, after);
 }

@@ -14,6 +14,28 @@ const vi = {
   error: { title: "Không tải được danh sách truyện", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   listLabel: "Truyện của tôi",
   create: "Viết truyện mới",
+  access: {
+    state: {
+      live: "Độc giả đọc được",
+      link_only: "Chỉ người có liên kết đọc được",
+      team_only: "Chỉ nhóm của bạn thấy",
+      deleted: "Truyện đã xóa",
+    },
+    reason: {
+      private: "Hiển thị đang là Riêng tư",
+      draft_status: "Tình trạng đang là Bản nháp",
+      no_published_chapter: "Chưa có chương nào được đăng",
+      deleted: "Truyện đã bị xóa",
+    },
+    lose: {
+      title: "Độc giả sẽ không đọc được truyện này nữa",
+      description: (followers: number) =>
+        followers > 0
+          ? `${followers} người đang theo dõi sẽ không thấy truyện này nữa. Bạn vẫn có thể đổi lại sau.`
+          : "Độc giả sẽ không thấy truyện này nữa. Bạn vẫn có thể đổi lại sau.",
+      confirm: "Vẫn lưu",
+    },
+  },
   workspace: {
     label: "Không gian làm việc của truyện",
     tabs: { details: "Thông tin", chapters: "Chương", team: "Nhóm", stats: "Thống kê" },
