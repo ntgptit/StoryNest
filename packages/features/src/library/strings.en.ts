@@ -22,6 +22,7 @@ export const en = {
   },
   continueReading: (number: number) => `Continue with chapter ${number}`,
   openStory: "Open story",
+  loadMore: "Load more",
   readAt: (relative: string) => `Read ${relative}`,
   savedAt: (relative: string) => `Saved ${relative}`,
   followedAt: (relative: string) => `Followed ${relative}`,

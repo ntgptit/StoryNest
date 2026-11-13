@@ -1,24 +1,33 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../_shared/auth.tsx";
 import { useDataClientGetter } from "../../_shared/data.tsx";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
 import { setStoryFollow, setStorySave, storyKeys } from "../../story/index.ts";
 import { listFollowing, listReading, listSaved, removeFromReading } from "../api/library.api.ts";
 import { libraryKeys } from "../keys.ts";
-import type { LibraryEntry, LibraryTab } from "../model/library.ts";
+import type { LibraryPage, LibraryTab } from "../model/library.ts";
 
-/** One tab of the library, read fresh whenever it is opened. Idle until the session is known. */
+/** One tab of the library, read page by page and fresh whenever it is opened. Idle until the session is known. */
 export function useLibraryList(tab: LibraryTab) {
   const getClient = useDataClientGetter();
   const auth = useAuth();
   const userId = auth.status === "authenticated" ? auth.user.id : null;
   const load = { reading: listReading, saved: listSaved, following: listFollowing }[tab];
   const key = userId === null ? libraryKeys.all : libraryKeys[tab](userId);
-  return useQuery<LibraryEntry[], AppError>({
+  return useInfiniteQuery<
+    LibraryPage,
+    AppError,
+    { pages: LibraryPage[]; pageParams: number[] },
+    readonly unknown[],
+    number
+  >({
     queryKey: key,
-    queryFn: () => load(getClient(), userId ?? "").catch((error: unknown) => Promise.reject(toAppError(error))),
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
+      load(getClient(), userId ?? "", pageParam).catch((error: unknown) => Promise.reject(toAppError(error))),
+    getNextPageParam: (last) => last.nextOffset,
     enabled: userId !== null,
     staleTime: 0,
   });

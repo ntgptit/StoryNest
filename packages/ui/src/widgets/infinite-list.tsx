@@ -29,6 +29,7 @@ export function InfiniteList<T>({
   endMessage,
   className,
   listClassName,
+  listLabel,
   revealAppended = false,
 }: {
   items: readonly T[];
@@ -43,6 +44,8 @@ export function InfiniteList<T>({
   className?: string;
   /** Classes of the <ul>; defaults to a vertical stack. Pass grid classes for a card grid. */
   listClassName?: string;
+  /** Accessible name of the <ul>. */
+  listLabel?: string;
   /** Let the items of each page loaded later rise in (see above). */
   revealAppended?: boolean;
 }) {
@@ -89,7 +92,7 @@ export function InfiniteList<T>({
 
   return (
     <div className={className}>
-      <ul className={cn("flex flex-col", listClassName)}>
+      <ul aria-label={listLabel} className={cn("flex flex-col", listClassName)}>
         {items.map((item, index) => {
           const key = getKey(item);
           const place = rising.get(key);

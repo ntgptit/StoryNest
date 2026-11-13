@@ -6,6 +6,7 @@ import { formatRelativeTime } from "@storynest/utils";
 import { Button } from "@storynest/ui/components/button";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@storynest/ui/components/tabs";
+import { InfiniteList } from "@storynest/ui/widgets/infinite-list";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
@@ -34,6 +35,11 @@ const LISTS_TAB = "lists";
 type ShelfTab = LibraryTab | typeof LISTS_TAB;
 const SHELF_TABS: readonly ShelfTab[] = [...LIBRARY_TABS, LISTS_TAB];
 
+/** The shelf tab named by an address value, "reading" when it names none. */
+export function parseShelfTab(value: string | undefined): ShelfTab {
+  return SHELF_TABS.find((tab) => tab === value) ?? "reading";
+}
+
 const EMPTY_ICON: Record<LibraryTab, LucideIcon> = {
   reading: BookOpen,
   saved: BookMarked,
@@ -49,11 +55,21 @@ const REMOVE_ICON: Record<UndoableLibraryTab, LucideIcon> = { saved: BookmarkMin
 export function LibraryScreen({
   locale = currentLocale(),
   coverUrlFor,
+  initialTab,
+  onTabChange,
 }: {
   locale?: string;
   coverUrlFor?: ((key: string) => string) | undefined;
+  /** The tab to open on (the host reads it from the address). Anything that is not a tab falls back to "reading". */
+  initialTab?: string | undefined;
+  /** Told whenever the reader switches tab, so the host can keep it in the address. */
+  onTabChange?: ((tab: string) => void) | undefined;
 }) {
-  const [tab, setTab] = useState<ShelfTab>("reading");
+  const [tab, setTabState] = useState<ShelfTab>(() => parseShelfTab(initialTab));
+  const setTab = (next: ShelfTab) => {
+    setTabState(next);
+    onTabChange?.(next);
+  };
   const swipe = useSwipeTabs({ values: SHELF_TABS, value: tab, onValueChange: setTab });
   return (
     <section aria-label={t.title} className="flex flex-col gap-6">
@@ -126,25 +142,32 @@ function LibraryList({
       </div>
     );
   }
-  const entries = list.data.filter((entry) => !hidden.has(entry.storyId));
+  const entries = list.data.pages.flatMap((page) => page.entries).filter((entry) => !hidden.has(entry.storyId));
   if (entries.length === 0) {
     const Icon = EMPTY_ICON[tab];
     return <EmptyState icon={Icon} title={t.empty[tab].title} description={t.empty[tab].description} />;
   }
   return (
-    <ul aria-label={t.listLabel(t.tabs[tab])} className={STORY_GRID}>
-      {entries.map((entry) => (
-        <li key={entry.storyId}>
-          <LibraryItem
-            tab={tab}
-            entry={entry}
-            locale={locale}
-            coverUrlFor={coverUrlFor}
-            onShownChange={(shown) => setShown(entry.storyId, shown)}
-          />
-        </li>
-      ))}
-    </ul>
+    <InfiniteList
+      items={entries}
+      getKey={(entry) => entry.storyId}
+      listClassName={STORY_GRID}
+      listLabel={t.listLabel(t.tabs[tab])}
+      renderItem={(entry) => (
+        <LibraryItem
+          tab={tab}
+          entry={entry}
+          locale={locale}
+          coverUrlFor={coverUrlFor}
+          onShownChange={(shown) => setShown(entry.storyId, shown)}
+        />
+      )}
+      hasMore={list.hasNextPage}
+      isLoadingMore={list.isFetchingNextPage}
+      onLoadMore={() => void list.fetchNextPage()}
+      loadMoreLabel={t.loadMore}
+      loadingFallback={<Skeleton className="mt-4 h-10 w-full rounded-xl" aria-hidden />}
+    />
   );
 }
 
