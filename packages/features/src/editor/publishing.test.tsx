@@ -117,6 +117,17 @@ describe("publishing model", () => {
     expect(formatLocalDateTime("2026-11-05T13:30:00Z", "vi")).toMatch(/2026/);
   });
 
+  it("tells the team what publishing will do: first publish and how many followers are told, or that nobody is", async () => {
+    const preview = (notifies: boolean, followers: number) => [
+      { is_first_publish: true, notifies, follower_count: followers },
+    ];
+    setup(fakeClient({ status: "draft", preview: preview(true, 12) }));
+    expect(await screen.findByText(t.preview.notifies(12, true))).toBeTruthy();
+    cleanup();
+    setup(fakeClient({ status: "draft", preview: preview(false, 5) }));
+    expect(await screen.findByText(t.preview.silent)).toBeTruthy();
+  });
+
   it("counts down to a scheduled time in words, and says it is due once under a minute is left", () => {
     const now = Date.parse("2026-11-05T10:00:00Z");
     expect(scheduleCountdown("2026-11-05T13:00:00Z", "en", now)).toBe(t.countdown("in 3 hours"));
@@ -138,6 +149,8 @@ interface World {
   saveFails?: boolean;
   /** While set, publish_chapter waits for it (a slow server). */
   gate?: Promise<void>;
+  /** The rows `publish_preview` answers with (none by default). */
+  preview?: unknown[];
   rpc: (name: string, args: Record<string, unknown>, world: World) => Result;
 }
 
@@ -193,6 +206,8 @@ function fakeClient(init: Partial<World> = {}) {
   });
   const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
     if (name === "story_role") return { data: world.role, error: null };
+    // The read-only "what will publishing do" call is not one of the writes these tests count.
+    if (name === "publish_preview") return { data: world.preview ?? [], error: null };
     log.push(name);
     rpcCalls.push({ name, args });
     if (name === "publish_chapter" && world.gate) await world.gate;
