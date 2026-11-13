@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { prefetchChapter, type ChapterContent } from "@storynest/features";
+import { prefetchChapter, resolveChapterSlug, type ChapterContent } from "@storynest/features";
 
 import { isSupabaseConfigured } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -25,3 +25,17 @@ async function loadChapterContent(storyId: string, chapterSlug: string): Promise
     return undefined;
   }
 }
+
+/**
+ * Where a chapter that was renamed now lives: its current slug, or null when no readable chapter ever had `chapterSlug`
+ * (or the lookup failed: the page then answers 404 as before). Only asked when the slug matched no chapter.
+ */
+export const loadRenamedChapterSlug = cache(async (storyId: string, chapterSlug: string): Promise<string | null> => {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    return await resolveChapterSlug(await createSupabaseServerClient(), storyId, chapterSlug);
+  } catch (error) {
+    console.error("chapter: slug history lookup failed", error);
+    return null;
+  }
+});

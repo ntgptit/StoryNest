@@ -172,6 +172,7 @@
         "outbox_events.event_type": 60,
         "reading_lists.visibility": 12,
         "story_invitations.status": 12,
+        "chapter_slug_history.slug": 120,
         "user_settings.language_code": 12,
         "chapter_reviews.request_note": 500,
         "chapter_reviews.decision_note": 500,

@@ -429,6 +429,35 @@ export type Database = {
           },
         ]
       }
+      chapter_slug_history: {
+        Row: {
+          chapter_id: string
+          created_at: string
+          slug: string
+          story_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          chapter_id: string
+          created_at?: string
+          slug: string
+          story_id: string
+        }
+        Update: {
+          chapter_id?: string
+          created_at?: string
+          slug?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_slug_history_chapter_id_fkey"
+            columns: ["chapter_id"]
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chapter_stats: {
         Row: {
           chapter_id: string
@@ -2631,6 +2660,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      resolve_chapter_slug: {
+        Args: { p_slug: string; p_story_id: string }
+        Returns: string
       }
       resolve_report: {
         Args: { p_reason: string; p_report_id: string; p_status: string }

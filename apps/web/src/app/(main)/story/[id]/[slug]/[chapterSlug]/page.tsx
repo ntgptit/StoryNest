@@ -8,7 +8,7 @@ import { getCoverUrlResolver } from "@/lib/covers";
 import { chapterJsonLd } from "@/lib/seo/json-ld";
 import { absoluteUrl } from "@/lib/site";
 import { appText } from "@/lib/strings";
-import { loadChapter } from "@/lib/story/load-chapter";
+import { loadChapter, loadRenamedChapterSlug } from "@/lib/story/load-chapter";
 
 import { JsonLd } from "../../../../../_components/json-ld";
 import { ReaderView } from "./reader-view";
@@ -43,7 +43,14 @@ export default async function ChapterPage({ params }: { params: Params }) {
   const { id, slug, chapterSlug } = await params;
   const { queryClient, story, chapter } = await loadChapter(id, chapterSlug);
 
-  if (story === null || chapter === null) notFound();
+  if (story === null) notFound();
+  if (chapter === null) {
+    // No chapter has this slug now: it may have been renamed, and old links, bookmarks and notifications still point at
+    // the old one. A permanent (308) redirect sends them to the current address; otherwise it is a real 404.
+    const current = story ? await loadRenamedChapterSlug(id, chapterSlug) : null;
+    if (story && current) permanentRedirect(`/story/${story.id}/${story.slug}/${current}`);
+    notFound();
+  }
   if (story && story.slug !== slug) permanentRedirect(`/story/${story.id}/${story.slug}/${chapterSlug}`);
 
   const coverUrl = story?.coverStorageKey ? getCoverUrlResolver()?.(story.coverStorageKey) : undefined;

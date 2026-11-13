@@ -1,6 +1,7 @@
 // Public API of the "reader" feature: reading a published chapter.
 export { ReaderScreen } from "./screens/reader-screen.tsx";
 export { prefetchChapter } from "./queries.ts";
+export { resolveChapterSlug } from "./api/reader.api.ts";
 export {
   blockAnchor,
   COMMENTS_ANCHOR,

@@ -1,9 +1,9 @@
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ loadStory: vi.fn(), loadChapter: vi.fn() }));
+const mocks = vi.hoisted(() => ({ loadStory: vi.fn(), loadChapter: vi.fn(), renamed: vi.fn() }));
 vi.mock("@/lib/story/load-story", () => ({ loadStory: mocks.loadStory }));
-vi.mock("@/lib/story/load-chapter", () => ({ loadChapter: mocks.loadChapter }));
+vi.mock("@/lib/story/load-chapter", () => ({ loadChapter: mocks.loadChapter, loadRenamedChapterSlug: mocks.renamed }));
 vi.mock("@/lib/covers", () => ({ getCoverUrlResolver: () => (key: string) => `https://cdn.test/${key}` }));
 vi.mock("next/navigation", () => ({
   notFound: () => {
@@ -131,6 +131,20 @@ describe("chapter page", () => {
 
   it("is a real 404 for a missing chapter", async () => {
     mocks.loadChapter.mockResolvedValue({ queryClient: {}, story: story(), chapter: null });
+    mocks.renamed.mockResolvedValue(null);
     await expect(ChapterPage({ params })).rejects.toThrow("NEXT_NOT_FOUND");
+  });
+
+  it("redirects a renamed chapter's old address to its current one (308)", async () => {
+    mocks.loadChapter.mockResolvedValue({ queryClient: {}, story: story(), chapter: null });
+    mocks.renamed.mockResolvedValue("chuong-moi");
+    await expect(ChapterPage({ params })).rejects.toThrow("NEXT_REDIRECT:/story/s1/rung/chuong-moi");
+  });
+
+  it("does not look the slug up when the story itself is missing", async () => {
+    mocks.renamed.mockClear();
+    mocks.loadChapter.mockResolvedValue({ queryClient: {}, story: null, chapter: null });
+    await expect(ChapterPage({ params })).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(mocks.renamed).not.toHaveBeenCalled();
   });
 });
