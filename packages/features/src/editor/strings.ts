@@ -191,6 +191,7 @@ const vi = {
     cancelSchedule: "Hủy hẹn giờ",
     more: "Cách đăng khác",
     scheduleDescription: "Tự đăng vào ngày giờ bạn chọn",
+    changeVisibility: "Đổi hiển thị",
     readiness: {
       title: "Trước khi đăng",
       summary: (done: number, total: number) => `Đạt ${done}/${total} điều kiện, chưa đăng được`,

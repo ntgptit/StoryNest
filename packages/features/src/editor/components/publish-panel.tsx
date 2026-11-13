@@ -19,6 +19,8 @@ import { ConfirmDialog } from "@storynest/ui/widgets/confirm-dialog";
 import { InlineAlert } from "@storynest/ui/widgets/inline-alert";
 import { ReadinessChecklist } from "@storynest/ui/widgets/readiness-checklist";
 import { SplitButton } from "@storynest/ui/widgets/split-button";
+import { AppLink } from "../../_shared/platform.tsx";
+import { studioStrings, useStoryReaderAccess } from "../../studio/index.ts";
 import { useChapterPublishState, usePublishFlow } from "../hooks/use-publishing.ts";
 import {
   canPublish,
@@ -63,17 +65,21 @@ function useNow(enabled: boolean, everyMs: number): number {
  */
 export function PublishPanel({
   chapterId,
+  storyId,
   locale,
   ensureSaved,
   draft,
 }: {
   chapterId: string;
+  storyId: string;
   locale: string;
   ensureSaved: () => Promise<number | null>;
   /** The draft rules on what is on screen now (checkTitle / checkBody), for the readiness checklist. */
   draft: Parameters<typeof publishReadiness>[0];
 }) {
   const state = useChapterPublishState(chapterId);
+  // Who can read the story once this chapter is out: a chapter is no use to readers in a private or draft story.
+  const reach = useStoryReaderAccess(storyId, state.data?.status === CHAPTER_STATUS.PUBLISHED ? 0 : 1);
   const flow = usePublishFlow(chapterId, ensureSaved);
   const checklistId = useId();
   const [scheduling, setScheduling] = useState(false);
@@ -133,6 +139,25 @@ export function PublishPanel({
         >
           {error}
         </InlineAlert>
+      ) : null}
+      {reach ? (
+        <p
+          role="note"
+          className={reach.access.state === "team_only" ? "text-sm font-medium" : "text-sm text-muted-foreground"}
+        >
+          {studioStrings.access.state[reach.access.state]}
+          {reach.access.reasons.length > 0
+            ? `: ${reach.access.reasons.map((reason) => studioStrings.access.reason[reason]).join(" · ")}`
+            : ""}
+          {reach.access.state === "team_only" && reach.role !== "editor" ? (
+            <>
+              {" "}
+              <AppLink href={`/studio/story/${storyId}`} className="underline underline-offset-4">
+                {t.changeVisibility}
+              </AppLink>
+            </>
+          ) : null}
+        </p>
       ) : null}
       {current.role === null ? null : (
         <ReadinessChecklist
