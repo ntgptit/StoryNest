@@ -12,6 +12,19 @@ const CHAPTER_COLUMNS =
   `version:chapter_versions!fk_chapter_published_version(title, word_count, blocks:chapter_version_blocks(${BLOCK_COLUMNS}))`;
 
 /**
+ * The current slug of the readable chapter that once had `chapterSlug` (it was renamed), or null when none did. The
+ * database applies the reader's rights, so a chapter the caller cannot read is never revealed.
+ */
+export async function resolveChapterSlug(
+  client: DataClient,
+  storyId: string,
+  chapterSlug: string,
+): Promise<string | null> {
+  if (!isUuid(storyId) || chapterSlug === "") return null;
+  return unwrap(await client.rpc("resolve_chapter_slug", { p_story_id: storyId, p_slug: chapterSlug })) ?? null;
+}
+
+/**
  * The currently published content of one chapter, or null when it does not exist, is not published, was removed,
  * or RLS hides it (a hidden chapter and a missing one look the same on purpose).
  */
