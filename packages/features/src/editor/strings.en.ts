@@ -177,7 +177,7 @@ export const en = {
     state: {
       draft: "Draft, not visible to readers",
       scheduled: (when: string, zone: string) => `Scheduled for ${when} (${zone})`,
-      published: "Published, readers see the published version",
+      published: "Published. Readers see the published version, not the draft you are editing",
       archived: "Archived, hidden from readers",
     },
     archivedHint: "Unarchive it in the chapter list before publishing.",

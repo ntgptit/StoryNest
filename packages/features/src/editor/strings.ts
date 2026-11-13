@@ -180,7 +180,7 @@ const vi = {
     state: {
       draft: "Bản nháp, chưa ai đọc được",
       scheduled: (when: string, zone: string) => `Hẹn đăng lúc ${when} (${zone})`,
-      published: "Đã đăng, người đọc thấy bản đã đăng",
+      published: "Đã đăng. Độc giả chỉ thấy bản đã đăng, không thấy bản nháp đang sửa",
       archived: "Đã lưu trữ, người đọc không thấy",
     },
     archivedHint: "Bỏ lưu trữ ở danh sách chương trước khi đăng.",

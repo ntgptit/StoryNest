@@ -4,7 +4,9 @@ import { ExternalLink } from "lucide-react";
 import { Badge } from "@storynest/ui/components/badge";
 import { cn } from "@storynest/ui/lib/utils";
 import { AppLink, useNavigation } from "../../_shared/platform.tsx";
+import { useStudioChapters } from "../hooks/use-chapter-management.ts";
 import { useStoryForEdit } from "../hooks/use-story-editing.ts";
+import { countPublished, readerAccess } from "../model/reader-access.ts";
 import { activeWorkspaceTab, workspaceTabHref, workspaceTabsFor } from "../model/workspace-tabs.ts";
 import { studioText } from "../strings.ts";
 
@@ -17,14 +19,30 @@ const t = studioText.workspace;
  */
 export function StoryWorkspaceNav({ storyId }: { storyId: string }) {
   const story = useStoryForEdit(storyId);
+  const chapters = useStudioChapters(storyId);
   const { pathname } = useNavigation();
   if (!story.data) return null;
+
+  // Known only once the chapters are loaded: until then the chip is left out rather than guessed.
+  const access = chapters.data
+    ? readerAccess({ ...story.data.form, deleted: story.data.deletedAt !== null }, countPublished(chapters.data))
+    : null;
 
   const active = activeWorkspaceTab(storyId, pathname);
   return (
     <div className="mb-4 flex max-w-2xl flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        <Badge variant="secondary">{studioText.role[story.data.role]}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary">{studioText.role[story.data.role]}</Badge>
+          {access ? (
+            <Badge
+              variant={access.state === "live" ? "default" : "outline"}
+              title={access.reasons.map((reason) => studioText.access.reason[reason]).join(" · ") || undefined}
+            >
+              {studioText.access.state[access.state]}
+            </Badge>
+          ) : null}
+        </div>
         <AppLink
           href={`/story/${storyId}/${story.data.form.slug}`}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground underline-offset-4 hover:underline"

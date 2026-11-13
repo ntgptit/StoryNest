@@ -17,6 +17,28 @@ export const en = {
   },
   listLabel: "My stories",
   create: "Write a new story",
+  access: {
+    state: {
+      live: "Readers can read it",
+      link_only: "Only people with the link can read it",
+      team_only: "Only your team can see it",
+      deleted: "Story deleted",
+    },
+    reason: {
+      private: "Visibility is Private",
+      draft_status: "Status is Draft",
+      no_published_chapter: "No chapter is published yet",
+      deleted: "The story was deleted",
+    },
+    lose: {
+      title: "Readers will no longer be able to read this story",
+      description: (followers: number) =>
+        followers > 0
+          ? `${followers} follower${followers === 1 ? "" : "s"} will no longer see this story. You can change it back later.`
+          : "Readers will no longer see this story. You can change it back later.",
+      confirm: "Save anyway",
+    },
+  },
   workspace: {
     label: "Story workspace",
     tabs: { details: "Details", chapters: "Chapters", team: "Team", stats: "Stats" },
