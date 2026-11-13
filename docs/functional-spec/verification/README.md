@@ -171,7 +171,7 @@ the lines were compared in 24 groups by an MD5 of the sorted lines of each group
 | Result | Detail |
 | --- | --- |
 | 197 lines compared (143 functions, 54 tables) | 23 of 24 groups identical, including every function and table added by batch 4 (edit locks, read sources, per-type notifications, announcements, author stats, role matrix) |
-| Only difference | `blank_notification_excerpt()` (WP 9.24) exists locally, not yet on dev: the migration is merged but not applied |
+| Only difference | `blank_notification_excerpt()` (WP 9.24) existed locally but not on dev when compared; the migration was applied to dev the same day and checked (privileges, trigger, hide clears the excerpt, nothing left behind) |
 | What this proves | Privileges, definer/invoker, `search_path` and RLS shape match what the SQL tests assume |
 | What it does not prove | Behaviour with real session tokens through the REST API (VER-* style cases); only the 9.1 and 9.40 flows were exercised with real roles (self-rolling-back blocks) |
 
