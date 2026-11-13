@@ -35,6 +35,9 @@ export const en = {
     checkEmailBody: "We've sent a confirmation link. Open the email and click the link to finish signing up.",
     checkEmailHint:
       "No email? Look in your spam or promotions folder. If the address was wrong, use a different email.",
+    resend: "Resend email",
+    resendIn: (seconds: number) => `Resend in ${seconds} s`,
+    resent: "Email sent again.",
     differentEmail: "Use a different email",
   },
   forgot: {
@@ -52,6 +55,16 @@ export const en = {
     resendIn: (seconds: number) => `Resend in ${seconds} s`,
     resent: "Email sent again.",
     differentEmail: "Use a different email",
+  },
+  change: {
+    title: "Change password",
+    description: "Enter your current password to confirm it's you.",
+    current: "Current password",
+    currentRequired: "Enter your current password.",
+    wrongCurrent: "The current password is wrong.",
+    submit: "Change password",
+    submitting: "Saving…",
+    success: "Password changed.",
   },
   reset: {
     title: "Set a new password",

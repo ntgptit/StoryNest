@@ -86,6 +86,7 @@ function fakeClient(overrides: { reset?: AuthError[] } = {}) {
   const auth = {
     signInWithPassword: vi.fn(async () => ({ data: {}, error: null })),
     signUp: vi.fn(async () => ({ data: { session: null }, error: null })),
+    resend: vi.fn(async () => ({ data: {}, error: null })),
     resetPasswordForEmail: vi.fn(async () => ({ data: {}, error: resets.shift() ?? null })),
     onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
     getSession: vi.fn(async () => ({ data: { session: null } })),
@@ -181,14 +182,23 @@ describe("password strength meter on sign-up", () => {
 });
 
 describe("check your inbox", () => {
-  it("sign-up: shows the envelope state and lets the address be changed (no resend call exists)", async () => {
-    const { client } = fakeClient();
+  it("sign-up: locks resend for the cooldown, then sends the confirmation again to the same address", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const { client, auth } = fakeClient();
     renderWith(client, <SignUpScreen onSignedUp={vi.fn()} />);
     type("Email", "an@example.com");
     type("Mật khẩu", "Zebra19!horse");
     fireEvent.click(screen.getByRole("button", { name: "Đăng ký" }));
     expect(await screen.findByText("Kiểm tra email của bạn")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /Gửi lại/ })).toBeNull();
+    const locked = screen.getByRole("button", { name: `Gửi lại sau ${RESEND_COOLDOWN_SECONDS} giây` });
+    fireEvent.click(locked);
+    expect(auth.resend).not.toHaveBeenCalled();
+
+    act(() => vi.advanceTimersByTime(RESEND_COOLDOWN_SECONDS * 1000));
+    fireEvent.click(screen.getByRole("button", { name: "Gửi lại email" }));
+    await waitFor(() => expect(auth.resend).toHaveBeenCalledTimes(1));
+    expect(auth.resend).toHaveBeenCalledWith(expect.objectContaining({ type: "signup", email: "an@example.com" }));
+    expect(await screen.findByText(/Đã gửi lại email\./)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Dùng email khác" }));
     expect(field("Email").value).toBe("an@example.com");
   });

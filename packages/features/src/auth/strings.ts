@@ -39,6 +39,9 @@ const vi = {
     checkEmailBody: "Chúng tôi đã gửi liên kết xác nhận. Mở email và nhấn vào liên kết để hoàn tất đăng ký.",
     checkEmailHint:
       "Không thấy email? Hãy xem thư mục Spam hoặc Quảng cáo. Nếu nhập nhầm địa chỉ, hãy dùng email khác.",
+    resend: "Gửi lại email",
+    resendIn: (seconds: number) => `Gửi lại sau ${seconds} giây`,
+    resent: "Đã gửi lại email.",
     differentEmail: "Dùng email khác",
   },
   forgot: {
@@ -56,6 +59,16 @@ const vi = {
     resendIn: (seconds: number) => `Gửi lại sau ${seconds} giây`,
     resent: "Đã gửi lại email.",
     differentEmail: "Dùng email khác",
+  },
+  change: {
+    title: "Đổi mật khẩu",
+    description: "Nhập mật khẩu hiện tại để xác nhận đó là bạn.",
+    current: "Mật khẩu hiện tại",
+    currentRequired: "Nhập mật khẩu hiện tại.",
+    wrongCurrent: "Mật khẩu hiện tại không đúng.",
+    submit: "Đổi mật khẩu",
+    submitting: "Đang lưu…",
+    success: "Đã đổi mật khẩu.",
   },
   reset: {
     title: "Đặt mật khẩu mới",

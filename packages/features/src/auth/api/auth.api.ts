@@ -34,6 +34,20 @@ export async function signUpWithPassword(
   return { needsEmailConfirmation: data.session === null };
 }
 
+/** Sends the confirmation email of an unconfirmed sign-up again. */
+export async function resendSignupEmail(
+  client: DataClient,
+  email: string,
+  options: { emailRedirectTo: string },
+): Promise<void> {
+  const { error } = await client.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: options.emailRedirectTo },
+  });
+  if (error) throw toAppError(error);
+}
+
 export async function requestPasswordReset(
   client: DataClient,
   input: ForgotPassword,
@@ -41,6 +55,18 @@ export async function requestPasswordReset(
 ): Promise<void> {
   const { error } = await client.auth.resetPasswordForEmail(input.email, { redirectTo: options.redirectTo });
   if (error) throw toAppError(error);
+}
+
+/**
+ * Changes the password of the signed-in account after checking the current one (a stolen open session alone cannot
+ * change it). The check is a sign-in with the current password; it keeps the same account's session.
+ */
+export async function changePassword(
+  client: DataClient,
+  input: { email: string; currentPassword: string; newPassword: string },
+): Promise<void> {
+  await signInWithPassword(client, { email: input.email, password: input.currentPassword });
+  await updatePassword(client, input.newPassword);
 }
 
 /** Requires a session: either a signed-in user or the recovery session created by the reset-email link. */
