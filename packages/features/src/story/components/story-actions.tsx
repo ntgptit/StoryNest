@@ -26,44 +26,47 @@ export function StoryActions({ storyId }: { storyId: string }) {
   const goToLogin = () => navigation.push(`/login?next=${encodeURIComponent(navigation.pathname)}`);
 
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.guestHint}>
-      <Button
-        type="button"
-        variant={following ? "default" : "outline"}
-        // Same padding the Button gives a direct <svg> child; RingingBellIcon wraps its svg in a span.
-        className="px-3"
-        aria-pressed={signedIn ? following : undefined}
-        disabled={follow.isPending}
-        onClick={() => {
-          if (!signedIn) return goToLogin();
-          follow.mutate(!following, {
-            onSuccess: () => toast.success(following ? t.unfollowed : t.followed),
-            onError: (error) => toast.error(libraryErrorMessage(error)),
-          });
-        }}
-      >
-        <RingingBellIcon rings={followRings} active={following} />
-        {following ? t.following : t.follow}
-      </Button>
-      <Button
-        type="button"
-        variant={saved ? "default" : "outline"}
-        // Same padding the Button gives a direct <svg> child; SaveRibbonIcon wraps its svg in a span.
-        className="px-3"
-        aria-pressed={signedIn ? saved : undefined}
-        disabled={save.isPending}
-        onClick={() => {
-          if (!signedIn) return goToLogin();
-          save.mutate(!saved, {
-            onSuccess: () => toast.success(saved ? t.removedToast : t.savedToast),
-            onError: (error) => toast.error(libraryErrorMessage(error)),
-          });
-        }}
-      >
-        <SaveRibbonIcon saved={saved} />
-        {saved ? t.saved : t.save}
-      </Button>
-      <AddToListButton storyId={storyId} />
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.guestHint}>
+        <Button
+          type="button"
+          variant={following ? "default" : "outline"}
+          // Same padding the Button gives a direct <svg> child; RingingBellIcon wraps its svg in a span.
+          className="px-3"
+          aria-pressed={signedIn ? following : undefined}
+          disabled={follow.isPending}
+          onClick={() => {
+            if (!signedIn) return goToLogin();
+            follow.mutate(!following, {
+              onSuccess: () => toast.success(following ? t.unfollowed : t.followed),
+              onError: (error) => toast.error(libraryErrorMessage(error)),
+            });
+          }}
+        >
+          <RingingBellIcon rings={followRings} active={following} />
+          {following ? t.following : t.follow}
+        </Button>
+        <Button
+          type="button"
+          variant={saved ? "default" : "outline"}
+          // Same padding the Button gives a direct <svg> child; SaveRibbonIcon wraps its svg in a span.
+          className="px-3"
+          aria-pressed={signedIn ? saved : undefined}
+          disabled={save.isPending}
+          onClick={() => {
+            if (!signedIn) return goToLogin();
+            save.mutate(!saved, {
+              onSuccess: () => toast.success(saved ? t.removedToast : t.savedToast),
+              onError: (error) => toast.error(libraryErrorMessage(error)),
+            });
+          }}
+        >
+          <SaveRibbonIcon saved={saved} />
+          {saved ? t.saved : t.save}
+        </Button>
+        <AddToListButton storyId={storyId} />
+      </div>
+      <p className="text-xs text-muted-foreground">{t.actionsHint}</p>
     </div>
   );
 }

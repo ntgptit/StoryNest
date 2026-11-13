@@ -9,9 +9,9 @@ const vi = {
   noBio: "Tác giả chưa viết giới thiệu.",
   readMore: "Xem thêm",
   readLess: "Thu gọn",
-  follow: "Theo dõi",
-  following: "Đang theo dõi",
-  followedToast: "Đã theo dõi tác giả.",
+  follow: "Theo dõi tác giả",
+  following: "Đang theo dõi tác giả",
+  followedToast: "Truyện mới của tác giả sẽ hiện ở mục Từ tác giả bạn theo dõi.",
   unfollowedToast: "Đã bỏ theo dõi.",
   emptyStories: {
     title: "Chưa có truyện công khai",
