@@ -2,5 +2,7 @@
 export { AuthorScreen } from "./screens/author-screen.tsx";
 export { FollowingScreen } from "./screens/following-screen.tsx";
 export { authorHref, FOLLOWING_HREF } from "./model/author.ts";
+export { getAuthorProfile } from "./api/author.api.ts";
+export type { AuthorProfile } from "./model/author.ts";
 export { authorText } from "./strings.ts";
 export { authorKeys } from "./keys.ts";
