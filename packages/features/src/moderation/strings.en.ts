@@ -137,6 +137,14 @@ export const en = {
       resolve_report: "Mark as resolved",
       dismiss_report: "Dismiss report",
     },
+    history: {
+      show: "Show moderation history",
+      hide: "Hide moderation history",
+      title: "Moderation history of this item",
+      empty: "No moderator has acted on this item yet.",
+      error: "Couldn't load the history.",
+      moderator: "Moderator",
+    },
     consequences: {
       hide_comment:
         "The comment is hidden from every reader and its excerpt is removed from notifications. Reports about it are closed. It can be shown again later.",

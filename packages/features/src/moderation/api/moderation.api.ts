@@ -10,6 +10,12 @@ import {
   type ReportRow,
   type ReportTarget,
 } from "../model/report.ts";
+import {
+  TARGET_HISTORY_LIMIT,
+  toTargetActions,
+  type TargetAction,
+  type TargetActionRow,
+} from "../model/target-history.ts";
 import { MY_REPORTS_LIMIT, toMyReport, type MyReport, type MyReportRow } from "../model/my-reports.ts";
 
 /** Sends a report. Reporting the same open thing again returns the first report, so a retry cannot double up. */
@@ -87,4 +93,22 @@ export async function listMyReports(client: DataClient, userId: string): Promise
         .returns<MyReportRow[]>(),
     ) ?? [];
   return rows.flatMap((row) => toMyReport(row) ?? []);
+}
+
+/**
+ * What moderators did about one target, newest first (the audit log: moderators read it, nobody writes it directly).
+ * The log carries who acted only as an id, and the console does not show it.
+ */
+export async function listTargetHistory(client: DataClient, targetId: string): Promise<TargetAction[]> {
+  const rows =
+    unwrap(
+      await client
+        .from("moderation_actions")
+        .select("id, action, reason, created_at")
+        .eq("target_id", targetId)
+        .order("created_at", { ascending: false })
+        .limit(TARGET_HISTORY_LIMIT)
+        .returns<TargetActionRow[]>(),
+    ) ?? [];
+  return toTargetActions(rows);
 }

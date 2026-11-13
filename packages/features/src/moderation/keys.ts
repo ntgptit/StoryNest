@@ -3,5 +3,6 @@
 export const moderationKeys = {
   all: ["moderation"] as const,
   mine: (userId: string) => ["moderation", "mine", userId] as const,
+  history: (targetId: string) => ["moderation", "history", targetId] as const,
   queue: (userId: string, filter: string) => ["moderation", "queue", userId, filter] as const,
 };

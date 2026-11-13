@@ -138,6 +138,14 @@ const vi = {
       resolve_report: "Đánh dấu đã xử lý",
       dismiss_report: "Bác bỏ báo cáo",
     },
+    history: {
+      show: "Xem lịch sử xử lý",
+      hide: "Ẩn lịch sử xử lý",
+      title: "Lịch sử xử lý của mục này",
+      empty: "Chưa có hành động kiểm duyệt nào về mục này.",
+      error: "Không tải được lịch sử.",
+      moderator: "Người điều hành",
+    },
     // What the action does, said before it is confirmed (and recorded with the reason).
     consequences: {
       hide_comment:
