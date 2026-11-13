@@ -4,7 +4,14 @@ import { useState, type MouseEvent } from "react";
 import { formatRelativeTime } from "@storynest/utils";
 import { Badge } from "@storynest/ui/components/badge";
 import { Button } from "@storynest/ui/components/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@storynest/ui/components/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@storynest/ui/components/dialog";
 import { Label } from "@storynest/ui/components/label";
 import { Textarea } from "@storynest/ui/components/textarea";
 import { MODERATION_ACTION, REPORT_STATUS, type ModerationAction } from "@storynest/validation";
@@ -213,6 +220,7 @@ export function ReportCard({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{pending ? t.actions[pending.action] : ""}</DialogTitle>
+            {pending ? <DialogDescription>{t.consequences[pending.action]}</DialogDescription> : null}
           </DialogHeader>
           <div className="flex flex-col gap-2">
             <Label htmlFor={`reason-${report.id}`}>{t.dialog.reasonLabel}</Label>

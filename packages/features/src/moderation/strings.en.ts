@@ -137,6 +137,22 @@ export const en = {
       resolve_report: "Mark as resolved",
       dismiss_report: "Dismiss report",
     },
+    consequences: {
+      hide_comment:
+        "The comment is hidden from every reader and its excerpt is removed from notifications. Reports about it are closed. It can be shown again later.",
+      restore_comment:
+        "The comment is shown to readers again. Excerpts removed from earlier notifications do not come back.",
+      remove_story:
+        "The story disappears for readers and from search. The owner cannot restore it; only a moderator can. Reports about the story and its chapters are closed.",
+      restore_story: "The story is visible to readers again, as the owner has set its visibility.",
+      suspend_user:
+        "The account is blocked from actions that need an active account, such as commenting and reporting. Reports about this account are closed.",
+      reinstate_user: "The account is active again.",
+      review_report: "The report moves to under review. The reporter sees this status.",
+      resolve_report: 'The report is closed as action taken. The reporter sees "Closed: action taken", not your name.',
+      dismiss_report:
+        'The report is closed as no violation found. The reporter sees "Closed: no violation found", not your name.',
+    },
     dialog: {
       reasonLabel: "Reason (required, will be logged)",
       reasonPlaceholder: "Example: violates the harassment policy",

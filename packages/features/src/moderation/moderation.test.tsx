@@ -619,3 +619,12 @@ describe("ModerationScreen detail panel", () => {
     expect(await screen.findByRole("dialog", { name: "Nội dung 2" })).toBeTruthy();
   });
 });
+
+describe("action consequences", () => {
+  it("every moderator action says what it does, in both languages", async () => {
+    const { MODERATION_ACTIONS } = await import("@storynest/validation");
+    for (const action of MODERATION_ACTIONS) {
+      expect(t.console.consequences[action].length, action).toBeGreaterThan(20);
+    }
+  });
+});

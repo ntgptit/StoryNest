@@ -138,6 +138,22 @@ const vi = {
       resolve_report: "Đánh dấu đã xử lý",
       dismiss_report: "Bác bỏ báo cáo",
     },
+    // What the action does, said before it is confirmed (and recorded with the reason).
+    consequences: {
+      hide_comment:
+        "Bình luận bị ẩn với mọi độc giả và trích đoạn của nó trong thông báo bị xóa. Các báo cáo về bình luận này được đóng. Có thể hiện lại sau.",
+      restore_comment: "Bình luận hiện lại với độc giả. Trích đoạn đã xóa khỏi thông báo cũ không được khôi phục.",
+      remove_story:
+        "Truyện biến mất với độc giả và khỏi tìm kiếm. Chủ truyện không tự khôi phục được; chỉ người điều hành khôi phục. Các báo cáo về truyện và chương của nó được đóng.",
+      restore_story: "Truyện hiện lại với độc giả theo cài đặt hiển thị của chủ truyện.",
+      suspend_user:
+        "Tài khoản bị chặn các thao tác cần tài khoản đang hoạt động, như bình luận và báo cáo. Các báo cáo về tài khoản này được đóng.",
+      reinstate_user: "Tài khoản hoạt động trở lại.",
+      review_report: "Báo cáo chuyển sang đang xem xét. Người báo cáo thấy trạng thái này.",
+      resolve_report: 'Báo cáo được đóng là đã xử lý. Người báo cáo thấy "Đã đóng: đã xử lý", không thấy tên bạn.',
+      dismiss_report:
+        'Báo cáo được đóng là không phát hiện vi phạm. Người báo cáo thấy "Đã đóng: không phát hiện vi phạm", không thấy tên bạn.',
+    },
     dialog: {
       reasonLabel: "Lý do (bắt buộc, được ghi lại)",
       reasonPlaceholder: "Ví dụ: vi phạm quy định về quấy rối",
