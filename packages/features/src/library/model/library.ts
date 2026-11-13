@@ -7,6 +7,18 @@ export type LibraryTab = (typeof LIBRARY_TABS)[number];
 
 export const LIBRARY_PAGE_SIZE = 50;
 
+export interface LibraryPage {
+  entries: LibraryEntry[];
+  /** Offset of the next page, or null when this was the last one. */
+  nextOffset: number | null;
+}
+
+/** Cuts the extra row the query asked for (see the API) and says where the next page starts. */
+export function toLibraryPage(rows: LibraryEntry[], offset: number): LibraryPage {
+  if (rows.length <= LIBRARY_PAGE_SIZE) return { entries: rows, nextOffset: null };
+  return { entries: rows.slice(0, LIBRARY_PAGE_SIZE), nextOffset: offset + LIBRARY_PAGE_SIZE };
+}
+
 type Maybe<T> = T | T[] | null;
 const one = <T>(value: Maybe<T>): T | null => (Array.isArray(value) ? (value[0] ?? null) : value);
 

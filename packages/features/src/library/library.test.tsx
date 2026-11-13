@@ -103,7 +103,7 @@ function fakeClient(options: {
     const q = { table, calls: [] as Call[], deleted: false };
     queries.push(q);
     const builder: Record<string, unknown> = {};
-    for (const method of ["select", "eq", "order", "limit", "returns"]) {
+    for (const method of ["select", "eq", "order", "range", "returns"]) {
       builder[method] = (...args: unknown[]) => {
         q.calls.push([method, args]);
         return builder;
@@ -136,12 +136,13 @@ const callOf = (q: { calls: Call[] }, method: string) => q.calls.find(([m]) => m
 describe("library api", () => {
   it("lists what is being read, newest first, for this reader, with the story as a left embed and the chapter to continue", async () => {
     const c = fakeClient({ reading: [readingRow(1), readingRow(2)] });
-    const entries = await listReading(c as unknown as DataClient, TEST_USER_ID);
+    const { entries } = await listReading(c as unknown as DataClient, TEST_USER_ID);
     expect(entries.map((e) => e.storyId)).toEqual([sid(1), sid(2)]);
     const q = c.select("user_story_progress")[0]!;
     expect(callOf(q, "eq")).toEqual(["user_id", TEST_USER_ID]);
     expect(callOf(q, "order")).toEqual(["last_read_at", { ascending: false }]);
-    expect(callOf(q, "limit")).toEqual([50]);
+    // One row more than a page, so the next page is known without a count.
+    expect(callOf(q, "range")).toEqual([0, 50]);
     const columns = String(callOf(q, "select")?.[0]);
     expect(columns).toContain("story:stories!user_story_progress_story_id_fkey(");
     expect(columns).toContain("deleted_at)");
@@ -408,5 +409,44 @@ describe("LibraryScreen", () => {
     fireEvent.pointerUp(panels, touch(150));
     expect(await screen.findByRole("list", { name: t.listLabel(t.tabs.saved) })).toBeTruthy();
     expect(screen.getByRole("tab", { name: t.tabs.saved }).getAttribute("aria-selected")).toBe("true");
+  });
+});
+
+describe("library tab in the address", () => {
+  it("opens on the tab it is given and reports a switch", async () => {
+    const onTabChange = vi.fn();
+    const c = fakeClient({ reading: [readingRow(1)], saved: [shelfRow(2)] });
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <DataProvider client={withAuth(c, testSession())}>
+          <AuthProvider>
+            <PlatformProvider adapter={adapter}>
+              <ToastProvider port={toasts}>
+                <LibraryScreen initialTab="saved" onTabChange={onTabChange} />
+              </ToastProvider>
+            </PlatformProvider>
+          </AuthProvider>
+        </DataProvider>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByRole("list", { name: t.listLabel(t.tabs.saved) })).toBeTruthy();
+    openTab(t.tabs.reading);
+    expect(onTabChange).toHaveBeenCalledWith("reading");
+  });
+});
+
+describe("library pagination", () => {
+  it("asks for one row more than a page and offers the next page only when it exists", async () => {
+    const rows = Array.from({ length: 51 }, (_, i) => readingRow(i + 1));
+    const c = fakeClient({ reading: rows });
+    const page = await listReading(c as unknown as DataClient, TEST_USER_ID, 0);
+    expect(page.entries).toHaveLength(50);
+    expect(page.nextOffset).toBe(50);
+    const last = await listReading(
+      fakeClient({ reading: rows.slice(0, 3) }) as unknown as DataClient,
+      TEST_USER_ID,
+      50,
+    );
+    expect(last.nextOffset).toBeNull();
   });
 });

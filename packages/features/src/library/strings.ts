@@ -19,6 +19,7 @@ const vi = {
   error: { title: "Không tải được thư viện", description: "Kiểm tra kết nối và thử lại.", retry: "Thử lại" },
   continueReading: (number: number) => `Đọc tiếp chương ${number}`,
   openStory: "Mở truyện",
+  loadMore: "Tải thêm",
   readAt: (relative: string) => `Đọc ${relative}`,
   savedAt: (relative: string) => `Lưu ${relative}`,
   followedAt: (relative: string) => `Theo dõi ${relative}`,
