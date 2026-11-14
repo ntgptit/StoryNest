@@ -7,6 +7,7 @@ import { useDataClientGetter } from "../../_shared/data.tsx";
 import { toAppError, type AppError } from "../../_shared/errors.ts";
 import {
   listMyReports,
+  getTargetPreview,
   listTargetHistory,
   listReports,
   moderate,
@@ -17,6 +18,7 @@ import {
 import { moderationKeys } from "../keys.ts";
 import { isOpenReport, type MyReport } from "../model/my-reports.ts";
 import type { TargetAction } from "../model/target-history.ts";
+import type { TargetPreview } from "../model/target-preview.ts";
 import { reportCursorAfter, type QueueFilter, type ReportPage, type ReportTarget } from "../model/report.ts";
 
 type Pages = InfiniteData<ReportPage, { createdAt: string; id: string } | undefined>;
@@ -64,6 +66,17 @@ export function useWithdrawReport() {
       }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: [...moderationKeys.all, "mine"] }),
+  });
+}
+
+/** What the reported thing says, loaded when a moderator asks (it may be removed or hidden for everyone else). */
+export function useTargetPreview(kind: ReportTarget, targetId: string, enabled: boolean) {
+  const getClient = useDataClientGetter();
+  return useQuery<TargetPreview | null, AppError>({
+    queryKey: ["moderation", "preview", kind, targetId] as const,
+    queryFn: () => getTargetPreview(getClient(), kind, targetId).catch((e: unknown) => Promise.reject(toAppError(e))),
+    enabled,
+    staleTime: 0,
   });
 }
 

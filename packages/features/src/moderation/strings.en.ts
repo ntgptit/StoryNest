@@ -145,6 +145,18 @@ export const en = {
       resolve_report: "Mark as resolved",
       dismiss_report: "Dismiss report",
     },
+    preview: {
+      show: "Show content",
+      hide: "Hide content",
+      error: "Couldn't load the content.",
+      notFound: "This content no longer exists.",
+      owner: (name: string) => `By ${name}`,
+      removed: "Removed or deleted",
+      hidden: "Hidden",
+      chapters: "Chapters",
+      bio: "About",
+      noText: "(no text)",
+    },
     history: {
       show: "Show moderation history",
       hide: "Hide moderation history",
