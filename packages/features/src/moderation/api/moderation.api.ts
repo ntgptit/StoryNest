@@ -86,7 +86,7 @@ export async function listMyReports(client: DataClient, userId: string): Promise
     unwrap(
       await client
         .from("content_reports")
-        .select("id, status, reason, created_at, story_id, chapter_id, comment_id, reported_user_id")
+        .select("id, status, reason, created_at, story_id, chapter_id, comment_id, reported_user_id, withdrawn_at")
         .eq("reporter_id", userId)
         .order("created_at", { ascending: false })
         .limit(MY_REPORTS_LIMIT)
@@ -111,4 +111,9 @@ export async function listTargetHistory(client: DataClient, targetId: string): P
         .returns<TargetActionRow[]>(),
     ) ?? [];
   return toTargetActions(rows);
+}
+
+/** Takes back a report nobody has started on. Refused once a moderator is looking at it. */
+export async function withdrawReport(client: DataClient, reportId: string): Promise<void> {
+  unwrap(await client.rpc("withdraw_report", { p_report_id: reportId }));
 }

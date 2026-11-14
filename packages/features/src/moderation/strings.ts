@@ -85,6 +85,14 @@ const vi = {
       reviewing: "Đang được xem xét",
       resolved: "Đã đóng: đã xử lý",
       dismissed: "Đã đóng: không phát hiện vi phạm",
+      withdrawn: "Bạn đã rút báo cáo này",
+    },
+    withdraw: "Rút báo cáo",
+    withdrawing: "Đang rút…",
+    withdrawn: "Đã rút báo cáo.",
+    withdrawErrors: {
+      started: "Người điều hành đã bắt đầu xem báo cáo này nên không rút được nữa.",
+      generic: "Không rút được báo cáo. Vui lòng thử lại.",
     },
   },
   console: {

@@ -3,12 +3,14 @@
 import { Flag } from "lucide-react";
 import { formatRelativeTime } from "@storynest/utils";
 import { Badge } from "@storynest/ui/components/badge";
+import { Button } from "@storynest/ui/components/button";
 import { Skeleton } from "@storynest/ui/components/skeleton";
 import { EmptyState } from "@storynest/ui/widgets/empty-state";
 import { ErrorState } from "@storynest/ui/widgets/error-state";
 import { PageHeader } from "@storynest/ui/widgets/page-header";
 import { currentLocale } from "../../_shared/i18n.ts";
-import { useMyReports } from "../hooks/use-moderation.ts";
+import { useAppToast } from "../../_shared/toast.tsx";
+import { useMyReports, useWithdrawReport } from "../hooks/use-moderation.ts";
 import { REPORT_REASONS } from "@storynest/validation";
 import { moderationText } from "../strings.ts";
 
@@ -23,6 +25,8 @@ const reasonLabel = (reason: string): string =>
 /** The reporter's side of moderation: every report they sent, its target kind, reason, date and outcome category. */
 export function MyReportsScreen({ locale = currentLocale() }: { locale?: string }) {
   const reports = useMyReports();
+  const withdraw = useWithdrawReport();
+  const toast = useAppToast();
   return (
     <section aria-label={t.title} className="flex max-w-2xl flex-col gap-6">
       <PageHeader title={t.title} description={t.description} />
@@ -48,12 +52,30 @@ export function MyReportsScreen({ locale = currentLocale() }: { locale?: string 
                 <Badge
                   variant={report.status === "dismissed" || report.status === "resolved" ? "secondary" : "outline"}
                 >
-                  {t.status[report.status]}
+                  {report.withdrawn ? t.status.withdrawn : t.status[report.status]}
                 </Badge>
               </div>
               <span className="text-xs text-muted-foreground">
                 {t.sentAt(formatRelativeTime(report.createdAt, locale))}
               </span>
+              {report.status === "pending" ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="mt-1 w-fit"
+                  disabled={withdraw.isPending}
+                  onClick={() =>
+                    withdraw.mutate(report.id, {
+                      onSuccess: () => toast.success(t.withdrawn),
+                      onError: (error) =>
+                        toast.error(error.code === "PT409" ? t.withdrawErrors.started : t.withdrawErrors.generic),
+                    })
+                  }
+                >
+                  {withdraw.isPending ? t.withdrawing : t.withdraw}
+                </Button>
+              ) : null}
             </li>
           ))}
         </ul>

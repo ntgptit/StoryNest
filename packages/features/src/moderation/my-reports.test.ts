@@ -32,3 +32,12 @@ describe("my reports model", () => {
     expect(isOpenReport(toMyReport(row({ status: "resolved" }))!)).toBe(false);
   });
 });
+
+describe("a withdrawn report", () => {
+  it("is marked as withdrawn and counts as closed", () => {
+    const report = toMyReport(row({ status: "dismissed", withdrawn_at: "2026-11-14T10:00:00+00:00" }))!;
+    expect(report.withdrawn).toBe(true);
+    expect(isOpenReport(report)).toBe(false);
+    expect(toMyReport(row({ status: "dismissed" }))!.withdrawn).toBe(false);
+  });
+});

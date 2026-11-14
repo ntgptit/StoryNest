@@ -12,6 +12,7 @@ import {
   moderate,
   resolveReport,
   submitReport,
+  withdrawReport,
 } from "../api/moderation.api.ts";
 import { moderationKeys } from "../keys.ts";
 import { isOpenReport, type MyReport } from "../model/my-reports.ts";
@@ -47,6 +48,22 @@ export function useTargetHistory(targetId: string, enabled: boolean) {
     queryFn: () => listTargetHistory(getClient(), targetId).catch((e: unknown) => Promise.reject(toAppError(e))),
     enabled,
     staleTime: 0,
+  });
+}
+
+/** "Withdraw report" on the reporter's list; the list is read again afterwards. */
+export function useWithdrawReport() {
+  const getClient = useDataClientGetter();
+  const queryClient = useQueryClient();
+  return useMutation<void, AppError, string>({
+    mutationFn: async (reportId) => {
+      try {
+        await withdrawReport(getClient(), reportId);
+      } catch (error) {
+        throw toAppError(error);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: [...moderationKeys.all, "mine"] }),
   });
 }
 
