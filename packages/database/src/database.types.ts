@@ -872,6 +872,7 @@ export type Database = {
           reviewed_by: string | null
           status: string
           story_id: string | null
+          withdrawn_at: string | null
           moderation_report_card:
             | Database["public"]["CompositeTypes"]["moderation_report"]
             | null
@@ -890,6 +891,7 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           story_id?: string | null
+          withdrawn_at?: string | null
         }
         Update: {
           chapter_id?: string | null
@@ -904,6 +906,7 @@ export type Database = {
           reviewed_by?: string | null
           status?: string
           story_id?: string | null
+          withdrawn_at?: string | null
         }
         Relationships: [
           {
@@ -2889,6 +2892,7 @@ export type Database = {
       unarchive_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       unpublish_chapter: { Args: { p_chapter_id: string }; Returns: undefined }
       utf16_length: { Args: { p_text: string }; Returns: number }
+      withdraw_report: { Args: { p_report_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

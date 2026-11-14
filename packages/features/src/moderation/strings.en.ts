@@ -80,6 +80,14 @@ export const en = {
       reviewing: "Being reviewed",
       resolved: "Closed: action taken",
       dismissed: "Closed: no violation found",
+      withdrawn: "You withdrew this report",
+    },
+    withdraw: "Withdraw report",
+    withdrawing: "Withdrawing…",
+    withdrawn: "Report withdrawn.",
+    withdrawErrors: {
+      started: "A moderator already started on this report, so it can't be withdrawn.",
+      generic: "Couldn't withdraw the report. Please try again.",
     },
   },
   console: {

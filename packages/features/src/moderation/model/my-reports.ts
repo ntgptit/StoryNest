@@ -11,6 +11,8 @@ export interface MyReportRow {
   chapter_id: string | null;
   comment_id: string | null;
   reported_user_id: string | null;
+  /** Set when the reporter took the report back. */
+  withdrawn_at?: string | null;
 }
 
 export interface MyReport {
@@ -20,6 +22,8 @@ export interface MyReport {
   reason: ReportReason | string;
   status: ReportStatus;
   createdAt: string;
+  /** The reporter took it back (it is closed as dismissed, but not by a moderator). */
+  withdrawn: boolean;
 }
 
 export const MY_REPORTS_LIMIT = 100;
@@ -41,7 +45,15 @@ export function toMyReport(row: MyReportRow): MyReport | null {
     row.status === REPORT_STATUS.DISMISSED
       ? row.status
       : REPORT_STATUS.PENDING;
-  return { id: row.id, kind: found[0], targetId: found[1], reason: row.reason, status, createdAt: row.created_at };
+  return {
+    id: row.id,
+    kind: found[0],
+    targetId: found[1],
+    reason: row.reason,
+    status,
+    createdAt: row.created_at,
+    withdrawn: Boolean(row.withdrawn_at),
+  };
 }
 
 /** Still waiting for a moderator: a new report of the same thing would be merged into it. */
