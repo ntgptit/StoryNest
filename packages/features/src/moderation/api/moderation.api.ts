@@ -10,6 +10,7 @@ import {
   type ReportRow,
   type ReportTarget,
 } from "../model/report.ts";
+import { toTargetPreview, type TargetPreview } from "../model/target-preview.ts";
 import {
   TARGET_HISTORY_LIMIT,
   toTargetActions,
@@ -116,4 +117,14 @@ export async function listTargetHistory(client: DataClient, targetId: string): P
 /** Takes back a report nobody has started on. Refused once a moderator is looking at it. */
 export async function withdrawReport(client: DataClient, reportId: string): Promise<void> {
   unwrap(await client.rpc("withdraw_report", { p_report_id: reportId }));
+}
+
+/** The text and state of a reported thing, for a moderator, also when it was removed or hidden from everyone else. */
+export async function getTargetPreview(
+  client: DataClient,
+  kind: ReportTarget,
+  targetId: string,
+): Promise<TargetPreview | null> {
+  const value = unwrap(await client.rpc("moderation_preview", { p_kind: kind, p_target_id: targetId }));
+  return toTargetPreview(kind, value);
 }

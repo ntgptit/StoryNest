@@ -2528,6 +2528,10 @@ export type Database = {
         }
         Returns: string
       }
+      moderation_preview: {
+        Args: { p_kind: string; p_target_id: string }
+        Returns: Json
+      }
       moderation_report_card: {
         Args: {
           r: Omit<

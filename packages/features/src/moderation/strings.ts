@@ -146,6 +146,18 @@ const vi = {
       resolve_report: "Đánh dấu đã xử lý",
       dismiss_report: "Bác bỏ báo cáo",
     },
+    preview: {
+      show: "Xem nội dung",
+      hide: "Ẩn nội dung",
+      error: "Không tải được nội dung.",
+      notFound: "Không còn nội dung này.",
+      owner: (name: string) => `Của ${name}`,
+      removed: "Đã bị gỡ hoặc xóa",
+      hidden: "Đang bị ẩn",
+      chapters: "Các chương",
+      bio: "Giới thiệu",
+      noText: "(không có văn bản)",
+    },
     history: {
       show: "Xem lịch sử xử lý",
       hide: "Ẩn lịch sử xử lý",

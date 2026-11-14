@@ -19,7 +19,7 @@ import { cn } from "@storynest/ui/lib/utils";
 import { currentLocale } from "../../_shared/i18n.ts";
 import { AppLink } from "../../_shared/platform.tsx";
 import { useAppToast } from "../../_shared/toast.tsx";
-import { useModerate, useResolveReport, useTargetHistory } from "../hooks/use-moderation.ts";
+import { useModerate, useResolveReport, useTargetHistory, useTargetPreview } from "../hooks/use-moderation.ts";
 import {
   actionErrorMessage,
   actionTargetId,
@@ -29,7 +29,9 @@ import {
   REASON_MAX_LENGTH,
   reportTargetHref,
   type ModerationReport,
+  type ReportTarget,
 } from "../model/report.ts";
+import type { TargetPreview } from "../model/target-preview.ts";
 import { moderationText } from "../strings.ts";
 
 const t = moderationText.console;
@@ -158,6 +160,7 @@ export function ReportCard({
         {panel ? ` · ${t.panel.reportedAt(formatRelativeTime(report.createdAt, currentLocale()))}` : null}
       </p>
 
+      {panel ? <TargetPreviewSection kind={report.target} targetId={report.targetId} /> : null}
       {panel ? <TargetHistory targetId={actionTargetId(report)} /> : null}
 
       <div className="flex flex-wrap gap-2">
@@ -293,5 +296,107 @@ function TargetHistory({ targetId }: { targetId: string }) {
         )
       ) : null}
     </div>
+  );
+}
+
+/** The text of what was reported, read by a moderator also when it was removed or hidden for everyone else. */
+function TargetPreviewSection({ kind, targetId }: { kind: ReportTarget; targetId: string }) {
+  const [open, setOpen] = useState(false);
+  const preview = useTargetPreview(kind, targetId, open);
+  const p = t.preview;
+  return (
+    <div className="flex flex-col gap-2">
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        className="w-fit"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        {open ? p.hide : p.show}
+      </Button>
+      {open ? (
+        preview.isError ? (
+          <p role="alert" className="text-xs text-destructive">
+            {p.error}
+          </p>
+        ) : preview.isPending ? null : preview.data === null ? (
+          <p className="text-xs text-muted-foreground">{p.notFound}</p>
+        ) : (
+          <div className="flex flex-col gap-1.5 rounded-md border p-3 text-sm">
+            <PreviewBody preview={preview.data} />
+          </div>
+        )
+      ) : null}
+    </div>
+  );
+}
+
+function PreviewBody({ preview }: { preview: TargetPreview }) {
+  const p = t.preview;
+  if (preview.kind === "story") {
+    return (
+      <>
+        <p className="font-medium break-words">{preview.title}</p>
+        <p className="text-xs text-muted-foreground">
+          {p.owner(preview.owner)}
+          {preview.deleted ? ` · ${p.removed}` : ""}
+        </p>
+        <p className="whitespace-pre-line break-words text-muted-foreground">{preview.synopsis || p.noText}</p>
+        {preview.chapters.length > 0 ? (
+          <>
+            <p className="pt-1 text-xs font-medium">{p.chapters}</p>
+            <ul className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+              {preview.chapters.map((chapter) => (
+                <li key={chapter.position}>
+                  {chapter.position}. {chapter.title || chapter.status}
+                  {chapter.deleted ? ` · ${p.removed}` : ""}
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+      </>
+    );
+  }
+  if (preview.kind === "chapter") {
+    return (
+      <>
+        <p className="font-medium break-words">{preview.title || preview.storyTitle}</p>
+        <p className="text-xs text-muted-foreground">
+          {preview.storyTitle}
+          {preview.deleted ? ` · ${p.removed}` : ""}
+        </p>
+        {preview.blocks.length === 0 ? (
+          <p className="text-muted-foreground">{p.noText}</p>
+        ) : (
+          preview.blocks.map((block, index) => (
+            <p key={index} className="whitespace-pre-line break-words">
+              {block}
+            </p>
+          ))
+        )}
+      </>
+    );
+  }
+  if (preview.kind === "comment") {
+    return (
+      <>
+        <p className="text-xs text-muted-foreground">
+          {preview.author}
+          {preview.status === "hidden" ? ` · ${p.hidden}` : ""}
+          {preview.deleted ? ` · ${p.removed}` : ""}
+        </p>
+        <p className="whitespace-pre-line break-words">{preview.body}</p>
+      </>
+    );
+  }
+  return (
+    <>
+      <p className="font-medium break-words">{preview.displayName}</p>
+      <p className="text-xs text-muted-foreground">@{preview.username}</p>
+      {preview.bio ? <p className="whitespace-pre-line break-words text-muted-foreground">{preview.bio}</p> : null}
+    </>
   );
 }
